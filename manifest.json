@@ -1,10 +1,10 @@
 {
-	"id": "obsidian-sample-plugin",
-	"name": "Sample Plugin",
-	"version": "1.0.1",
+    "id": "obsidian-textgenerator-plugin",
+    "name": "Text Generator",
+    "version": "0.0.1",
 	"minAppVersion": "0.12.0",
-	"description": "This is a sample plugin for Obsidian. This plugin demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
+	"description": "Text generation using OpenAI",
+    "author": "Noureddine Haouari",
 	"authorUrl": "https://obsidian.md",
 	"isDesktopOnly": false
 }

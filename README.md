@@ -1,72 +1,49 @@
-## Obsidian Sample Plugin
+# Obsidian text generator Plugin 
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+Text generator is a handy plugin for Obsidian (https://obsidian.md) that helps you generate text content using the powerful language model GPT-3.   
 
-This project uses Typescript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in Typescript Definition format, which contains TSDoc comments describing what it does.
+To use Text generator: you need to create an account at OpenAI to get an API Key and configure the plugin's setting to use API Key. 
 
-**Note:** The Obsidian API is still in early alpha and is subject to change at any time!
+# Get Open AI API Key
+To generate Open AI API Key.  Follow  the following steps: 
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Changes the default font color to red using `styles.css`.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+1.  Create an account on [OpenAI](https://beta.openai.com/signup) (you will get a free 18$ trial account). 
+2.  Click on your Account and click on View API keys
 
-### First time developing plugins?
+![[Pasted image 20220227121447.png]]
+3.  Generate the API key that Text Generator Plugin will use
 
-Quick starting guide for new plugin devs:
-
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
-
-### Releasing new releases
-
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
-
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
-
-### Adding your plugin to the community plugin list
-
-- Check https://github.com/obsidianmd/obsidian-releases/blob/master/plugin-review.md
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
-
-### How to use
-
-- Clone this repo.
-- `npm i` or `yarn` to install dependencies
-- `npm run dev` to start compilation in watch mode.
-
-### Manually installing the plugin
-
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
-
-### Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
+![[Pasted image 20220227121545.png]]
 
 
-### API Documentation
+# Configure Text Generator plugin
+After installing the "Text generator plugin" and enabling it, you need to provide the generated API Key to the plugin. 
 
-See https://github.com/obsidianmd/obsidian-api
+![[Pasted image 20220227122219.png]]
+
+# Text generator Plugin
+
+
+In-Text generator Plugin, there are three commands that I recommend you to set hotkeys for: "Generate text," "Increase max_tokens by 10", and "decrease max_tokens by 10".
+![[Pasted image 20220227122749.png]]
+
+## Generate text
+Select a text and run the command "Generate Text!"; it will generate a text with a max size of (**max_tokens**) using GPT-3 and insert it on the current cursor position.  You will see in the status bar **"Text generator (max_tokens): processing..."** while generating the text. 
+
+
+> Open AI API considers both Input and output tokens in their cost calculation [Open AI pricing] (https://openai.com/api/pricing/).
+
+
+## Control max_tokens
+By setting hotkey for both commands, "Increase max_tokens by 10" and "decrease max_tokens by 10," you can easily control the size of the generated text.  The actual  max_tokens appears in the status bar **'Text generator (max_tokens):"** .
+
+
+> To set a hotkey for a command, go to the "Settings" menu, then select the "Hotkeys" tab.  You will see a list of all the available commands, along with the associated hotkey.  Click on the desired command, then press the key combination you would like to use.  Make sure that another application does not already use the key combination.
+
+
+
+# Interact with GPT-3 
+
+There are several paid text editors based on GPT-3.  You can, for example, search on YouTube about videos about on these editors and use the same commands directly on GPT-3 using Text Generator Plugin. 
+
+One of the most famous paid tools in the market is (https://jasper.ai?special=qHt_szZ)[Jasper].  In Jasper, there are pre-built workflows known as **Recipes** that contain a series of Jasper (text editor based on GPT-3) commands to help you create content with Jasper using a repeatable process.  You can use the same commands to generate the content that you want! 
