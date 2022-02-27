@@ -48,4 +48,4 @@ By setting hotkey for both commands, "Increase max_tokens by 10" and "decrease m
 
 There are several paid text editors based on GPT-3.  You can, for example, search on YouTube about videos about on these editors and use the same commands directly on GPT-3 using Text Generator Plugin. 
 
-One of the most famous paid tools in the market is [Jasper](https://jasper.ai?special=qHt_szZ).  In Jasper, there are pre-built workflows known as **Recipes** that contain a series of Jasper (text editor based on GPT-3) commands to help you create content with Jasper using a repeatable process.  You can use the same commands to generate the content that you want! 
+One of the most famous paid tools in the market is [Jasper](https://jasper.ai?special=qHt_szZ).  In Jasper, there are pre-built workflows known as [Recipes](https://app.jasper.ai/recipes) that contain a series of Jasper (text editor based on GPT-3) commands to help you create content with Jasper using a repeatable process.  You can use the same commands to generate the content that you want! 
