@@ -9,6 +9,7 @@ To generate Open AI API Key.  Follow  the following steps:
 
 1.  Create an account on [OpenAI](https://beta.openai.com/signup) (you will get a free 18$ trial account). 
 2.  Click on your Account and click on View API keys
+
 ![](./images/20220227121447.png)
 
 3.  Generate the API key that Text Generator Plugin will use
@@ -25,6 +26,7 @@ After installing the "Text generator plugin" and enabling it, you need to provid
 
 
 In-Text generator Plugin, there are three commands that I recommend you to set hotkeys for: "Generate text," "Increase max_tokens by 10", and "decrease max_tokens by 10".
+
 ![](./images/20220227122749.png)
 
 ## Generate text
