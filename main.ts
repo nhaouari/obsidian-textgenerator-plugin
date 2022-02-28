@@ -80,10 +80,16 @@ export default class TextGeneratorPlugin extends Plugin {
 
     async complete(params:TextGeneratorSettings,insertMetadata:boolean=false){
     	if (insertMetadata) {
-			params.prompt=  this.getMetaData() +params.prompt; 
+			const metadata = this.getMetaData();
+			if(metadata.length ===0) {
 			new Notice("No frontmatter, or it is not well formated!");
 			return;
+			} else 
+			{
+				params.prompt=  this.getMetaData() +params.prompt; 
+			}
 		}
+		
 		console.log(params)
 		let text = await this.getGeneratedText(params);
         this.insertGeneratedText(text)
