@@ -1,3 +1,5 @@
+> Feel free to do a pull request if you wish to add other recipes. 
+
 # Jasper Recipes
 - [Blog Post - Jasper](https://community.jasper.ai/recipes/69c657f4-a185-4e31-b73f-4092cf957018)  
 - [Perfect Ad - Jasper](https://community.jasper.ai/recipes/7a7c6e11-c4f7-446f-84d6-69e279bd9151)  
@@ -30,4 +32,4 @@
 - [🔗 Facebook Posts with Embedded URLs 😮 Learn How with a Jasper Certified Expert - Jasper](https://community.jasper.ai/recipes/4abd3c4d-6a67-4db9-8974-3873769784bf?fpr=blogsbyjarvis)  
 - [💘 Write A Love Note (Valentine's Day / Anniversary / Just Because) - Jasper](https://community.jasper.ai/recipes/18d3e0b8-8c83-4704-88b8-985ed0dfa4ec?fpr=blogsbyjarvis)  
 
-> Feel free to do a pull request if you wish to add other recipes. 
+
