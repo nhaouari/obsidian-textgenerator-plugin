@@ -85,15 +85,20 @@ export default class TextGeneratorPlugin extends Plugin {
 		}
 	}
 
-	insertGeneratedText(text: string) {
+	insertGeneratedText(text: string,editor:Editor) {
 		const activeView = this.getActiveView();
 		if (activeView !== null) {
-			const cursor = activeView.editor.getCursor();
-			activeView.editor.replaceRange(text, cursor);
+			const cursor = editor.getCursor();
+			editor.replaceRange(text, cursor);
 		}
 	}
 
-	async complete(params: TextGeneratorSettings, insertMetadata: boolean = false) {
+	async complete(params: TextGeneratorSettings, insertMetadata: boolean = false,editor:Editor) {
+		params={
+			...params,
+			prompt: this.getPrompt(editor)
+		}
+		
 		if (insertMetadata) {
 			const metadata = this.getMetaData();
 			if (metadata.length === 0) {
@@ -103,20 +108,18 @@ export default class TextGeneratorPlugin extends Plugin {
 				params.prompt = this.getMetaData() + params.prompt;
 			}
 		}
-
-		console.log(params)
 		let text = await this.getGeneratedText(params);
-		this.insertGeneratedText(text)
+		this.insertGeneratedText(text,editor)
 	}
 
-	getPrompt() {
+	getPrompt(editor:Editor) {
 		const activeView = this.getActiveView();
 		if (activeView !== null) {
-			let selectedText = activeView.editor.getSelection();
+			let selectedText = editor.getSelection();
 
 			if (selectedText.length === 0) {
-				const lineNumber = activeView.editor.getCursor().line;
-				selectedText = activeView.editor.getLine(lineNumber);
+				const lineNumber = editor.getCursor().line;
+				selectedText = editor.getLine(lineNumber);
 			}
 			return selectedText;
 		}
@@ -141,22 +144,21 @@ export default class TextGeneratorPlugin extends Plugin {
 		const ribbonIconEl = this.addRibbonIcon('pencil', 'Text Generator', async (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
 			this.updateStatusBar(`processing... `);
-			await this.complete({
-				...this.settings,
-				prompt: this.getPrompt()
-			});
+			const activeView = this.getActiveView();
+			if (activeView !== null) {
+			const editor = activeView.editor;
+			await this.complete(this.settings,false,editor);
 			this.updateStatusBar(``);
+			}
 		});
 
 		this.addCommand({
 			id: 'generate-text',
 			name: 'Generate Text!',
+			hotkeys: [{ modifiers: ["Ctrl"], key: "j" }],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
-				await this.complete({
-					...this.settings,
-					prompt: this.getPrompt()
-				});
+				await this.complete(this.settings,false,editor);
 				this.updateStatusBar(``);
 			}
 		});
@@ -164,13 +166,10 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.addCommand({
 			id: 'generate-text-with-metadata',
 			name: 'Generate Text (use Metadata))!',
+			hotkeys: [{ modifiers: ["Ctrl",'Alt'], key: "j" }],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
-				const settings = {
-					...this.settings,
-					prompt: this.getPrompt()
-				};
-				await this.complete(settings, true);
+				await this.complete(this.settings, true,editor);
 				this.updateStatusBar(``);
 			}
 		});
@@ -179,7 +178,8 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.addCommand({
 			id: 'increase-max_tokens',
 			name: 'Increase max_tokens by 10',
-			editorCallback: async (editor: Editor) => {
+			hotkeys: [{ modifiers: ["Ctrl","Alt"], key: "1" }],
+			editorCallback: async () => {
 				this.settings.max_tokens += 10;
 				await this.saveSettings();
 				this.updateStatusBar('');
@@ -189,7 +189,8 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.addCommand({
 			id: 'decrease-max_tokens',
 			name: 'decrease max_tokens by 10',
-			editorCallback: async (editor: Editor) => {
+			hotkeys: [{ modifiers: ["Ctrl","Alt"], key: "2" }],
+			editorCallback: async () => {
 				this.settings.max_tokens -= 10;
 				await this.saveSettings();
 				this.updateStatusBar('');
