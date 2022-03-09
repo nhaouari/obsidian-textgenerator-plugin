@@ -86,11 +86,8 @@ export default class TextGeneratorPlugin extends Plugin {
 	}
 
 	insertGeneratedText(text: string,editor:Editor) {
-		const activeView = this.getActiveView();
-		if (activeView !== null) {
-			const cursor = editor.getCursor();
-			editor.replaceRange(text, cursor);
-		}
+		const cursor = editor.getCursor();
+		editor.replaceRange(text, cursor);
 	}
 
 	async complete(params: TextGeneratorSettings, insertMetadata: boolean = false,editor:Editor) {
@@ -113,17 +110,12 @@ export default class TextGeneratorPlugin extends Plugin {
 	}
 
 	getPrompt(editor:Editor) {
-		const activeView = this.getActiveView();
-		if (activeView !== null) {
-			let selectedText = editor.getSelection();
-
-			if (selectedText.length === 0) {
-				const lineNumber = editor.getCursor().line;
-				selectedText = editor.getLine(lineNumber);
-			}
-			return selectedText;
+		let selectedText = editor.getSelection();
+		if (selectedText.length === 0) {
+			const lineNumber = editor.getCursor().line;
+			selectedText = editor.getLine(lineNumber);
 		}
-
+		return selectedText;
 	}
 
 	updateStatusBar(text: string) {
