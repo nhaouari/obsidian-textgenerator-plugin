@@ -2,7 +2,8 @@
 
 Text generator is a handy plugin for [Obsidian](https://obsidian.md) that helps you generate text content using the powerful language model GPT-3. 
 
-[![Writing a small blog Article using AI in less than 5 minutes](https://img.youtube.com/vi/Z9Z25lBL1Kw/0.jpg)](https://www.youtube.com/watch?v=Z9Z25lBL1Kw)
+[![Writing a small blog Article using AI in less than 5 minutes ](https://img.youtube.com/vi/Z9Z25lBL1Kw/0.jpg?)](https://www.youtube.com/watch?v=Z9Z25lBL1Kw)
+
 
 To use Text generator: you need to create an account at OpenAI to get an API Key and configure the plugin's setting to use API Key. 
 
