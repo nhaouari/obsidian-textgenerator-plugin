@@ -14,7 +14,7 @@ interface TextGeneratorSettings {
 
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	api_key: "",
-	engine: "text-davinci-001",
+	engine: "text-davinci-002",
 	max_tokens: 160,
 	temperature: 0.7,
 	frequency_penalty: 0.5,
@@ -243,6 +243,7 @@ class TextGeneratorSettingTab extends PluginSettingTab {
 			.setName('engine')
 			.setDesc('engine')
 			.addDropdown((cb) => {
+				cb.addOption("text-davinci-002", "text-davinci-002");
 				cb.addOption("text-davinci-001", "text-davinci-001");
 				cb.addOption("text-curie-001", "text-curie-001");
 				cb.addOption("text-babbage-001", "text-babbage-001");
