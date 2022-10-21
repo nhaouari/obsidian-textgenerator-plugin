@@ -3,6 +3,8 @@
 
 The Obsidian Text Generator plugin is a handy tool that can help you generate text content using the powerful language model GPT-3 directly. This makes the plugin more affordable and powerful than other avaible AI text assistants and can help you get the most out of your Obsidian experience. For further details, you might check the following article [Obsidian + Text Generator Plugin: More Affordable and Powerful AI Text Assistant Helper](https://medium.com/@haouarin/obsidian-text-generator-plugin-more-affordable-and-powerful-ai-text-assistant-helper-8f84ee84fd42). 
 
+If you're looking for a place to discuss the use cases of this plugin and share your experiences, head over to the [Discussion](https://github.com/nhaouari/obsidian-textgenerator-plugin/discussions/categories/use-cases). There, you'll find a community of like-minded users who are eager to help you make the most of this powerful tool.
+
 <a href="https://www.youtube.com/watch?v=Z9Z25lBL1Kw" target="_blank">
 <p align="center">
   <img src="https://img.youtube.com/vi/Z9Z25lBL1Kw/0.jpg?">
