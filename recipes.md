@@ -1,6 +1,6 @@
 > Feel free to do a pull request if you wish to add other recipes. 
 
-# Jasper Recipes
+# Recipes
 - [Blog Post - Jasper](https://community.jasper.ai/recipes/69c657f4-a185-4e31-b73f-4092cf957018)  
 - [Perfect Ad - Jasper](https://community.jasper.ai/recipes/7a7c6e11-c4f7-446f-84d6-69e279bd9151)  
 - [Landing page template - Jasper](https://community.jasper.ai/recipes/9dadd97c-772b-4bca-976e-5dfe38f6feac)  
