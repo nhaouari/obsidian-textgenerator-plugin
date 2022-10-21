@@ -6,9 +6,11 @@ Text generator is a handy plugin for [Obsidian](https://obsidian.md) that
 [![Writing a small blog Article using AI in less than 5 minutes ](https://img.youtube.com/vi/Z9Z25lBL1Kw/0.jpg?)](https://www.youtube.com/watch?v=Z9Z25lBL1Kw)
 
 
-# To use Text generator: you need to create an account at OpenAI to **01 Get an API Key** and **02 Configure the plugin**'s setting to use API Key. 
+### To use Text generator you need to: 
+### 01 Get an API Key (create an account at OpenAI) 
+### 02 Configure the plugin's setting to use API Key. 
 
-  
+ 
 
 # 01 Create an account at OpenAI
 
@@ -44,7 +46,7 @@ After installing the "Text generator plugin" and enabling it, you need
 
 # Text generator Plugin
 
-	In Text generator Plugin, there are four commands that I recommend you to set hotkeys for: "Generate text", "Generate Text (use Metadata)," "Increase max_tokens by 10", and "decrease max_tokens by 10".
+In Text generator Plugin, there are four commands that I recommend you to set hotkeys for: "Generate text", "Generate Text (use Metadata)," "Increase max_tokens by 10", and "decrease max_tokens by 10".
 
   
 <p align="center">
@@ -55,12 +57,12 @@ After installing the "Text generator plugin" and enabling it, you need
 ## Generate text
 
 ### "Generate Text!" 
-	"Generate Text!" will generate a text with a max size of (**max_tokens**) using GPT-3 and insert it on the current cursor position based on cursor line content or the selected text.  You will see in the status bar **"Text generator (max_tokens): processing..."** while generating the text.
+"Generate Text!" will generate a text with a max size of (**max_tokens**) using GPT-3 and insert it on the current cursor position based on cursor line content or the selected text.  You will see in the status bar **"Text generator (max_tokens): processing..."** while generating the text.
  
 ### "Generate Text (use Metadata)" 
-	In version 0.0.2, you also have another option that is using the front matter information of the document while running the command by using "Generate Text (use Metadata)." 
+In version 0.0.2, you also have another option that is using the front matter information of the document while running the command by using "Generate Text (use Metadata)." 
 
-	let's take as an example the following document.
+let's take as an example the following document.
 
 ```md
 ---
