@@ -72,6 +72,8 @@ There are two generation commands available: "Generate Text!" and "Generate Text
 
 let's take as an example the following document.
 
+> 🔴 Past the code with (CTRL + SHIFT + V) or (⌘+ SHIFT + V for MAC users) to avoid formating issues.
+
 ```
 ---
 title: "Obsidian + Text Generator Plugin: The More Affordable and Powerful AI Text Assistante Helper"
