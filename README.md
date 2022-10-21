@@ -1,13 +1,9 @@
 # Obsidian text generator Plugin 
+<a href="https://www.buymeacoffee.com/haouarine" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
 
 Text generator is a handy plugin for [Obsidian](https://obsidian.md) that helps you generate text content using the powerful language model GPT-3. 
 
 [![Writing a small blog Article using AI in less than 5 minutes ](https://img.youtube.com/vi/Z9Z25lBL1Kw/0.jpg?)](https://www.youtube.com/watch?v=Z9Z25lBL1Kw)
-
-
-
-<a href="https://www.buymeacoffee.com/haouarine" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
-
 
 To use Text generator: you need to create an account at OpenAI to get an API Key and configure the plugin's setting to use API Key. 
 
