@@ -1,4 +1,4 @@
-import {App,addIcon, Notice, Plugin, PluginSettingTab, Setting, request, MarkdownView, Editor} from 'obsidian';
+import {App,addIcon, Notice, Plugin, PluginSettingTab, Setting, request, MarkdownView, Editor, parseFrontMatterAliases} from 'obsidian';
 
  const EXCALIDRAW_ICON = `<g transform="translate(30,0)"><path d="M5.81,27.19a1,1,0,0,1-.71-.29A1,1,0,0,1,4.82,26l1.26-8.33a1,1,0,0,1,.28-.56L18.54,5a3.08,3.08,0,0,1,4.24,0L27,9.22a3,3,0,0,1,0,4.24L14.85,25.64a1,1,0,0,1-.56.28L6,27.18ZM8,18.34,7,25l6.66-1,12-11.94a1,1,0,0,0,.29-.71,1,1,0,0,0-.29-.7L21.36,6.39a1,1,0,0,0-1.41,0Z"/><path d="M24.9,15.17a1,1,0,0,1-.71-.29L17.12,7.81a1,1,0,1,1,1.42-1.42l7.07,7.07a1,1,0,0,1,0,1.42A1,1,0,0,1,24.9,15.17Z"/><path d="M25,30H5a1,1,0,0,1,0-2H25a1,1,0,0,1,0,2Z"/><path d="M11.46,14.83,6.38,19.77c-1.18,1.17-.74,4.25.43,5.42s4.37,1.46,5.54.29l6-6.1s-5.73,2.56-7.07,1.06S11.46,14.83,11.46,14.83Z"/></g>`;
 //const pencil_icon = EXCALIDRAW_ICON
@@ -31,54 +31,54 @@ export default class TextGeneratorPlugin extends Plugin {
 	settings: TextGeneratorSettings;
 	statusBarItemEl: any;
 
-	async getGeneratedText(params: TextGeneratorSettings) {
+	async getGeneratedText(reqParams: any) {
 
-		const usedParams = {
-			"prompt": params.prompt,
-			"max_tokens": params.max_tokens,
-			"temperature": params.temperature,
-			"frequency_penalty": params.frequency_penalty,
-		};
+		const extractResult = reqParams?.extractResult;
+		delete reqParams?.extractResult;
 
-		const reqParams = {
-			url: `https://api.openai.com/v1/engines/${params.engine}/completions`,
-			method: 'POST',
-			body: JSON.stringify(usedParams),
-			headers: {
-				"Content-Type": "application/json",
-				"Authorization": `Bearer ${params.api_key}`
-			},
+		let requestResults;
+		try {
+			requestResults = JSON.parse(await request(reqParams));
+		} catch (error) {
+			console.log(error);
+			return Promise.reject(error);
 		}
-		const requestResults = JSON.parse(await request(reqParams));
-		const text = requestResults.choices[0].text
+		console.log(requestResults)
+		const text = eval(extractResult);
 		return text
 	}
 
 	getMetaData() {
 		const activeFile = this.app.workspace.getActiveFile();
-		let metadata = ""
+	
 		if (activeFile !== null) {
 			const cache = this.app.metadataCache.getCache(activeFile.path);
 			if (cache.hasOwnProperty('frontmatter')) {
-				const frontmatter = cache.frontmatter;
+				return cache.frontmatter;
+			}
+		}
+		return null
+	}
 
-				for (const [key, value] of Object.entries(frontmatter)) {
-					if (key === 'position') continue;
-
-					if (Array.isArray(value)) {
-						metadata += `${key} : `
-						value.forEach(v => {
-							metadata += `${value}, `
-						})
-						metadata += `\n`
-					} else {
-						metadata += `${key} : ${value} \n`
-					}
-				}
+	getMetaDataAsStr(frontmatter:any)
+	{
+		let metadata = "";
+		let keywords = ['config','position','bodyParams','reqParams'];
+		for (const [key, value] of Object.entries(frontmatter)) {
+			if (keywords.findIndex((e)=>e==key)!=-1) continue;
+			if (Array.isArray(value)) {
+				metadata += `${key} : `
+				value.forEach(v => {
+					metadata += `${value}, `
+				})
+				metadata += `\n`
+			} else {
+				metadata += `${key} : ${value} \n`
 			}
 		}
 		return metadata;
 	}
+
 	getActiveView() {
 		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (activeView !== null) {
@@ -102,26 +102,93 @@ export default class TextGeneratorPlugin extends Plugin {
 		editor.replaceRange(text, cursor);
 	}
 
-	async complete(params: TextGeneratorSettings, insertMetadata: boolean = false,editor:Editor) {
+	/*
+	Prepare the request parameters
+	*/
+	 
+
+	prepareParameters(params: TextGeneratorSettings,insertMetadata: boolean,editor:Editor) {
 		params={
 			...params,
-			prompt: this.getPrompt(editor)
+			prompt: this.getContext(editor)
 		}
+
+		let bodyParams:any = {
+			"prompt": params.prompt,
+			"max_tokens": params.max_tokens,
+			"temperature": params.temperature,
+			"frequency_penalty": params.frequency_penalty,
+		};
 		
+		let reqParams = {
+			url: `https://api.openai.com/v1/engines/${params.engine}/completions`,
+			method: 'POST',
+			body:'',
+			headers: {
+				"Content-Type": "application/json",
+				"Authorization": `Bearer ${params.api_key}`
+			},
+			extractResult: "requestResults?.choices[0].text"
+		}
+
 		if (insertMetadata) {
 			const metadata = this.getMetaData();
-			if (metadata.length === 0) {
-				new Notice("Please provide a valid frontmatter!");
-				return;
+			if (metadata == null) {
+				new Notice("No valid Metadata (YAML front matter) found!");
 			} else {
-				params.prompt = this.getMetaData() + params.prompt;
-			}
+				bodyParams.prompt = this.getMetaDataAsStr(metadata) + params.prompt;
+
+				if(metadata["bodyParams"] && metadata["config"]?.append?.bodyParams==false){
+					bodyParams = metadata["bodyParams"];
+				} else if (metadata["bodyParams"]) {
+					bodyParams = {...bodyParams,...metadata["bodyParams"]}; 
+				} 
+				
+				if (metadata["config"]?.context &&  metadata["config"]?.context !== "prompt") 
+				{
+					bodyParams[metadata["config"].context]=	 params.prompt;
+					delete bodyParams.prompt;
+				}
+				
+
+				reqParams.body=	JSON.stringify(bodyParams);
+
+				if (metadata["config"]?.output) 
+				{
+					reqParams.extractResult= metadata["config"]?.output
+				}
+
+				if(metadata["reqParams"] && metadata["config"]?.append?.reqParams==false){
+					reqParams = metadata["reqParams"];
+				} else if (metadata["reqParams"]) {
+					reqParams= {...reqParams,...metadata["reqParams"]} 
+				} 
+				
+			} 
+
+		} else {
+			reqParams.body=	JSON.stringify(bodyParams);
 		}
-		let text = await this.getGeneratedText(params);
+	
+		console.log(bodyParams)
+		return reqParams;
+	}
+
+
+
+	async generate(params: TextGeneratorSettings, insertMetadata: boolean = false,editor:Editor) {
+		const parameters = this.prepareParameters(params,insertMetadata,editor)
+		let text
+		try {
+			text = await this.getGeneratedText(parameters);
+		} catch (error) {
+			return Promise.reject(error);
+		}
+
 		this.insertGeneratedText(text,editor)
 	}
 
-	getPrompt(editor:Editor) {
+	getContext(editor:Editor) {
 		let selectedText = editor.getSelection();
 		if (selectedText.length === 0) {
 			const lineNumber = editor.getCursor().line;
@@ -147,20 +214,24 @@ export default class TextGeneratorPlugin extends Plugin {
 	async onload() {
 		addIcon("pencil_icon",pencil_icon);
 		addIcon("appPencile_icon",appPencile_icon);
-
 		await this.loadSettings();
-
-	
 		this.statusBarItemEl = this.addStatusBarItem();
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('pencil_icon', 'Generate Text!', async (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
+			const activeFile = this.app.workspace.getActiveFile();
 			this.updateStatusBar(`processing... `);
 			const activeView = this.getActiveView();
 			if (activeView !== null) {
 			const editor = activeView.editor;
-			await this.complete(this.settings,false,editor);
-			this.updateStatusBar(``);
+			try {
+				await this.generate(this.settings,false,editor);
+				this.updateStatusBar(``);
+			} catch (error) {
+				new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+				this.updateStatusBar(`Error: Check Console`);
+				setTimeout(()=>this.updateStatusBar(``),3000);
+			}
 			}
 		});
 
@@ -171,8 +242,14 @@ export default class TextGeneratorPlugin extends Plugin {
 			hotkeys: [{ modifiers: ["Ctrl"], key: "j" }],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
-				await this.complete(this.settings,false,editor);
-				this.updateStatusBar(``);
+				try {
+					await this.generate(this.settings,false,editor);
+					this.updateStatusBar(``);
+				} catch (error) {
+					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+					this.updateStatusBar(`Error check console`);
+					setTimeout(()=>this.updateStatusBar(``),3000);
+				}	
 			}
 		});
 
@@ -183,11 +260,16 @@ export default class TextGeneratorPlugin extends Plugin {
 			hotkeys: [{ modifiers: ["Ctrl",'Alt'], key: "j" }],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
-				await this.complete(this.settings, true,editor);
-				this.updateStatusBar(``);
+				try {
+					await this.generate(this.settings,true,editor);
+					this.updateStatusBar(``);
+				} catch (error) {
+					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+					this.updateStatusBar(`Error check console`);
+					setTimeout(()=>this.updateStatusBar(``),3000);
+				}
 			}
 		});
-
 
 		this.addCommand({
 			id: 'increase-max_tokens',
@@ -210,7 +292,6 @@ export default class TextGeneratorPlugin extends Plugin {
 				this.updateStatusBar('');
 			}
 		});
-
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new TextGeneratorSettingTab(this.app, this));
