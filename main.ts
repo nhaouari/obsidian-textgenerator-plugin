@@ -254,14 +254,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			if (activeView !== null) {
 			const editor = activeView.editor;
 			try {
-				/*await this.generateInEditor(this.settings,false,editor);
-				*/
-
-				new ExampleModal(this.app, async (result) => {
-					const editor = activeView.editor;
-					await this.generateFromTemplate(this.settings,result.path,false,editor);
-				  }).open();
-
+				await this.generateInEditor(this.settings,false,editor);
 				this.updateStatusBar(``);
 			} catch (error) {
 				new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
@@ -290,6 +283,28 @@ export default class TextGeneratorPlugin extends Plugin {
 				}	
 			}
 		});
+
+		this.addCommand({
+			id: 'generate-text-From-template',
+			name: 'Generate Text From Template',
+			icon: 'pencil_icon',
+			hotkeys: [{ modifiers: ["Ctrl",'Shift'], key: "j"}],
+			editorCallback: async (editor: Editor) => {
+				this.updateStatusBar(`processing... `);
+				try {
+					new ExampleModal(this.app, async (result) => {
+						await this.generateFromTemplate(this.settings,result.path,false,editor);
+					  }).open();
+
+					this.updateStatusBar(``);
+				} catch (error) {
+					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+					this.updateStatusBar(`Error check console`);
+					setTimeout(()=>this.updateStatusBar(``),3000);
+				}	
+			}
+		});
+
 
 		this.addCommand({
 			id: 'generate-text-with-metadata',
@@ -368,7 +383,7 @@ class TextGeneratorSettingTab extends PluginSettingTab {
 		containerEl.createEl('h2', {
 			text: 'Settings for OpenAI.'
 		});
-
+		
 		new Setting(containerEl)
 			.setName('api_key')
 			.setDesc('api_key')
