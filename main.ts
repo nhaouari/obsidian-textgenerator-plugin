@@ -32,11 +32,8 @@ export default class TextGeneratorPlugin extends Plugin {
 	statusBarItemEl: any;
 
 	async getGeneratedText(reqParams: any) {
-
 		const extractResult = reqParams?.extractResult;
 		delete reqParams?.extractResult;
-
-		console.log("getGeneratedText reqParams",reqParams)
 		let requestResults;
 		try {
 			requestResults = JSON.parse(await request(reqParams));
@@ -44,7 +41,6 @@ export default class TextGeneratorPlugin extends Plugin {
 			console.log(error);
 			return Promise.reject(error);
 		}
-		console.log(requestResults)
 		const text = eval(extractResult);
 		return text
 	}
@@ -176,8 +172,6 @@ export default class TextGeneratorPlugin extends Plugin {
 		} else {
 			reqParams.body=	JSON.stringify(bodyParams);
 		}
-	
-		console.log(bodyParams)
 		return reqParams;
 	}
 
@@ -194,7 +188,6 @@ export default class TextGeneratorPlugin extends Plugin {
 	}
 	
 	async generateFromTemplate(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor) {
-		console.log({params,templatePath,insertMetadata,editor})
 		const context = await this.getContext(editor,insertMetadata,templatePath);
 		const text = await this.generate(context,insertMetadata,params);
 		this.insertGeneratedText(text,editor)
@@ -215,10 +208,8 @@ export default class TextGeneratorPlugin extends Plugin {
 				selectedText=editor.getValue()
 			}
 		}
-		console.log(templatePath)
 
 		if(templatePath.length > 0){
-			console.log("01")
 			const templateFile = await this.app.vault.getAbstractFileByPath(templatePath);
 			let templateContent= await this.app.vault.read(templateFile);
 			templateContent=templateContent.replace("<?context?>",selectedText);
@@ -235,7 +226,6 @@ export default class TextGeneratorPlugin extends Plugin {
 				context=this.getMetaDataAsStr(metadata) + context;
 			}
 		}
-	console.log(context)
 		return context;
 	}
 
