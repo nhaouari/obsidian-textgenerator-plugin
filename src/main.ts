@@ -12,7 +12,8 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	temperature: 0.7,
 	frequency_penalty: 0.5,
 	prompt: "",
-	showStatusBar: true
+	showStatusBar: true,
+	promptsPath:"templates/prompts"
 }
 
 export default class TextGeneratorPlugin extends Plugin {
@@ -99,8 +100,8 @@ export default class TextGeneratorPlugin extends Plugin {
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
 				try {
-					new ExampleModal(this.app, async (result) => {
-						await this.textGenerator.generateFromTemplate(this.settings,result.path,false,editor);
+					new ExampleModal(this.app, this,async (result) => {
+						await this.textGenerator.generateFromTemplate(this.settings, result.path, false, editor);
 					  }).open();
 
 					this.updateStatusBar(``);

@@ -88,5 +88,15 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 					this.plugin.settings.showStatusBar = value;
 					await this.plugin.saveSettings();
 				}));
+        new Setting(containerEl)
+        .setName('promptsPath')
+        .setDesc('promptsPath')
+        .addText(text => text
+            .setPlaceholder('templates/prompts')
+            .setValue(this.plugin.settings.promptsPath)
+            .onChange(async (value) => {
+                this.plugin.settings.promptsPath = value;
+                await this.plugin.saveSettings();
+            }));
 	}
 }

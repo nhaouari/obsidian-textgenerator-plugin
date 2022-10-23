@@ -5,17 +5,21 @@ type TextGeneratorSettings= {
 	temperature: number;
 	frequency_penalty: number;
 	prompt: string;
+    promptsPath: string;
 	showStatusBar: boolean;
 }
 
-type Template =  {
-    title: string;
+type PromptTemplate =  {
+    id: string;
+    name: string;
     path: string;
-    desc: string;
-    auth: string;
+    description: string;
+    author: string;
+    tags: string;
+    version: string;
   }
 
 export type {
 	TextGeneratorSettings,
-	Template
+	PromptTemplate
 }

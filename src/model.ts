@@ -1,14 +1,17 @@
-import { App, Notice, FuzzySuggestModal } from "obsidian";
+import { App, Notice, FuzzySuggestModal, FuzzyMatch } from "obsidian";
+import TextGeneratorPlugin from "./main";
+import {PromptTemplate} from './types';
 
-
-export class ExampleModal extends FuzzySuggestModal <Template> {
- constructor(app: App, onChoose: (result: string) => void) {
+export class ExampleModal extends FuzzySuggestModal <PromptTemplate> {
+plugin:TextGeneratorPlugin;
+ constructor(app: App, plugin:TextGeneratorPlugin, onChoose: (result: string) => void) {
         super(app);
         this.onChoose = onChoose;
+        this.plugin=plugin;
       }
 
-      getItems(): Template[] {
-        const promptsPath= "templates/prompts";
+      getItems(): PromptTemplate[] {
+        const promptsPath= this.plugin.settings.promptsPath;
         const paths = app.metadataCache.getCachedFiles().filter(path=>path.includes(promptsPath));
         const templates = paths.map(s=>({title:s.substring(promptsPath.length+1),path:s,...this.getMetadata(s)}))
 
@@ -18,12 +21,29 @@ export class ExampleModal extends FuzzySuggestModal <Template> {
     getMetadata(path:string) {
         const metadata=this.getFrontmatter(path);
         const validedMetaData:any= {}
-        if(metadata?.TG_Name){
-            validedMetaData["title"]=metadata?.TG_Name;
+
+        if(metadata?.PromptInfo?.id){
+          validedMetaData["id"]=metadata.PromptInfo.id;
         }
 
-        if(metadata?.TG_Desc){
-            validedMetaData["desc"]=metadata?.TG_Desc;
+        if(metadata?.PromptInfo?.name){
+            validedMetaData["name"]=metadata.PromptInfo.name;
+        }
+
+        if(metadata?.PromptInfo?.description){
+            validedMetaData["description"]=metadata.PromptInfo.description;
+        }
+
+        if(metadata?.PromptInfo?.author){
+          validedMetaData["author"]=metadata.PromptInfo.author;
+        }
+
+        if(metadata?.PromptInfo?.tags){
+          validedMetaData["tags"]=metadata.PromptInfo.tags;
+        }
+
+        if(metadata?.PromptInfo?.version){
+          validedMetaData["version"]=metadata.PromptInfo.version;
         }
 
         return validedMetaData;
@@ -38,19 +58,19 @@ export class ExampleModal extends FuzzySuggestModal <Template> {
     }
     
        // Renders each suggestion item.
-    renderSuggestion(template: Template, el: HTMLElement) {
-      el.createEl("div", { text: template.item.title});
-      el.createEl("small", { text: template.item.desc,cls:"desc" });
+    renderSuggestion(template: FuzzyMatch<PromptTemplate>, el: HTMLElement) {
+      el.createEl("div", { text: template.item.name});
+      el.createEl("small", { text: template.item.description,cls:"desc" });
       el.createEl("div",{});
       el.createEl("small", { text: template.item.path,cls:"path" });
     }
 
-      getItemText(template: Template): string {
-        return template.title+template.desc;
+      getItemText(template: PromptTemplate): string {
+        return template.name+template.description+template.author+template.tags+template.path;
       }
     
-      onChooseItem(template: Template, evt: MouseEvent | KeyboardEvent) {
-        new Notice(`Selected ${template.title}`);
+      onChooseItem(template: PromptTemplate, evt: MouseEvent | KeyboardEvent) {
+        new Notice(`Selected ${template.name}`);
         this.onChoose(template);
       }
 }
