@@ -1,14 +1,17 @@
 import {App,addIcon, Notice, Plugin, PluginSettingTab, Setting, request, MarkdownView, Editor, parseFrontMatterAliases} from 'obsidian';
 import {TextGeneratorSettings} from './types';
 import TextGeneratorPlugin from './main';
+import ReqFormatter from './reqFormatter';
 
 export default class TextGenerator {
     plugin: TextGeneratorPlugin;
     app: App;
+    reqFormatter: ReqFormatter;
 
 	constructor(app: App, plugin: TextGeneratorPlugin) {
         this.app = app;
 		this.plugin = plugin;
+        this.reqFormatter = new ReqFormatter(app,plugin);
 	}
 
     async getGeneratedText(reqParams: any) {
@@ -25,45 +28,6 @@ export default class TextGenerator {
         return text
     }
     
-    getMetaData(path:string="") {
-        let activeFile;
-        if (path==="") {
-            activeFile = this.app.workspace.getActiveFile();
-        } else 
-        {
-            activeFile ={path};
-        }
-    
-        if (activeFile !== null) {
-            const cache = this.app.metadataCache.getCache(activeFile.path);
-            if (cache.hasOwnProperty('frontmatter')) {
-                return cache.frontmatter;
-            }
-         }
-    
-        return null
-    }
-    
-    getMetaDataAsStr(frontmatter:any)
-    {
-        let metadata = "";
-        let keywords = ['config','position','bodyParams','reqParams'];
-        for (const [key, value] of Object.entries(frontmatter)) {
-            if (keywords.findIndex((e)=>e==key)!=-1) continue;
-            if (Array.isArray(value)) {
-                metadata += `${key} : `
-                value.forEach(v => {
-                    metadata += `${value}, `
-                })
-                metadata += `\n`
-            } else {
-                metadata += `${key} : ${value} \n`
-            }
-        }
-        return metadata;
-    }
-    
-    
     insertGeneratedText(text: string,editor:Editor) {
         let cursor = editor.getCursor();
         
@@ -77,83 +41,15 @@ export default class TextGenerator {
         editor.replaceRange(text, cursor);
     }
     
-    
-    addContext(parameters: TextGeneratorSettings,prompt: string){
-         const params={
-            ...parameters,
-            prompt	
-        }
-        return params;
-    }
-    
-    /*
-    Prepare the request parameters
-    */
-     
-    
-    prepareReqParameters(params: TextGeneratorSettings,insertMetadata: boolean) {
-        let bodyParams:any = {
-            "prompt": params.prompt,
-            "max_tokens": params.max_tokens,
-            "temperature": params.temperature,
-            "frequency_penalty": params.frequency_penalty,
-        };
-        
-        let reqParams = {
-            url: `https://api.openai.com/v1/engines/${params.engine}/completions`,
-            method: 'POST',
-            body:'',
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${params.api_key}`
-            },
-            extractResult: "requestResults?.choices[0].text"
-        }
-    
-        if (insertMetadata) {
-            const metadata = this.getMetaData();
-            if (metadata == null) {
-                new Notice("No valid Metadata (YAML front matter) found!");
-            } else {
-                if(metadata["bodyParams"] && metadata["config"]?.append?.bodyParams==false){
-                    bodyParams = metadata["bodyParams"];
-                } else if (metadata["bodyParams"]) {
-                    bodyParams = {...bodyParams,...metadata["bodyParams"]}; 
-                } 
-                
-                if (metadata["config"]?.context &&  metadata["config"]?.context !== "prompt") 
-                {
-                    bodyParams[metadata["config"].context]=	 params.prompt;
-                    delete bodyParams.prompt;
-                }
-                
-                reqParams.body=	JSON.stringify(bodyParams);
-    
-                if (metadata["config"]?.output) 
-                {
-                    reqParams.extractResult= metadata["config"]?.output
-                }
-    
-                if(metadata["reqParams"] && metadata["config"]?.append?.reqParams==false){
-                    reqParams = metadata["reqParams"];
-                } else if (metadata["reqParams"]) {
-                    reqParams= {...reqParams,...metadata["reqParams"]} 
-                } 
-            } 
-        } else {
-            reqParams.body=	JSON.stringify(bodyParams);
-        }
-        return reqParams;
-    }
-    
     async generate(prompt:string,insertMetadata: boolean = false,params: any=this.settings) {
-        let parameters:any = this.addContext(params,prompt);
-        parameters=this.prepareReqParameters(parameters,insertMetadata);
+        let parameters:any = this.reqFormatter.addContext(params,prompt);
+        parameters=this.reqFormatter.prepareReqParameters(parameters,insertMetadata);
         let text
         try {
             text = await this.getGeneratedText(parameters);
             return text;
         } catch (error) {
+            console.log(error);
             return Promise.reject(error);
         }
     }
@@ -190,17 +86,15 @@ export default class TextGenerator {
         }
     
         if (insertMetadata) {
-            const metadata = this.getMetaData();
+            const metadata = this.reqFormatter.getMetaData();
             if (metadata == null) {
                 new Notice("No valid Metadata (YAML front matter) found!");
             } else {
-                context=this.getMetaDataAsStr(metadata) + context;
+                context=this.reqFormatter.getMetaDataAsStr(metadata) + context;
             }
         }
         return context;
     }
-    
-
 }
 
 

@@ -1,7 +1,7 @@
 import {App,addIcon, Notice, Plugin, PluginSettingTab, Setting, request, MarkdownView, Editor, parseFrontMatterAliases} from 'obsidian';
 import {ExampleModal} from './model';
 import {TextGeneratorSettings} from './types';
-import {appPencile_icon, pencil_icon} from './icons';
+import {GENERATE_ICON,GENERATE_META_ICON} from './constants';
 import TextGeneratorSettingTab from './ui/settingsPage';
 import TextGenerator from './textGenerator';
 
@@ -42,8 +42,8 @@ export default class TextGeneratorPlugin extends Plugin {
     }
 
 	async onload() {
-		addIcon("pencil_icon",pencil_icon);
-		addIcon("appPencile_icon",appPencile_icon);
+		addIcon("GENERATE_ICON",GENERATE_ICON);
+		addIcon("GENERATE_META_ICON",GENERATE_META_ICON);
 
 		this.textGenerator=new TextGenerator(this.app,this);
 		
@@ -51,7 +51,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		
 		this.statusBarItemEl = this.addStatusBarItem();
 		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('pencil_icon', 'Generate Text!', async (evt: MouseEvent) => {
+		const ribbonIconEl = this.addRibbonIcon('GENERATE_ICON', 'Generate Text!', async (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
 			const activeFile = this.app.workspace.getActiveFile();
 			this.updateStatusBar(`processing... `);
@@ -63,6 +63,7 @@ export default class TextGeneratorPlugin extends Plugin {
 				this.updateStatusBar(``);
 			} catch (error) {
 				new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+				console.error(error);
 				this.updateStatusBar(`Error: Check Console`);
 				setTimeout(()=>this.updateStatusBar(``),3000);
 			}
@@ -74,7 +75,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.addCommand({
 			id: 'generate-text',
 			name: 'Generate Text!',
-			icon: 'pencil_icon',
+			icon: 'GENERATE_ICON',
 			hotkeys: [{ modifiers: ["Ctrl"], key: "j" }],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
@@ -83,6 +84,7 @@ export default class TextGeneratorPlugin extends Plugin {
 					this.updateStatusBar(``);
 				} catch (error) {
 					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+					console.error(error);
 					this.updateStatusBar(`Error check console`);
 					setTimeout(()=>this.updateStatusBar(``),3000);
 				}	
@@ -92,7 +94,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.addCommand({
 			id: 'generate-text-From-template',
 			name: 'Generate Text From Template',
-			icon: 'pencil_icon',
+			icon: 'GENERATE_ICON',
 			hotkeys: [{ modifiers: ["Ctrl",'Shift'], key: "j"}],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
@@ -104,6 +106,7 @@ export default class TextGeneratorPlugin extends Plugin {
 					this.updateStatusBar(``);
 				} catch (error) {
 					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+					console.error(error);
 					this.updateStatusBar(`Error check console`);
 					setTimeout(()=>this.updateStatusBar(``),3000);
 				}	
@@ -114,7 +117,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.addCommand({
 			id: 'generate-text-with-metadata',
 			name: 'Generate Text (use Metadata))!',
-			icon: 'appPencile_icon',
+			icon: 'GENERATE_META_ICON',
 			hotkeys: [{ modifiers: ["Ctrl",'Alt'], key: "j" }],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
@@ -123,6 +126,7 @@ export default class TextGeneratorPlugin extends Plugin {
 					this.updateStatusBar(``);
 				} catch (error) {
 					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+					console.error(error);
 					this.updateStatusBar(`Error check console`);
 					setTimeout(()=>this.updateStatusBar(``),3000);
 				}
