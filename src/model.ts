@@ -1,13 +1,5 @@
 import { App, Notice, FuzzySuggestModal } from "obsidian";
 
-interface Template {
-  title: string;
-  path: string;
-  desc: string;
-  auth: string;
-}
-
-
 
 export class ExampleModal extends FuzzySuggestModal <Template> {
  constructor(app: App, onChoose: (result: string) => void) {
