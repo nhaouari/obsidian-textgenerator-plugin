@@ -88,7 +88,9 @@ export default class TextGenerator {
             let templateContent= await this.app.vault.read(templateFile);
             templateContent=this.removeYMAL(templateContent);
             let template = Handlebars.compile(templateContent);
-            templateContent=template({ context: context });
+            const sections = await this.getBlocks();
+            console.log(sections);
+            templateContent=template({context: context,...sections,...this.reqFormatter.getMetaData()?.frontmatter});
             console.log(templateContent);
             context = templateContent;
             path=templatePath;
@@ -109,6 +111,22 @@ export default class TextGenerator {
         return content.replace(/---(.|\n)*---/, '');
     }
 
+    async getBlocks (path:string="") {
+        const fileCache = this.reqFormatter.getMetaData(path);
+        let blocks:any ={};
+        const headings=fileCache?.headings;
+        console.log({headings})
+        if(headings){
+            for (let i = 0; i < headings.length; i++) {
+                let textBlock=await this.getTextBloc(headings[i].heading);
+                textBlock=textBlock.substring(textBlock.indexOf(headings[i].heading),textBlock.length-1);
+                textBlock=textBlock.replace(headings[i].heading+"\n","");
+                blocks[headings[i].heading]=textBlock;
+            }
+        }
+        return blocks;
+    }
+
     async getStaredBlocks (path:string="") {
         const fileCache = this.reqFormatter.getMetaData(path);
         let content ="";
@@ -120,6 +138,7 @@ export default class TextGenerator {
         }
         return content;
     }
+
 
     /**
      * Get the content of specific section
