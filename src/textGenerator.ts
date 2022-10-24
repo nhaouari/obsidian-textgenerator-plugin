@@ -2,6 +2,7 @@ import {App,addIcon, Notice, Plugin, PluginSettingTab, Setting, request, Markdow
 import {TextGeneratorSettings} from './types';
 import TextGeneratorPlugin from './main';
 import ReqFormatter from './reqFormatter';
+import Handlebars from 'handlebars';
 export default class TextGenerator {
     plugin: TextGeneratorPlugin;
     app: App;
@@ -86,7 +87,9 @@ export default class TextGenerator {
             const templateFile = await this.app.vault.getAbstractFileByPath(templatePath);
             let templateContent= await this.app.vault.read(templateFile);
             templateContent=this.removeYMAL(templateContent);
-            templateContent=templateContent.replace("<?context?>",context);
+            let template = Handlebars.compile(templateContent);
+            templateContent=template({ context: context });
+            console.log(templateContent);
             context = templateContent;
             path=templatePath;
         } 
@@ -99,7 +102,6 @@ export default class TextGenerator {
                 context=this.reqFormatter.getMetaDataAsStr(metadata)+context;
             }
         }
-      
         return context;
     }
 

@@ -101,7 +101,7 @@ export default class TextGeneratorPlugin extends Plugin {
 				this.updateStatusBar(`processing... `);
 				try {
 					new ExampleModal(this.app, this,async (result) => {
-						await this.textGenerator.generateFromTemplate(this.settings, result.path, false, editor);
+						await this.textGenerator.generateFromTemplate(this.settings, result.path, true, editor);
 					  }).open();
 
 					this.updateStatusBar(``);
