@@ -14,6 +14,7 @@ type PromptTemplate =  {
     name: string;
     path: string;
     description: string;
+    required_values: string;
     author: string;
     tags: string;
     version: string;

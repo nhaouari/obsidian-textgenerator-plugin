@@ -34,6 +34,10 @@ plugin:TextGeneratorPlugin;
             validedMetaData["description"]=metadata.PromptInfo.description;
         }
 
+        if(metadata?.PromptInfo?.required_values){
+          validedMetaData["required_values"]=metadata.PromptInfo.required_values;
+        }
+
         if(metadata?.PromptInfo?.author){
           validedMetaData["author"]=metadata.PromptInfo.author;
         }

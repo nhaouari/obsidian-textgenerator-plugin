@@ -85,12 +85,13 @@ export default class TextGenerator {
         /* Add <?context?> into template */
         if(templatePath.length > 0){
             const templateFile = await this.app.vault.getAbstractFileByPath(templatePath);
+            console.log(templatePath);
             let templateContent= await this.app.vault.read(templateFile);
             templateContent=this.removeYMAL(templateContent);
             let template = Handlebars.compile(templateContent);
-            const sections = await this.getBlocks();
-            console.log(sections);
-            templateContent=template({context: context,...sections,...this.reqFormatter.getMetaData()?.frontmatter});
+            const blocks = await this.getBlocks();
+            console.log({blocks});
+            templateContent=template({context: context,...blocks,...this.reqFormatter.getMetaData()?.frontmatter});
             console.log(templateContent);
             context = templateContent;
             path=templatePath;
@@ -116,14 +117,62 @@ export default class TextGenerator {
         let blocks:any ={};
         const headings=fileCache?.headings;
         console.log({headings})
+        let headingsContent:any={};
         if(headings){
             for (let i = 0; i < headings.length; i++) {
                 let textBlock=await this.getTextBloc(headings[i].heading);
                 textBlock=textBlock.substring(textBlock.indexOf(headings[i].heading),textBlock.length-1);
                 textBlock=textBlock.replace(headings[i].heading+"\n","");
-                blocks[headings[i].heading]=textBlock;
+                headingsContent[headings[i].heading]=textBlock;
             }
         }
+
+        
+        blocks["headings"]=headingsContent;
+        blocks={...blocks,...headings};
+
+        let children:any=[];
+        const links = fileCache?.links.filter(e=>e.original.substr(0,2)==="[[");
+        if(links){
+            for (let i = 0; i < links.length; i++) {
+                const link=links[i];
+                const path=link.link+".md";
+                let file
+                if (path.includes('/')) {
+                    file= await this.app.vault.getFiles().filter(t=>t.path===path)[0];
+                } else {
+                    file= await this.app.vault.getFiles().filter(t=>t.name===path)[0];
+                }
+
+                if (file) {
+                    const content= await this.app.vault.read(file);
+                    // const templateContent= await this.app.vault.read(file.path); 
+                    // console.log(templateContent);
+                    children.push({...file,content});
+                }
+            }
+        }
+
+        blocks["children"]=children;
+
+        let linkedMentions:any=[];
+        const activeTitle= this.app.workspace.activeLeaf.getDisplayText()
+        const files = this.app.vault.getMarkdownFiles();
+
+        for (let i = 0; i < files.length; i++) {
+            const file=files[i];
+            const content= await this.app.vault.cachedRead(file);
+            const reg=new RegExp(`.*\\[\\[${activeTitle}\\]\\].*`, "ig");   
+            const results = content.match(reg);
+            if (results) {
+                linkedMentions.push({...file,results});
+            }
+        }
+
+        blocks['linkedMentions']=linkedMentions;
+        blocks={...blocks,...children};
+
+
         return blocks;
     }
 
