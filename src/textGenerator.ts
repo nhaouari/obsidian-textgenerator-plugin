@@ -64,6 +64,78 @@ export default class TextGenerator {
         const text = await this.generate(await this.getContext(editor,insertMetadata),insertMetadata,params);
         this.insertGeneratedText(text,editor)
     }
+
+    
+    /**
+     * Copied from Quick Add  https://github.com/chhoumann/quickadd/blob/2d2297dd6b2439b2b3f78f3920900aa9954f89cf/src/engine/QuickAddEngine.ts#L15
+     * @param folder 
+     */
+    async createFolder(folder: string): Promise<void> {
+        const folderExists = await this.app.vault.adapter.exists(folder);
+
+        if (!folderExists) {
+            await this.app.vault.createFolder(folder);
+        }
+    }
+    makeid(length) {
+        var result           = '';
+        var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for ( var i = 0; i < length; i++ ) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+    }
+    
+    /**
+     *  Copied from Quick Add https://github.com/chhoumann/quickadd/blob/2d2297dd6b2439b2b3f78f3920900aa9954f89cf/src/engine/QuickAddEngine.ts#L50  
+     * @param filePath 
+     * @param fileContent 
+     * @returns 
+     */
+    async createFileWithInput(filePath: string, fileContent: string): Promise<TFile> {
+        const dirMatch = filePath.match(/(.*)[\/\\]/);
+        let dirName = "";
+        if (dirMatch) dirName = dirMatch[1];
+
+        if (await this.app.vault.adapter.exists(dirName)) {
+            return await this.app.vault.create(filePath, fileContent);
+        } else {
+            await this.createFolder(dirName);
+            return await this.app.vault.create(filePath, fileContent)
+        }
+    }
+    
+    /*
+    * Copied from Quick Add  https://github.com/chhoumann/quickadd/blob/2d2297dd6b2439b2b3f78f3920900aa9954f89cf/src/utility.ts#L150
+    */
+    
+    async openFile(app: App, file: TFile, optional?: {openInNewTab?: boolean, direction?: NewTabDirection, mode?: FileViewMode, focus?: boolean}) {
+        let leaf: WorkspaceLeaf;
+    
+        if (optional?.openInNewTab && optional?.direction) {
+            leaf = app.workspace.splitActiveLeaf(optional.direction);
+        } else {
+            leaf = app.workspace.getUnpinnedLeaf();
+        }
+    
+        await leaf.openFile(file)
+    
+        if (optional?.mode || optional?.focus) {
+            await leaf.setViewState({
+                ...leaf.getViewState(),
+                state: optional.mode && optional.mode !== 'default' ? {...leaf.view.getState(), mode: optional.mode} : leaf.view.getState(),
+                popstate: true,
+            } as ViewState, { focus: optional?.focus });
+        }
+    }
+    
+
+    async createToFile(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor){
+        const context = await this.getContext(editor,insertMetadata,templatePath);
+        const file= await this.createFileWithInput('textgenerator/generations/'+this.makeid(5)+".md",context);
+        this.openFile(this.app,file);
+    }
     
     async getContext(editor:Editor,insertMetadata: boolean = false,templatePath:string="") {
 
@@ -132,7 +204,7 @@ export default class TextGenerator {
         blocks={...blocks,...headings};
 
         let children:any=[];
-        const links = fileCache?.links.filter(e=>e.original.substr(0,2)==="[[");
+        const links = fileCache?.links?.filter(e=>e.original.substr(0,2)==="[[");
         if(links){
             for (let i = 0; i < links.length; i++) {
                 const link=links[i];
