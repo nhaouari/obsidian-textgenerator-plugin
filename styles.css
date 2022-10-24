@@ -7,3 +7,9 @@
     font-size: small;
     margin-left: 25px;
 }
+
+.modelTitle {
+    text-align: center;
+    font-size: x-large;
+    font-weight: bolder;
+}

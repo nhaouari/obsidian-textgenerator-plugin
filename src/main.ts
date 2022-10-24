@@ -91,52 +91,8 @@ export default class TextGeneratorPlugin extends Plugin {
 				}	
 			}
 		});
-
-		this.addCommand({
-			id: 'generate-text-From-template',
-			name: 'Generate Text From Template',
-			icon: 'GENERATE_ICON',
-			hotkeys: [{ modifiers: ["Ctrl",'Shift'], key: "j"}],
-			editorCallback: async (editor: Editor) => {
-				this.updateStatusBar(`processing... `);
-				try {
-					new ExampleModal(this.app, this,async (result) => {
-						await this.textGenerator.generateFromTemplate(this.settings, result.path, true, editor);
-					  }).open();
-
-					this.updateStatusBar(``);
-				} catch (error) {
-					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
-					console.error(error);
-					this.updateStatusBar(`Error check console`);
-					setTimeout(()=>this.updateStatusBar(``),3000);
-				}	
-			}
-		});
-
-
-		this.addCommand({
-			id: 'create-text-From-template',
-			name: 'Create Text From Template',
-			icon: 'GENERATE_ICON',
-			hotkeys: [{ modifiers: ["Ctrl",'Shift','Alt'], key: "j"}],
-			editorCallback: async (editor: Editor) => {
-				this.updateStatusBar(`processing... `);
-				try {
-					new ExampleModal(this.app, this,async (result) => {
-						await this.textGenerator.createToFile(this.settings, result.path, true, editor);
-						this.updateStatusBar(``);
-					  }).open();
-				} catch (error) {
-					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
-					console.error(error);
-					this.updateStatusBar(`Error check console`);
-					setTimeout(()=>this.updateStatusBar(``),3000);
-				}	
-			}
-		});
-
-
+		
+		
 		this.addCommand({
 			id: 'generate-text-with-metadata',
 			name: 'Generate Text (use Metadata))!',
@@ -155,6 +111,95 @@ export default class TextGeneratorPlugin extends Plugin {
 				}
 			}
 		});
+
+		this.addCommand({
+			id: 'insert-generated-text-From-template',
+			name: 'Generate and Insert Template',
+			icon: 'GENERATE_ICON',
+			hotkeys: [{ modifiers: ["Ctrl",'Shift'], key: "j"}],
+			editorCallback: async (editor: Editor) => {
+				this.updateStatusBar(`processing... `);
+				try {
+					new ExampleModal(this.app, this,async (result) => {
+						await this.textGenerator.generateFromTemplate(this.settings, result.path, true, editor);
+						this.updateStatusBar(``);
+					  },'Generate and Insert Template').open();
+				} catch (error) {
+					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+					console.error(error);
+					this.updateStatusBar(`Error check console`);
+					setTimeout(()=>this.updateStatusBar(``),3000);
+				}
+			}
+		});
+
+
+		this.addCommand({
+			id: 'create-generated-text-From-template',
+			name: 'Generate and Create a New File From Template',
+			icon: 'GENERATE_ICON',
+			hotkeys: [{ modifiers: ["Ctrl","Meta"], key: "j"}],
+			editorCallback: async (editor: Editor) => {
+				this.updateStatusBar(`processing... `);
+				try {
+					new ExampleModal(this.app, this,async (result) => {
+						await this.textGenerator.generateFromTemplate(this.settings, result.path, true, editor,false);
+						this.updateStatusBar(``);
+					  },'Generate and Create a New File From Template').open();
+					
+				} catch (error) {
+					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+					console.error(error);
+					this.updateStatusBar(`Error check console`);
+					setTimeout(()=>this.updateStatusBar(``),3000);
+				}
+			}
+		});
+
+
+		this.addCommand({
+			id: 'create-text-From-template',
+			name: 'Create a New File From Template',
+			icon: 'GENERATE_ICON',
+			hotkeys: [{ modifiers: ["Ctrl",'Shift','Alt'], key: "j"}],
+			editorCallback: async (editor: Editor) => {
+				this.updateStatusBar(`processing... `);
+				try {
+					new ExampleModal(this.app, this,async (result) => {
+						await this.textGenerator.createToFile(this.settings, result.path, true, editor);
+						this.updateStatusBar(``);
+					  },'Create a New File From Template').open();
+				} catch (error) {
+					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+					console.error(error);
+					this.updateStatusBar(`Error check console`);
+					setTimeout(()=>this.updateStatusBar(``),3000);
+				}	
+			}
+		});
+
+		this.addCommand({
+			id: 'insert-text-From-template',
+			name: 'Insert Template',
+			icon: 'GENERATE_ICON',
+			hotkeys: [{ modifiers: ['Shift','Alt'], key: "j"}],
+			editorCallback: async (editor: Editor) => {
+				this.updateStatusBar(`processing... `);
+				try {
+					new ExampleModal(this.app, this,async (result) => {
+						await this.textGenerator.createToFile(this.settings, result.path, true, editor,true);
+						this.updateStatusBar(``);
+					  },'Insert Template').open();
+				} catch (error) {
+					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+					console.error(error);
+					this.updateStatusBar(`Error check console`);
+					setTimeout(()=>this.updateStatusBar(``),3000);
+				}	
+			}
+		});
+
+
 
 		this.addCommand({
 			id: 'increase-max_tokens',

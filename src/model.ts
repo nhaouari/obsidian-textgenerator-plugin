@@ -4,19 +4,23 @@ import {PromptTemplate} from './types';
 
 export class ExampleModal extends FuzzySuggestModal <PromptTemplate> {
 plugin:TextGeneratorPlugin;
- constructor(app: App, plugin:TextGeneratorPlugin, onChoose: (result: string) => void) {
+title:string;
+ constructor(app: App, plugin:TextGeneratorPlugin, onChoose: (result: string) => void,title:string="") {
         super(app);
         this.onChoose = onChoose;
         this.plugin=plugin;
+        this.title = title;
+        //this.titleEl.createEl("div", { text: title});
+        this.modalEl.insertBefore(createEl("div", {text: title,cls:"modelTitle"}),this.modalEl.children[0]);
       }
 
       getItems(): PromptTemplate[] {
         const promptsPath= this.plugin.settings.promptsPath;
         const paths = app.metadataCache.getCachedFiles().filter(path=>path.includes(promptsPath));
         const templates = paths.map(s=>({title:s.substring(promptsPath.length+1),path:s,...this.getMetadata(s)}))
-
         return templates;
       }
+
     
     getMetadata(path:string) {
         const metadata=this.getFrontmatter(path);
@@ -60,7 +64,7 @@ plugin:TextGeneratorPlugin;
             }
         return null
     }
-    
+
        // Renders each suggestion item.
     renderSuggestion(template: FuzzyMatch<PromptTemplate>, el: HTMLElement) {
       el.createEl("div", { text: template.item.name});

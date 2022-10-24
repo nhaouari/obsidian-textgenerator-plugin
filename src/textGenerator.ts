@@ -54,10 +54,17 @@ export default class TextGenerator {
         }
     }
     
-    async generateFromTemplate(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor) {
+    async generateFromTemplate(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor,activeFile:boolean=false) {
         const context = await this.getContext(editor,insertMetadata,templatePath);
         const text = await this.generate(context,insertMetadata,params,templatePath);
-        this.insertGeneratedText(text,editor);
+
+        if(activeFile===false){
+            const title = this.app.workspace.activeLeaf.getDisplayText();
+            const file= await this.createFileWithInput('textgenerator/generations/'+title+" generation-"+this.makeid(5)+".md",context);
+            this.openFile(this.app,file);
+          } else {
+            this.insertGeneratedText(text,editor);
+          }  
     }
     
     async generateInEditor(params: TextGeneratorSettings, insertMetadata: boolean = false,editor:Editor) {
@@ -131,10 +138,15 @@ export default class TextGenerator {
     }
     
 
-    async createToFile(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor){
+    async createToFile(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor,activeFile:boolean=false){
         const context = await this.getContext(editor,insertMetadata,templatePath);
-        const file= await this.createFileWithInput('textgenerator/generations/'+this.makeid(5)+".md",context);
+      if(activeFile===false){
+        const title=this.app.workspace.activeLeaf.getDisplayText();
+        const file= await this.createFileWithInput('textgenerator/generations/'+title+" generation-"+this.makeid(5)+".md",context);
         this.openFile(this.app,file);
+      } else {
+        this.insertGeneratedText(context,editor);
+      }  
     }
     
     async getContext(editor:Editor,insertMetadata: boolean = false,templatePath:string="") {
@@ -301,8 +313,7 @@ export default class TextGenerator {
             return docContent.substring(start,end)
         } else {
             console.error("Heading not found ");
-        }
-           
+        }        
     }
 }
 
