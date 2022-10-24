@@ -56,7 +56,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		const ribbonIconEl = this.addRibbonIcon('GENERATE_ICON', 'Generate Text!', async (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
 			const activeFile = this.app.workspace.getActiveFile();
-			this.updateStatusBar(`processing... `);
+			this.updateStatusBar(`processing... `);const notice = new Notice('✏️Processing...',30000);
 			const activeView = this.getActiveView();
 			if (activeView !== null) {
 			const editor = activeView.editor;
@@ -81,10 +81,13 @@ export default class TextGeneratorPlugin extends Plugin {
 			hotkeys: [{ modifiers: ["Ctrl"], key: "j" }],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
+				const notice = new Notice('✏️Processing...',30000);
 				try {
 					await this.textGenerator.generateInEditor(this.settings,false,editor);
 					this.updateStatusBar(``);
+					notice.hide();
 				} catch (error) {
+					notice.hide();
 					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
 					console.error(error);
 					this.updateStatusBar(`Error check console`);
@@ -101,10 +104,13 @@ export default class TextGeneratorPlugin extends Plugin {
 			hotkeys: [{ modifiers: ["Ctrl",'Alt'], key: "j" }],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
+				const notice = new Notice('✏️Processing...',30000);
 				try {
 					await this.textGenerator.generateInEditor(this.settings,true,editor);
 					this.updateStatusBar(``);
+					notice.hide();
 				} catch (error) {
+					notice.hide();
 					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
 					console.error(error);
 					this.updateStatusBar(`Error check console`);
@@ -120,12 +126,15 @@ export default class TextGeneratorPlugin extends Plugin {
 			hotkeys: [{ modifiers: ["Ctrl",'Shift'], key: "j"}],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
+				const notice = new Notice('✏️Processing...',30000);
 				try {
 					new ExampleModal(this.app, this,async (result) => {
 						await this.textGenerator.generateFromTemplate(this.settings, result.path, true, editor);
 						this.updateStatusBar(``);
+						notice.hide();
 					  },'Generate and Insert Template').open();
 				} catch (error) {
+					notice.hide();
 					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
 					console.error(error);
 					this.updateStatusBar(`Error check console`);
@@ -142,13 +151,17 @@ export default class TextGeneratorPlugin extends Plugin {
 			hotkeys: [{ modifiers: ["Ctrl","Meta"], key: "j"}],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
+				const notice = new Notice('✏️Processing...',30000);
+				
 				try {
 					new ExampleModal(this.app, this,async (result) => {
 						await this.textGenerator.generateFromTemplate(this.settings, result.path, true, editor,false);
 						this.updateStatusBar(``);
+						notice.hide();
 					  },'Generate and Create a New File From Template').open();
 					
 				} catch (error) {
+					notice.hide();
 					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
 					console.error(error);
 					this.updateStatusBar(`Error check console`);
@@ -165,12 +178,15 @@ export default class TextGeneratorPlugin extends Plugin {
 			hotkeys: [{ modifiers: ["Ctrl",'Shift','Alt'], key: "j"}],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
+				const notice = new Notice('✏️Processing...',30000);
 				try {
 					new ExampleModal(this.app, this,async (result) => {
 						await this.textGenerator.createToFile(this.settings, result.path, true, editor);
 						this.updateStatusBar(``);
+						notice.hide();
 					  },'Create a New File From Template').open();
 				} catch (error) {
+					notice.hide();
 					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
 					console.error(error);
 					this.updateStatusBar(`Error check console`);
@@ -186,12 +202,15 @@ export default class TextGeneratorPlugin extends Plugin {
 			hotkeys: [{ modifiers: ['Shift','Alt'], key: "j"}],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
+				const notice = new Notice('✏️Processing...',30000);
 				try {
 					new ExampleModal(this.app, this,async (result) => {
 						await this.textGenerator.createToFile(this.settings, result.path, true, editor,true);
 						this.updateStatusBar(``);
+						notice.hide();
 					  },'Insert Template').open();
 				} catch (error) {
+					notice.hide();
 					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
 					console.error(error);
 					this.updateStatusBar(`Error check console`);
