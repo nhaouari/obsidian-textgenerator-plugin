@@ -3,6 +3,7 @@ import {ExampleModal} from './model';
 import {TextGeneratorSettings} from './types';
 import {GENERATE_ICON,GENERATE_META_ICON} from './constants';
 import TextGeneratorSettingTab from './ui/settingsPage';
+import {SetMaxTokens} from './ui/setMaxTokens';
 import TextGenerator from './textGenerator';
 
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
@@ -202,13 +203,17 @@ export default class TextGeneratorPlugin extends Plugin {
 
 
 		this.addCommand({
-			id: 'increase-max_tokens',
-			name: 'Increase max_tokens by 10',
+			id: 'set_max_tokens',
+			name: 'Set max_tokens',
 			hotkeys: [{ modifiers: ["Ctrl","Alt"], key: "1" }],
 			editorCallback: async () => {
-				this.settings.max_tokens += 10;
-				await this.saveSettings();
-				this.updateStatusBar('');
+				new SetMaxTokens(this.app,this.settings.max_tokens.toString(),async (result: string) => {
+					this.settings.max_tokens = parseInt(result);
+					await this.saveSettings();
+				    this.updateStatusBar('');
+					new Notice(`Set Max Tokens to ${result}!`);
+				  }).open();
+
 			}
 		});
 
