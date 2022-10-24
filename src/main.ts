@@ -116,6 +116,28 @@ export default class TextGeneratorPlugin extends Plugin {
 
 
 		this.addCommand({
+			id: 'create-text-From-template',
+			name: 'Create Text From Template',
+			icon: 'GENERATE_ICON',
+			hotkeys: [{ modifiers: ["Ctrl",'Shift','Alt'], key: "j"}],
+			editorCallback: async (editor: Editor) => {
+				this.updateStatusBar(`processing... `);
+				try {
+					new ExampleModal(this.app, this,async (result) => {
+						await this.textGenerator.createToFile(this.settings, result.path, true, editor);
+						this.updateStatusBar(``);
+					  }).open();
+				} catch (error) {
+					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+					console.error(error);
+					this.updateStatusBar(`Error check console`);
+					setTimeout(()=>this.updateStatusBar(``),3000);
+				}	
+			}
+		});
+
+
+		this.addCommand({
 			id: 'generate-text-with-metadata',
 			name: 'Generate Text (use Metadata))!',
 			icon: 'GENERATE_META_ICON',
