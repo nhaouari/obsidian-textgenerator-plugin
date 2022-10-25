@@ -22,9 +22,9 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		
 		new Setting(containerEl)
 			.setName('api_key')
-			.setDesc('api_key')
+			.setDesc('You need to create an account in OpenAI to generate an API Key. (https://beta.openai.com/)')
 			.addText(text => text
-				.setPlaceholder('Enter your api_key')
+				.setPlaceholder('Enter your API Key')
 				.setValue(this.plugin.settings.api_key)
 				.onChange(async (value) => {
 					this.plugin.settings.api_key = value;
@@ -33,7 +33,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('engine')
-			.setDesc('engine')
+			.setDesc('text-davinci-002 is Most capable model. text-ada-001 is the fastest model (more information: https://beta.openai.com/docs/models/overview)')
 			.addDropdown((cb) => {
 				cb.addOption("text-davinci-002", "text-davinci-002");
 				cb.addOption("text-davinci-001", "text-davinci-001");
@@ -48,7 +48,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 			})
 		new Setting(containerEl)
 			.setName('max_tokens')
-			.setDesc('max_tokens')
+			.setDesc('The max number of the tokens that will be generated (1000 tokens ~ 750 words)')
 			.addText(text => text
 				.setPlaceholder('max_tokens')
 				.setValue(this.plugin.settings.max_tokens.toString())
@@ -72,13 +72,13 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 			.setName('frequency_penalty')
 			.setDesc('frequency_penalty')
 			.addText(text => text
-				.inputEl.setAttribute('size','50')
-				.setPlaceholder('frequency_penalty')
+				
 				.setValue(this.plugin.settings.frequency_penalty.toString())
 				.onChange(async (value) => {
 					this.plugin.settings.frequency_penalty = parseFloat(value);
 					await this.plugin.saveSettings();
-				}));
+				})
+				);
 
 		new Setting(containerEl)
 			.setName('showStatusBar')
@@ -89,15 +89,17 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 					this.plugin.settings.showStatusBar = value;
 					await this.plugin.saveSettings();
 				}));
+
         new Setting(containerEl)
         .setName('promptsPath')
         .setDesc('promptsPath')
         .addText(text => text
-            .setPlaceholder('templates/prompts')
             .setValue(this.plugin.settings.promptsPath)
             .onChange(async (value) => {
                 this.plugin.settings.promptsPath = value;
                 await this.plugin.saveSettings();
-            }));
+            })
+			.inputEl.setAttribute('size','50')
+			);
 	}
 }

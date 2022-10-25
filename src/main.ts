@@ -123,7 +123,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'insert-generated-text-From-template',
 			name: 'Generate and Insert Template',
 			icon: 'GENERATE_ICON',
-			hotkeys: [{ modifiers: ["Ctrl",'Shift'], key: "j"}],
+			hotkeys: [{ modifiers: ["Ctrl",'Meta'], key: "j"}],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
 				const notice = new Notice('✏️Processing...',30000);
@@ -148,7 +148,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'create-generated-text-From-template',
 			name: 'Generate and Create a New File From Template',
 			icon: 'GENERATE_ICON',
-			hotkeys: [{ modifiers: ["Ctrl","Meta"], key: "j"}],
+			hotkeys: [{ modifiers: ["Ctrl","Shift"], key: "j"}],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
 				const notice = new Notice('✏️Processing...',30000);
@@ -171,35 +171,12 @@ export default class TextGeneratorPlugin extends Plugin {
 		});
 
 
-		this.addCommand({
-			id: 'create-text-From-template',
-			name: 'Create a New File From Template',
-			icon: 'GENERATE_ICON',
-			hotkeys: [{ modifiers: ["Ctrl",'Shift','Alt'], key: "j"}],
-			editorCallback: async (editor: Editor) => {
-				this.updateStatusBar(`processing... `);
-				const notice = new Notice('✏️Processing...',30000);
-				try {
-					new ExampleModal(this.app, this,async (result) => {
-						await this.textGenerator.createToFile(this.settings, result.path, true, editor,false);
-						this.updateStatusBar(``);
-						notice.hide();
-					  },'Create a New File From Template').open();
-				} catch (error) {
-					notice.hide();
-					new Notice("🔴Error: Check console CTRL+SHIFT+I");
-					console.error(error);
-					this.updateStatusBar(`Error check console`);
-					setTimeout(()=>this.updateStatusBar(``),3000);
-				}	
-			}
-		});
 
 		this.addCommand({
 			id: 'insert-text-From-template',
 			name: 'Insert Template',
 			icon: 'GENERATE_ICON',
-			hotkeys: [{ modifiers: ['Shift','Alt'], key: "j"}],
+			hotkeys: [{ modifiers: ['Meta','Alt'], key: "j"}],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
 				const notice = new Notice('✏️Processing...',30000);
@@ -219,6 +196,29 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 		});
 
+		this.addCommand({
+			id: 'create-text-From-template',
+			name: 'Create a New File From Template',
+			icon: 'GENERATE_ICON',
+			hotkeys: [{ modifiers: ["Shift","Meta",'Alt'], key: "j"}],
+			editorCallback: async (editor: Editor) => {
+				this.updateStatusBar(`processing... `);
+				const notice = new Notice('✏️Processing...',30000);
+				try {
+					new ExampleModal(this.app, this,async (result) => {
+						await this.textGenerator.createToFile(this.settings, result.path, true, editor,false);
+						this.updateStatusBar(``);
+						notice.hide();
+					  },'Create a New File From Template').open();
+				} catch (error) {
+					notice.hide();
+					new Notice("🔴Error: Check console CTRL+SHIFT+I");
+					console.error(error);
+					this.updateStatusBar(`Error check console`);
+					setTimeout(()=>this.updateStatusBar(``),3000);
+				}	
+			}
+		});
 
 
 		this.addCommand({
