@@ -72,6 +72,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 			.setName('frequency_penalty')
 			.setDesc('frequency_penalty')
 			.addText(text => text
+				.inputEl.setAttribute('size','50')
 				.setPlaceholder('frequency_penalty')
 				.setValue(this.plugin.settings.frequency_penalty.toString())
 				.onChange(async (value) => {

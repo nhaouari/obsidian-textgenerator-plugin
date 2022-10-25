@@ -64,7 +64,7 @@ export default class TextGeneratorPlugin extends Plugin {
 				await this.textGenerator.generateInEditor(this.settings,false,editor);
 				this.updateStatusBar(``);
 			} catch (error) {
-				new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+				new Notice("🔴Error:Text Generator Plugin: Error check console CTRL+SHIFT+I");
 				console.error(error);
 				this.updateStatusBar(`Error: Check Console`);
 				setTimeout(()=>this.updateStatusBar(``),3000);
@@ -88,7 +88,7 @@ export default class TextGeneratorPlugin extends Plugin {
 					notice.hide();
 				} catch (error) {
 					notice.hide();
-					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+					new Notice("🔴Error:Text Generator Plugin: Error check console CTRL+SHIFT+I");
 					console.error(error);
 					this.updateStatusBar(`Error check console`);
 					setTimeout(()=>this.updateStatusBar(``),3000);
@@ -111,7 +111,7 @@ export default class TextGeneratorPlugin extends Plugin {
 					notice.hide();
 				} catch (error) {
 					notice.hide();
-					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+					new Notice("🔴Error: Check console CTRL+SHIFT+I");
 					console.error(error);
 					this.updateStatusBar(`Error check console`);
 					setTimeout(()=>this.updateStatusBar(``),3000);
@@ -129,13 +129,13 @@ export default class TextGeneratorPlugin extends Plugin {
 				const notice = new Notice('✏️Processing...',30000);
 				try {
 					new ExampleModal(this.app, this,async (result) => {
-						await this.textGenerator.generateFromTemplate(this.settings, result.path, true, editor);
+						await this.textGenerator.generateFromTemplate(this.settings, result.path, true, editor,true);
 						this.updateStatusBar(``);
 						notice.hide();
 					  },'Generate and Insert Template').open();
 				} catch (error) {
 					notice.hide();
-					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+					new Notice("🔴Error: Check console CTRL+SHIFT+I");
 					console.error(error);
 					this.updateStatusBar(`Error check console`);
 					setTimeout(()=>this.updateStatusBar(``),3000);
@@ -162,7 +162,7 @@ export default class TextGeneratorPlugin extends Plugin {
 					
 				} catch (error) {
 					notice.hide();
-					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+					new Notice("🔴Error: Check console CTRL+SHIFT+I");
 					console.error(error);
 					this.updateStatusBar(`Error check console`);
 					setTimeout(()=>this.updateStatusBar(``),3000);
@@ -181,13 +181,13 @@ export default class TextGeneratorPlugin extends Plugin {
 				const notice = new Notice('✏️Processing...',30000);
 				try {
 					new ExampleModal(this.app, this,async (result) => {
-						await this.textGenerator.createToFile(this.settings, result.path, true, editor);
+						await this.textGenerator.createToFile(this.settings, result.path, true, editor,false);
 						this.updateStatusBar(``);
 						notice.hide();
 					  },'Create a New File From Template').open();
 				} catch (error) {
 					notice.hide();
-					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+					new Notice("🔴Error: Check console CTRL+SHIFT+I");
 					console.error(error);
 					this.updateStatusBar(`Error check console`);
 					setTimeout(()=>this.updateStatusBar(``),3000);
@@ -211,7 +211,7 @@ export default class TextGeneratorPlugin extends Plugin {
 					  },'Insert Template').open();
 				} catch (error) {
 					notice.hide();
-					new Notice("Text Generator Plugin: Error check console CTRL+SHIFT+I");
+					new Notice("🔴Error: Check console CTRL+SHIFT+I");
 					console.error(error);
 					this.updateStatusBar(`Error check console`);
 					setTimeout(()=>this.updateStatusBar(``),3000);
@@ -233,17 +233,6 @@ export default class TextGeneratorPlugin extends Plugin {
 					new Notice(`Set Max Tokens to ${result}!`);
 				  }).open();
 
-			}
-		});
-
-		this.addCommand({
-			id: 'decrease-max_tokens',
-			name: 'decrease max_tokens by 10',
-			hotkeys: [{ modifiers: ["Ctrl","Alt"], key: "2" }],
-			editorCallback: async () => {
-				this.settings.max_tokens -= 10;
-				await this.saveSettings();
-				this.updateStatusBar('');
 			}
 		});
 

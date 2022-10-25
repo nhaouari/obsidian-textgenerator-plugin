@@ -25,12 +25,17 @@ export class SetMaxTokens extends Modal {
 
     new Setting(contentEl)
       .setName("Max number of tokens")
+      .setDesc('The max number of the tokens that will be generated (1000 tokens ~ 750 words)')
       .addText((text) =>text
         .setPlaceholder('max_tokens')
 	    .setValue(this.result.toString())
         .onChange((value) => {
           this.result = value
-        }));
+        })
+        .inputEl.select()
+        )
+       
+
 
     new Setting(contentEl)
       .addButton((btn) =>

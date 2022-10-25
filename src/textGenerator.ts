@@ -3,6 +3,7 @@ import {TextGeneratorSettings} from './types';
 import TextGeneratorPlugin from './main';
 import ReqFormatter from './reqFormatter';
 import Handlebars from 'handlebars';
+import { SetPath } from './ui/setPath';
 export default class TextGenerator {
     plugin: TextGeneratorPlugin;
     app: App;
@@ -54,14 +55,19 @@ export default class TextGenerator {
         }
     }
     
-    async generateFromTemplate(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor,activeFile:boolean=false) {
+    async generateFromTemplate(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor,activeFile:boolean=true) {
         const context = await this.getContext(editor,insertMetadata,templatePath);
         const text = await this.generate(context,insertMetadata,params,templatePath);
-
+        
         if(activeFile===false){
-            const title = this.app.workspace.activeLeaf.getDisplayText();
-            const file= await this.createFileWithInput('textgenerator/generations/'+title+" generation-"+this.makeid(5)+".md",context);
-            this.openFile(this.app,file);
+            console.log("generateFromTemplate");
+            const title=this.app.workspace.activeLeaf.getDisplayText();
+            let suggestedPath = 'textgenerator/generations/'+title+"-"+this.makeid(3)+".md";
+            
+            new SetPath(this.app,suggestedPath,async (path: string) => {
+                const file= await this.createFileWithInput(path,context+text);
+                this.openFile(this.app,file);
+              }).open();
           } else {
             this.insertGeneratedText(text,editor);
           }  
@@ -138,12 +144,19 @@ export default class TextGenerator {
     }
     
 
-    async createToFile(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor,activeFile:boolean=false){
+    async createToFile(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor,activeFile:boolean=true){
         const context = await this.getContext(editor,insertMetadata,templatePath);
-      if(activeFile===false){
+
+        if(activeFile===false){
         const title=this.app.workspace.activeLeaf.getDisplayText();
-        const file= await this.createFileWithInput('textgenerator/generations/'+title+" generation-"+this.makeid(5)+".md",context);
-        this.openFile(this.app,file);
+        let suggestedPath = 'textgenerator/generations/'+title+"-"+this.makeid(3)+".md";
+        
+        new SetPath(this.app,suggestedPath,async (path: string) => {
+            const file= await this.createFileWithInput(path,context);
+            console.log("createToFile");
+            this.openFile(this.app,file);
+          }).open();
+
       } else {
         this.insertGeneratedText(context,editor);
       }  
