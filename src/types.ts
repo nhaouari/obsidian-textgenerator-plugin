@@ -19,8 +19,13 @@ type PromptTemplate =  {
     tags: string;
     version: string;
   }
-
+type FileViewMode = 'source' | 'preview' | 'default';
+ enum NewTabDirection {
+  vertical = "vertical", horizontal = "horizontal"
+}
 export type {
+  FileViewMode,
+  NewTabDirection,
 	TextGeneratorSettings,
 	PromptTemplate
 }

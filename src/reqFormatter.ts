@@ -2,56 +2,18 @@ import {App,addIcon, Notice, Plugin, PluginSettingTab, Setting, request, Markdow
 import {TextGeneratorSettings} from './types';
 import TextGeneratorPlugin from './main';
 import {IGNORE_IN_YMAL} from './constants';
+import ContextManager from './ContextManager';
 
 export default class ReqFormatter {
     plugin: TextGeneratorPlugin;
     app: App;
-
-	constructor(app: App, plugin: TextGeneratorPlugin) {
+    contextManager:ContextManager;
+	constructor(app: App, plugin: TextGeneratorPlugin,contextManager:ContextManager) {
         this.app = app;
 		this.plugin = plugin;
+        this.contextManager=contextManager;
 	}
 
-    getMetaData(path:string="") {
-        let activeFile;
-        if (path==="") {
-            activeFile = this.app.workspace.getActiveFile();
-        } else 
-        {
-            activeFile ={path};
-        }
-
-        if (activeFile !== null) {
-            const cache = this.app.metadataCache.getCache(activeFile.path);
-            this.app.metadataCache.getCache(this.app.workspace.getActiveFile().path);
-            console.log("metadata", {...cache,path:activeFile.path});
-            return {...cache,path:activeFile.path};
-         }
-    
-        return null
-    }
-    
-
-    getMetaDataAsStr(frontmatter:any)
-    {
-        let cleanFrontMatter = "";
-        for (const [key, value] of Object.entries(frontmatter)) {
-            if (IGNORE_IN_YMAL.findIndex((e)=>e===key)!=-1) continue;
-            console.log(key);
-            if (Array.isArray(value)) {
-                cleanFrontMatter += `${key} : `
-                value.forEach(v => {
-                    cleanFrontMatter += `${value}, `
-                })
-                cleanFrontMatter += `\n`
-            } else {
-                cleanFrontMatter += `${key} : ${value} \n`
-            }
-        }
-        
-        return cleanFrontMatter;
-    }
-    
     addContext(parameters: TextGeneratorSettings,prompt: string){
         const params={
            ...parameters,
@@ -81,7 +43,7 @@ export default class ReqFormatter {
        }
    
        if (insertMetadata) {
-           const frontmatter = this.getMetaData(path)?.frontmatter;
+           const frontmatter = this.contextManager.getMetaData(path)?.frontmatter;
            console.log({path,frontmatter});
            if (frontmatter == null) {
                new Notice("No valid Metadata (YAML front matter) found!");

@@ -7,21 +7,53 @@ import ReqFormatter from './ReqFormatter';
 export default class ContextManager {
     plugin: TextGeneratorPlugin;
     app: App;
-    reqFormatter: ReqFormatter;
-
-	constructor(app: App, plugin: TextGeneratorPlugin,reqFormatter:ReqFormatter) {
+	constructor(app: App, plugin: TextGeneratorPlugin) {
         this.app = app;
 		this.plugin = plugin;
-        this.reqFormatter=reqFormatter;
 	}
 
     async getContext(editor:Editor,insertMetadata: boolean = false,templatePath:string="") {
-
         let context= "";
         let path ="";
          /* Add the content of the stared Headings */
         context = await this.getStaredBlocks();
         /* Add the content of the considered context */
+        context += this.getSelection(editor); 
+        /* apply template */
+        if(templatePath.length > 0){
+            const options={context: context,...await this.getOptions()};
+            context=await this.templateFromPath(templatePath,options);
+            path=templatePath;
+        } 
+        /* Add metadata */
+        if (insertMetadata) {
+            const metadata = this.getMetaData(path)?.frontmatter;
+            if (metadata) {
+                context=this.getMetaDataAsStr(metadata)+context;
+            } else {
+                new Notice("No valid Metadata (YAML front matter) found!");
+            }
+        }
+        return context;
+    }
+
+    async getOptions(){
+        const blocks = await this.getBlocks();
+        const options={...blocks,...this.getMetaData()?.frontmatter};  
+        return options;
+    }
+
+    async templateFromPath(templatePath:string,options:any) {
+        const templateFile = await this.app.vault.getAbstractFileByPath(templatePath);
+        console.log(templatePath);
+        let templateContent= await this.app.vault.read(templateFile);
+        templateContent=this.removeYMAL(templateContent);
+        let template = Handlebars.compile(templateContent);
+        templateContent=template(options);
+        return templateContent;
+    }
+
+    getSelection(editor:Editor) {
         let selectedText = editor.getSelection();
         if (selectedText.length === 0) {
             const lineNumber = editor.getCursor().line;
@@ -30,40 +62,16 @@ export default class ContextManager {
                 selectedText=editor.getValue()
             }
         }
-
-        context += selectedText;
-        /* Add <?context?> into template */
-        if(templatePath.length > 0){
-            const templateFile = await this.app.vault.getAbstractFileByPath(templatePath);
-            console.log(templatePath);
-            let templateContent= await this.app.vault.read(templateFile);
-            templateContent=this.removeYMAL(templateContent);
-            let template = Handlebars.compile(templateContent);
-            const blocks = await this.getBlocks();
-            console.log({blocks});
-            templateContent=template({context: context,...blocks,...this.reqFormatter.getMetaData()?.frontmatter});
-            console.log(templateContent);
-            context = templateContent;
-            path=templatePath;
-        } 
-        /* Add metadata */
-        if (insertMetadata) {
-            const metadata = this.reqFormatter.getMetaData(path)?.frontmatter;
-            if (metadata == null) {
-                new Notice("No valid Metadata (YAML front matter) found!");
-            } else {
-                context=this.reqFormatter.getMetaDataAsStr(metadata)+context;
-            }
-        }
-        return context;
+        return selectedText;
     }
+
 
     removeYMAL(content:string) {
         return content.replace(/---(.|\n)*---/, '');
     }
 
     async getBlocks (path:string="") {
-        const fileCache = this.reqFormatter.getMetaData(path);
+        const fileCache = this.getMetaData(path);
         let blocks:any ={};
         const headings=fileCache?.headings;
         console.log({headings})
@@ -127,7 +135,7 @@ export default class ContextManager {
     }
 
     async getStaredBlocks (path:string="") {
-        const fileCache = this.reqFormatter.getMetaData(path);
+        const fileCache = this.getMetaData(path);
         let content ="";
         const staredHeadings=fileCache?.headings?.filter(e=>e.heading.substring(e.heading.length-1)==="*")
         if(staredHeadings){
@@ -138,15 +146,14 @@ export default class ContextManager {
         return content;
     }
 
-
     /**
      * Get the content of specific section
-     * @param heading 
-     * @param path 
-     * @returns 
+     * @param heading
+     * @param path
+     * @returns
      */
     async getTextBloc(heading:string,path:string="") {
-        const fileCache=this.reqFormatter.getMetaData(path)
+        const fileCache=this.getMetaData(path)
         
         let level=-1;
         let start=-1;
@@ -180,5 +187,44 @@ export default class ContextManager {
         } else {
             console.error("Heading not found ");
         }        
+    }
+
+    getMetaData(path:string="") {
+        let activeFile;
+        if (path==="") {
+            activeFile = this.app.workspace.getActiveFile();
+        } else 
+        {
+            activeFile ={path};
+        }
+
+        if (activeFile !== null) {
+            const cache = this.app.metadataCache.getCache(activeFile.path);
+            this.app.metadataCache.getCache(this.app.workspace.getActiveFile().path);
+            console.log("metadata", {...cache,path:activeFile.path});
+            return {...cache,path:activeFile.path};
+         }
+    
+        return null
+    }
+    
+    getMetaDataAsStr(frontmatter:any)
+    {
+        let cleanFrontMatter = "";
+        for (const [key, value] of Object.entries(frontmatter)) {
+            if (IGNORE_IN_YMAL.findIndex((e)=>e===key)!=-1) continue;
+            console.log(key);
+            if (Array.isArray(value)) {
+                cleanFrontMatter += `${key} : `
+                value.forEach(v => {
+                    cleanFrontMatter += `${value}, `
+                })
+                cleanFrontMatter += `\n`
+            } else {
+                cleanFrontMatter += `${key} : ${value} \n`
+            }
+        }
+        
+        return cleanFrontMatter;
     }
 }
