@@ -4,7 +4,7 @@ import {TextGeneratorSettings} from './types';
 import {GENERATE_ICON,GENERATE_META_ICON} from './constants';
 import TextGeneratorSettingTab from './ui/settingsPage';
 import {SetMaxTokens} from './ui/setMaxTokens';
-import TextGenerator from './textGenerator';
+import TextGenerator from './TextGenerator';
 
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	api_key: "",
