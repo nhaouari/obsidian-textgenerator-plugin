@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting } from 'obsidian';
+import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
 import TextGeneratorPlugin from '../main';
 
 export default class TextGeneratorSettingTab extends PluginSettingTab {
@@ -16,24 +16,48 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', {
-			text: 'Settings for OpenAI.'
+		containerEl.createEl('H1', {
+			text: 'Text generator Plugin Settings'
 		});
 		
-		new Setting(containerEl)
-			.setName('api_key')
-			.setDesc('You need to create an account in OpenAI to generate an API Key. (https://beta.openai.com/)')
+		containerEl.createEl('H1', {
+			text: 'OpenAI Settings'
+		});
+		containerEl.appendChild(createEl("a", {text: 'API documentation',href:"https://beta.openai.com/docs/api-reference/introduction",cls:'linkMoreInfo'}))
+		let inputEl
+
+		const apikeuEl=new Setting(containerEl)
+			.setName('API Key')
+			.setDesc('You need to create an account in OpenAI to generate an API Key.')
 			.addText(text => text
 				.setPlaceholder('Enter your API Key')
 				.setValue(this.plugin.settings.api_key)
 				.onChange(async (value) => {
 					this.plugin.settings.api_key = value;
 					await this.plugin.saveSettings();
-				}));
+				}
+				)
+				.then((textEl)=>{
+					inputEl=textEl
+				})
+				.inputEl.setAttribute('type','password')
+				)
+		
+		apikeuEl.addToggle(v => v
+			.onChange( (value) => {
+				if(value) {
+					inputEl.inputEl.setAttribute('type','clear')
+				}
+				else {
+					inputEl.inputEl.setAttribute('type','password')
+				}
+			}));
+		
 
+		containerEl.appendChild(createEl("a", {text: 'Create account OpenAI',href:"https://beta.openai.com/signup/",cls:'linkMoreInfo'}))
 		new Setting(containerEl)
-			.setName('engine')
-			.setDesc('text-davinci-002 is Most capable model. text-ada-001 is the fastest model (more information: https://beta.openai.com/docs/models/overview)')
+			.setName('Model')
+			.setDesc('text-davinci-002 is Most capable model. text-ada-001 is the fastest model.')
 			.addDropdown((cb) => {
 				cb.addOption("text-davinci-002", "text-davinci-002");
 				cb.addOption("text-davinci-001", "text-davinci-001");
@@ -46,8 +70,17 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				});
 			})
+			containerEl.appendChild(createEl("a", {text: 'more information',href:"https://beta.openai.com/docs/models/overview",cls:'linkMoreInfo'}))
+
+		containerEl.createEl('H2', {
+				text: 'Prompt parameters (completions)'
+			});	
+		containerEl.createEl('H3', {
+				text: 'You can specify more paramters in the Frontmatter YMAL'
+			});	
+		containerEl.appendChild(createEl("a", {text: 'API documentation',href:"https://beta.openai.com/docs/api-reference/completions",cls:'linkMoreInfo'}))	
 		new Setting(containerEl)
-			.setName('max_tokens')
+			.setName('Max tokens')
 			.setDesc('The max number of the tokens that will be generated (1000 tokens ~ 750 words)')
 			.addText(text => text
 				.setPlaceholder('max_tokens')
@@ -58,7 +91,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('temperature')
+			.setName('Temperature')
 			.setDesc('temperature')
 			.addText(text => text
 				.setPlaceholder('temperature')
@@ -69,7 +102,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('frequency_penalty')
+			.setName('Frequency Penalty')
 			.setDesc('frequency_penalty')
 			.addText(text => text
 				
@@ -79,9 +112,14 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				})
 				);
-
+		containerEl.createEl('H1', {
+					text: 'Text Generator'
+				});	
+		containerEl.createEl('H3', {
+					text: 'General'
+				});	
 		new Setting(containerEl)
-			.setName('showStatusBar')
+			.setName('Show Status in  StatusBar')
 			.setDesc('Show information in the Status Bar')
 			.addToggle(v => v
 				.setValue(this.plugin.settings.showStatusBar)
@@ -90,9 +128,9 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
-        new Setting(containerEl)
-        .setName('promptsPath')
-        .setDesc('promptsPath')
+       const pathTempEl= new Setting(containerEl)
+        .setName('Prompts Templates Path')
+        .setDesc('Path of Prompts Templates')
         .addText(text => text
             .setValue(this.plugin.settings.promptsPath)
             .onChange(async (value) => {
@@ -100,6 +138,86 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
                 await this.plugin.saveSettings();
             })
 			.inputEl.setAttribute('size','50')
-			);
-	}
+			)
+		.addButton((btn) =>
+        btn
+          .setButtonText("Download templates")
+          .setCta()
+          .onClick(async() => {
+            console.log("Downloading templates...")
+
+          }));
+		
+	
+		containerEl.createEl('H3', {
+				text: 'Considered Context'
+			});	
+		
+
+		new Setting(containerEl)
+		.setName('staredBlocks')
+		.setDesc('Include stared blocks in the considered context.')
+		.addToggle(v => v
+			.setValue(this.plugin.settings.showStatusBar)
+			.onChange(async (value) => {
+				this.plugin.settings.context.staredBlocks = value;
+				await this.plugin.saveSettings();
+			}));
+		
+		containerEl.createEl('H3', {
+				text: 'Included information with templates'
+			});	
+		
+		new Setting(containerEl)
+			.setName('includeFrontmatter')
+			.setDesc('Include frontmatter')
+			.addToggle(v => v
+				.setValue(this.plugin.settings.showStatusBar)
+				.onChange(async (value) => {
+					this.plugin.settings.context.includeFrontmatter = value;
+					await this.plugin.saveSettings();
+				}));
+		
+		new Setting(containerEl)
+				.setName('includeHeadings')
+				.setDesc('Include headings with their content.')
+				.addToggle(v => v
+					.setValue(this.plugin.settings.showStatusBar)
+					.onChange(async (value) => {
+						this.plugin.settings.context.includeFrontmatter = value;
+						await this.plugin.saveSettings();
+					}));
+
+		new Setting(containerEl)
+				.setName('includeChildren')
+				.setDesc('Include of the content of internal md links on the page.')
+				.addToggle(v => v
+					.setValue(this.plugin.settings.showStatusBar)
+					.onChange(async (value) => {
+						this.plugin.settings.context.includeChildren = value;
+						await this.plugin.saveSettings();
+					}));
+
+		new Setting(containerEl)
+				.setName('linkedMentions')
+				.setDesc('Include paragraphs from linked mentions.')
+				.addToggle(v => v
+					.setValue(this.plugin.settings.showStatusBar)
+					.onChange(async (value) => {
+						this.plugin.settings.context.linkedMentions = value;
+						await this.plugin.saveSettings();
+					}));
+	
+		new Setting(containerEl)
+			.setName('unlinkedMentions')
+			.setDesc('Include paragraphs from unlinked mentions.')
+			.addToggle(v => v
+				.setValue(this.plugin.settings.showStatusBar)
+				.onChange(async (value) => {
+					this.plugin.settings.context.unlinkedMentions = value;
+					await this.plugin.saveSettings();
+				}));
+	
+		}
+
 }
