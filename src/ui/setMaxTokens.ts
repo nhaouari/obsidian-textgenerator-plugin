@@ -1,11 +1,14 @@
 import { App, Modal, Setting } from "obsidian";
+import TextGeneratorPlugin from "src/main";
 
 export class SetMaxTokens extends Modal {
   result: string;
+  plugin: TextGeneratorPlugin;
   onSubmit: (result: string) => void;
 
-  constructor(app: App, result:string, onSubmit: (result: string) => void) {
+  constructor(app: App, plugin:TextGeneratorPlugin,result:string, onSubmit: (result: string) => void) {
     super(app);
+    this.plugin=plugin
     this.result=result;
     this.onSubmit = onSubmit;
   }
@@ -29,8 +32,9 @@ export class SetMaxTokens extends Modal {
       .addText((text) =>text
         .setPlaceholder('max_tokens')
 	    .setValue(this.result.toString())
-        .onChange((value) => {
+        .onChange(async(value) => {
           this.result = value
+          await this.plugin.saveSettings();
         })
         .inputEl.select()
         )

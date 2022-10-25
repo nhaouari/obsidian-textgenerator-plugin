@@ -5,6 +5,8 @@ import {GENERATE_ICON,GENERATE_META_ICON} from './constants';
 import TextGeneratorSettingTab from './ui/settingsPage';
 import {SetMaxTokens} from './ui/setMaxTokens';
 import TextGenerator from './TextGenerator';
+import { SetModel } from './ui/setModel';
+
 
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	api_key: "",
@@ -226,7 +228,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			name: 'Set max_tokens',
 			hotkeys: [{ modifiers: ["Ctrl","Alt"], key: "1" }],
 			editorCallback: async () => {
-				new SetMaxTokens(this.app,this.settings.max_tokens.toString(),async (result: string) => {
+				new SetMaxTokens(this.app,this,this.settings.max_tokens.toString(),async (result: string) => {
 					this.settings.max_tokens = parseInt(result);
 					await this.saveSettings();
 				    this.updateStatusBar('');
@@ -236,6 +238,26 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 		});
 		
+		this.addCommand({
+			id: 'set-model',
+			name: 'Choose a model',
+			icon: 'GENERATE_ICON',
+			hotkeys: [{ modifiers: ["Ctrl","Alt"], key: "2" }],
+			editorCallback: async (editor: Editor) => {
+				try {
+					new SetModel(this.app, this,async (result) => {
+						this.settings.engine=result;
+						await this.saveSettings();
+					  },'Choose a model').open();
+				} catch (error) {
+					
+					new Notice("🔴Error: Check console CTRL+SHIFT+I");
+					console.error(error);
+					this.updateStatusBar(`Error check console`);
+					setTimeout(()=>this.updateStatusBar(``),3000);
+				}	
+			}
+		});
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new TextGeneratorSettingTab(this.app, this));
 

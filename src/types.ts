@@ -5,8 +5,9 @@ type TextGeneratorSettings= {
 	temperature: number;
 	frequency_penalty: number;
 	prompt: string;
-    promptsPath: string;
+  promptsPath: string;
 	showStatusBar: boolean;
+  models: any;
 }
 
 type PromptTemplate =  {
@@ -23,9 +24,14 @@ type FileViewMode = 'source' | 'preview' | 'default';
  enum NewTabDirection {
   vertical = "vertical", horizontal = "horizontal"
 }
+
+type Model = {
+  id: string;
+}
 export type {
   FileViewMode,
   NewTabDirection,
 	TextGeneratorSettings,
-	PromptTemplate
+	PromptTemplate,
+  Model
 }

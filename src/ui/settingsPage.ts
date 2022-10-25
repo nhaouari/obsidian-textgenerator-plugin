@@ -7,6 +7,14 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 	constructor(app: App, plugin: TextGeneratorPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
+		let models=new Map();
+		if (this.plugin.settings.models?.size>0){
+			models=this.plugin.settings.models;
+		}else {
+			["text-davinci-002","text-davinci-001","text-curie-001","text-babbage-001","text-ada-001"].forEach(e=>models.set(e,''));
+			this.plugin.settings.models = models;
+			this.plugin.saveSettings();
+		}
 	}
 
 	display(): void {
