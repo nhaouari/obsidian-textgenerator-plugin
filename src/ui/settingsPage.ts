@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
+import { App, PluginSettingTab, Setting, Notice,request } from 'obsidian';
 import TextGeneratorPlugin from '../main';
 
 export default class TextGeneratorSettingTab extends PluginSettingTab {
@@ -55,21 +55,70 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		
 
 		containerEl.appendChild(createEl("a", {text: 'Create account OpenAI',href:"https://beta.openai.com/signup/",cls:'linkMoreInfo'}))
+		
+		let models=new Map();
+		if (this.plugin.settings.models?.size>0){
+			models=this.plugin.settings.models;
+		}else {
+			["text-davinci-002","text-davinci-001","text-curie-001","text-babbage-001","text-ada-001"].forEach(e=>models.set(e,''));
+			this.plugin.settings.models = models;
+			this.plugin.saveSettings();
+		}
+		
+		let cbModelsEl:any
 		new Setting(containerEl)
 			.setName('Model')
 			.setDesc('text-davinci-002 is Most capable model. text-ada-001 is the fastest model.')
 			.addDropdown((cb) => {
-				cb.addOption("text-davinci-002", "text-davinci-002");
-				cb.addOption("text-davinci-001", "text-davinci-001");
-				cb.addOption("text-curie-001", "text-curie-001");
-				cb.addOption("text-babbage-001", "text-babbage-001");
-				cb.addOption("text-ada-001", "text-ada-001");
+				cbModelsEl =cb;
+				console.log(models);
+				models.forEach((value,key)=>{
+					cb.addOption(key, key);
+					
+				})
 				cb.setValue(this.plugin.settings.engine);
 				cb.onChange(async (value) => {
 					this.plugin.settings.engine = value;
 					await this.plugin.saveSettings();
 				});
+				
+			
 			})
+			.addButton((btn) =>
+        btn
+          .setButtonText("Update modeles")
+          .setCta()
+          .onClick(async() => {
+		  if(this.plugin.settings.api_key.length > 0) {
+			let reqParams = {
+				url: `https://api.openai.com/v1/models`,
+				method: 'GET',
+				body:'',
+				headers: {
+					"Content-Type": "application/json",
+					"Authorization": `Bearer ${this.plugin.settings.api_key}`
+				},
+			}
+
+			const requestResults = JSON.parse(await request(reqParams));
+            requestResults.data.forEach(async (model) => {
+				if(!models.get(model.id)) {
+					cbModelsEl.addOption(model.id, model.id);
+					models.set(model.id,"");
+
+					
+				}
+			});
+			this.plugin.settings.models=models;
+			await this.plugin.saveSettings();
+			console.log(requestResults);
+		  } else {
+
+			console.error("Please provide a valide api key.");
+		  }
+			
+
+          }));
 			containerEl.appendChild(createEl("a", {text: 'more information',href:"https://beta.openai.com/docs/models/overview",cls:'linkMoreInfo'}))
 
 		containerEl.createEl('H2', {
