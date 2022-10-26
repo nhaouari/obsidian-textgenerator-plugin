@@ -215,9 +215,9 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		.setName('staredBlocks')
 		.setDesc('Include stared blocks in the considered context.')
 		.addToggle(v => v
-			.setValue(this.plugin.settings.showStatusBar)
+			.setValue(this.plugin.settings.context.includeStaredBlocks)
 			.onChange(async (value) => {
-				this.plugin.settings.context.staredBlocks = value;
+				this.plugin.settings.context.includeStaredBlocks = value;
 				await this.plugin.saveSettings();
 			}));
 		
@@ -229,9 +229,10 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 			.setName('includeFrontmatter')
 			.setDesc('Include frontmatter')
 			.addToggle(v => v
-				.setValue(this.plugin.settings.showStatusBar)
+				.setValue(this.plugin.settings.context.includeFrontmatter)
 				.onChange(async (value) => {
 					this.plugin.settings.context.includeFrontmatter = value;
+					console.log(this.plugin.settings);
 					await this.plugin.saveSettings();
 				}));
 		
@@ -239,9 +240,9 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 				.setName('includeHeadings')
 				.setDesc('Include headings with their content.')
 				.addToggle(v => v
-					.setValue(this.plugin.settings.showStatusBar)
+					.setValue(this.plugin.settings.context.includeHeadings)
 					.onChange(async (value) => {
-						this.plugin.settings.context.includeFrontmatter = value;
+						this.plugin.settings.context.includeHeadings = value;
 						await this.plugin.saveSettings();
 					}));
 
@@ -249,31 +250,22 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 				.setName('includeChildren')
 				.setDesc('Include of the content of internal md links on the page.')
 				.addToggle(v => v
-					.setValue(this.plugin.settings.showStatusBar)
+					.setValue(this.plugin.settings.context.includeChildren)
 					.onChange(async (value) => {
 						this.plugin.settings.context.includeChildren = value;
 						await this.plugin.saveSettings();
 					}));
 
 		new Setting(containerEl)
-				.setName('linkedMentions')
-				.setDesc('Include paragraphs from linked mentions.')
+				.setName('mentions')
+				.setDesc('Include paragraphs from mentions (linked, unliked).')
 				.addToggle(v => v
-					.setValue(this.plugin.settings.showStatusBar)
+					.setValue(this.plugin.settings.context.includeMentions )
 					.onChange(async (value) => {
-						this.plugin.settings.context.linkedMentions = value;
+						this.plugin.settings.context.includeMentions = value;
 						await this.plugin.saveSettings();
 					}));
-	
-		new Setting(containerEl)
-			.setName('unlinkedMentions')
-			.setDesc('Include paragraphs from unlinked mentions.')
-			.addToggle(v => v
-				.setValue(this.plugin.settings.showStatusBar)
-				.onChange(async (value) => {
-					this.plugin.settings.context.unlinkedMentions = value;
-					await this.plugin.saveSettings();
-				}));
+
 	
 		}
 

@@ -1,6 +1,6 @@
 import {App,addIcon, Notice, Plugin, PluginSettingTab, Setting, request, MarkdownView, Editor, parseFrontMatterAliases} from 'obsidian';
 import {ExampleModal} from './model';
-import {TextGeneratorSettings} from './types';
+import {TextGeneratorSettings,Context} from './types';
 import {GENERATE_ICON,GENERATE_META_ICON} from './constants';
 import TextGeneratorSettingTab from './ui/settingsPage';
 import {SetMaxTokens} from './ui/setMaxTokens';
@@ -16,7 +16,14 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	frequency_penalty: 0.5,
 	prompt: "",
 	showStatusBar: true,
-	promptsPath:"templates/prompts"
+	promptsPath:"templates/prompts",
+	context:{
+		includeStaredBlocks:true,
+		includeFrontmatter:true,
+		includeHeadings:true,
+		includeChildren:false,
+		includeMentions:false
+	}
 }
 
 export default class TextGeneratorPlugin extends Plugin {

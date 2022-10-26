@@ -1,9 +1,9 @@
-import {App,addIcon, Notice, Plugin, PluginSettingTab, Setting, request, MarkdownView, Editor, parseFrontMatterAliases} from 'obsidian';
-import {TextGeneratorSettings} from './types';
+import {App,, Notice, Editor} from 'obsidian';
+import {Context} from './types';
 import TextGeneratorPlugin from './main';
 import {IGNORE_IN_YMAL} from './constants';
 import Handlebars from 'handlebars';
-import ReqFormatter from './ReqFormatter';
+import {removeYMAL} from './utils';
 export default class ContextManager {
     plugin: TextGeneratorPlugin;
     app: App;
@@ -11,44 +11,61 @@ export default class ContextManager {
         this.app = app;
 		this.plugin = plugin;
 	}
-
+    
     async getContext(editor:Editor,insertMetadata: boolean = false,templatePath:string="") {
+        const contextOptions:Context = this.plugin.settings.context;
+
         let context= "";
         let path ="";
          /* Add the content of the stared Headings */
-        context = await this.getStaredBlocks();
+        
+        if(contextOptions.includeStaredBlocks){
+            context += await this.getStaredBlocks();
+        }
+
         /* Add the content of the considered context */
         context += this.getSelection(editor); 
+
+        let frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document 
         /* apply template */
         if(templatePath.length > 0){
-            const options={context: context,...await this.getOptions()};
+            let blocks:any ={};
+            const activeDocCache = this.getMetaData(path);
+            
+
+            if(contextOptions.includeFrontmatter) blocks["frontmatter"] = {...this.getFrontmatter(this.getMetaData(templatePath)),...this.getFrontmatter(activeDocCache)};
+
+            if(contextOptions.includeHeadings) blocks["headings"]=await this.getHeadingContent(activeDocCache);
+            
+            if(contextOptions.includeChildren) blocks["children"]= await this.getChildrenContent(activeDocCache);
+            
+            if(contextOptions.includeMentions) blocks['mentions']= await this.getMentions(this.app.workspace.activeLeaf.getDisplayText());
+            
+            const options={context: context,...blocks};
+           
             context=await this.templateFromPath(templatePath,options);
+            frontmatter = {...this.getMetaData(templatePath)?.frontmatter,...frontmatter}; // frontmatter of active document priority is higher than frontmatter of the template
             path=templatePath;
+            
+            debugger
+            
         } 
-        /* Add metadata */
-        if (insertMetadata) {
-            const metadata = this.getMetaData(path)?.frontmatter;
-            if (metadata) {
-                context=this.getMetaDataAsStr(metadata)+context;
-            } else {
+
+        /* Add frontmatter */ 
+        if (insertMetadata && frontmatter && Object.keys(frontmatter).length === 0) {
+                context=this.getMetaDataAsStr(frontmatter)+context;
+            } else if(insertMetadata && templatePath.length===0) { 
                 new Notice("No valid Metadata (YAML front matter) found!");
             }
-        }
+        
         return context;
-    }
-
-    async getOptions(){
-        const blocks = await this.getBlocks();
-        const options={...blocks,...this.getMetaData()?.frontmatter};  
-        return options;
     }
 
     async templateFromPath(templatePath:string,options:any) {
         const templateFile = await this.app.vault.getAbstractFileByPath(templatePath);
-        console.log(templatePath);
         let templateContent= await this.app.vault.read(templateFile);
-        templateContent=this.removeYMAL(templateContent);
-        let template = Handlebars.compile(templateContent);
+        templateContent=removeYMAL(templateContent);
+        const template = Handlebars.compile(templateContent);
         templateContent=template(options);
         return templateContent;
     }
@@ -65,16 +82,12 @@ export default class ContextManager {
         return selectedText;
     }
 
-
-    removeYMAL(content:string) {
-        return content.replace(/---(.|\n)*---/, '');
+    getFrontmatter(fileCache:any) {
+        return fileCache?.frontmatter
     }
 
-    async getBlocks (path:string="") {
-        const fileCache = this.getMetaData(path);
-        let blocks:any ={};
+    async getHeadingContent(fileCache:any) {
         const headings=fileCache?.headings;
-        console.log({headings})
         let headingsContent:any={};
         if(headings){
             for (let i = 0; i < headings.length; i++) {
@@ -84,11 +97,10 @@ export default class ContextManager {
                 headingsContent[headings[i].heading]=textBlock;
             }
         }
+        return headingsContent
+    }
 
-        
-        blocks["headings"]=headingsContent;
-        blocks={...blocks,...headings};
-
+    async getChildrenContent(fileCache:any) {
         let children:any=[];
         const links = fileCache?.links?.filter(e=>e.original.substr(0,2)==="[[");
         if(links){
@@ -104,37 +116,39 @@ export default class ContextManager {
 
                 if (file) {
                     const content= await this.app.vault.read(file);
-                    // const templateContent= await this.app.vault.read(file.path); 
-                    // console.log(templateContent);
                     children.push({...file,content});
                 }
             }
         }
+        return children
+    }
 
-        blocks["children"]=children;
-
-        let linkedMentions:any=[];
-        const activeTitle= this.app.workspace.activeLeaf.getDisplayText()
+    async getMentions(title:string) {
+        let linked:any=[];
+        let unlinked:any=[];
         const files = this.app.vault.getMarkdownFiles();
 
         for (let i = 0; i < files.length; i++) {
             const file=files[i];
-            const content= await this.app.vault.cachedRead(file);
-            const reg=new RegExp(`.*\\[\\[${activeTitle}\\]\\].*`, "ig");   
-            const results = content.match(reg);
-            if (results) {
-                linkedMentions.push({...file,results});
+            let content= await this.app.vault.cachedRead(file);
+            
+            const regLinked=new RegExp(`.*\\[\\[${title}\\]\\].*`, "ig");   
+            const resultsLinked = content.match(regLinked);
+            if (resultsLinked) {
+                linked.push({...file,results:resultsLinked});
+            }
+            
+            const regUnlinked=new RegExp(`.*${title}.*`, "ig");
+            const resultsUnlinked = content.match(regUnlinked);
+            if (resultsUnlinked) {
+                unlinked.push({...file,results:resultsUnlinked});
             }
         }
-
-        blocks['linkedMentions']=linkedMentions;
-        blocks={...blocks,...children};
-
-
-        return blocks;
+        return {linked,unlinked}
     }
 
     async getStaredBlocks (path:string="") {
+
         const fileCache = this.getMetaData(path);
         let content ="";
         const staredHeadings=fileCache?.headings?.filter(e=>e.heading.substring(e.heading.length-1)==="*")
@@ -146,12 +160,6 @@ export default class ContextManager {
         return content;
     }
 
-    /**
-     * Get the content of specific section
-     * @param heading
-     * @param path
-     * @returns
-     */
     async getTextBloc(heading:string,path:string="") {
         const fileCache=this.getMetaData(path)
         
@@ -161,28 +169,21 @@ export default class ContextManager {
 
         for (let i = 0; i < fileCache.headings.length; i++) {
             const ele=  fileCache.headings[i];
-            console.log(ele);
             if( start===-1 && ele?.heading ===heading) 
             {
                 level=ele.level;
                 start=ele.position.start.offset;
-                console.log("+",ele);
-
             } else if(start >= 0 &&  ele.level <= level && end===-1) 
             {
-                console.log("-",ele);
                 end=ele.position.start.offset;
                 break;
             }
           }
 
-        console.log({start,end,level})
-
         if(start>=0) {
             const doc = await this.app.vault.getAbstractFileByPath(fileCache.path);
             const docContent= await this.app.vault.read(doc);
             if (end === -1) end = docContent.length-1;
-            console.log(docContent.substring(start,end)); 
             return docContent.substring(start,end)
         } else {
             console.error("Heading not found ");
@@ -201,7 +202,6 @@ export default class ContextManager {
         if (activeFile !== null) {
             const cache = this.app.metadataCache.getCache(activeFile.path);
             this.app.metadataCache.getCache(this.app.workspace.getActiveFile().path);
-            console.log("metadata", {...cache,path:activeFile.path});
             return {...cache,path:activeFile.path};
          }
     
@@ -213,7 +213,6 @@ export default class ContextManager {
         let cleanFrontMatter = "";
         for (const [key, value] of Object.entries(frontmatter)) {
             if (IGNORE_IN_YMAL.findIndex((e)=>e===key)!=-1) continue;
-            console.log(key);
             if (Array.isArray(value)) {
                 cleanFrontMatter += `${key} : `
                 value.forEach(v => {

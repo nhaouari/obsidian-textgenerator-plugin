@@ -1,3 +1,12 @@
+type Context= {
+  includeStaredBlocks:boolean;
+  includeFrontmatter:boolean;
+  includeHeadings:boolean;
+  includeChildren:boolean;
+  includeMentions:boolean;
+}
+
+
 type TextGeneratorSettings= {
 	api_key: string;
 	engine: string;
@@ -8,6 +17,7 @@ type TextGeneratorSettings= {
   promptsPath: string;
 	showStatusBar: boolean;
   models: any;
+  context:Context;
 }
 
 type PromptTemplate =  {
@@ -33,5 +43,6 @@ export type {
   NewTabDirection,
 	TextGeneratorSettings,
 	PromptTemplate,
-  Model
+  Model,
+  Context
 }

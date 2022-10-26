@@ -64,3 +64,7 @@ export async function openFile(app: App, file: TFile, optional?: {openInNewTab?:
         } as ViewState, { focus: optional?.focus });
     }
 }   
+
+export function removeYMAL(content:string) {
+    return content.replace(/---(.|\n)*---/, '');
+}
