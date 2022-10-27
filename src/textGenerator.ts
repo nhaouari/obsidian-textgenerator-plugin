@@ -27,7 +27,7 @@ export default class TextGenerator {
             text = await this.getGeneratedText(reqParameters);
             return text;
         } catch (error) {
-            console.log(error);
+            console.error(error);
             return Promise.reject(error);
         }
     }
@@ -64,7 +64,6 @@ export default class TextGenerator {
         
         new SetPath(this.app,suggestedPath,async (path: string) => {
             const file= await createFileWithInput(path,context,this.app);
-            console.log("createToFile");
             openFile(this.app,file);
           }).open();
 
@@ -80,7 +79,7 @@ export default class TextGenerator {
         try {
             requestResults = JSON.parse(await request(reqParams));
         } catch (error) {
-            console.log(error);
+            console.error(error);
             return Promise.reject(error);
         }
         const text = eval(extractResult);

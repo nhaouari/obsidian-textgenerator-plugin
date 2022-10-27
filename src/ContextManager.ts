@@ -1,4 +1,4 @@
-import {App,, Notice, Editor} from 'obsidian';
+import {App, Notice, Editor} from 'obsidian';
 import {Context} from './types';
 import TextGeneratorPlugin from './main';
 import {IGNORE_IN_YMAL} from './constants';
@@ -32,6 +32,8 @@ export default class ContextManager {
             let blocks:any ={};
             const activeDocCache = this.getMetaData(path);
             
+            blocks["frontmatter"]={};
+            blocks["headings"]={};
 
             if(contextOptions.includeFrontmatter) blocks["frontmatter"] = {...this.getFrontmatter(this.getMetaData(templatePath)),...this.getFrontmatter(activeDocCache)};
 
@@ -41,14 +43,11 @@ export default class ContextManager {
             
             if(contextOptions.includeMentions) blocks['mentions']= await this.getMentions(this.app.workspace.activeLeaf.getDisplayText());
             
-            const options={context: context,...blocks};
+            const options={...blocks["frontmatter"],...blocks["headings"],context: context,...blocks};
            
             context=await this.templateFromPath(templatePath,options);
             frontmatter = {...this.getMetaData(templatePath)?.frontmatter,...frontmatter}; // frontmatter of active document priority is higher than frontmatter of the template
             path=templatePath;
-            
-            debugger
-            
         } 
 
         /* Add frontmatter */ 
@@ -58,6 +57,7 @@ export default class ContextManager {
                 new Notice("No valid Metadata (YAML front matter) found!");
             }
         
+        console.log(context);
         return context;
     }
 
