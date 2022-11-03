@@ -13,6 +13,7 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^16.11.6",
+		"@types/semver": "^7.3.13",
 		"@typescript-eslint/eslint-plugin": "^5.2.0",
 		"@typescript-eslint/parser": "^5.2.0",
 		"builtin-modules": "^3.2.0",
@@ -23,6 +24,9 @@
 	},
 	"dependencies": {
 		"handlebars": "^4.7.7",
-		"request": "^2.88.2"
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
+		"request": "^2.88.2",
+		"semver": "^7.3.8"
 	}
 }
