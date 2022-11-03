@@ -6,7 +6,6 @@ type Context= {
   includeMentions:boolean;
 }
 
-
 type TextGeneratorSettings= {
 	api_key: string;
 	engine: string;
@@ -20,8 +19,37 @@ type TextGeneratorSettings= {
   context:Context;
 }
 
+type TextGeneratorConfiguration = {
+  packages: PackageTemplate[];
+  installedPackages: InstalledPackage[];
+}
+
+type InstalledPackage = {
+  packageId:string;
+  version:string
+  prompts:PromptTemplate[];
+  installedPrompts: installedPrompts []
+}
+
+type installedPrompts ={
+  promptId: string;
+  version: string;
+}
+
+type PackageTemplate = {
+  packageId: string;
+  name: string;
+  version:  string;
+	minTextGeneratorVersion:  string;
+	description:  string;
+  tags :  string;
+  author:  string;
+	authorUrl: string;
+  repo: string;
+}
+
 type PromptTemplate =  {
-    id: string;
+    promptId: string;
     name: string;
     path: string;
     description: string;
@@ -30,8 +58,9 @@ type PromptTemplate =  {
     tags: string;
     version: string;
   }
+
 type FileViewMode = 'source' | 'preview' | 'default';
- enum NewTabDirection {
+enum NewTabDirection {
   vertical = "vertical", horizontal = "horizontal"
 }
 
@@ -43,6 +72,9 @@ export type {
   NewTabDirection,
 	TextGeneratorSettings,
 	PromptTemplate,
+  PackageTemplate,
   Model,
-  Context
+  Context,
+  InstalledPackage,
+  TextGeneratorConfiguration
 }

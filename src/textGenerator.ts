@@ -1,7 +1,7 @@
 import {App,addIcon, Notice, Plugin, PluginSettingTab, Setting, request, MarkdownView, Editor, parseFrontMatterAliases, MetadataCache} from 'obsidian';
 import {TextGeneratorSettings} from './types';
 import TextGeneratorPlugin from './main';
-import ReqFormatter from './ReqFormatter';
+import ReqFormatter from './reqFormatter';
 import { SetPath } from './ui/setPath';
 import ContextManager from './ContextManager';
 import {makeid,createFileWithInput,openFile} from './utils';

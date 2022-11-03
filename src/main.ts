@@ -1,11 +1,13 @@
-import {App,addIcon, Notice, Plugin, PluginSettingTab, Setting, request, MarkdownView, Editor, parseFrontMatterAliases} from 'obsidian';
+import { DownloaderPage } from './DownloaderPage';
+import {App,addIcon, Notice, Plugin, PluginSettingTab, Setting, request, MarkdownView, Editor, parseFrontMatterAliases,normalizePath} from 'obsidian';
 import {ExampleModal} from './model';
 import {TextGeneratorSettings,Context} from './types';
 import {GENERATE_ICON,GENERATE_META_ICON} from './constants';
 import TextGeneratorSettingTab from './ui/settingsPage';
 import {SetMaxTokens} from './ui/setMaxTokens';
-import TextGenerator from './TextGenerator';
+import TextGenerator from './textGenerator';
 import { SetModel } from './ui/setModel';
+import PackageManager from './PackageManager';
 
 
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
@@ -30,6 +32,7 @@ export default class TextGeneratorPlugin extends Plugin {
 	settings: TextGeneratorSettings;
 	statusBarItemEl: any;
 	textGenerator:TextGenerator;
+	packageManager:PackageManager;
 	
     updateStatusBar(text: string) {
         let text2 = "";
@@ -59,6 +62,15 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.textGenerator=new TextGenerator(this.app,this);
 		
 		await this.loadSettings();
+		
+		
+		this.packageManager= new PackageManager(this.app,this.settings.promptsPath);
+		await this.packageManager.load();
+		debugger
+
+		const adapter = this.app.vault.adapter; 
+		//this.settings.communityPrompts=JSON.parse(await adapter.read(normalizePath(app.vault.configDir + "/community-prompts.json")));
+		//this.settings.configuration=JSON.parse(await adapter.read(normalizePath(app.vault.configDir + "/text-generator.json")));
 		
 		this.statusBarItemEl = this.addStatusBarItem();
 		// This creates an icon in the left ribbon.
@@ -265,15 +277,135 @@ export default class TextGeneratorPlugin extends Plugin {
 				}	
 			}
 		});
+
+
+		this.addCommand({
+			id: 'Downloader-page',
+			name: 'Downloader-page',
+			icon: 'GENERATE_ICON',
+			hotkeys: [{ modifiers: ["Meta",'Alt'], key: "d"}],
+			editorCallback: async (editor: Editor) => {
+				this.updateStatusBar(`processing... `);
+				try {
+					this.getRelease();
+					new DownloaderPage(this.app, this,async (result) => {
+						//await this.textGenerator.createToFile(this.settings, result.path, true, editor,false);
+						this.updateStatusBar(``);
+						this.downloadTemplate(result.id);
+
+					  },'Downloader page').open();
+
+				} catch (error) {
+					notice.hide();
+					new Notice("🔴Error: Check console CTRL+SHIFT+I");
+					console.error(error);
+					this.updateStatusBar(`Error check console`);
+					setTimeout(()=>this.updateStatusBar(``),3000);
+				}	
+			}
+		});
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new TextGeneratorSettingTab(this.app, this));
 
 	}
 
-	onunload() {
 
+	async downloadTemplate(templateId:string){
+		if(!await this.templateExist(templateId) || await this.newUpdateExist()) {
+			const url="https://raw.githubusercontent.com/nhaouari/gpt-3-prompt-templates/master/prompts/"+templateId+".md";
+			this.writeTemplate(templateId,await request({url:url}));
+		}
 	}
 
+	async newUpdateExist() {
+		// chech the last version the last relese if a new version exist download it and compare the local version with the version in relaise 
+		
+		return false;
+	}
+
+
+	async getRelease() {
+		const rawReleases = JSON.parse(await request({
+			url: "https://api.github.com/repos/nhaouari/gpt-3-prompt-templates/releases",
+		}));
+
+		const rawRelease: any = rawReleases.filter((x: any) => !x.draft && !x.prerelease).sort((x: any) => x.published_at)[0]
+		const release = {
+			version: rawRelease.tag_name,
+			assets: rawRelease.assets.map((asset: any) => ({
+				name: asset.name,
+				url: asset.browser_download_url,
+			}))			
+		}
+		console.log(release);
+		
+	}
+    /** https://github.com/plugins-galore/obsidian-plugins-galore/blob/bd3553908fa9eacf33a5e1c2e7b0dea2a02a9d80/src/util/gitServerInterface.ts#L86 */
+	async getAsset (release: any, name: string) {
+		const asset = release.assets.filter(asset => asset.name === name)[0];
+		if (!asset) {
+			return null;
+		}
+		return request({
+			url: asset.url,
+		});
+	}
+
+	async templateExist(templateId:string){
+		const templatePath = this.getTemplatePath(templateId);
+        const paths = this.app.metadataCache.getCachedFiles().filter(path=>path.includes(templatePath));
+		if (paths.length > 0 ) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	async writeTemplate(templateId:string,content:any) {
+		console.log({templateId,content});
+		const path = this.getTemplatePath(templateId);
+		const adapter = this.app.vault.adapter;
+		try {
+			if (!(await adapter.exists(this.settings.promptsPath))) {
+				await adapter.mkdir(this.settings.promptsPath);
+			}
+			let write = true;
+			if(await adapter.exists(path)) {
+				let text = "Template "+path+" exists!\nEither OK to Overread or over Cancel.";
+					if (await confirm(text) == false) {
+						write = false;
+					} 
+			} 
+
+			if(write){
+				adapter.write(
+					path,
+					content,
+				)
+			}
+
+			
+		} catch (error) {
+			console.error(error);
+			Promise.reject(error);
+		}
+	}
+
+	getTemplatePath(packageId:string,promptId:string) {
+		const promptsPath= this.settings.promptsPath;
+		//app.vault.configDir
+		const templatePath=normalizePath(`${promptsPath}/${packageId}/${promptId}.md`);
+		return templatePath;
+	}
+
+	getFrontmatter(path:string="") {
+        const cache = this.app.metadataCache.getCache(path);
+            if (cache.hasOwnProperty('frontmatter')) {
+                return cache.frontmatter;
+            }
+        return null
+    }
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	}
