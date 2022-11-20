@@ -9,6 +9,7 @@ export class PackageManagerUI extends Modal {
   result: string;
   plugin: TextGeneratorPlugin;
   onSubmit: (result: string) => void;
+  root:any;
 
   constructor(app: App, plugin:TextGeneratorPlugin,result:string, onSubmit: (result: string) => void) {
     super(app);
@@ -16,14 +17,15 @@ export class PackageManagerUI extends Modal {
     this.result=result;
     this.onSubmit = onSubmit;
     this.modalEl.addClasses(["mod-settings","mod-sidebar-layout"]);
+    
   }
 
   async onOpen() {
 
       this.containerEl.createEl("div", {cls:"PackageManager"})
-      const root = createRoot(this.containerEl.children[1]);
+      this.root = createRoot(this.containerEl.children[1]);
       
-      root.render(
+      this.root.render(
         <React.StrictMode>
           <PackageManagerView parent={this}/>,
         </React.StrictMode>
@@ -31,6 +33,6 @@ export class PackageManagerUI extends Modal {
   }
 
   onClose() {
-    ReactDOM.unmountComponentAtNode(this.containerEl.children[1]);
+    this.root.unmount()
   }
 }

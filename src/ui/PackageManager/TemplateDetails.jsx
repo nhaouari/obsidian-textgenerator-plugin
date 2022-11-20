@@ -14,11 +14,11 @@ function TemplateDetails({props,packageManager,updateView}) {
 
 function getTemplateDetails(props,packageManager,updateView) {
     const [htmlVar, setHtmlVar]= useState("");
+    
     useEffect(() => {
-        packageManager.getReadme(props.packageId).then((html)=>{
-            setHtmlVar(html)
-            console.log(html)
-        })
+        /*packageManager.getReadme(props.packageId).then((html)=>{
+            setHtmlVar(html);
+        })*/
      }, [])
      
     async function install () {

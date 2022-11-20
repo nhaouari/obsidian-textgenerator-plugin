@@ -45,13 +45,11 @@ export const PackageManagerView = (p) => {
   }
 
   function handleClose(event){
-    console.log(parent);
     parent.close();
   }
 
   function select(index) {
     setSelectedIndex(index);
-    console.log("index == ",index );
     setItems(items.map((p,i)=>i===index?({...p,selected:true}):({...p,selected:false})))
   }
 

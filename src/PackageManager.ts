@@ -16,7 +16,6 @@ export default class PackageManager {
         const configPath = this.getConfigPath();
         if (await adapter.exists(configPath)){
             this.configuration=JSON.parse(await adapter.read(configPath));
-            console.log({configuration:this.configuration});
          } else {
             await this.initConfigFlie();
              await this.updatePackagesList();
@@ -183,7 +182,6 @@ export default class PackageManager {
     async getReadme(packageId:string) {
         const repo = await this.getPackageById(packageId).repo;
 			const url=`https://raw.githubusercontent.com/${repo}/main/README.md`;
-            console.log(url);
 			try {
               const readmeMD= await request({url:url});
               let el=document.createElement("div");
@@ -200,7 +198,6 @@ export default class PackageManager {
     async installPrompt(packageId:string,promptId:string,overwrite:boolean=true) {
         const repo = await this.getPackageById(packageId).repo;
 			const url=`https://raw.githubusercontent.com/${repo}/master/prompts/${promptId}.md`;
-            console.log(url);
 			try {
                 await this.writePrompt(packageId,promptId,await request({url:url}),overwrite);
                 this.configuration.installedPackages.find(p=>p.packageId===packageId).installedPrompts.push({promptId:promptId,version:this.getPromptById(packageId,promptId).version});
@@ -218,7 +215,6 @@ export default class PackageManager {
 	}
 
     async writePrompt(packageId:string,promptId:string,content:any,overwrite:boolean) {
-		console.log({packageId,promptId,content});
 		const path = this.getPromptPath(packageId,promptId);
 		const adapter = this.app.vault.adapter;
 		try {
