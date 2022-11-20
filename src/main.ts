@@ -47,21 +47,29 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.updateStatusBar(`processing... `);
 		const activeView = this.getActiveView();
 			if (activeView !== null) {
-			const editor = activeView.editor;
-			editor.replaceRange(' <span id="tg-loading" class="loading dots"/> ',editor.getCursor());
+				const editor = activeView.editor;
+				editor.replaceRange(' <span id="tg-loading" class="loading dots"/> ',editor.getCursor());
 			}
 	}
 
 	endProcessing(){ 
+		this.updateStatusBar(``);
 		const activeView = this.getActiveView();
-			if (activeView !== null) {
+		if (activeView !== null) {
 			const editor = activeView.editor;
 			const cursor= editor.getCursor();
 			let text = editor.getValue();
 			text=text.replace(' <span id="tg-loading" class="loading dots"/> ','');
 			editor.setValue(text);
 			editor.setCursor(cursor);
-			}
+		}
+	}
+
+	handelError(error:any){
+		new Notice("🔴Error:Text Generator Plugin: Error check console CTRL+SHIFT+I");
+		console.error(error);
+		this.updateStatusBar(`Error check console`);
+		setTimeout(()=>this.updateStatusBar(``),3000);
 	}
 
 	getActiveView() {
@@ -88,19 +96,13 @@ export default class TextGeneratorPlugin extends Plugin {
 		const ribbonIconEl = this.addRibbonIcon('GENERATE_ICON', 'Generate Text!', async (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
 			const activeFile = this.app.workspace.getActiveFile();
-			this.updateStatusBar(`processing... `);
-			const notice = new Notice('✏️Processing...',30000);
 			const activeView = this.getActiveView();
 			if (activeView !== null) {
 			const editor = activeView.editor;
 			try {
 				await this.textGenerator.generateInEditor(this.settings,false,editor);
-				this.updateStatusBar(``);
 			} catch (error) {
-				new Notice("🔴Error:Text Generator Plugin: Error check console CTRL+SHIFT+I");
-				console.error(error);
-				this.updateStatusBar(`Error: Check Console`);
-				setTimeout(()=>this.updateStatusBar(``),3000);
+				this.handelError(error);
 			}
 			}
 		});
@@ -111,18 +113,10 @@ export default class TextGeneratorPlugin extends Plugin {
 			icon: 'GENERATE_ICON',
 			hotkeys: [{ modifiers: ["Mod"], key: "j" }],
 			editorCallback: async (editor: Editor) => {
-				this.updateStatusBar(`processing... `);
-				const notice = new Notice('✏️Processing...',30000);
 				try {
 					await this.textGenerator.generateInEditor(this.settings,false,editor);
-					this.updateStatusBar(``);
-					notice.hide();
 				} catch (error) {
-					notice.hide();
-					new Notice("🔴Error:Text Generator Plugin: Error check console CTRL+SHIFT+I");
-					console.error(error);
-					this.updateStatusBar(`Error check console`);
-					setTimeout(()=>this.updateStatusBar(``),3000);
+					this.handelError(error);
 				}	
 			}
 		});
@@ -133,18 +127,11 @@ export default class TextGeneratorPlugin extends Plugin {
 			icon: 'GENERATE_META_ICON',
 			hotkeys: [{ modifiers: ["Mod",'Alt'], key: "j" }],
 			editorCallback: async (editor: Editor) => {
-				this.updateStatusBar(`processing... `);
-				const notice = new Notice('✏️Processing...',30000);
 				try {
 					await this.textGenerator.generateInEditor(this.settings,true,editor);
 					this.updateStatusBar(``);
-					notice.hide();
 				} catch (error) {
-					notice.hide();
-					new Notice("🔴Error: Check console CTRL+SHIFT+I");
-					console.error(error);
-					this.updateStatusBar(`Error check console`);
-					setTimeout(()=>this.updateStatusBar(``),3000);
+					this.handelError(error);
 				}
 			}
 		});
@@ -155,24 +142,15 @@ export default class TextGeneratorPlugin extends Plugin {
 			icon: 'GENERATE_ICON',
 			hotkeys: [{ modifiers: ["Mod"], key: "q"}],
 			editorCallback: async (editor: Editor) => {
-				this.updateStatusBar(`processing... `);
-				const notice = new Notice('✏️Processing...',30000);
 				try {
-					new ExampleModal(this.app, this,async (result) => {
-						await this.textGenerator.generateFromTemplate(this.settings, result.path, true, editor,true);
-						this.updateStatusBar(``);
-						notice.hide();
+					new ExampleModal(this.app, this,async (result) => {		
+						await this.textGenerator.generateFromTemplate(this.settings, result.path, true, editor,true);		
 					  },'Generate and Insert Template').open();
 				} catch (error) {
-					notice.hide();
-					new Notice("🔴Error: Check console CTRL+SHIFT+I");
-					console.error(error);
-					this.updateStatusBar(`Error check console`);
-					setTimeout(()=>this.updateStatusBar(``),3000);
+					this.handelError(error);
 				}
 			}
 		});
-
 
 		this.addCommand({
 			id: 'create-generated-text-From-template',
@@ -180,22 +158,13 @@ export default class TextGeneratorPlugin extends Plugin {
 			icon: 'GENERATE_ICON',
 			hotkeys: [{ modifiers: ["Mod","Shift"], key: "q"}],
 			editorCallback: async (editor: Editor) => {
-				this.updateStatusBar(`processing... `);
-				const notice = new Notice('✏️Processing...',30000);
-				
 				try {
 					new ExampleModal(this.app, this,async (result) => {
 						await this.textGenerator.generateFromTemplate(this.settings, result.path, true, editor,false);
-						this.updateStatusBar(``);
-						notice.hide();
 					  },'Generate and Create a New File From Template').open();
 					
 				} catch (error) {
-					notice.hide();
-					new Notice("🔴Error: Check console CTRL+SHIFT+I");
-					console.error(error);
-					this.updateStatusBar(`Error check console`);
-					setTimeout(()=>this.updateStatusBar(``),3000);
+					this.handelError(error);
 				}
 			}
 		});
@@ -206,20 +175,12 @@ export default class TextGeneratorPlugin extends Plugin {
 			icon: 'GENERATE_ICON',
 			hotkeys: [{ modifiers: ['Alt'], key: "q"}],
 			editorCallback: async (editor: Editor) => {
-				this.updateStatusBar(`processing... `);
-				const notice = new Notice('✏️Processing...',30000);
 				try {
 					new ExampleModal(this.app, this,async (result) => {
 						await this.textGenerator.createToFile(this.settings, result.path, true, editor,true);
-						this.updateStatusBar(``);
-						notice.hide();
 					  },'Insert Template').open();
 				} catch (error) {
-					notice.hide();
-					new Notice("🔴Error: Check console CTRL+SHIFT+I");
-					console.error(error);
-					this.updateStatusBar(`Error check console`);
-					setTimeout(()=>this.updateStatusBar(``),3000);
+					this.handelError(error);
 				}	
 			}
 		});
@@ -230,20 +191,12 @@ export default class TextGeneratorPlugin extends Plugin {
 			icon: 'GENERATE_ICON',
 			hotkeys: [{ modifiers: ["Shift","Alt"], key: "q"}],
 			editorCallback: async (editor: Editor) => {
-				this.updateStatusBar(`processing... `);
-				const notice = new Notice('✏️Processing...',30000);
 				try {
 					new ExampleModal(this.app, this,async (result) => {
 						await this.textGenerator.createToFile(this.settings, result.path, true, editor,false);
-						this.updateStatusBar(``);
-						notice.hide();
 					  },'Create a New File From Template').open();
 				} catch (error) {
-					notice.hide();
-					new Notice("🔴Error: Check console CTRL+SHIFT+I");
-					console.error(error);
-					this.updateStatusBar(`Error check console`);
-					setTimeout(()=>this.updateStatusBar(``),3000);
+					this.handelError(error);
 				}	
 			}
 		});
@@ -291,11 +244,7 @@ export default class TextGeneratorPlugin extends Plugin {
 						await this.saveSettings();
 					  },'Choose a model').open();
 				} catch (error) {
-					
-					new Notice("🔴Error: Check console CTRL+SHIFT+I");
-					console.error(error);
-					this.updateStatusBar(`Error check console`);
-					setTimeout(()=>this.updateStatusBar(``),3000);
+					this.handelError(error);
 				}	
 			}
 		});
