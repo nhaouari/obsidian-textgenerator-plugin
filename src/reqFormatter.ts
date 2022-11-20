@@ -77,7 +77,7 @@ export default class ReqFormatter {
            reqParams.body=	JSON.stringify(bodyParams);
        }
 
-      // console.log({bodyParams,reqParams});
+       console.log({bodyParams,reqParams});
        return reqParams;
    }
 }
