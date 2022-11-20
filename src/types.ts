@@ -46,6 +46,8 @@ type PackageTemplate = {
   author:  string;
 	authorUrl: string;
   repo: string;
+  published_at: Date;
+  downloads:number;
 }
 
 type PromptTemplate =  {

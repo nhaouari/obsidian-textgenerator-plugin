@@ -8,6 +8,7 @@ import {SetMaxTokens} from './ui/setMaxTokens';
 import TextGenerator from './textGenerator';
 import { SetModel } from './ui/setModel';
 import PackageManager from './PackageManager';
+import { PackageManagerUI } from './ui/PackageManagerUI';
 
 
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
@@ -45,6 +46,31 @@ export default class TextGeneratorPlugin extends Plugin {
         }
     }
 
+	startProcessing(){
+		//this.updateStatusBar(`processing... `);
+		//const notice = new Notice('✏️Processing...',30000);
+		this.updateStatusBar(`processing... `);
+		const activeView = this.getActiveView();
+			if (activeView !== null) {
+			const editor = activeView.editor;
+			editor.replaceRange(' <span id="tg-loading" class="loading dots"/> ',editor.getCursor());
+			}
+	}
+
+	endProcessing(){ 
+		const activeView = this.getActiveView();
+			if (activeView !== null) {
+			const editor = activeView.editor;
+			const cursor= editor.getCursor();
+			let text = editor.getValue();
+			text=text.replace(' <span id="tg-loading" class="loading dots"/> ','');
+			editor.setValue(text);
+			editor.setCursor(cursor);
+			}
+		//document.querySelectorAll("#tg-loading").forEach(e => e.remove());
+		//this.updateStatusBar(`processing... `);
+	}
+
 	getActiveView() {
         const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (activeView !== null) {
@@ -66,7 +92,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		
 		this.packageManager= new PackageManager(this.app,this.settings.promptsPath);
 		await this.packageManager.load();
-		debugger
+		
 
 		const adapter = this.app.vault.adapter; 
 		//this.settings.communityPrompts=JSON.parse(await adapter.read(normalizePath(app.vault.configDir + "/community-prompts.json")));
@@ -77,7 +103,8 @@ export default class TextGeneratorPlugin extends Plugin {
 		const ribbonIconEl = this.addRibbonIcon('GENERATE_ICON', 'Generate Text!', async (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
 			const activeFile = this.app.workspace.getActiveFile();
-			this.updateStatusBar(`processing... `);const notice = new Notice('✏️Processing...',30000);
+			this.updateStatusBar(`processing... `);
+			const notice = new Notice('✏️Processing...',30000);
 			const activeView = this.getActiveView();
 			if (activeView !== null) {
 			const editor = activeView.editor;
@@ -256,6 +283,21 @@ export default class TextGeneratorPlugin extends Plugin {
 
 			}
 		});
+
+		this.addCommand({
+			id: 'packageManager',
+			name: 'Template Packet Manager',
+			hotkeys: [{ modifiers: ["Ctrl","Alt"], key: "3" }],
+			editorCallback: async () => {
+				new PackageManagerUI(this.app,this,this.settings.max_tokens.toString(),async (result: string) => {
+					this.settings.max_tokens = parseInt(result);
+					await this.saveSettings();
+				    this.updateStatusBar('');
+					new Notice(`Set Max Tokens to ${result}!`);
+				  }).open();
+
+			}
+		});
 		
 		this.addCommand({
 			id: 'set-model',
@@ -278,37 +320,10 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 		});
 
-
-		this.addCommand({
-			id: 'Downloader-page',
-			name: 'Downloader-page',
-			icon: 'GENERATE_ICON',
-			hotkeys: [{ modifiers: ["Meta",'Alt'], key: "d"}],
-			editorCallback: async (editor: Editor) => {
-				this.updateStatusBar(`processing... `);
-				try {
-					this.getRelease();
-					new DownloaderPage(this.app, this,async (result) => {
-						//await this.textGenerator.createToFile(this.settings, result.path, true, editor,false);
-						this.updateStatusBar(``);
-						this.downloadTemplate(result.id);
-
-					  },'Downloader page').open();
-
-				} catch (error) {
-					notice.hide();
-					new Notice("🔴Error: Check console CTRL+SHIFT+I");
-					console.error(error);
-					this.updateStatusBar(`Error check console`);
-					setTimeout(()=>this.updateStatusBar(``),3000);
-				}	
-			}
-		});
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new TextGeneratorSettingTab(this.app, this));
 
 	}
-
 
 	async downloadTemplate(templateId:string){
 		if(!await this.templateExist(templateId) || await this.newUpdateExist()) {

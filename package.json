@@ -13,7 +13,8 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^16.11.6",
-		"@types/semver": "^7.3.13",
+		"@types/react": "^18.0.24",
+		"@types/react-dom": "^18.0.8",
 		"@typescript-eslint/eslint-plugin": "^5.2.0",
 		"@typescript-eslint/parser": "^5.2.0",
 		"builtin-modules": "^3.2.0",
@@ -23,10 +24,16 @@
 		"typescript": "4.4.4"
 	},
 	"dependencies": {
+		"@emotion/react": "^11.10.5",
+		"@emotion/styled": "^11.10.5",
+		"@material-ui/core": "^4.12.4",
+		"@material-ui/icons": "^4.11.3",
+		"@mui/icons-material": "^5.10.9",
+		"@mui/material": "^5.10.12",
 		"handlebars": "^4.7.7",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"request": "^2.88.2",
-		"semver": "^7.3.8"
+		"text-spinners": "^1.0.5"
 	}
 }

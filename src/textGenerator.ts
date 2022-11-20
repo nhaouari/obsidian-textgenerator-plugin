@@ -24,15 +24,19 @@ export default class TextGenerator {
         reqParameters=this.reqFormatter.prepareReqParameters(reqParameters,insertMetadata,path);
         let text
         try {
+            this.plugin.startProcessing();
             text = await this.getGeneratedText(reqParameters);
+            this.plugin.endProcessing();
             return text;
         } catch (error) {
             console.error(error);
+            this.plugin.endProcessing();
             return Promise.reject(error);
         }
     }
     
     async generateFromTemplate(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor,activeFile:boolean=true) {
+        const cursor= editor.getCursor();
         const context = await this.contextManager.getContext(editor,insertMetadata,templatePath);
         const text = await this.generate(context,insertMetadata,params,templatePath);
         
@@ -46,13 +50,14 @@ export default class TextGenerator {
                 openFile(this.app,file);
               }).open();
           } else {
-            this.insertGeneratedText(text,editor);
+            this.insertGeneratedText(text,editor,cursor);
           }  
     }
     
     async generateInEditor(params: TextGeneratorSettings, insertMetadata: boolean = false,editor:Editor) {
+        const cursor= editor.getCursor();
         const text = await this.generate(await this.contextManager.getContext(editor,insertMetadata),insertMetadata,params);
-        this.insertGeneratedText(text,editor)
+        this.insertGeneratedText(text,editor,cursor);
     }
 
     async createToFile(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor,activeFile:boolean=true){
@@ -86,8 +91,12 @@ export default class TextGenerator {
         return text
     }
 
-    insertGeneratedText(text: string,editor:Editor) {
+    insertGeneratedText(text: string,editor:Editor,cur:any=null) {
         let cursor = editor.getCursor();
+        if(cur){
+            cursor=cur;
+        }
+        
         
         if(editor.listSelections().length > 0){
             const anchor=editor.listSelections()[0].anchor

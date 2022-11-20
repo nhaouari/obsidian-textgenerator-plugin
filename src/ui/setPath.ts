@@ -30,7 +30,6 @@ export class SetPath extends Modal {
 
     },100);
 
-
     new Setting(contentEl)
       .setName("Path")
       .addText((text) =>text

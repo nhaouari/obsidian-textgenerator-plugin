@@ -10,7 +10,6 @@ title:string;
         this.onChoose = onChoose;
         this.plugin=plugin;
         this.title = title;
-        //this.titleEl.createEl("div", { text: title});
         this.modalEl.insertBefore(createEl("div", {text: title,cls:"modelTitle"}),this.modalEl.children[0]);
       }
 
@@ -22,7 +21,7 @@ title:string;
       }
 
     
-    getMetadata(path:string) {
+       getMetadata(path:string) {
         const metadata=this.getFrontmatter(path);
         const validedMetaData:any= {}
 

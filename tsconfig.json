@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "jsx": "react",
     "baseUrl": ".",
     "inlineSourceMap": true,
     "inlineSources": true,
@@ -19,5 +20,5 @@
   },
   "include": [
     "**/*.ts"
-  ]
+, "src/ui/PackageManagerUI.tsx"  ]
 }
