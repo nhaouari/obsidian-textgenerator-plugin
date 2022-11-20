@@ -109,7 +109,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'generate-text',
 			name: 'Generate Text!',
 			icon: 'GENERATE_ICON',
-			hotkeys: [{ modifiers: ["Ctrl"], key: "j" }],
+			hotkeys: [{ modifiers: ["Mod"], key: "j" }],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
 				const notice = new Notice('✏️Processing...',30000);
@@ -131,7 +131,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'generate-text-with-metadata',
 			name: 'Generate Text (use Metadata))!',
 			icon: 'GENERATE_META_ICON',
-			hotkeys: [{ modifiers: ["Ctrl",'Alt'], key: "j" }],
+			hotkeys: [{ modifiers: ["Mod",'Alt'], key: "j" }],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
 				const notice = new Notice('✏️Processing...',30000);
@@ -153,7 +153,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'insert-generated-text-From-template',
 			name: 'Generate and Insert Template',
 			icon: 'GENERATE_ICON',
-			hotkeys: [{ modifiers: ["Ctrl",'Meta'], key: "j"}],
+			hotkeys: [{ modifiers: ["Mod"], key: "q"}],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
 				const notice = new Notice('✏️Processing...',30000);
@@ -178,7 +178,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'create-generated-text-From-template',
 			name: 'Generate and Create a New File From Template',
 			icon: 'GENERATE_ICON',
-			hotkeys: [{ modifiers: ["Ctrl","Shift"], key: "j"}],
+			hotkeys: [{ modifiers: ["Mod","Shift"], key: "q"}],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
 				const notice = new Notice('✏️Processing...',30000);
@@ -204,7 +204,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'insert-text-From-template',
 			name: 'Insert Template',
 			icon: 'GENERATE_ICON',
-			hotkeys: [{ modifiers: ['Meta','Alt'], key: "j"}],
+			hotkeys: [{ modifiers: ['Alt'], key: "q"}],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
 				const notice = new Notice('✏️Processing...',30000);
@@ -228,7 +228,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'create-text-From-template',
 			name: 'Create a New File From Template',
 			icon: 'GENERATE_ICON',
-			hotkeys: [{ modifiers: ["Shift","Meta",'Alt'], key: "j"}],
+			hotkeys: [{ modifiers: ["Shift","Alt"], key: "q"}],
 			editorCallback: async (editor: Editor) => {
 				this.updateStatusBar(`processing... `);
 				const notice = new Notice('✏️Processing...',30000);
@@ -252,7 +252,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.addCommand({
 			id: 'set_max_tokens',
 			name: 'Set max_tokens',
-			hotkeys: [{ modifiers: ["Ctrl","Alt"], key: "1" }],
+			hotkeys: [{ modifiers: ["Mod","Alt"], key: "1" }],
 			editorCallback: async () => {
 				new SetMaxTokens(this.app,this,this.settings.max_tokens.toString(),async (result: string) => {
 					this.settings.max_tokens = parseInt(result);
@@ -267,7 +267,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.addCommand({
 			id: 'packageManager',
 			name: 'Template Packet Manager',
-			hotkeys: [{ modifiers: ["Ctrl","Alt"], key: "3" }],
+			hotkeys: [{ modifiers: ["Mod","Alt"], key: "3" }],
 			editorCallback: async () => {
 				new PackageManagerUI(this.app,this,this.settings.max_tokens.toString(),async (result: string) => {
 					this.settings.max_tokens = parseInt(result);
@@ -283,7 +283,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'set-model',
 			name: 'Choose a model',
 			icon: 'GENERATE_ICON',
-			hotkeys: [{ modifiers: ["Ctrl","Alt"], key: "2" }],
+			hotkeys: [{ modifiers: ["Mod","Alt"], key: "2" }],
 			editorCallback: async (editor: Editor) => {
 				try {
 					new SetModel(this.app, this,async (result) => {
