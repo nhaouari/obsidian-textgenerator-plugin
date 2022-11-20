@@ -14,7 +14,6 @@ title:string;
       }
 
       getItems(): Model[] {
-        console.log(this.plugin.settings)
         const templates = Array.from(this.plugin.settings.models.keys()).map(e=>({id:e}));
         return templates;
       }

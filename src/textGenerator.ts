@@ -41,7 +41,6 @@ export default class TextGenerator {
         const text = await this.generate(context,insertMetadata,params,templatePath);
         
         if(activeFile===false){
-            console.log("generateFromTemplate");
             const title=this.app.workspace.activeLeaf.getDisplayText();
             let suggestedPath = 'textgenerator/generations/'+title+"-"+makeid(3)+".md";
             

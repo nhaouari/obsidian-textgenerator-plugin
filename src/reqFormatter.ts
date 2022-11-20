@@ -44,7 +44,7 @@ export default class ReqFormatter {
    
        if (insertMetadata) {
            const frontmatter = this.contextManager.getMetaData(path)?.frontmatter;
-           console.log({path,frontmatter});
+          // console.log({path,frontmatter});
            if (frontmatter == null) {
                new Notice("No valid Metadata (YAML front matter) found!");
            } else {
@@ -77,7 +77,7 @@ export default class ReqFormatter {
            reqParams.body=	JSON.stringify(bodyParams);
        }
 
-       console.log({bodyParams,reqParams});
+      // console.log({bodyParams,reqParams});
        return reqParams;
    }
 }

@@ -79,7 +79,6 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 			.setDesc('text-davinci-002 is Most capable model. text-ada-001 is the fastest model.')
 			.addDropdown((cb) => {
 				cbModelsEl =cb;
-				console.log(models);
 				models.forEach((value,key)=>{
 					cb.addOption(key, key);
 					
@@ -119,7 +118,6 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 			});
 			this.plugin.settings.models=models;
 			await this.plugin.saveSettings();
-			console.log(requestResults);
 		  } else {
 
 			console.error("Please provide a valide api key.");
@@ -196,15 +194,6 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
             })
 			.inputEl.setAttribute('size','50')
 			)
-		.addButton((btn) =>
-        btn
-          .setButtonText("Download templates")
-          .setCta()
-          .onClick(async() => {
-            console.log("Downloading templates...")
-
-          }));
-		
 	
 		containerEl.createEl('H3', {
 				text: 'Considered Context'

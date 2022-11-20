@@ -57,7 +57,7 @@ export default class ContextManager {
                 new Notice("No valid Metadata (YAML front matter) found!");
             }
         
-        console.log(context);
+       // console.log(context);
         return context;
     }
 
