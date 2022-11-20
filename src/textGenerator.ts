@@ -19,9 +19,9 @@ export default class TextGenerator {
         this.reqFormatter = new ReqFormatter(app,plugin,this.contextManager);
 	}
     
-    async generate(prompt:string,insertMetadata: boolean = false,params: any=this.plugin.settings,path:string="") {
+    async generate(prompt:string,insertMetadata: boolean = false,params: any=this.plugin.settings,templatePath:string="") {
         let reqParameters:any = this.reqFormatter.addContext(params,prompt);
-        reqParameters=this.reqFormatter.prepareReqParameters(reqParameters,insertMetadata,path);
+        reqParameters=this.reqFormatter.prepareReqParameters(reqParameters,insertMetadata,templatePath);
         let text
         try {
             this.plugin.startProcessing();
@@ -95,7 +95,6 @@ export default class TextGenerator {
         if(cur){
             cursor=cur;
         }
-        
         
         if(editor.listSelections().length > 0){
             const anchor=editor.listSelections()[0].anchor

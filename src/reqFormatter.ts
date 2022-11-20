@@ -22,7 +22,7 @@ export default class ReqFormatter {
        return params;
    }
    
-    prepareReqParameters(params: TextGeneratorSettings,insertMetadata: boolean,path:string="") {
+    prepareReqParameters(params: TextGeneratorSettings,insertMetadata: boolean,templatePath:string="") {
        let bodyParams:any = {
            "prompt": params.prompt,
            "max_tokens": params.max_tokens,
@@ -43,8 +43,10 @@ export default class ReqFormatter {
        }
    
        if (insertMetadata) {
-           const frontmatter = this.contextManager.getMetaData(path)?.frontmatter;
-          // console.log({path,frontmatter});
+           const activefileFrontmatter =  this.contextManager.getMetaData()?.frontmatter;
+           const templateFrontmatter =  this.contextManager.getMetaData(templatePath)?.frontmatter;
+           const frontmatter = {...templateFrontmatter,...activefileFrontmatter};
+           //console.log({templateFrontmatter,activefileFrontmatter,frontmatter});
            if (frontmatter == null) {
                new Notice("No valid Metadata (YAML front matter) found!");
            } else {
@@ -56,7 +58,7 @@ export default class ReqFormatter {
                
                if (frontmatter["config"]?.context &&  frontmatter["config"]?.context !== "prompt") 
                {
-                   bodyParams[frontmatter["config"].context]=	 params.prompt;
+                   bodyParams[frontmatter["config"].context]=params.prompt;
                    delete bodyParams.prompt;
                }
                
