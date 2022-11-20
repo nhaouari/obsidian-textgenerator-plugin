@@ -1,4 +1,5 @@
 type Context= {
+  includeTitle:boolean;
   includeStaredBlocks:boolean;
   includeFrontmatter:boolean;
   includeHeadings:boolean;

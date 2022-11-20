@@ -200,6 +200,18 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 			});	
 		
 
+
+		new Setting(containerEl)
+		.setName('includeTitle')
+		.setDesc('Include the title of the active document in the considered context.')
+		.addToggle(v => v
+			.setValue(this.plugin.settings.context.includeTitle)
+			.onChange(async (value) => {
+				this.plugin.settings.context.includeTitle = value;
+				await this.plugin.saveSettings();
+			}));
+				
+
 		new Setting(containerEl)
 		.setName('staredBlocks')
 		.setDesc('Include stared blocks in the considered context.')
@@ -211,7 +223,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 			}));
 		
 		containerEl.createEl('H3', {
-				text: 'Included information with templates'
+				text: 'Considered Context For Templates'
 			});	
 		
 		new Setting(containerEl)
@@ -246,7 +258,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 					}));
 
 		new Setting(containerEl)
-				.setName('mentions')
+				.setName('includeMentions')
 				.setDesc('Include paragraphs from mentions (linked, unliked).')
 				.addToggle(v => v
 					.setValue(this.plugin.settings.context.includeMentions )

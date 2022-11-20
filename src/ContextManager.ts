@@ -19,6 +19,10 @@ export default class ContextManager {
         let path ="";
          /* Add the content of the stared Headings */
         
+        if(contextOptions.includeTitle){
+            context += this.getActiveFileTitle()
+        }
+         
         if(contextOptions.includeStaredBlocks){
             context += await this.getStaredBlocks();
         }
@@ -188,6 +192,10 @@ export default class ContextManager {
         } else {
             console.error("Heading not found ");
         }        
+    }
+
+    getActiveFileTitle(){
+        return `title: ${this.app.workspace.getActiveFile().basename}\n`;
     }
 
     getMetaData(path:string="") {

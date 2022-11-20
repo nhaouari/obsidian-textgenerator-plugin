@@ -19,6 +19,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	showStatusBar: true,
 	promptsPath:"templates/prompts",
 	context:{
+		includeTitle:false,
 		includeStaredBlocks:true,
 		includeFrontmatter:true,
 		includeHeadings:true,

@@ -116,13 +116,13 @@ export default class PackageManager {
         const p=await this.getPackageById(packageId);
         const repo = p.repo;
         const release = await this.getReleaseByRepo(repo);
-        const prompts= await this.getAsset(release,'prompts.json'); 
+        const data= await this.getAsset(release,'data.json'); 
         // this.configuration.installedPackages {packageId,prompts,installedPrompts=empty}
         const installedPrompts:string []=[];
-        this.configuration.installedPackages.push({packageId,prompts,installedPrompts,version:p.version});
+        this.configuration.installedPackages.push({packageId,prompts: data.prompts.map(promptId=>({promptId})),installedPrompts,version:p.version});
 
         if(installAllPrompts) {
-            await Promise.all(prompts.map(prompt=>this.installPrompt(packageId,prompt.promptId,true)));
+            await Promise.all(data.prompts.map(promptId=>this.installPrompt(packageId,promptId,true)));
             console.log("all prompts installed");
         }
         
@@ -200,7 +200,7 @@ export default class PackageManager {
 			const url=`https://raw.githubusercontent.com/${repo}/master/prompts/${promptId}.md`;
 			try {
                 await this.writePrompt(packageId,promptId,await request({url:url}),overwrite);
-                this.configuration.installedPackages.find(p=>p.packageId===packageId).installedPrompts.push({promptId:promptId,version:this.getPromptById(packageId,promptId).version});
+                this.configuration.installedPackages.find(p=>p.packageId===packageId).installedPrompts.push({promptId:promptId,version:""});//this.getPromptById(packageId,promptId).version
             } catch (error) {
                 console.error(error);
                 Promise.reject(error);
