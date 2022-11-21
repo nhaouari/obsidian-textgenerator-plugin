@@ -11,10 +11,9 @@ export class PackageManagerUI extends Modal {
   onSubmit: (result: string) => void;
   root:any;
 
-  constructor(app: App, plugin:TextGeneratorPlugin,result:string, onSubmit: (result: string) => void) {
+  constructor(app: App, plugin:TextGeneratorPlugin, onSubmit: (result: string) => void) {
     super(app);
     this.plugin=plugin
-    this.result=result;
     this.onSubmit = onSubmit;
     this.modalEl.addClasses(["mod-settings","mod-sidebar-layout"]);
     

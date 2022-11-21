@@ -211,7 +211,6 @@ export default class TextGeneratorPlugin extends Plugin {
 				new SetMaxTokens(this.app,this,this.settings.max_tokens.toString(),async (result: string) => {
 					this.settings.max_tokens = parseInt(result);
 					await this.saveSettings();
-				    this.updateStatusBar('');
 					new Notice(`Set Max Tokens to ${result}!`);
 				  }).open();
 
@@ -220,14 +219,10 @@ export default class TextGeneratorPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'packageManager',
-			name: 'Template Packet Manager',
+			name: 'Template Packages Manager',
 			hotkeys: [{ modifiers: ["Mod","Alt"], key: "3" }],
 			editorCallback: async () => {
-				new PackageManagerUI(this.app,this,this.settings.max_tokens.toString(),async (result: string) => {
-					this.settings.max_tokens = parseInt(result);
-					await this.saveSettings();
-				    this.updateStatusBar('');
-					new Notice(`Set Max Tokens to ${result}!`);
+				new PackageManagerUI(this.app,this,async (result: string) => {
 				  }).open();
 
 			}
