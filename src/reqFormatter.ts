@@ -51,7 +51,7 @@ export default class ReqFormatter {
                new Notice("No valid Metadata (YAML front matter) found!");
            } else {
                if(frontmatter["bodyParams"] && frontmatter["config"]?.append?.bodyParams==false){
-                   bodyParams = frontmatter["bodyParams"];
+                   bodyParams = {prompt:params.prompt,...frontmatter["bodyParams"]};
                } else if (frontmatter["bodyParams"]) {
                    bodyParams = {...bodyParams,...frontmatter["bodyParams"]}; 
                } 
