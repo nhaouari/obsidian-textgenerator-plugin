@@ -27,7 +27,8 @@ export default class TextGenerator {
             this.plugin.startProcessing();
             text = await this.getGeneratedText(reqParameters);
             this.plugin.endProcessing();
-            return text;
+            //console.log(text.replace(/^\n*/g,""));
+            return text.replace(/^\n*/g,"");
         } catch (error) {
             console.error(error);
             this.plugin.endProcessing();

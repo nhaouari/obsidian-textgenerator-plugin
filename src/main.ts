@@ -49,7 +49,15 @@ export default class TextGeneratorPlugin extends Plugin {
 		const activeView = this.getActiveView();
 			if (activeView !== null) {
 				const editor = activeView.editor;
-				editor.replaceRange('  <span id="tg-loading" class="loading dots"/> ',editor.getCursor());
+				
+				const lineNumber = editor.getCursor().line;
+				const selectedText = editor.getLine(lineNumber);
+				if (selectedText.length===0){
+					editor.replaceRange('\n <span id="tg-loading" class="loading dots"/> ',editor.getCursor());
+				} else {
+					editor.replaceRange(' <span id="tg-loading" class="loading dots"/> ',editor.getCursor());
+				}
+				
 			}
 	}
 
@@ -62,10 +70,11 @@ export default class TextGeneratorPlugin extends Plugin {
 			const cursor= editor.getCursor();
 			const top=editor.getScrollInfo().top;
 			let text = editor.getValue();
-			text=text.replace('  <span id="tg-loading" class="loading dots"/> ','');
+			text=text.replace(' <span id="tg-loading" class="loading dots"/> ','');
 			editor.refresh();
 			editor.setValue(text);	
 			editor.focus();
+		
 			let editorContent= editor.getValue();
 			try {
 				editor.setCursor(cursor);
