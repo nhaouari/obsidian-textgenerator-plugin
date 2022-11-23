@@ -17,10 +17,14 @@ export default class ContextManager {
 
         let context= "";
         let path ="";
-         /* Add the content of the stared Headings */
+        const title = this.getActiveFileTitle();
+        const selection = this.getSelection(editor); 
+        
+        /* Add the content of the stared Headings */
         
         if(contextOptions.includeTitle){
-            context += this.getActiveFileTitle()
+           
+            context += title;
         }
          
         if(contextOptions.includeStaredBlocks){
@@ -28,7 +32,7 @@ export default class ContextManager {
         }
 
         /* Add the content of the considered context */
-        context += this.getSelection(editor); 
+        context += selection
 
         let frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document 
         /* apply template */
@@ -47,7 +51,7 @@ export default class ContextManager {
             
             if(contextOptions.includeMentions) blocks['mentions']= await this.getMentions(this.app.workspace.activeLeaf.getDisplayText());
             
-            const options={...blocks["frontmatter"],...blocks["headings"],context: context,...blocks};
+            const options={title,selection,...blocks["frontmatter"],...blocks["headings"],context: context,...blocks};
            
             context=await this.templateFromPath(templatePath,options);
             frontmatter = {...this.getMetaData(templatePath)?.frontmatter,...frontmatter}; // frontmatter of active document priority is higher than frontmatter of the template
