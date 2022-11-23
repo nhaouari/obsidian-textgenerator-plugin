@@ -25,7 +25,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		containerEl.createEl('H1', {
-			text: 'Text generator Plugin Settings'
+			text: 'Text Generator Plugin Settings'
 		});
 		
 		containerEl.createEl('H1', {

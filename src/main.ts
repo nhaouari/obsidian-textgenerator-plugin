@@ -1,4 +1,4 @@
-import {addIcon, Notice, Plugin, MarkdownView, Editor} from 'obsidian';
+import {addIcon, Notice, Plugin, MarkdownView, Editor,App} from 'obsidian';
 import {ExampleModal} from './model';
 import {TextGeneratorSettings,Context} from './types';
 import {GENERATE_ICON,GENERATE_META_ICON} from './constants';
@@ -49,20 +49,37 @@ export default class TextGeneratorPlugin extends Plugin {
 		const activeView = this.getActiveView();
 			if (activeView !== null) {
 				const editor = activeView.editor;
-				editor.replaceRange(' <span id="tg-loading" class="loading dots"/> ',editor.getCursor());
+				editor.replaceRange('  <span id="tg-loading" class="loading dots"/> ',editor.getCursor());
 			}
 	}
 
 	endProcessing(){ 
 		this.updateStatusBar(``);
 		const activeView = this.getActiveView();
+		this.getActiveView
 		if (activeView !== null) {
 			const editor = activeView.editor;
 			const cursor= editor.getCursor();
+			const top=editor.getScrollInfo().top;
 			let text = editor.getValue();
-			text=text.replace(' <span id="tg-loading" class="loading dots"/> ','');
-			editor.setValue(text);
-			editor.setCursor(cursor);
+			text=text.replace('  <span id="tg-loading" class="loading dots"/> ','');
+			editor.refresh();
+			editor.setValue(text);	
+			editor.focus();
+			let editorContent= editor.getValue();
+			try {
+				editor.setCursor(cursor);
+			} catch (error) {
+				setTimeout(()=>{
+				 try {
+					editor.scrollTo(0,top);
+					editor.setCursor(cursor);
+				 } catch (e) {
+					console.error(error);
+					console.log({editorContent,cursor});
+				 }
+				},0)
+			}
 		}
 	}
 
