@@ -216,7 +216,6 @@ export default class ContextManager {
             this.app.metadataCache.getCache(this.app.workspace.getActiveFile().path);
             return {...cache,path:activeFile.path};
          }
-    
         return null
     }
     
