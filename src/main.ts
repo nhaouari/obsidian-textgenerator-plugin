@@ -271,6 +271,21 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 		});
 
+		
+		this.addCommand({
+			id: 'create-template',
+			name: 'Create a Template',
+			icon: 'GENERATE_ICON',
+			hotkeys: [{ modifiers: ["Alt"], key: "c"}],
+			editorCallback: async (editor: Editor) => {
+				try {
+					await this.textGenerator.createTemplate(editor);
+				} catch (error) {
+					this.handelError(error);
+				}	
+			}
+		});
+
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new TextGeneratorSettingTab(this.app, this));
 	}

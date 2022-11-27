@@ -77,14 +77,49 @@ export default class TextGenerator {
       }  
     }
 
+    async createTemplate(editor:Editor){
+        const title=this.app.workspace.activeLeaf.getDisplayText();
+
+        const promptInfo= 
+`PromptInfo:
+ promptId: ${title}
+ name: 🗞️${title} 
+ description: ${title}
+ required_values: 
+ author: 
+ tags: 
+ version: 0.0.1`
+        const activeDocContent= editor.getValue(); 
+        let templateContent = activeDocContent;
+        const metadata = this.contextManager.getMetaData();
+        if (!metadata.hasOwnProperty("frontmatter") && metadata["frontmatter"].hasOwnProperty("PromptInfo")) {
+            if(templateContent.startsWith("---")){
+                templateContent=templateContent.replace("---",`---\n${promptInfo}`)    
+            } else {
+                templateContent=
+`---
+${promptInfo}
+---
+${templateContent}
+`
+            }
+        }
+        const suggestedPath = `${this.plugin.settings.promptsPath}/local/${title}.md`;
+        new SetPath(this.app,suggestedPath,async (path: string) => {
+            const file= await createFileWithInput(path,templateContent,this.app);
+            openFile(this.app,file);
+          }).open();
+    }
+
     async getGeneratedText(reqParams: any) {
         const extractResult = reqParams?.extractResult;
         delete reqParams?.extractResult;
         let requestResults;
         try {
             requestResults = JSON.parse(await request(reqParams));
+            console.log({requestResults});
         } catch (error) {
-            console.error(error);
+            console.error(requestResults,error);
             return Promise.reject(error);
         }
         const text = eval(extractResult);
@@ -106,6 +141,5 @@ export default class TextGenerator {
         } 
         editor.replaceRange(text, cursor);
     }
- 
 }
 
