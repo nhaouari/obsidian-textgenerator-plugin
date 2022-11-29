@@ -20,19 +20,23 @@ export default class TextGenerator {
 	}
     
     async generate(prompt:string,insertMetadata: boolean = false,params: any=this.plugin.settings,templatePath:string="") {
-        let reqParameters:any = this.reqFormatter.addContext(params,prompt);
-        reqParameters=this.reqFormatter.prepareReqParameters(reqParameters,insertMetadata,templatePath);
-        let text
-        try {
-            this.plugin.startProcessing();
-            text = await this.getGeneratedText(reqParameters);
-            this.plugin.endProcessing();
-            //console.log(text.replace(/^\n*/g,""));
-            return text.replace(/^\n*/g,"");
-        } catch (error) {
-            console.error(error);
-            this.plugin.endProcessing();
-            return Promise.reject(error);
+        if(!this.plugin.processing){
+            let reqParameters:any = this.reqFormatter.addContext(params,prompt);
+            reqParameters=this.reqFormatter.prepareReqParameters(reqParameters,insertMetadata,templatePath);
+            let text
+            try {
+                this.plugin.startProcessing();
+                text = await this.getGeneratedText(reqParameters);
+                this.plugin.endProcessing();
+                //console.log(text.replace(/^\n*/g,""));
+                return text.replace(/^\n*/g,"");
+            } catch (error) {
+                console.error(error);
+                this.plugin.endProcessing();
+                return Promise.reject(error);
+            }
+        } else {
+            return Promise.reject(new Error("There is another generation process"));
         }
     }
     
@@ -112,18 +116,18 @@ ${templateContent}
     }
 
     async getGeneratedText(reqParams: any) {
-        const extractResult = reqParams?.extractResult;
-        delete reqParams?.extractResult;
-        let requestResults;
-        try {
-            requestResults = JSON.parse(await request(reqParams));
-            console.log({requestResults});
-        } catch (error) {
-            console.error(requestResults,error);
-            return Promise.reject(error);
-        }
-        const text = eval(extractResult);
-        return text
+            const extractResult = reqParams?.extractResult;
+            delete reqParams?.extractResult;
+            let requestResults;
+            try {
+                requestResults = JSON.parse(await request(reqParams));
+                console.log({requestResults});
+            } catch (error) {
+                console.error(requestResults,error);
+                return Promise.reject(error);
+            }
+            const text = eval(extractResult);
+            return text
     }
 
     insertGeneratedText(text: string,editor:Editor,cur:any=null) {

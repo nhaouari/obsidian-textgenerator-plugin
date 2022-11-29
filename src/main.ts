@@ -8,6 +8,8 @@ import TextGenerator from './textGenerator';
 import { SetModel } from './ui/setModel';
 import PackageManager from './PackageManager';
 import { PackageManagerUI } from './ui/PackageManagerUI';
+import { EditorView } from "@codemirror/view";
+import {spinnersPlugin} from './plugin';
 
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	api_key: "",
@@ -33,6 +35,7 @@ export default class TextGeneratorPlugin extends Plugin {
 	statusBarItemEl: any;
 	textGenerator:TextGenerator;
 	packageManager:PackageManager;
+	processing:boolean=false;
 	
     updateStatusBar(text: string) {
         let text2 = "";
@@ -46,48 +49,35 @@ export default class TextGeneratorPlugin extends Plugin {
 
 	startProcessing(){
 		this.updateStatusBar(`processing... `);
+		this.processing=true;
 		const activeView = this.getActiveView();
 			if (activeView !== null) {
 				const editor = activeView.editor;
-				
-				const lineNumber = editor.getCursor().line;
-				const selectedText = editor.getLine(lineNumber);
-				if (selectedText.length===0){
-					editor.replaceRange('\n <span id="tg-loading" class="loading dots"/> ',editor.getCursor());
-				} else {
-					editor.replaceRange(' <span id="tg-loading" class="loading dots"/> ',editor.getCursor());
+				// @ts-expect-error, not typed
+				const editorView = activeView.editor.cm as EditorView;
+				const plugin = editorView.plugin(spinnersPlugin);
+				console.log(plugin);
+				if (plugin) {
+					plugin.add(editor.posToOffset(editor.getCursor("to")),editorView);
+					this.app.workspace.updateOptions();
 				}
-				
 			}
 	}
 
 	endProcessing(){ 
 		this.updateStatusBar(``);
+		this.processing=false;
 		const activeView = this.getActiveView();
 		this.getActiveView
 		if (activeView !== null) {
 			const editor = activeView.editor;
-			const cursor= editor.getCursor();
-			const top=editor.getScrollInfo().top;
-			let text = editor.getValue();
-			text=text.replace(' <span id="tg-loading" class="loading dots"/> ','');
-			editor.refresh();
-			editor.setValue(text);	
-			editor.focus();
-		
-			let editorContent= editor.getValue();
-			try {
-				editor.setCursor(cursor);
-			} catch (error) {
-				setTimeout(()=>{
-				 try {
-					editor.scrollTo(0,top);
-					editor.setCursor(cursor);
-				 } catch (e) {
-					console.error(error);
-					console.log({editorContent,cursor});
-				 }
-				},0)
+			// @ts-expect-error, not typed
+			const editorView = activeView.editor.cm as EditorView;
+			const plugin = editorView.plugin(spinnersPlugin);
+			console.log(plugin);
+
+			if (plugin) {
+				plugin.remove(editor.posToOffset(editor.getCursor("to")),editorView);
 			}
 		}
 	}
@@ -112,12 +102,13 @@ export default class TextGeneratorPlugin extends Plugin {
 	async onload() {
 		addIcon("GENERATE_ICON",GENERATE_ICON);
 		addIcon("GENERATE_META_ICON",GENERATE_META_ICON);
-
+	
 		this.textGenerator=new TextGenerator(this.app,this);
 		await this.loadSettings();
 		this.packageManager= new PackageManager(this.app,this.settings.promptsPath);
 		await this.packageManager.load();
-		
+		this.registerEditorExtension(spinnersPlugin);
+		this.app.workspace.updateOptions();
 		this.statusBarItemEl = this.addStatusBarItem();
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('GENERATE_ICON', 'Generate Text!', async (evt: MouseEvent) => {

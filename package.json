@@ -24,6 +24,8 @@
 		"typescript": "4.4.4"
 	},
 	"dependencies": {
+		"@codemirror/language": "^6.3.1",
+		"@codemirror/state": "^6.1.4",
 		"@emotion/react": "^11.10.5",
 		"@emotion/styled": "^11.10.5",
 		"@material-ui/core": "^4.12.4",
