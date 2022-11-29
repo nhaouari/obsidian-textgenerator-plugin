@@ -57,15 +57,12 @@ export default class ContextManager {
             frontmatter = {...this.getMetaData(templatePath)?.frontmatter,...frontmatter}; // frontmatter of active document priority is higher than frontmatter of the template
             path=templatePath;
         } 
-
         /* Add frontmatter */ 
-        if (insertMetadata && frontmatter && Object.keys(frontmatter).length === 0) {
+        if (insertMetadata && (typeof frontmatter !== 'undefined')  && Object.keys(frontmatter).length !== 0) {
                 context=this.getMetaDataAsStr(frontmatter)+context;
-            } else if(insertMetadata && templatePath.length===0) { 
+            } else if (templatePath.length===0 && insertMetadata && (typeof frontmatter === 'undefined' || Object.keys(frontmatter).length === 0)) {
                 new Notice("No valid Metadata (YAML front matter) found!");
-            }
-        
-       // console.log(context);
+            } 
         return context;
     }
 
