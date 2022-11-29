@@ -13,7 +13,7 @@ import {spinnersPlugin} from './plugin';
 
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	api_key: "",
-	engine: "text-davinci-002",
+	engine: "text-davinci-003",
 	max_tokens: 160,
 	temperature: 0.7,
 	frequency_penalty: 0.5,
