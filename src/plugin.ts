@@ -46,7 +46,6 @@ class SpinnersPlugin implements PluginValue {
   }
 
   update(update: ViewUpdate) {
-    console.log({updateupdate:update})
     if (update.docChanged || update.viewportChanged) {
       this.decorations = this.buildDecorations(update.view);
     }
