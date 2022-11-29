@@ -37,8 +37,11 @@ class SpinnersPlugin implements PluginValue {
   }
 
   remove(position:number,update:EditorView) {
+    this.listOfPositions=[];
+    /*
     const index = this.listOfPositions.indexOf(position);
     this.listOfPositions.splice(index, 1);
+    */
     this.decorations = this.buildDecorations(update.viewState);
   }
 
