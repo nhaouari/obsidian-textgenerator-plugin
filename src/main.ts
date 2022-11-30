@@ -56,6 +56,7 @@ export default class TextGeneratorPlugin extends Plugin {
 				// @ts-expect-error, not typed
 				const editorView = activeView.editor.cm as EditorView;
 				const plugin = editorView.plugin(spinnersPlugin);
+
 				if (plugin) {
 					plugin.add(editor.posToOffset(editor.getCursor("to")),editorView);
 					this.app.workspace.updateOptions();
@@ -96,14 +97,14 @@ export default class TextGeneratorPlugin extends Plugin {
             return null
         }
     }
-
+	
 	async onload() {
 		addIcon("GENERATE_ICON",GENERATE_ICON);
 		addIcon("GENERATE_META_ICON",GENERATE_META_ICON);
 	
 		this.textGenerator=new TextGenerator(this.app,this);
 		await this.loadSettings();
-		this.packageManager= new PackageManager(this.app,this.settings.promptsPath);
+		this.packageManager= new PackageManager(this.app,this);
 		await this.packageManager.load();
 		this.registerEditorExtension(spinnersPlugin);
 		this.app.workspace.updateOptions();

@@ -1,14 +1,20 @@
 import {TextGeneratorConfiguration,PackageTemplate,PromptTemplate} from "./types";
-import { App,normalizePath,request,MarkdownRenderer } from "obsidian";
+import { App,normalizePath,request,MarkdownRenderer,Notice } from "obsidian";
+import TextGeneratorPlugin from "./main";
 import {gt} from "semver";
 
+const packageRegistry=`https://raw.githubusercontent.com/text-gen/text-generator-packages/master/community-packages.json`;
 export default class PackageManager {
     configuration: TextGeneratorConfiguration;
     app: App;
-    promptsPath: string;
-	constructor(app:App,promptsPath:string) {
+    plugin: TextGeneratorPlugin;
+	constructor(app:App,plugin: TextGeneratorPlugin) {
         this.app = app;
-        this.promptsPath=promptsPath;
+        this.plugin= plugin;
+    }
+
+    getPromptsPath(){
+        return this.plugin.settings.promptsPath;
     }
 
     async load() {
@@ -18,7 +24,7 @@ export default class PackageManager {
             this.configuration=JSON.parse(await adapter.read(configPath));
          } else {
             await this.initConfigFlie();
-             await this.updatePackagesList();
+            await this.fetch();
         }
     }
      
@@ -28,9 +34,9 @@ export default class PackageManager {
             packages: [],
             installedPackages:[]
             }
-            const adapter=this.app.vault.adapter;
-            adapter.write(this.getConfigPath(),JSON.stringify(initConfig));
-            this.configuration=JSON.parse(await adapter.read(this.getConfigPath()));
+        const adapter=this.app.vault.adapter;
+        adapter.write(this.getConfigPath(),JSON.stringify(initConfig));
+        this.configuration=JSON.parse(await adapter.read(this.getConfigPath()));
     }
 
     getConfigPath(){
@@ -48,8 +54,7 @@ export default class PackageManager {
     }
 
     async checkUpdates(){
-        await this.updatePackagesList();
-        await this.updatePackagesInfo();
+        await this.fetch();
         let packagesIdsToUpdate:string[]=[];
         this.configuration.installedPackages.forEach((installedPackage)=>{
             if (gt(this.getPackageById(installedPackage.packageId).version,installedPackage.version ) ) {
@@ -59,24 +64,63 @@ export default class PackageManager {
         return packagesIdsToUpdate;
     }
 
-    async updatePackagesList() {
-        const remotePackagesListUrl=`https://raw.githubusercontent.com/text-gen/text-generator-packages/master/community-packages.json`;
-        let remotePackagesList:PackageTemplate[] = JSON.parse(await request({url: remotePackagesListUrl}));
-        const newPackages=remotePackagesList.filter(p=>this.getPackageById(p.packageId)===undefined);
-        newPackages.forEach(p=>this.configuration.packages.push(p));
-        await this.updatePackagesStats();
-        this.save();
+    async fetch(){
+        await this.updatePackagesList();    // new packageIds
+        await this.updatePackagesStats();   // update download states
+        await this.updatePackagesInfo();    // update of packages in their repo
     }
 
-    async updatePackagesStats(){
-        const stats:any=await this.getStats(); 
-        this.configuration.packages= this.configuration.packages.map(p=>({...p,downloads:stats[p.packageId]?stats[p.packageId].downloads:0}))
+    async installPackage(packageId:string, installAllPrompts:boolean=true){
+        const p=await this.getPackageById(packageId);
+        const repo = p.repo;
+        const release = await this.getReleaseByRepo(repo);
+        const data= await this.getAsset(release,'data.json'); 
+        // this.configuration.installedPackages {packageId,prompts,installedPrompts=empty}
+        const installedPrompts:string []=[];
+        if (this.getInstalledPackageIndex(packageId)===-1) {
+            this.configuration.installedPackages.push({packageId,prompts: data.prompts.map(promptId=>({promptId})),installedPrompts,version:p.version});
+            if(installAllPrompts) {
+                await Promise.all(data.prompts.map(promptId=>this.installPrompt(packageId,promptId,true)));
+                new Notice(`Package ${packageId} installed`);
+            }
+        }
+        await this.save();
     }
 
-    async getStats(){
-        const remotePackagesListUrl=`https://raw.githubusercontent.com/text-gen/text-generator-packages/master/community-packages-stats.json`;
-        const stats:any[] = JSON.parse(await request({url: remotePackagesListUrl}));
-        return stats;
+    async uninstallPackage(packageId:string) {
+        const index = this.configuration.installedPackages.findIndex(p=>p.packageId===packageId);
+         index !==-1 && this.configuration.installedPackages.splice(index, 1);
+         new Notice(`Package ${packageId} uninstalled`);
+    }
+    //TODO
+    async updatePackage(packageId:string, installAllPrompts:boolean=true){
+        const p=await this.getPackageById(packageId);
+        const repo = p.repo;
+        const release = await this.getReleaseByRepo(repo);
+        const data= await this.getAsset(release,'data.json'); 
+        // this.configuration.installedPackages {packageId,prompts,installedPrompts=empty}
+        const installedPrompts:string []=[];
+        if (this.getInstalledPackageIndex(packageId)===-1) {
+            this.configuration.installedPackages.push({packageId,prompts: data.prompts.map(promptId=>({promptId})),installedPrompts,version:p.version});
+            if(installAllPrompts) {
+                await Promise.all(data.prompts.map(promptId=>this.installPrompt(packageId,promptId,true)));
+                new Notice(`Package ${packageId} installed`);
+            }
+        }
+        await this.save();
+    }
+
+    getPackageById(packageId:string):PackageTemplate{
+        return this.configuration.packages.find(p=>p.packageId===packageId);
+    }
+
+    //TODO
+    getInstalledPackageById(packageId:string):PackageTemplate{
+        return this.configuration.packages.find(p=>p.packageId===packageId);
+    }
+    
+    getInstalledPackageIndex(packageId:string):number{
+        return this.configuration.installedPackages.findIndex(p=>p.packageId===packageId);
     }
 
     getPackagesList() {
@@ -84,10 +128,13 @@ export default class PackageManager {
          return list;
     }
 
-
-    async updatePackagesInfo() {
-        await Promise.all(this.configuration.packages.map(p=>this.updatePackageInfoById(p.packageId))) 
+    //TODO
+    getInstalledPackagesList() {
+        const list=  this.configuration.packages.map(p=>({...p,installed:this.configuration.installedPackages.findIndex(pi=>pi.packageId===p.packageId)!==-1}))
+         return list;
     }
+
+    //-----------
 
     async updatePackageInfoById(packageId:string) {
         const p=this.getPackageById(packageId);
@@ -112,31 +159,9 @@ export default class PackageManager {
         await this.save();
     }
 
-    async installPackage(packageId:string, installAllPrompts:boolean=true){
-        const p=await this.getPackageById(packageId);
-        const repo = p.repo;
-        const release = await this.getReleaseByRepo(repo);
-        const data= await this.getAsset(release,'data.json'); 
-        // this.configuration.installedPackages {packageId,prompts,installedPrompts=empty}
-        const installedPrompts:string []=[];
-        this.configuration.installedPackages.push({packageId,prompts: data.prompts.map(promptId=>({promptId})),installedPrompts,version:p.version});
-
-        if(installAllPrompts) {
-            await Promise.all(data.prompts.map(promptId=>this.installPrompt(packageId,promptId,true)));
-            console.log("all prompts installed");
-        }
-        
-        await this.save();
-    }
-
-    getPackageById(packageId:string):PackageTemplate{
-        return this.configuration.packages.find(p=>p.packageId===packageId);
-    }
-
     getPromptById(packageId:string,promptId:string) {
         return this.configuration.installedPackages.find(p=>p.packageId === packageId).prompts.find(prompt=>prompt.promptId===promptId);
     }
-
 
     async getReleaseByPackageId(packageId:string) {
         const p=await this.getPackageById(packageId);
@@ -147,7 +172,7 @@ export default class PackageManager {
         {
             console.error("Package ID not found.")
         }
-        }
+    }
 
     async getReleaseByRepo(repo:string) {
 		const rawReleases = JSON.parse(await request({
@@ -169,7 +194,7 @@ export default class PackageManager {
 		return release;
 	}
     /** https://github.com/plugins-galore/obsidian-plugins-galore/blob/bd3553908fa9eacf33a5e1c2e7b0dea2a02a9d80/src/util/gitServerInterface.ts#L86 */
-	async getAsset (release: any, name: string) {
+	async getAsset(release: any, name: string) {
 		const asset = release.assets.filter(asset => asset.name === name)[0];
 		if (!asset) {
 			return null;
@@ -195,20 +220,26 @@ export default class PackageManager {
             }
     }
     
+    /**
+     * download the prompt content
+     * update it if it does exist
+     * add if its new
+     */
+
     async installPrompt(packageId:string,promptId:string,overwrite:boolean=true) {
         const repo = await this.getPackageById(packageId).repo;
-			const url=`https://raw.githubusercontent.com/${repo}/master/prompts/${promptId}.md`;
-			try {
-                await this.writePrompt(packageId,promptId,await request({url:url}),overwrite);
-                this.configuration.installedPackages.find(p=>p.packageId===packageId).installedPrompts.push({promptId:promptId,version:""});//this.getPromptById(packageId,promptId).version
-            } catch (error) {
-                console.error(error);
-                Promise.reject(error);
-            }
+        const url=`https://raw.githubusercontent.com/${repo}/master/prompts/${promptId}.md`;
+        try {
+            await this.writePrompt(packageId,promptId,await request({url:url}),overwrite);
+            this.configuration.installedPackages.find(p=>p.packageId===packageId).installedPrompts.push({promptId:promptId,version:""});//this.getPromptById(packageId,promptId).version
+        } catch (error) {
+            console.error(error);
+            Promise.reject(error);
+        }
     }
 
     getPromptPath(packageId:string,promptId:string) {
-		const promptsPath= this.promptsPath;
+		const promptsPath=  this.getPromptsPath();
 		//app.vault.configDir
 		const templatePath=normalizePath(`${promptsPath}/${packageId}/${promptId}.md`);
 		return templatePath;
@@ -218,7 +249,7 @@ export default class PackageManager {
 		const path = this.getPromptPath(packageId,promptId);
 		const adapter = this.app.vault.adapter;
 		try {
-            const packageDir=normalizePath(this.promptsPath+'/'+packageId);
+            const packageDir=normalizePath( this.getPromptsPath()+'/'+packageId);
 			if (!(await adapter.exists(packageDir))) {
 				await adapter.mkdir(packageDir);
 			}
@@ -242,8 +273,27 @@ export default class PackageManager {
 		}
 	}
 
-    async uninstallPackage(packageId:string) {
-       const index = this.configuration.installedPackages.findIndex(p=>p.packageId===packageId);
-        index !==-1 && this.configuration.installedPackages.splice(index, 1);
+    async updatePackagesList() {
+        const remotePackagesListUrl=packageRegistry;
+        let remotePackagesList:PackageTemplate[] = JSON.parse(await request({url: remotePackagesListUrl}));
+        const newPackages=remotePackagesList.filter(p=>this.getPackageById(p.packageId)===undefined);
+        newPackages.forEach(p=>this.configuration.packages.push(p));
+        this.save();
     }
+
+    async updatePackagesInfo() {
+        await Promise.all(this.configuration.packages.map(p=>this.updatePackageInfoById(p.packageId))) 
+    }
+
+    async updatePackagesStats(){
+        const stats:any=await this.getStats(); 
+        this.configuration.packages= this.configuration.packages.map(p=>({...p,downloads:stats[p.packageId]?stats[p.packageId].downloads:0}))
+    }
+
+    async getStats(){
+        const remotePackagesListUrl=`https://raw.githubusercontent.com/text-gen/text-generator-packages/master/community-packages-stats.json`;
+        const stats:any[] = JSON.parse(await request({url: remotePackagesListUrl}));
+        return stats;
+    }
+
 }
