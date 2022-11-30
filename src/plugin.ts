@@ -30,10 +30,7 @@ class SpinnersPlugin implements PluginValue {
 
   add(position:number,update: EditorView){
     this.listOfPositions.push(position);
-    console.log({updateadd:update})
-    console.log({add: this.getListPositions()})
     this.decorations = this.buildDecorations(update.viewState);
-
   }
 
   remove(position:number,update:EditorView) {

@@ -109,7 +109,7 @@ return (
 							<div className={`checkbox-container mod-small ${justInstalled&&"is-enabled"}`} onClick={()=>toggleJustInstalled()}><input type="checkbox" tabIndex="0"/></div>
 						</div>
 					</div>
-					<div className="community-modal-search-summary u-muted">Showing {items.le} Packages Templates:</div>
+					<div className="community-modal-search-summary u-muted">Showing {items.length} Packages Templates:</div>
 				</div>
 				<div className="community-modal-search-results-wrapper">
 					<div className="community-modal-search-results">

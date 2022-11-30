@@ -233,7 +233,6 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.context.includeFrontmatter)
 				.onChange(async (value) => {
 					this.plugin.settings.context.includeFrontmatter = value;
-					console.log(this.plugin.settings);
 					await this.plugin.saveSettings();
 				}));
 		

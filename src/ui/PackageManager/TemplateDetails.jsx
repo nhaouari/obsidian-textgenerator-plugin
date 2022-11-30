@@ -19,7 +19,7 @@ function getTemplateDetails(props,packageManager,updateView) {
         packageManager.getReadme(props.packageId).then((html)=>{
             setHtmlVar(html);
         })
-     }, [])
+     }, [props])
      
     async function install () {
        await packageManager.installPackage(props.packageId);

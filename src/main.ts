@@ -56,7 +56,6 @@ export default class TextGeneratorPlugin extends Plugin {
 				// @ts-expect-error, not typed
 				const editorView = activeView.editor.cm as EditorView;
 				const plugin = editorView.plugin(spinnersPlugin);
-				console.log(plugin);
 				if (plugin) {
 					plugin.add(editor.posToOffset(editor.getCursor("to")),editorView);
 					this.app.workspace.updateOptions();
