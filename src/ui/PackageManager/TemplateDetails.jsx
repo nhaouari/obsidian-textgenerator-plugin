@@ -1,11 +1,16 @@
 import React,{useState,useEffect} from 'react'
 
-function TemplateDetails({packageId,packageManager,updateView}) {
+function TemplateDetails({packageId,packageManager,updateView,setSelectedIndex}) {
 
   return (
     			<div className="community-modal-details">
                     <div className="modal-setting-nav-bar">
-                        <div className="clickable-icon" aria-label="Back">
+                        <div className="clickable-icon" aria-label="Back" onClick={()=>setSelectedIndex(-1)}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+                        strokeLinejoin="round" className="svg-icon lucide-chevron-left" >
+                        <polyline points="15 18 9 12 15 6"/>
+                        </svg>
                         </div>
                     </div>
 				    {packageId&&getTemplateDetails(packageId,packageManager,updateView)}
@@ -13,7 +18,7 @@ function TemplateDetails({packageId,packageManager,updateView}) {
   )
 }
 
-function getTemplateDetails(packageId,packageManager) {
+function getTemplateDetails(packageId,packageManager,updateView) {
     const [htmlVar, setHtmlVar]= useState("");
     const [props, setProps]= useState({package:packageManager.getPackageById(packageId),installed:packageManager.getInstalledPackageById(packageId)});
     
@@ -22,22 +27,24 @@ function getTemplateDetails(packageId,packageManager) {
         packageManager.getReadme(packageId).then((html)=>{
             setHtmlVar(html);
         })
-        console.log(props);
      }, [packageId])
      
     async function install () {
        await packageManager.installPackage(packageId);
        updateLocalView();
+       updateView();
     }
 
     async function uninstall () {
        await packageManager.uninstallPackage(packageId);
        updateLocalView();
+       updateView();
     }
 
     async function update () {
         await packageManager.updatePackage(packageId);
         updateLocalView();
+        updateView();
      }
 
     function updateLocalView () {

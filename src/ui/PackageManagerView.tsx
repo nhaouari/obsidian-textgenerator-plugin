@@ -72,7 +72,8 @@ export const PackageManagerView = (p) => {
 
 return (
 <>
-<div className="modal-container"><div className="modal-bg" style={{opacity: "0.85;"}}></div>
+<div className="modal-container">
+  <div className="modal-bg" style={{opacity: "0.85"}}></div>
 	<div className="modal mod-sidebar-layout mod-community-plugin">
 		<div className="modal-close-button" onClick={handleClose}></div>
 		<div className="modal-title">Community Templates</div>
@@ -117,10 +118,8 @@ return (
 					</div>
 				</div>
 			</div>
-      {selectedIndex !== -1 && items[selectedIndex]? (
-         <TemplateDetails packageId={items[selectedIndex].packageId} packageManager={p.parent.plugin.packageManager} />
-      ) : (
-        <TemplateDetails/>
+      {selectedIndex !== -1 && items[selectedIndex]&& (
+         <TemplateDetails packageId={items[selectedIndex].packageId} packageManager={p.parent.plugin.packageManager} setSelectedIndex={setSelectedIndex} updateView={updateView} />
       )
       }
 
