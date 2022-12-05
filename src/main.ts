@@ -228,6 +228,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.addCommand({
 			id: 'set_max_tokens',
 			name: 'Set max_tokens',
+			icon: 'separator-horizontal',
 			hotkeys: [{ modifiers: ["Alt"], key: "1" }],
 			callback: async () => {
 				new SetMaxTokens(this.app,this,this.settings.max_tokens.toString(),async (result: string) => {
@@ -242,7 +243,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.addCommand({
 			id: 'set-model',
 			name: 'Choose a model',
-			icon: 'GENERATE_ICON',
+			icon: 'list-start',
 			hotkeys: [{ modifiers: ["Alt"], key: "2" }],
 			callback: async () => {
 				try {
@@ -271,7 +272,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.addCommand({
 			id: 'create-template',
 			name: 'Create a Template',
-			icon: 'GENERATE_ICON',
+			icon: 'plus',
 			hotkeys: [{ modifiers: ["Alt"], key: "c"}],
 			editorCallback: async (editor: Editor) => {
 				try {
