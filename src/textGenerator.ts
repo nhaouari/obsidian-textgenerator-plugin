@@ -93,21 +93,17 @@ export default class TextGenerator {
  author: 
  tags: 
  version: 0.0.1`
-        const activeDocContent= editor.getValue(); 
-        let templateContent = activeDocContent;
+
+        let templateContent = editor.getValue();
         const metadata = this.contextManager.getMetaData();
-        if (!metadata.hasOwnProperty("frontmatter") && metadata["frontmatter"].hasOwnProperty("PromptInfo")) {
-            if(templateContent.startsWith("---")){
-                templateContent=templateContent.replace("---",`---\n${promptInfo}`)    
-            } else {
-                templateContent=
-`---
-${promptInfo}
----
-${templateContent}
-`
-            }
-        }
+        // We have three cases: no Front-matter / Frontmatter without PromptInfo/ Frontmatter with PromptInfo 
+
+        if (!metadata.hasOwnProperty("frontmatter")) {
+            templateContent=`---\n${promptInfo}\n---\n${templateContent}`
+        } else if (!metadata["frontmatter"].hasOwnProperty("PromptInfo")) {
+            templateContent=templateContent.replace("---",`---\n${promptInfo}`)
+        } 
+
         const suggestedPath = `${this.plugin.settings.promptsPath}/local/${title}.md`;
         new SetPath(this.app,suggestedPath,async (path: string) => {
             const file= await createFileWithInput(path,templateContent,this.app);

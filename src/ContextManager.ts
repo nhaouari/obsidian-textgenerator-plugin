@@ -23,8 +23,7 @@ export default class ContextManager {
         /* Add the content of the stared Headings */
         
         if(contextOptions.includeTitle){
-           
-            context += title;
+            context += `title: ${title}\n`;
         }
          
         if(contextOptions.includeStaredBlocks){
@@ -196,7 +195,7 @@ export default class ContextManager {
     }
 
     getActiveFileTitle(){
-        return `title: ${this.app.workspace.getActiveFile().basename}\n`;
+        return `${this.app.workspace.getActiveFile().basename}`;
     }
 
     getMetaData(path:string="") {
