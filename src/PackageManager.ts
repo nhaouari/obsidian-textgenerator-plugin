@@ -24,8 +24,8 @@ export default class PackageManager {
             this.configuration=JSON.parse(await adapter.read(configPath));
          } else {
             await this.initConfigFlie();
-            await this.fetch();
         }
+        await this.fetch();
     }
      
     async initConfigFlie()
@@ -65,9 +65,11 @@ export default class PackageManager {
     }
 
     async fetch(){
+        console.log("fetch started ");
         await this.updatePackagesList();    // new packageIds
         await this.updatePackagesStats();   // update download states
         await this.updatePackagesInfo();    // update of packages in their repo
+        console.log("fetch end ");
     }
 
     async installPackage(packageId:string, installAllPrompts:boolean=true){
@@ -305,19 +307,22 @@ export default class PackageManager {
     async updatePackagesList() {
         const remotePackagesListUrl=packageRegistry;
         let remotePackagesList:PackageTemplate[] = JSON.parse(await request({url: remotePackagesListUrl}));
-        const newPackages=remotePackagesList.filter(p=>this.getPackageById(p.packageId)===undefined);
+        const newPackages=remotePackagesList.filter(p=>this.getPackageById(p.packageId)===null);
         newPackages.forEach(p=>this.configuration.packages.push(p));
         this.save();
     }
 
     async updatePackagesInfo() {
-        await Promise.all(this.configuration.packages.map(p=>this.updatePackageInfoById(p.packageId))) 
+        await Promise.all(this.configuration.packages.map(p=>this.updatePackageInfoById(p.packageId)));
+        this.save();
     }
 
     async updatePackagesStats(){
         const stats:any=await this.getStats(); 
         this.configuration.packages= this.configuration.packages.map(p=>({...p,downloads:stats[p.packageId]?stats[p.packageId].downloads:0}))
+        this.save();
     }
+
 
     async getStats(){
         const remotePackagesListUrl=`https://raw.githubusercontent.com/text-gen/text-generator-packages/master/community-packages-stats.json`;
