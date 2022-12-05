@@ -15,7 +15,7 @@ title:string;
 
       getItems(): PromptTemplate[] {
         const promptsPath= this.plugin.settings.promptsPath;
-        const paths = app.metadataCache.getCachedFiles().filter(path=>path.includes(promptsPath));
+        const paths = app.metadataCache.getCachedFiles().filter(path=>path.includes(promptsPath)&&!path.includes("/trash/"));
         const templates = paths.map(s=>({title:s.substring(promptsPath.length+1),path:s,...this.getMetadata(s)}))
         return templates;
       }

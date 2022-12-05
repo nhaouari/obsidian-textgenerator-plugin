@@ -83,15 +83,40 @@ export default class PackageManager {
                 await Promise.all(data.prompts.map(promptId=>this.installPrompt(packageId,promptId,true)));
                 new Notice(`Package ${packageId} installed`);
             }
-        }
-        await this.save();
+        }    
     }
 
     async uninstallPackage(packageId:string) {
-        const index = this.configuration.installedPackages.findIndex(p=>p.packageId===packageId);
+         await Promise.all(this.getInstalledPackageById(packageId).prompts.map(p=>this.toTrash(packageId,p.promptId)));
+         const index = this.configuration.installedPackages.findIndex(p=>p.packageId===packageId);
          index !==-1 && this.configuration.installedPackages.splice(index, 1);
          new Notice(`Package ${packageId} uninstalled`);
          await this.save();
+    }
+
+    async toTrash(packageId:string,promptId:string){
+        const adapter = this.app.vault.adapter;
+        const trashPackageDir=normalizePath( this.getPromptsPath()+'/trash/'+packageId);
+        if (!(await adapter.exists(trashPackageDir))) {
+            await adapter.mkdir(trashPackageDir);
+        }
+        const promptsPath=  this.getPromptsPath();
+        const from = this.getPromptPath(packageId,promptId);
+        const to =  normalizePath(`${promptsPath}/trash/${packageId}/${promptId}.md`);
+        if(adapter.exists(from)) {
+            if(!adapter.exists(to)){
+                await adapter.copy(from,to);  
+            } else {
+                await adapter.writeBinary(to,await adapter.readBinary(from)); // if the file exit in trash, overwrite it with the new version
+            }
+            await adapter.trashLocal(from);
+            if (adapter.exists(to)&&adapter.exists(from)) {
+                adapter.remove(from);
+            }
+        } else {
+            console.warn("prompt file does not exist", {packageId,promptId});
+        }
+
     }
 
     async updatePackage(packageId:string){  
