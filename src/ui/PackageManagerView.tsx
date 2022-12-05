@@ -119,7 +119,7 @@ return (
 				</div>
 			</div>
       {selectedIndex !== -1 && items[selectedIndex]&& (
-         <TemplateDetails packageId={items[selectedIndex].packageId} packageManager={p.parent.plugin.packageManager} setSelectedIndex={setSelectedIndex} updateView={updateView} />
+         <TemplateDetails packageId={items[selectedIndex].packageId} packageManager={p.parent.plugin.packageManager} setSelectedIndex={setSelectedIndex} checkForUpdates={checkForUpdates} updateView={updateView} />
       )
       }
 

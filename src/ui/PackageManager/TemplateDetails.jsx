@@ -1,6 +1,6 @@
 import React,{useState,useEffect} from 'react'
 
-function TemplateDetails({packageId,packageManager,updateView,setSelectedIndex}) {
+function TemplateDetails({packageId,packageManager,updateView,setSelectedIndex,checkForUpdates}) {
 
   return (
     			<div className="community-modal-details">
@@ -13,12 +13,12 @@ function TemplateDetails({packageId,packageManager,updateView,setSelectedIndex})
                         </svg>
                         </div>
                     </div>
-				    {packageId&&getTemplateDetails(packageId,packageManager,updateView)}
+				    {packageId&&getTemplateDetails(packageId,packageManager,updateView,checkForUpdates)}
 			    </div>
   )
 }
 
-function getTemplateDetails(packageId,packageManager,updateView) {
+function getTemplateDetails(packageId,packageManager,updateView,checkForUpdates) {
     const [htmlVar, setHtmlVar]= useState("");
     const [props, setProps]= useState({package:packageManager.getPackageById(packageId),installed:packageManager.getInstalledPackageById(packageId)});
     
@@ -45,6 +45,7 @@ function getTemplateDetails(packageId,packageManager,updateView) {
         await packageManager.updatePackage(packageId);
         updateLocalView();
         updateView();
+        checkForUpdates();
      }
 
     function updateLocalView () {
