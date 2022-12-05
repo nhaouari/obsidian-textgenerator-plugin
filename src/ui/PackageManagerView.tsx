@@ -31,14 +31,13 @@ export const PackageManagerView = (p) => {
   }
 
   async function getAllPackages(update=true) {
-
    if(update) await p.parent.plugin.packageManager.updatePackagesList();
    await p.parent.plugin.packageManager.updatePackagesStats();
    let packages= p.parent.plugin.packageManager.getPackagesList();
    if(justInstalled) packages=packages.filter(p=>p.installed===true);
    return packages.map((p,index)=>({...p,index,selected:false})) 
-  // return Data.packages.map((p,index)=>({...p,index,downloads:1000,selected:false,installed:true}))
   }
+
 
   function handleChange(value) {
     setSearchInput(value);
@@ -73,6 +72,7 @@ export const PackageManagerView = (p) => {
 
 return (
 <>
+<div className="modal-container"><div className="modal-bg" style={{opacity: "0.85;"}}></div>
 	<div className="modal mod-sidebar-layout mod-community-plugin">
 		<div className="modal-close-button" onClick={handleClose}></div>
 		<div className="modal-title">Community Templates</div>
@@ -114,14 +114,11 @@ return (
 				<div className="community-modal-search-results-wrapper">
 					<div className="community-modal-search-results">
 						{items.length > 0&& items.map(item=>(<TemplateItem key={item.packageId} props={item} select={select} update={packagesIdsToUpdate.indexOf(item.packageId)!==-1}/>))}
-					  {/* <TemplateItem name="Text-Generator" author="Noureddine" downloads="2500" desc="Renders links in a note's frontmatter as links."  /> */}
-            {/* <TemplateItem name="Text-Generator" author="Noureddine" downloads="2500" desc="Renders links in a note's frontmatter as links." selected= {true}  /> */}
-            
 					</div>
 				</div>
 			</div>
       {selectedIndex !== -1 && items[selectedIndex]? (
-         <TemplateDetails props={items[selectedIndex]} packageManager={p.parent.plugin.packageManager} updateView={updateView} />
+         <TemplateDetails packageId={items[selectedIndex].packageId} packageManager={p.parent.plugin.packageManager} />
       ) : (
         <TemplateDetails/>
       )
@@ -129,6 +126,7 @@ return (
 
 		</div>
 	</div>
+</div> 
 </>
 );
 };

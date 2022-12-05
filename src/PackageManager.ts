@@ -91,34 +91,34 @@ export default class PackageManager {
         const index = this.configuration.installedPackages.findIndex(p=>p.packageId===packageId);
          index !==-1 && this.configuration.installedPackages.splice(index, 1);
          new Notice(`Package ${packageId} uninstalled`);
+         await this.save();
     }
-    //TODO
-    async updatePackage(packageId:string, installAllPrompts:boolean=true){
-        const p=await this.getPackageById(packageId);
-        const repo = p.repo;
-        const release = await this.getReleaseByRepo(repo);
-        const data= await this.getAsset(release,'data.json'); 
-        // this.configuration.installedPackages {packageId,prompts,installedPrompts=empty}
-        const installedPrompts:string []=[];
-        if (this.getInstalledPackageIndex(packageId)===-1) {
-            this.configuration.installedPackages.push({packageId,prompts: data.prompts.map(promptId=>({promptId})),installedPrompts,version:p.version});
-            if(installAllPrompts) {
-                await Promise.all(data.prompts.map(promptId=>this.installPrompt(packageId,promptId,true)));
-                new Notice(`Package ${packageId} installed`);
-            }
-        }
-        await this.save();
-    }
+
+    async updatePackage(packageId:string){  
+         const p=await this.getPackageById(packageId);
+          const index=this.getInstalledPackageIndex(packageId);
+          if (index!==-1) {
+           const repo = p.repo;
+           const release = await this.getReleaseByRepo(repo);
+           const data= await this.getAsset(release,'data.json');
+           let installedPrompts:string []=[];
+           await Promise.all(data.prompts.map(promptId=>this.installPrompt(packageId,promptId,true)));
+           installedPrompts=data.prompts;
+           this.configuration.installedPackages[index]={packageId,prompts: data.prompts,installedPrompts,version:release.version}; 
+          }
+         await this.save();
+         new Notice(`Package ${packageId} updated`);
+         }
 
     getPackageById(packageId:string):PackageTemplate{
-        return this.configuration.packages.find(p=>p.packageId===packageId);
+        const index = this.configuration.packages.findIndex(p=>p.packageId===packageId);
+    
+        if(index !== -1) {
+            return this.configuration.packages[index];
+        }
+        return null;
     }
 
-    //TODO
-    getInstalledPackageById(packageId:string):PackageTemplate{
-        return this.configuration.packages.find(p=>p.packageId===packageId);
-    }
-    
     getInstalledPackageIndex(packageId:string):number{
         return this.configuration.installedPackages.findIndex(p=>p.packageId===packageId);
     }
@@ -128,13 +128,17 @@ export default class PackageManager {
          return list;
     }
 
-    //TODO
-    getInstalledPackagesList() {
-        const list=  this.configuration.packages.map(p=>({...p,installed:this.configuration.installedPackages.findIndex(pi=>pi.packageId===p.packageId)!==-1}))
-         return list;
+    getInstalledPackagesList () {
+        return this.configuration.installedPackages;
     }
 
-    //-----------
+    getInstalledPackageById (packageId:string) {
+        const index = this.configuration.installedPackages.findIndex( p => p.packageId === packageId);
+        if(index !== -1) {
+            return this.configuration.installedPackages[index];
+        }    
+        return null;
+    }
 
     async updatePackageInfoById(packageId:string) {
         const p=this.getPackageById(packageId);
