@@ -124,6 +124,12 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 		});
 
+		const ribbonIconEl2 = this.addRibbonIcon('boxes', 'Text Generator: Templates Pacakges Manager', async (evt: MouseEvent) => {
+			new PackageManagerUI(this.app,this,async (result: string) => {
+			}).open();
+		});
+
+
 		this.addCommand({
 			id: 'generate-text',
 			name: 'Generate Text!',
@@ -156,7 +162,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.addCommand({
 			id: 'insert-generated-text-From-template',
 			name: 'Generate and Insert Template',
-			icon: 'GENERATE_ICON',
+			icon: 'circle',
 			hotkeys: [{ modifiers: ["Mod"], key: "q"}],
 			editorCallback: async (editor: Editor) => {
 				try {
@@ -172,7 +178,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.addCommand({
 			id: 'create-generated-text-From-template',
 			name: 'Generate and Create a New File From Template',
-			icon: 'GENERATE_ICON',
+			icon: 'plus-circle',
 			hotkeys: [{ modifiers: ["Mod","Shift"], key: "q"}],
 			editorCallback: async (editor: Editor) => {
 				try {
@@ -189,7 +195,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.addCommand({
 			id: 'insert-text-From-template',
 			name: 'Insert Template',
-			icon: 'GENERATE_ICON',
+			icon: 'square',
 			hotkeys: [{ modifiers: ['Alt'], key: "q"}],
 			editorCallback: async (editor: Editor) => {
 				try {
@@ -205,7 +211,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.addCommand({
 			id: 'create-text-From-template',
 			name: 'Create a New File From Template',
-			icon: 'GENERATE_ICON',
+			icon: 'plus-square',
 			hotkeys: [{ modifiers: ["Shift","Alt"], key: "q"}],
 			editorCallback: async (editor: Editor) => {
 				try {
@@ -222,8 +228,8 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.addCommand({
 			id: 'set_max_tokens',
 			name: 'Set max_tokens',
-			hotkeys: [{ modifiers: ["Mod","Alt"], key: "1" }],
-			editorCallback: async () => {
+			hotkeys: [{ modifiers: ["Alt"], key: "1" }],
+			callback: async () => {
 				new SetMaxTokens(this.app,this,this.settings.max_tokens.toString(),async (result: string) => {
 					this.settings.max_tokens = parseInt(result);
 					await this.saveSettings();
@@ -234,22 +240,11 @@ export default class TextGeneratorPlugin extends Plugin {
 		});
 
 		this.addCommand({
-			id: 'packageManager',
-			name: 'Template Packages Manager',
-			hotkeys: [{ modifiers: ["Mod","Alt"], key: "3" }],
-			editorCallback: async () => {
-				new PackageManagerUI(this.app,this,async (result: string) => {
-				  }).open();
-
-			}
-		});
-		
-		this.addCommand({
 			id: 'set-model',
 			name: 'Choose a model',
 			icon: 'GENERATE_ICON',
-			hotkeys: [{ modifiers: ["Mod","Alt"], key: "2" }],
-			editorCallback: async (editor: Editor) => {
+			hotkeys: [{ modifiers: ["Alt"], key: "2" }],
+			callback: async () => {
 				try {
 					new SetModel(this.app, this,async (result) => {
 						this.settings.engine=result;
@@ -261,6 +256,17 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 		});
 
+		this.addCommand({
+			id: 'packageManager',
+			name: 'Template Packages Manager',
+			icon: "boxes",
+			hotkeys: [{ modifiers: ["Alt"], key: "3" }],
+			callback: async () => {
+				new PackageManagerUI(this.app,this,async (result: string) => {
+				  }).open();
+
+			}
+		});
 		
 		this.addCommand({
 			id: 'create-template',
