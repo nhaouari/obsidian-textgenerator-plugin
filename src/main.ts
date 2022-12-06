@@ -101,9 +101,8 @@ export default class TextGeneratorPlugin extends Plugin {
 	async onload() {
 		addIcon("GENERATE_ICON",GENERATE_ICON);
 		addIcon("GENERATE_META_ICON",GENERATE_META_ICON);
-	
-		this.textGenerator=new TextGenerator(this.app,this);
 		await this.loadSettings();
+		this.textGenerator=new TextGenerator(this.app,this);
 		this.packageManager= new PackageManager(this.app,this);
 		await this.packageManager.load();
 		this.registerEditorExtension(spinnersPlugin);

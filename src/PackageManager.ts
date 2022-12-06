@@ -25,7 +25,7 @@ export default class PackageManager {
          } else {
             await this.initConfigFlie();
         }
-        await this.fetch();
+        this.fetch();
     }
      
     async initConfigFlie()
@@ -65,11 +65,9 @@ export default class PackageManager {
     }
 
     async fetch(){
-        console.log("fetch started ");
         await this.updatePackagesList();    // new packageIds
         await this.updatePackagesStats();   // update download states
         await this.updatePackagesInfo();    // update of packages in their repo
-        console.log("fetch end ");
     }
 
     async installPackage(packageId:string, installAllPrompts:boolean=true){
