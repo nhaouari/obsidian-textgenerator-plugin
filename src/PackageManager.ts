@@ -25,7 +25,7 @@ export default class PackageManager {
          } else {
             await this.initConfigFlie();
         }
-        this.fetch();
+        await this.fetch();
     }
      
     async initConfigFlie()

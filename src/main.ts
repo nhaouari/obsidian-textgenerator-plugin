@@ -102,9 +102,12 @@ export default class TextGeneratorPlugin extends Plugin {
 		addIcon("GENERATE_ICON",GENERATE_ICON);
 		addIcon("GENERATE_META_ICON",GENERATE_META_ICON);
 		await this.loadSettings();
+		// This adds a settings tab so the user can configure various aspects of the plugin
+		this.addSettingTab(new TextGeneratorSettingTab(this.app, this));
+
 		this.textGenerator=new TextGenerator(this.app,this);
 		this.packageManager= new PackageManager(this.app,this);
-		await this.packageManager.load();
+		
 		this.registerEditorExtension(spinnersPlugin);
 		this.app.workspace.updateOptions();
 		this.statusBarItemEl = this.addStatusBarItem();
@@ -282,8 +285,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 		});
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new TextGeneratorSettingTab(this.app, this));
+		await this.packageManager.load();
 	}
 
 	async loadSettings() {
