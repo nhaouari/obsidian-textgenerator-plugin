@@ -124,7 +124,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 		});
 
-		const ribbonIconEl2 = this.addRibbonIcon('boxes', 'Text Generator: Templates Pacakges Manager', async (evt: MouseEvent) => {
+		const ribbonIconEl2 = this.addRibbonIcon('boxes', 'Text Generator: Templates Packages Manager', async (evt: MouseEvent) => {
 			new PackageManagerUI(this.app,this,async (result: string) => {
 			}).open();
 		});
