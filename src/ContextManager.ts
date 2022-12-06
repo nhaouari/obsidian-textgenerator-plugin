@@ -51,17 +51,23 @@ export default class ContextManager {
             if(contextOptions.includeMentions) blocks['mentions']= await this.getMentions(this.app.workspace.activeLeaf.getDisplayText());
             
             const options={title,selection,...blocks["frontmatter"],...blocks["headings"],context: context,...blocks};
-           
+            
+            console.log({options});
+
             context=await this.templateFromPath(templatePath,options);
             frontmatter = {...this.getMetaData(templatePath)?.frontmatter,...frontmatter}; // frontmatter of active document priority is higher than frontmatter of the template
             path=templatePath;
         } 
-        /* Add frontmatter */ 
-        if (insertMetadata && (typeof frontmatter !== 'undefined')  && Object.keys(frontmatter).length !== 0) {
+        /* Add frontmatter in case on Generate Text with metadata */ 
+
+        if (templatePath.length===0 && insertMetadata) {
+            if ((typeof frontmatter !== 'undefined')  && Object.keys(frontmatter).length !== 0) {
                 context=this.getMetaDataAsStr(frontmatter)+context;
-            } else if (templatePath.length===0 && insertMetadata && (typeof frontmatter === 'undefined' || Object.keys(frontmatter).length === 0)) {
+            } else {
                 new Notice("No valid Metadata (YAML front matter) found!");
-            } 
+            }
+        }
+
         return context;
     }
 
@@ -97,7 +103,9 @@ export default class ContextManager {
             for (let i = 0; i < headings.length; i++) {
                 let textBlock=await this.getTextBloc(headings[i].heading);
                 textBlock=textBlock.substring(textBlock.indexOf(headings[i].heading),textBlock.length-1);
-                textBlock=textBlock.replace(headings[i].heading+"\n","");
+                const headingRegex=new RegExp(`${headings[i].heading}\\s*?\n`, "ig");   
+                console.log({headingRegex,str:`${headings[i].heading}\\s*?\n`,h:headings[i].heading});
+                textBlock=textBlock.replace(headingRegex,"");
                 headingsContent[headings[i].heading]=textBlock;
             }
         }
@@ -152,7 +160,6 @@ export default class ContextManager {
     }
 
     async getStaredBlocks (path:string="") {
-
         const fileCache = this.getMetaData(path);
         let content ="";
         const staredHeadings=fileCache?.headings?.filter(e=>e.heading.substring(e.heading.length-1)==="*")
