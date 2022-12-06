@@ -80,8 +80,8 @@ let's take as an example the following document.
 
 ```
 ---
-title: "Obsidian + Text Generator Plugin: The More Affordable and Powerful AI Text Assistante Helper"
-keywords: AI Text Assistante Helper, text assistant helper, Jasper
+title: "Obsidian + Text Generator Plugin: The More Affordable and Powerful AI Text Assistant Helper"
+keywords: AI Text Assistant Helper, text assistant helper, Jasper
 --- 
 Write conclusion
 ```
@@ -90,8 +90,8 @@ Write conclusion
 By running "Write conclusion " with **Generate Text (use Metadata)**, Text Generator Plugin will append the metadata information and send the command like this.
 
 ```
-title: "Obsidian + Text Generator Plugin: The More Affordable and Powerful AI Text Assistante Helper" 
-keywords: AI Text Assistante Helper, text assistant helper, Jasper 
+title: "Obsidian + Text Generator Plugin: The More Affordable and Powerful AI Text Assistant Helper" 
+keywords: AI Text Assistant Helper, text assistant helper, Jasper 
 Write conclusion  
 ```
 
