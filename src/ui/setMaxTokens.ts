@@ -25,7 +25,7 @@ export class SetMaxTokens extends Modal {
             this.onSubmit(this.result);  
         }
     })
-    },100);
+    },500);
     
 
     new Setting(contentEl)
