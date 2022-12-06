@@ -17,14 +17,16 @@ export class SetMaxTokens extends Modal {
     const { contentEl } = this;
 
     contentEl.createEl("h1", { text: "Max number of tokens" });
-
-    contentEl.addEventListener("keyup", (event)=> {
+    setTimeout(()=>{
+      contentEl.addEventListener("keyup", (event)=> {
         event.preventDefault();
         if (event.key === "Enter") {
             this.close();
             this.onSubmit(this.result);  
         }
     })
+    },100);
+    
 
     new Setting(contentEl)
       .setName("Max number of tokens")
