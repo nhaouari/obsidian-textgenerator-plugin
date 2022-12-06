@@ -74,11 +74,11 @@ return (
 <>
 <div className="modal-container">
   <div className="modal-bg" style={{opacity: "0.85"}}></div>
-	<div className="modal mod-sidebar-layout mod-community-plugin">
+	<div className="modal mod-community-modal mod-sidebar-layout mod-community-plugin">
 		<div className="modal-close-button" onClick={handleClose}></div>
 		<div className="modal-title">Community Templates</div>
 		<div className="modal-content">
-			<div className="community-modal-sidebar">
+			<div className="modal-sidebar community-modal-sidebar">
 				<div className="community-modal-controls">
 					<div className="setting-item">
 						<div className="setting-item-info">
