@@ -26,7 +26,8 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		includeFrontmatter:true,
 		includeHeadings:true,
 		includeChildren:false,
-		includeMentions:false
+		includeMentions:false,
+		includeHighlights:true
 	}
 }
 

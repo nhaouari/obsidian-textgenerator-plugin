@@ -20,10 +20,8 @@ export class PackageManagerUI extends Modal {
   }
 
   async onOpen() {
-
       this.containerEl.createEl("div", {cls:"PackageManager"})
       this.root = createRoot(this.containerEl.children[1]);
-      
       this.root.render(
         <React.StrictMode>
           <PackageManagerView parent={this}/>,

@@ -10,6 +10,10 @@ export default class ContextManager {
 	constructor(app: App, plugin: TextGeneratorPlugin) {
         this.app = app;
 		this.plugin = plugin;
+        Handlebars.registerHelper('substring', function(string:string, start:number, end:number ) {
+            const subString = string.substring( start ,end );
+            return new Handlebars.SafeString(subString);
+        });
 	}
     
     async getContext(editor:Editor,insertMetadata: boolean = false,templatePath:string="") {
@@ -47,13 +51,15 @@ export default class ContextManager {
             if(contextOptions.includeHeadings) blocks["headings"]=await this.getHeadingContent(activeDocCache);
             
             if(contextOptions.includeChildren) blocks["children"]= await this.getChildrenContent(activeDocCache);
+
+            if(contextOptions.includeHighlights) blocks["highlights"]= await this.getHighlights(editor);
             
             if(contextOptions.includeMentions) blocks['mentions']= await this.getMentions(this.app.workspace.activeLeaf.getDisplayText());
+
+
             
             const options={title,selection,...blocks["frontmatter"],...blocks["headings"],context: context,...blocks};
-            
-            console.log({options});
-
+            console.log("Context Varaibles : ",{...options});
             context=await this.templateFromPath(templatePath,options);
             frontmatter = {...this.getMetaData(templatePath)?.frontmatter,...frontmatter}; // frontmatter of active document priority is higher than frontmatter of the template
             path=templatePath;
@@ -104,7 +110,6 @@ export default class ContextManager {
                 let textBlock=await this.getTextBloc(headings[i].heading);
                 textBlock=textBlock.substring(textBlock.indexOf(headings[i].heading),textBlock.length-1);
                 const headingRegex=new RegExp(`${headings[i].heading}\\s*?\n`, "ig");   
-                console.log({headingRegex,str:`${headings[i].heading}\\s*?\n`,h:headings[i].heading});
                 textBlock=textBlock.replace(headingRegex,"");
                 headingsContent[headings[i].heading]=textBlock;
             }
@@ -133,6 +138,12 @@ export default class ContextManager {
             }
         }
         return children
+    }
+
+    async getHighlights(editor:Editor) {
+        const content=editor.getValue();
+        const highlights= content.match(/==(.*?)==/ig)?.map(s=>s.replaceAll("==","")) || [];  
+        return highlights;
     }
 
     async getMentions(title:string) {

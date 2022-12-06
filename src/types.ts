@@ -5,6 +5,7 @@ type Context= {
   includeHeadings:boolean;
   includeChildren:boolean;
   includeMentions:boolean;
+  includeHighlights:boolean;
 }
 
 type TextGeneratorSettings= {

@@ -266,6 +266,16 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					}));
 
+		new Setting(containerEl)
+					.setName('includeHighlights')
+					.setDesc('Include Obsidian Highlights.')
+					.addToggle(v => v
+						.setValue(this.plugin.settings.context.includeHighlights )
+						.onChange(async (value) => {
+							this.plugin.settings.context.includeHighlights = value;
+							await this.plugin.saveSettings();
+						}));
+
 	
 		}
 
