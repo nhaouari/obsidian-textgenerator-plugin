@@ -17,65 +17,74 @@ export default class ContextManager {
 	}
     
     async getContext(editor:Editor,insertMetadata: boolean = false,templatePath:string="") {
-        const contextOptions:Context = this.plugin.settings.context;
+        /* Template */
+        if(templatePath.length > 0){  
+            const options=await this.getTemplateContext(editor,templatePath);
+            const context=await this.templateFromPath(templatePath,options);
+            return context;
+        } else {  /* Without template */
+            let context = await this.getDefaultContext(editor);/* Text Generate */
+            if (insertMetadata) {
+                let frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document 
+                if ((typeof frontmatter !== 'undefined')  && Object.keys(frontmatter).length !== 0) { /* Text Generate with metadata */
+                    context=this.getMetaDataAsStr(frontmatter)+context;
+                } else {
+                    new Notice("No valid Metadata (YAML front matter) found!");
+                }
+            }
+            return context;
+        } 
+    }
 
-        let context= "";
-        let path ="";
+    async getTemplateContext(editor:Editor,templatePath:string=""){
+        const contextOptions:Context = this.plugin.settings.context;
         const title = this.getActiveFileTitle();
         const selection = this.getSelection(editor); 
+        const context = await this.getDefaultContext(editor);
+        const activeDocCache = this.getMetaData(""); // active document
         
-        /* Add the content of the stared Headings */
+        let blocks:any ={};
+        blocks["frontmatter"]={};
+        blocks["headings"]={};
+
+        if(contextOptions.includeFrontmatter) blocks["frontmatter"] = {...this.getFrontmatter(this.getMetaData(templatePath)),...this.getFrontmatter(activeDocCache)};
+
+        if(contextOptions.includeHeadings) blocks["headings"]=await this.getHeadingContent(activeDocCache);
         
+        if(contextOptions.includeChildren) blocks["children"]= await this.getChildrenContent(activeDocCache);
+
+        if(contextOptions.includeHighlights) blocks["highlights"]= await this.getHighlights(editor);
+        
+        if(contextOptions.includeMentions) blocks['mentions']= await this.getMentions(this.app.workspace.activeLeaf.getDisplayText());
+
+        const options={title,selection,...blocks["frontmatter"],...blocks["headings"],context: context,...blocks};
+        console.log("Context Variables : ",{...options});
+    return options;
+    }
+    
+    async getDefaultContext(editor:Editor){
+        const contextOptions:Context = this.plugin.settings.context;
+       
+        const title = this.getActiveFileTitle();
+        const selection = this.getSelection(editor); 
+       
+        let context= "";
+       
         if(contextOptions.includeTitle){
             context += `title: ${title}\n`;
         }
-         
+       
         if(contextOptions.includeStaredBlocks){
             context += await this.getStaredBlocks();
         }
 
-        /* Add the content of the considered context */
-        context += selection
-
-        let frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document 
-        /* apply template */
-        if(templatePath.length > 0){
-            let blocks:any ={};
-            const activeDocCache = this.getMetaData(path);
-            
-            blocks["frontmatter"]={};
-            blocks["headings"]={};
-
-            if(contextOptions.includeFrontmatter) blocks["frontmatter"] = {...this.getFrontmatter(this.getMetaData(templatePath)),...this.getFrontmatter(activeDocCache)};
-
-            if(contextOptions.includeHeadings) blocks["headings"]=await this.getHeadingContent(activeDocCache);
-            
-            if(contextOptions.includeChildren) blocks["children"]= await this.getChildrenContent(activeDocCache);
-
-            if(contextOptions.includeHighlights) blocks["highlights"]= await this.getHighlights(editor);
-            
-            if(contextOptions.includeMentions) blocks['mentions']= await this.getMentions(this.app.workspace.activeLeaf.getDisplayText());
-
-
-            
-            const options={title,selection,...blocks["frontmatter"],...blocks["headings"],context: context,...blocks};
-            console.log("Context Varaibles : ",{...options});
-            context=await this.templateFromPath(templatePath,options);
-            frontmatter = {...this.getMetaData(templatePath)?.frontmatter,...frontmatter}; // frontmatter of active document priority is higher than frontmatter of the template
-            path=templatePath;
-        } 
-        /* Add frontmatter in case on Generate Text with metadata */ 
-
-        if (templatePath.length===0 && insertMetadata) {
-            if ((typeof frontmatter !== 'undefined')  && Object.keys(frontmatter).length !== 0) {
-                context=this.getMetaDataAsStr(frontmatter)+context;
-            } else {
-                new Notice("No valid Metadata (YAML front matter) found!");
-            }
-        }
+        context+=selection;
 
         return context;
     }
+
+
+
 
     async templateFromPath(templatePath:string,options:any) {
         const templateFile = await this.app.vault.getAbstractFileByPath(templatePath);

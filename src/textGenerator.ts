@@ -63,6 +63,12 @@ export default class TextGenerator {
         const text = await this.generate(await this.contextManager.getContext(editor,insertMetadata),insertMetadata,params);
         this.insertGeneratedText(text,editor,cursor);
     }
+  
+    async generatePrompt(promptText: string, insertMetadata: boolean = false,editor:Editor) {
+        const cursor= editor.getCursor();
+        const text = await this.generate(promptText,insertMetadata);
+        this.insertGeneratedText(text,editor,cursor);
+    }
 
     async createToFile(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor,activeFile:boolean=true){
         const context = await this.contextManager.getContext(editor,insertMetadata,templatePath);
@@ -81,10 +87,16 @@ export default class TextGenerator {
       }  
     }
 
-    async createTemplate(editor:Editor){
+    async createTemplateFromEditor(editor:Editor) {
         const title=this.app.workspace.activeLeaf.getDisplayText();
+        const content= editor.getValue();
+        await this.createTemplate(content,title);     
+    }
 
-        const promptInfo= 
+
+
+    async createTemplate(content:string,title:string=""){
+const promptInfo= 
 `PromptInfo:
  promptId: ${title}
  name: 🗞️${title} 
@@ -93,8 +105,8 @@ export default class TextGenerator {
  author: 
  tags: 
  version: 0.0.1`
-
-        let templateContent = editor.getValue();
+        
+        let templateContent = content;
         const metadata = this.contextManager.getMetaData();
         // We have three cases: no Front-matter / Frontmatter without PromptInfo/ Frontmatter with PromptInfo 
 
@@ -103,13 +115,12 @@ export default class TextGenerator {
         } else if (!metadata["frontmatter"].hasOwnProperty("PromptInfo")) {
             templateContent=templateContent.replace("---",`---\n${promptInfo}`)
         } 
-
         const suggestedPath = `${this.plugin.settings.promptsPath}/local/${title}.md`;
         new SetPath(this.app,suggestedPath,async (path: string) => {
             const file= await createFileWithInput(path,templateContent,this.app);
             openFile(this.app,file);
-          }).open();
-    }
+          }).open(); 
+        }
 
     async getGeneratedText(reqParams: any) {
             const extractResult = reqParams?.extractResult;

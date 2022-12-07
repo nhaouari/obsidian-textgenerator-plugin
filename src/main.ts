@@ -1,4 +1,4 @@
-import {addIcon, Notice, Plugin, MarkdownView, Editor,App} from 'obsidian';
+import {addIcon, Notice, Plugin, MarkdownView, Editor,App,MarkdownRenderer,MarkdownPostProcessorContext,debounce,TFile,CachedMetadata} from 'obsidian';
 import {ExampleModal} from './model';
 import {TextGeneratorSettings,Context} from './types';
 import {GENERATE_ICON,GENERATE_META_ICON} from './constants';
@@ -10,6 +10,7 @@ import PackageManager from './PackageManager';
 import { PackageManagerUI } from './ui/PackageManagerUI';
 import { EditorView } from "@codemirror/view";
 import {spinnersPlugin} from './plugin';
+import Handlebars from 'handlebars';
 
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	api_key: "",
@@ -69,7 +70,6 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.updateStatusBar(``);
 		this.processing=false;
 		const activeView = this.getActiveView();
-		this.getActiveView
 		if (activeView !== null) {
 			const editor = activeView.editor;
 			// @ts-expect-error, not typed
@@ -105,10 +105,8 @@ export default class TextGeneratorPlugin extends Plugin {
 		await this.loadSettings();
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new TextGeneratorSettingTab(this.app, this));
-
 		this.textGenerator=new TextGenerator(this.app,this);
 		this.packageManager= new PackageManager(this.app,this);
-		
 		this.registerEditorExtension(spinnersPlugin);
 		this.app.workspace.updateOptions();
 		this.statusBarItemEl = this.addStatusBarItem();
@@ -227,7 +225,6 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 		});
 
-
 		this.addCommand({
 			id: 'set_max_tokens',
 			name: 'Set max_tokens',
@@ -279,14 +276,40 @@ export default class TextGeneratorPlugin extends Plugin {
 			hotkeys: [{ modifiers: ["Alt"], key: "c"}],
 			editorCallback: async (editor: Editor) => {
 				try {
-					await this.textGenerator.createTemplate(editor);
+					await this.textGenerator.createTemplateFromEditor(editor);
 				} catch (error) {
 					this.handelError(error);
 				}	
 			}
 		});
+		
+		const blockTgHandler = debounce(
+			async (source: string, container: HTMLElement, { sourcePath: path }: MarkdownPostProcessorContext) => {
+				try {
+
+					const template = Handlebars.compile(source, { noEscape: true, strict: true });
+					const markdown = template(await this.textGenerator.contextManager.getTemplateContext(this.getActiveView().editor));
+					await MarkdownRenderer.renderMarkdown(
+						markdown,
+						container,
+						path,
+						undefined,
+					);
+					this.addTGMenu(container,markdown,source);
+				} catch (e) {
+					console.warn(e);
+				}
+			},
+			250,
+		)
+
+		this.registerMarkdownCodeBlockProcessor(
+			'tg',
+			async (source, el, ctx) => blockTgHandler(source, el, ctx)
+		)
 
 		await this.packageManager.load();
+		
 	}
 
 	async loadSettings() {
@@ -295,5 +318,31 @@ export default class TextGeneratorPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+	
+	createRunButton(label:string) {
+		const button = document.createElement("button");
+		button.setText(label);
+		return button;
+	}
+
+	addTGMenu(el:HTMLElement,markdown:string,source:string) {
+				const div = document.createElement('div');
+				div.classList.add('tgmenu');
+				const button = this.createRunButton("Generate Text");
+				button.addEventListener("click", async () => {
+					await this.textGenerator.generatePrompt(markdown,false,this.getActiveView().editor)
+					console.log(markdown);
+				});
+
+				const buttonMakeTemplate = this.createRunButton("Create Template");
+				buttonMakeTemplate.addEventListener("click", async () => {
+					await this.textGenerator.createTemplate(source,"newTemplate");
+					console.log(source);
+				});
+
+				div.appendChild(button);
+				div.appendChild(buttonMakeTemplate);
+				el.parentElement.appendChild(div);
 	}
 }
