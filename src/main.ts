@@ -301,7 +301,7 @@ export default class TextGeneratorPlugin extends Plugin {
 				} catch (e) {
 					console.warn(e);
 				}
-			},0);
+			},100);
 			}
 	
 
