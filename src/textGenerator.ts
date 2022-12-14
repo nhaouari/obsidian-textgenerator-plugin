@@ -1,10 +1,12 @@
+import { TemplateModelUI } from './ui/TemplateModelUI';
 import {App,addIcon, Notice, Plugin, PluginSettingTab, Setting, request, MarkdownView, Editor, parseFrontMatterAliases, MetadataCache} from 'obsidian';
 import {TextGeneratorSettings} from './types';
 import TextGeneratorPlugin from './main';
 import ReqFormatter from './reqFormatter';
 import { SetPath } from './ui/setPath';
 import ContextManager from './ContextManager';
-import {makeid,createFileWithInput,openFile} from './utils';
+import {makeid,createFileWithInput,openFile,removeYMAL} from './utils';
+
 export default class TextGenerator {
     plugin: TextGeneratorPlugin;
     app: App;
@@ -151,6 +153,32 @@ const promptInfo=
             }
         } 
         editor.replaceRange(text, cursor);
+    }
+
+    async tempalteToModel(params: any=this.plugin.settings,templatePath:string="",editor:Editor,activeFile:boolean=true) {
+        const templateFile = await this.app.vault.getAbstractFileByPath(templatePath);
+        let templateContent= await this.app.vault.read(templateFile);
+        console.log({templateContent,templatePath});
+        templateContent=removeYMAL(templateContent);
+        console.log(templateContent);
+        const variables= templateContent.match(/\{\{\{(.*?)\}\}\}/ig)?.map(e=>e.replace("{{{","").replace("}}}","")) || [];
+        console.log(variables);
+        new TemplateModelUI(this.app,this.plugin,variables,async (results: any) => {
+            const cursor= editor.getCursor();
+            const context = await this.contextManager.getContext(editor,true,templatePath,results);
+            const text = await this.generate(context,true,params,templatePath);
+            if(activeFile===false){
+                const title=this.app.workspace.activeLeaf.getDisplayText();
+                let suggestedPath = 'textgenerator/generations/'+title+"-"+makeid(3)+".md";
+                
+                new SetPath(this.app,suggestedPath,async (path: string) => {
+                    const file= await createFileWithInput(path,context+text,this.app);
+                    openFile(this.app,file);
+                }).open();
+            } else {
+                this.insertGeneratedText(text,editor,cursor);
+            }  
+            }).open();
     }
 }
 

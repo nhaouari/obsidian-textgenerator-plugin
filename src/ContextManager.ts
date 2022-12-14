@@ -16,10 +16,10 @@ export default class ContextManager {
         });
 	}
     
-    async getContext(editor:Editor,insertMetadata: boolean = false,templatePath:string="") {
+    async getContext(editor:Editor,insertMetadata: boolean = false,templatePath:string="",addtionalOpts:any={}) {
         /* Template */
         if(templatePath.length > 0){  
-            const options=await this.getTemplateContext(editor,templatePath);
+            const options={...await this.getTemplateContext(editor,templatePath),...addtionalOpts};
             const context=await this.templateFromPath(templatePath,options);
             return context;
         } else {  /* Without template */
@@ -192,8 +192,7 @@ export default class ContextManager {
     }
 
     async getTextBloc(heading:string,path:string="") {
-        const fileCache=this.getMetaData(path)
-        
+        const fileCache=this.getMetaData(path);
         let level=-1;
         let start=-1;
         let end=-1;

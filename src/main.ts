@@ -226,6 +226,22 @@ export default class TextGeneratorPlugin extends Plugin {
 		});
 
 		this.addCommand({
+			id: 'show-model-From-template',
+			name: 'Show model From Template',
+			icon: 'plus-square',
+			hotkeys: [{ modifiers: ["Alt"], key: "4"}],
+			editorCallback: async (editor: Editor) => {
+				try {
+					new ExampleModal(this.app, this,async (result) => {
+						await this.textGenerator.tempalteToModel(this.settings,result.path,editor)
+					  },'ٌRun a model ').open();
+				} catch (error) {
+					this.handelError(error);
+				}	
+			}
+		});
+
+		this.addCommand({
 			id: 'set_max_tokens',
 			name: 'Set max_tokens',
 			icon: 'separator-horizontal',
