@@ -161,7 +161,7 @@ const promptInfo=
         console.log({templateContent,templatePath});
         templateContent=removeYMAL(templateContent);
         console.log(templateContent);
-        const variables= templateContent.match(/\{\{\{(.*?)\}\}\}/ig)?.map(e=>e.replace("{{{","").replace("}}}","")) || [];
+        const variables= templateContent.match(/\{\{(.*?)\}\}/ig)?.map(e=>e.replace("{{","").replace("}}","")) || [];
         console.log(variables);
         const metadata= this.getMetadata(templatePath);
         new TemplateModelUI(this.app,this.plugin,variables,metadata,async (results: any) => {
