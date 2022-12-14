@@ -2,11 +2,11 @@ import React, { useState,useEffect } from "react";
 import TemplateItem from './PackageManager/TemplateItem';
 import TemplateDetails from './PackageManager/TemplateDetails';
 
-export const TemplateModelView = ({p,labels,onSubmit}) => {
+export const TemplateModelView = ({p,labels,onSubmit,metadata}) => {
 
 
   const [formValues, setFormValues] = useState([]);
-
+  const [meta, setMeta] = useState(metadata);
   const getFormData = () => {
     return formValues.reduce((formData, value, index) => {
       formData[labels[index]] = value;
@@ -27,7 +27,7 @@ export const TemplateModelView = ({p,labels,onSubmit}) => {
     setFormValues(values);
   };
   const formContainerStyles = {
-    width: '50%',
+    width: '75%',
     margin: '0 auto',
   };
 
@@ -48,6 +48,8 @@ export const TemplateModelView = ({p,labels,onSubmit}) => {
 
   return (
     <form style={formContainerStyles} onSubmit={handleSubmit}>
+      <h1>{meta.name}</h1>
+      <p>{meta.description}</p>
       {labels.map((label, index) => (
         <div key={label}>
           <label style={labelStyles}>{label}</label>

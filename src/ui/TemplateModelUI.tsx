@@ -11,12 +11,14 @@ export class TemplateModelUI extends Modal {
   onSubmit: (result: string) => void;
   root:any;
   variables: string[];
+  metadata:any;
 
-  constructor(app: App, plugin:TextGeneratorPlugin, variables:string[],onSubmit: (result: string) => void) {
+  constructor(app: App, plugin:TextGeneratorPlugin, variables:string[],metadata:any,onSubmit: (result: string) => void) {
     super(app);
     this.plugin=plugin
     this.onSubmit = onSubmit;
     this.variables= variables;
+    this.metadata=metadata;
 
   }
 
@@ -25,7 +27,7 @@ export class TemplateModelUI extends Modal {
       this.root = createRoot(this.containerEl.children[1]);
       this.root.render(
         <React.StrictMode>
-          <TemplateModelView p={this} labels={this.variables} onSubmit={this.onSubmit}/>,
+          <TemplateModelView p={this} labels={this.variables} onSubmit={this.onSubmit} metadata={this.metadata}/>,
         </React.StrictMode>
       );
   }

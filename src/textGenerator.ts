@@ -163,7 +163,8 @@ const promptInfo=
         console.log(templateContent);
         const variables= templateContent.match(/\{\{\{(.*?)\}\}\}/ig)?.map(e=>e.replace("{{{","").replace("}}}","")) || [];
         console.log(variables);
-        new TemplateModelUI(this.app,this.plugin,variables,async (results: any) => {
+        const metadata= this.getMetadata(templatePath);
+        new TemplateModelUI(this.app,this.plugin,variables,metadata,async (results: any) => {
             const cursor= editor.getCursor();
             const context = await this.contextManager.getContext(editor,true,templatePath,results);
             const text = await this.generate(context,true,params,templatePath);
@@ -179,6 +180,49 @@ const promptInfo=
                 this.insertGeneratedText(text,editor,cursor);
             }  
             }).open();
+    }
+
+    getMetadata(path:string) {
+        const metadata=this.getFrontmatter(path);
+        const validedMetaData:any= {}
+
+        if(metadata?.PromptInfo?.id){
+          validedMetaData["id"]=metadata.PromptInfo.id;
+        }
+
+        if(metadata?.PromptInfo?.name){
+            validedMetaData["name"]=metadata.PromptInfo.name;
+        }
+
+        if(metadata?.PromptInfo?.description){
+            validedMetaData["description"]=metadata.PromptInfo.description;
+        }
+
+        if(metadata?.PromptInfo?.required_values){
+          validedMetaData["required_values"]=metadata.PromptInfo.required_values;
+        }
+
+        if(metadata?.PromptInfo?.author){
+          validedMetaData["author"]=metadata.PromptInfo.author;
+        }
+
+        if(metadata?.PromptInfo?.tags){
+          validedMetaData["tags"]=metadata.PromptInfo.tags;
+        }
+
+        if(metadata?.PromptInfo?.version){
+          validedMetaData["version"]=metadata.PromptInfo.version;
+        }
+
+        return validedMetaData;
+    }
+    
+    getFrontmatter(path:string="") {
+        const cache = this.app.metadataCache.getCache(path);
+            if (cache.hasOwnProperty('frontmatter')) {
+                return cache.frontmatter;
+            }
+        return null
     }
 }
 
