@@ -164,7 +164,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'insert-generated-text-From-template',
 			name: 'Generate and Insert Template',
 			icon: 'circle',
-			hotkeys: [{ modifiers: ["Mod"], key: "q"}],
+			//hotkeys: [{ modifiers: ["Mod"], key: "q"}],
 			editorCallback: async (editor: Editor) => {
 				try {
 					new ExampleModal(this.app, this,async (result) => {		
@@ -180,7 +180,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'create-generated-text-From-template',
 			name: 'Generate and Create a New File From Template',
 			icon: 'plus-circle',
-			hotkeys: [{ modifiers: ["Mod","Shift"], key: "q"}],
+			//hotkeys: [{ modifiers: ["Mod","Shift"], key: "q"}],
 			editorCallback: async (editor: Editor) => {
 				try {
 					new ExampleModal(this.app, this,async (result) => {
@@ -197,7 +197,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'insert-text-From-template',
 			name: 'Insert Template',
 			icon: 'square',
-			hotkeys: [{ modifiers: ['Alt'], key: "q"}],
+			//hotkeys: [{ modifiers: ['Alt'], key: "q"}],
 			editorCallback: async (editor: Editor) => {
 				try {
 					new ExampleModal(this.app, this,async (result) => {
@@ -213,7 +213,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'create-text-From-template',
 			name: 'Create a New File From Template',
 			icon: 'plus-square',
-			hotkeys: [{ modifiers: ["Shift","Alt"], key: "q"}],
+			//hotkeys: [{ modifiers: ["Shift","Alt"], key: "q"}],
 			editorCallback: async (editor: Editor) => {
 				try {
 					new ExampleModal(this.app, this,async (result) => {
@@ -229,7 +229,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'show-model-From-template',
 			name: 'Show model From Template',
 			icon: 'layout',
-			hotkeys: [{ modifiers: ["Alt"], key: "4"}],
+			//hotkeys: [{ modifiers: ["Alt"], key: "4"}],
 			editorCallback: async (editor: Editor) => {
 				try {
 					new ExampleModal(this.app, this,async (result) => {
@@ -245,7 +245,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'set_max_tokens',
 			name: 'Set max_tokens',
 			icon: 'separator-horizontal',
-			hotkeys: [{ modifiers: ["Alt"], key: "1" }],
+			//hotkeys: [{ modifiers: ["Alt"], key: "1" }],
 			callback: async () => {
 				new SetMaxTokens(this.app,this,this.settings.max_tokens.toString(),async (result: string) => {
 					this.settings.max_tokens = parseInt(result);
@@ -277,7 +277,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'packageManager',
 			name: 'Template Packages Manager',
 			icon: "boxes",
-			hotkeys: [{ modifiers: ["Alt"], key: "3" }],
+			//hotkeys: [{ modifiers: ["Alt"], key: "3" }],
 			callback: async () => {
 				new PackageManagerUI(this.app,this,async (result: string) => {
 				  }).open();
@@ -289,7 +289,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'create-template',
 			name: 'Create a Template',
 			icon: 'plus',
-			hotkeys: [{ modifiers: ["Alt"], key: "c"}],
+			//hotkeys: [{ modifiers: ["Alt"], key: "c"}],
 			editorCallback: async (editor: Editor) => {
 				try {
 					await this.textGenerator.createTemplateFromEditor(editor);
