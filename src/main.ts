@@ -260,7 +260,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			id: 'set-model',
 			name: 'Choose a model',
 			icon: 'list-start',
-			hotkeys: [{ modifiers: ["Alt"], key: "2" }],
+			//hotkeys: [{ modifiers: ["Alt"], key: "2" }],
 			callback: async () => {
 				try {
 					new SetModel(this.app, this,async (result) => {
@@ -344,7 +344,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		const button = document.createElement("div");
 		button.classList.add("clickable-icon");
 		button.setAttribute("aria-label",label);
-//aria-label-position="right"
+		//aria-label-position="right"
 		button.innerHTML=svg;
 		
 		return button;
