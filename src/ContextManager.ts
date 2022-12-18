@@ -249,14 +249,13 @@ export default class ContextManager {
             if (Array.isArray(value)) {
                 cleanFrontMatter += `${key} : `
                 value.forEach(v => {
-                    cleanFrontMatter += `${value}, `
+                    cleanFrontMatter += `${v}, `
                 })
                 cleanFrontMatter += `\n`
             } else {
                 cleanFrontMatter += `${key} : ${value} \n`
             }
         }
-        
         return cleanFrontMatter;
     }
 }

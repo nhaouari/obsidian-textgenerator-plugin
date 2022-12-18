@@ -153,7 +153,6 @@ export default class TextGeneratorPlugin extends Plugin {
 			editorCallback: async (editor: Editor) => {
 				try {
 					await this.textGenerator.generateInEditor(this.settings,true,editor);
-					this.updateStatusBar(``);
 				} catch (error) {
 					this.handelError(error);
 				}
