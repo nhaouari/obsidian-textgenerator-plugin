@@ -234,7 +234,7 @@ export default class TextGeneratorPlugin extends Plugin {
 				try {
 					new ExampleModal(this.app, this,async (result) => {
 						await this.textGenerator.tempalteToModel(this.settings,result.path,editor)
-					  },'ٌChoose a template ').open();
+					  },'Choose a template').open();
 				} catch (error) {
 					this.handelError(error);
 				}	
@@ -251,6 +251,7 @@ export default class TextGeneratorPlugin extends Plugin {
 					this.settings.max_tokens = parseInt(result);
 					await this.saveSettings();
 					new Notice(`Set Max Tokens to ${result}!`);
+					this.updateStatusBar("");
 				  }).open();
 
 			}

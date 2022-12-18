@@ -56,7 +56,7 @@ export const TemplateModelView = ({p,labels,onSubmit,metadata}) => {
           <textarea ref={index === 0 ? firstTextareaRef : null} style={textareaStyles} onChange={handleChange(index)} value={formValues[index]} />
         </div>
       ))}
-      <button type="submit">Submit</button>
+      <button type="submit">Generate</button>
     </form>
   );
       };
