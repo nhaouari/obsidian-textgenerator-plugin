@@ -166,11 +166,13 @@ export default class PackageManager {
     }
 
     async updatePackageInfoById(packageId:string) {
-        const p=this.getPackageById(packageId);
-        const repo=p.repo;
-        const release = await this.getReleaseByRepo(repo);
-        const manifest= await this.getAsset(release,'manifest.json'); 
-        this.setPackageInfo(packageId,{...manifest,published_at:release.published_at,downloads:release.downloads});
+        const repo = await this.getPackageById(packageId).repo;
+        //const release = await this.getReleaseByRepo(repo);
+        //const manifest= await this.getAsset(release,'manifest.json'); 
+        const url=`https://raw.githubusercontent.com/${repo}/master/manifest.json`;
+        const manifest=JSON.parse(await request({url:url}));
+        console.log(manifest);
+        this.setPackageInfo(packageId,{...manifest});
         await this.save();
     }
 
