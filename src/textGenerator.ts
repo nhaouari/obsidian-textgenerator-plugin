@@ -110,12 +110,15 @@ const promptInfo=
         
         let templateContent = content;
         const metadata = this.contextManager.getMetaData();
-        // We have three cases: no Front-matter / Frontmatter without PromptInfo/ Frontmatter with PromptInfo 
-
+                // We have three cases: no Front-matter / Frontmatter without PromptInfo/ Frontmatter with PromptInfo 
         if (!metadata.hasOwnProperty("frontmatter")) {
             templateContent=`---\n${promptInfo}\n---\n${templateContent}`
         } else if (!metadata["frontmatter"].hasOwnProperty("PromptInfo")) {
-            templateContent=templateContent.replace("---",`---\n${promptInfo}`)
+            if(templateContent.indexOf("---")!==-1){
+                templateContent=templateContent.replace("---",`---\n${promptInfo}`);
+            } else {
+                templateContent=`---\n${promptInfo}\n---\n${templateContent}`;
+            }
         } 
         const suggestedPath = `${this.plugin.settings.promptsPath}/local/${title}.md`;
         new SetPath(this.app,suggestedPath,async (path: string) => {
