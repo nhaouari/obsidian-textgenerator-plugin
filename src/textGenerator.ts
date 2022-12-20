@@ -161,11 +161,11 @@ const promptInfo=
     async tempalteToModel(params: any=this.plugin.settings,templatePath:string="",editor:Editor,activeFile:boolean=true) {
         const templateFile = await this.app.vault.getAbstractFileByPath(templatePath);
         let templateContent= await this.app.vault.read(templateFile);
-        console.log({templateContent,templatePath});
+       // console.log({templateContent,templatePath});
         templateContent=removeYMAL(templateContent);
-        console.log(templateContent);
+       // console.log(templateContent);
         const variables= templateContent.match(/\{\{(.*?)\}\}/ig)?.map(e=>e.replace("{{","").replace("}}","")) || [];
-        console.log(variables);
+       // console.log(variables);
         const metadata= this.getMetadata(templatePath);
         new TemplateModelUI(this.app,this.plugin,variables,metadata,async (results: any) => {
             const cursor= editor.getCursor();
