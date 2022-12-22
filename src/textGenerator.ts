@@ -50,6 +50,9 @@ export default class TextGenerator {
             selectedText = editor.getLine(lineNumber);
             if (selectedText.length!==0){
                 cursor.ch=selectedText.length
+                if (selectedText[selectedText.length-1]===" ") {
+                    cursor.ch=selectedText.length-1;
+                }
             }
         }
         return cursor;
