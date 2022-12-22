@@ -31,7 +31,7 @@ export default class TextGenerator {
                 text = await this.getGeneratedText(reqParameters);
                 this.plugin.endProcessing();
                 //console.log(text.replace(/^\n*/g,""));
-                return text.replace(/^\n*/g,"");
+                return text.replace(/^\n*/g," ");
             } catch (error) {
                 console.error(error);
                 this.plugin.endProcessing();
@@ -42,11 +42,23 @@ export default class TextGenerator {
         }
     }
     
+    getCursor(editor:Editor){
+        let cursor= editor.getCursor();
+        let selectedText = editor.getSelection();
+        if (selectedText.length === 0) {
+            const lineNumber = editor.getCursor().line;
+            selectedText = editor.getLine(lineNumber);
+            if (selectedText.length!==0){
+                cursor.ch=selectedText.length
+            }
+        }
+        return cursor;
+    }
+
     async generateFromTemplate(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor,activeFile:boolean=true) {
-        const cursor= editor.getCursor();
+        const cursor= this.getCursor(editor);
         const context = await this.contextManager.getContext(editor,insertMetadata,templatePath);
         const text = await this.generate(context,insertMetadata,params,templatePath);
-        
         if(activeFile===false){
             const title=this.app.workspace.activeLeaf.getDisplayText();
             let suggestedPath = 'textgenerator/generations/'+title+"-"+makeid(3)+".md";
@@ -61,13 +73,13 @@ export default class TextGenerator {
     }
     
     async generateInEditor(params: TextGeneratorSettings, insertMetadata: boolean = false,editor:Editor) {
-        const cursor= editor.getCursor();
+        const cursor= this.getCursor(editor);
         const text = await this.generate(await this.contextManager.getContext(editor,insertMetadata),insertMetadata,params);
         this.insertGeneratedText(text,editor,cursor);
     }
   
     async generatePrompt(promptText: string, insertMetadata: boolean = false,editor:Editor) {
-        const cursor= editor.getCursor();
+        const cursor= this.getCursor(editor);
         const text = await this.generate(promptText,insertMetadata);
         this.insertGeneratedText(text,editor,cursor);
     }
@@ -143,7 +155,7 @@ const promptInfo=
     }
 
     insertGeneratedText(text: string,editor:Editor,cur:any=null) {
-        let cursor = editor.getCursor();
+        let cursor= this.getCursor(editor);
         if(cur){
             cursor=cur;
         }
@@ -168,7 +180,7 @@ const promptInfo=
        // console.log(variables);
         const metadata= this.getMetadata(templatePath);
         new TemplateModelUI(this.app,this.plugin,variables,metadata,async (results: any) => {
-            const cursor= editor.getCursor();
+            const cursor= this.getCursor(editor);
             const context = await this.contextManager.getContext(editor,true,templatePath,results);
             const text = await this.generate(context,true,params,templatePath);
             if(activeFile===false){
