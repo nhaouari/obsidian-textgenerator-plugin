@@ -171,7 +171,7 @@ export default class PackageManager {
         //const manifest= await this.getAsset(release,'manifest.json'); 
         const url=`https://raw.githubusercontent.com/${repo}/master/manifest.json`;
         const manifest=JSON.parse(await request({url:url}));
-        console.log(manifest);
+       // console.log(manifest);
         this.setPackageInfo(packageId,{...manifest});
         await this.save();
     }
