@@ -6,6 +6,7 @@ import ReqFormatter from './reqFormatter';
 import { SetPath } from './ui/setPath';
 import ContextManager from './ContextManager';
 import {makeid,createFileWithInput,openFile,removeYMAL} from './utils';
+import safeAwait from 'safe-await'
 
 export default class TextGenerator {
     plugin: TextGeneratorPlugin;
@@ -25,18 +26,17 @@ export default class TextGenerator {
         if(!this.plugin.processing){
             let reqParameters:any = this.reqFormatter.addContext(params,prompt);
             reqParameters=this.reqFormatter.prepareReqParameters(reqParameters,insertMetadata,templatePath);
-            let text
-            try {
-                this.plugin.startProcessing();
-                text = await this.getGeneratedText(reqParameters);
-                this.plugin.endProcessing();
-                //console.log(text.replace(/^\n*/g,""));
-                return text.replace(/^\n*/g," ");
-            } catch (error) {
+            this.plugin.startProcessing();
+            const [error, text ] = await safeAwait(this.getGeneratedText(reqParameters));
+            this.plugin.endProcessing();
+
+            if (error) {
                 console.error(error);
-                this.plugin.endProcessing();
                 return Promise.reject(error);
             }
+            
+            return text.replace(/^\n*/g," ");
+            
         } else {
             return Promise.reject(new Error("There is another generation process"));
         }
@@ -60,14 +60,28 @@ export default class TextGenerator {
 
     async generateFromTemplate(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor,activeFile:boolean=true) {
         const cursor= this.getCursor(editor);
-        const context = await this.contextManager.getContext(editor,insertMetadata,templatePath);
-        const text = await this.generate(context,insertMetadata,params,templatePath);
+
+        const [errorContext, context ] = await safeAwait(this.contextManager.getContext(editor,insertMetadata,templatePath));
+        const [errorGeneration, text ] = await safeAwait(this.generate(context,insertMetadata,params,templatePath));
+
+        if(errorContext) {
+            return Promise.reject(errorContext);
+        }
+
+        if(errorGeneration) {
+            return Promise.reject(errorGeneration);
+        }
+
         if(activeFile===false){
             const title=this.app.workspace.activeLeaf.getDisplayText();
             let suggestedPath = 'textgenerator/generations/'+title+"-"+makeid(3)+".md";
             
             new SetPath(this.app,suggestedPath,async (path: string) => {
-                const file= await createFileWithInput(path,context+text,this.app);
+                const [errorFile,file]= await safeAwait(createFileWithInput(path,context+text,this.app));
+                if(errorFile) {
+                    return Promise.reject(errorFile);
+                }
+
                 openFile(this.app,file);
               }).open();
           } else {
@@ -77,25 +91,43 @@ export default class TextGenerator {
     
     async generateInEditor(params: TextGeneratorSettings, insertMetadata: boolean = false,editor:Editor) {
         const cursor= this.getCursor(editor);
-        const text = await this.generate(await this.contextManager.getContext(editor,insertMetadata),insertMetadata,params);
+        const [errorGeneration, text ] = await safeAwait(this.generate(await this.contextManager.getContext(editor,insertMetadata),insertMetadata,params));
+       
+        if(errorGeneration) {
+            return Promise.reject(errorGeneration);
+        }
+
         this.insertGeneratedText(text,editor,cursor);
     }
   
     async generatePrompt(promptText: string, insertMetadata: boolean = false,editor:Editor) {
         const cursor= this.getCursor(editor);
-        const text = await this.generate(promptText,insertMetadata);
+        const [errorGeneration, text ] = await safeAwait(this.generate(promptText,insertMetadata));
+       
+        if(errorGeneration) {
+            return Promise.reject(errorGeneration);
+        }
         this.insertGeneratedText(text,editor,cursor);
     }
 
     async createToFile(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor,activeFile:boolean=true){
-        const context = await this.contextManager.getContext(editor,insertMetadata,templatePath);
+        const [errorContext, context ] = await safeAwait(this.contextManager.getContext(editor,insertMetadata,templatePath));
+        
+        if(errorContext) {
+            return Promise.reject(errorContext);
+        }
 
         if(activeFile===false){
         const title=this.app.workspace.activeLeaf.getDisplayText();
         let suggestedPath = 'textgenerator/generations/'+title+"-"+makeid(3)+".md";
         
         new SetPath(this.app,suggestedPath,async (path: string) => {
-            const file= await createFileWithInput(path,context,this.app);
+            const [errorFile, file ] = await safeAwait(createFileWithInput(path,context,this.app));
+        
+            if(errorFile) {
+                return Promise.reject(errorFile);
+            }
+
             openFile(this.app,file);
           }).open();
 
@@ -107,9 +139,8 @@ export default class TextGenerator {
     async createTemplateFromEditor(editor:Editor) {
         const title=this.app.workspace.activeLeaf.getDisplayText();
         const content= editor.getValue();
-        await this.createTemplate(content,title);     
+        await this.createTemplate(content,title);
     }
-
 
 
     async createTemplate(content:string,title:string=""){
@@ -137,7 +168,10 @@ const promptInfo=
         } 
         const suggestedPath = `${this.plugin.settings.promptsPath}/local/${title}.md`;
         new SetPath(this.app,suggestedPath,async (path: string) => {
-            const file= await createFileWithInput(path,templateContent,this.app);
+            const [errorFile,file]= await safeAwait(createFileWithInput(path,templateContent,this.app));
+            if(errorFile) {
+                return Promise.reject(errorFile);
+            }
             openFile(this.app,file);
           }).open(); 
         }
@@ -145,14 +179,13 @@ const promptInfo=
     async getGeneratedText(reqParams: any) {
             const extractResult = reqParams?.extractResult;
             delete reqParams?.extractResult;
-            let requestResults;
-            try {
-                requestResults = JSON.parse(await request(reqParams));
-                console.log({requestResults});
-            } catch (error) {
-                console.error(requestResults,error);
-                return Promise.reject(error);
+            let [errorRequest, requestResults ] = await safeAwait(request(reqParams));
+            if(errorRequest) {
+                console.error(requestResults,errorRequest);
+                return Promise.reject(errorRequest);
             }
+            requestResults=JSON.parse(requestResults);
+            console.log({requestResults});
             const text = eval(extractResult);
             return text
     }
@@ -174,24 +207,41 @@ const promptInfo=
     }
 
     async tempalteToModel(params: any=this.plugin.settings,templatePath:string="",editor:Editor,activeFile:boolean=true) {
-        const templateFile = await this.app.vault.getAbstractFileByPath(templatePath);
-        let templateContent= await this.app.vault.read(templateFile);
-       // console.log({templateContent,templatePath});
+
+        const  templateFile = this.app.vault.getAbstractFileByPath(templatePath);
+        let [errortemplateContent, templateContent ] = await safeAwait(this.app.vault.read(templateFile));
+        if(errortemplateContent) {
+            return Promise.reject(errortemplateContent);
+        }
+
         templateContent=removeYMAL(templateContent);
+
        // console.log(templateContent);
         const variables= templateContent.match(/\{\{(.*?)\}\}/ig)?.map(e=>e.replace("{{","").replace("}}","")) || [];
        // console.log(variables);
         const metadata= this.getMetadata(templatePath);
         new TemplateModelUI(this.app,this.plugin,variables,metadata,async (results: any) => {
             const cursor= this.getCursor(editor);
-            const context = await this.contextManager.getContext(editor,true,templatePath,results);
-            const text = await this.generate(context,true,params,templatePath);
+           
+            const [errorContext, context ] = await safeAwait(this.contextManager.getContext(editor,true,templatePath,results));
+            if(errorContext) {
+                return Promise.reject(errorContext);
+            }
+
+            const [errortext, text ] = await safeAwait(this.generate(context,true,params,templatePath));
+            if(errortext) {
+                return Promise.reject(errortext);
+            }
+            
             if(activeFile===false){
                 const title=this.app.workspace.activeLeaf.getDisplayText();
                 let suggestedPath = 'textgenerator/generations/'+title+"-"+makeid(3)+".md";
-                
                 new SetPath(this.app,suggestedPath,async (path: string) => {
-                    const file= await createFileWithInput(path,context+text,this.app);
+                    const [errorFile,file]= await safeAwait(createFileWithInput(path,context+text,this.app));
+                    if(errorFile) {
+                        return Promise.reject(errorFile);
+                    }
+                    
                     openFile(this.app,file);
                 }).open();
             } else {
@@ -209,11 +259,11 @@ const promptInfo=
         }
 
         if(metadata?.PromptInfo?.name){
-            validedMetaData["name"]=metadata.PromptInfo.name;
+          validedMetaData["name"]=metadata.PromptInfo.name;
         }
 
         if(metadata?.PromptInfo?.description){
-            validedMetaData["description"]=metadata.PromptInfo.description;
+          validedMetaData["description"]=metadata.PromptInfo.description;
         }
 
         if(metadata?.PromptInfo?.required_values){
