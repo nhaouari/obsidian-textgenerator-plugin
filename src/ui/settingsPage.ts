@@ -93,7 +93,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 			})
 			.addButton((btn) =>
         btn
-          .setButtonText("Update modeles")
+          .setButtonText("Update models")
           .setCta()
           .onClick(async() => {
 		  if(this.plugin.settings.api_key.length > 0) {
