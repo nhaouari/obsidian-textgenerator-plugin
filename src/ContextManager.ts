@@ -127,6 +127,7 @@ export default class ContextManager {
     }
 
     async getChildrenContent(fileCache:any) {
+        const contextOptions:Context = this.plugin.settings.context;
         let children:any=[];
         const links = fileCache?.links?.filter(e=>e.original.substr(0,2)==="[[");
         //remove duplicates from links
@@ -143,8 +144,18 @@ export default class ContextManager {
                 }
 
                 if (file) {
+                    //load the file
                     const content= await this.app.vault.read(file);
-                    children.push({...file,content});
+
+                    let metadata = this.getMetaData(file.path);
+
+                    //only include frontmatter and headings if the option is set
+                    let blocks:any ={};
+                    if(contextOptions.includeFrontmatter) blocks["frontmatter"] = metadata?.frontmatter;
+
+                    if(contextOptions.includeHeadings) blocks["headings"]= metadata?.headings;
+
+                    children.push({...file,content,...blocks});
                 }
             }
         }
