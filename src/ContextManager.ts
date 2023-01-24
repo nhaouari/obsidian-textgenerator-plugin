@@ -129,9 +129,11 @@ export default class ContextManager {
     async getChildrenContent(fileCache:any) {
         let children:any=[];
         const links = fileCache?.links?.filter(e=>e.original.substr(0,2)==="[[");
-        if(links){
-            for (let i = 0; i < links.length; i++) {
-                const link=links[i];
+        //remove duplicates from links
+        const uniqueLinks = links?.filter((v,i,a)=>a.findIndex(t=>(t.link === v.link))===i);
+        if(uniqueLinks){
+            for (let i = 0; i < uniqueLinks.length; i++) {
+                const link=uniqueLinks[i];
                 const path=link.link+".md";
                 let file
                 if (path.includes('/')) {
