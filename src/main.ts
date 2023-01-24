@@ -45,12 +45,12 @@ export default class TextGeneratorPlugin extends Plugin {
             text2 = `: ${text}`;
         }
         if (this.settings.showStatusBar) {
-            this.statusBarItemEl.setText(`Text Generator(${this.settings.max_tokens})${text2}`);
+            this.statusBarItemEl.setText(`Text Generator (${this.settings.max_tokens})${text2}`);
         }
     }
 
-	startProcessing(){
-		this.updateStatusBar(`processing... `);
+	startProcessing(estimatedTokens:number){
+		this.updateStatusBar(`... processing (~${estimatedTokens} tokens) `);
 		this.processing=true;
 		const activeView = this.getActiveView();
 			if (activeView !== null) {

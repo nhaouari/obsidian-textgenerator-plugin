@@ -25,9 +25,11 @@ export default class TextGenerator {
         if(!this.plugin.processing){
             let reqParameters:any = this.reqFormatter.addContext(params,prompt);
             reqParameters=this.reqFormatter.prepareReqParameters(reqParameters,insertMetadata,templatePath);
+            // this statisticly get close to the number of tokens that are used by gpt-3
+            let estimatedTokens = Math.ceil((prompt.length - prompt.split(' ').length) / 10 * 3);
             let text
             try {
-                this.plugin.startProcessing();
+                this.plugin.startProcessing(estimatedTokens);
                 text = await this.getGeneratedText(reqParameters);
                 this.plugin.endProcessing();
                 //console.log(text.replace(/^\n*/g,""));
