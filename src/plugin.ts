@@ -10,6 +10,8 @@ import {
   WidgetType,
 } from "@codemirror/view";
 
+import debug from 'debug';
+const logger = debug('cm:SpinnersPlugin');
 class Spinners extends WidgetType {
     toDOM() {
       let span= document.createElement('span'); 
@@ -24,16 +26,19 @@ class SpinnersPlugin implements PluginValue {
   listOfPositions: number[];
 
   constructor(view: EditorView) {
+    logger("SpinnersPlugin constructor");
     this.decorations = this.buildDecorations(view);
     this.listOfPositions=[];
   }
 
   add(position:number,update: EditorView){
+    logger("add",position);
     this.listOfPositions.push(position);
     this.decorations = this.buildDecorations(update.viewState);
   }
 
   remove(position:number,update:EditorView) {
+    logger("remove",position);
     this.listOfPositions=[];
     /*
     const index = this.listOfPositions.indexOf(position);
@@ -43,18 +48,21 @@ class SpinnersPlugin implements PluginValue {
   }
 
   update(update: ViewUpdate) {
+    logger("update",update);
     if (update.docChanged || update.viewportChanged) {
       this.decorations = this.buildDecorations(update.view);
     }
   }
 
   getListPositions(){
+    logger("getListPositions",this.listOfPositions);
     return this.listOfPositions;
   }
 
   destroy() {}
 
   buildDecorations(view: EditorView): DecorationSet {
+    logger("  buildDecorations",view);
     if(!this.listOfPositions){
         this.listOfPositions=[];
     }
@@ -66,6 +74,7 @@ class SpinnersPlugin implements PluginValue {
         const line = view.state.doc.lineAt(p);
         builder.add(line.to, line.to, indentationWidget);
     })
+    logger("buildDecorations ens");
     return builder.finish();
     }
 }

@@ -7,6 +7,8 @@ import { SetPath } from './ui/setPath';
 import ContextManager from './ContextManager';
 import {makeid,createFileWithInput,openFile,removeYMAL} from './utils';
 import safeAwait from 'safe-await'
+import debug from 'debug';
+const logger = debug('textgenerator:TextGenerator');
 
 export default class TextGenerator {
     plugin: TextGeneratorPlugin;
@@ -23,6 +25,7 @@ export default class TextGenerator {
 	}
     
     async generate(prompt:string,insertMetadata: boolean = false,params: any=this.plugin.settings,templatePath:string="") {
+        logger("generate");
         if(!this.plugin.processing){
             let reqParameters:any = this.reqFormatter.addContext(params,prompt);
             reqParameters=this.reqFormatter.prepareReqParameters(reqParameters,insertMetadata,templatePath);
@@ -31,18 +34,21 @@ export default class TextGenerator {
             this.plugin.endProcessing();
 
             if (error) {
-                console.error(error);
+                logger("generate error",error);
                 return Promise.reject(error);
             }
-            
+            logger("generate end");
             return text.replace(/^\n*/g," ");
             
         } else {
+            logger("generate error","There is another generation process");
             return Promise.reject(new Error("There is another generation process"));
         }
+       
     }
     
     getCursor(editor:Editor){
+        logger("getCursor");
         let cursor= editor.getCursor();
         let selectedText = editor.getSelection();
         if (selectedText.length === 0) {
@@ -55,10 +61,12 @@ export default class TextGenerator {
                 }
             }
         }
+        logger("getCursor end");
         return cursor;
     }
 
     async generateFromTemplate(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor,activeFile:boolean=true) {
+        logger("generateFromTemplate");
         const cursor= this.getCursor(editor);
 
         const [errorContext, context ] = await safeAwait(this.contextManager.getContext(editor,insertMetadata,templatePath));
@@ -87,9 +95,11 @@ export default class TextGenerator {
           } else {
             this.insertGeneratedText(text,editor,cursor);
           }  
+          logger("generateFromTemplate end");
     }
     
     async generateInEditor(params: TextGeneratorSettings, insertMetadata: boolean = false,editor:Editor) {
+        logger("generateInEditor");
         const cursor= this.getCursor(editor);
         const [errorGeneration, text ] = await safeAwait(this.generate(await this.contextManager.getContext(editor,insertMetadata),insertMetadata,params));
        
@@ -98,9 +108,11 @@ export default class TextGenerator {
         }
 
         this.insertGeneratedText(text,editor,cursor);
+        logger("generateInEditor end");
     }
   
     async generatePrompt(promptText: string, insertMetadata: boolean = false,editor:Editor) {
+        logger("generatePrompt");
         const cursor= this.getCursor(editor);
         const [errorGeneration, text ] = await safeAwait(this.generate(promptText,insertMetadata));
        
@@ -108,9 +120,11 @@ export default class TextGenerator {
             return Promise.reject(errorGeneration);
         }
         this.insertGeneratedText(text,editor,cursor);
+        logger("generatePrompt end");
     }
 
     async createToFile(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false,editor:Editor,activeFile:boolean=true){
+        logger("createToFile");
         const [errorContext, context ] = await safeAwait(this.contextManager.getContext(editor,insertMetadata,templatePath));
         
         if(errorContext) {
@@ -125,6 +139,7 @@ export default class TextGenerator {
             const [errorFile, file ] = await safeAwait(createFileWithInput(path,context,this.app));
         
             if(errorFile) {
+                logger("createToFile error",errorFile);
                 return Promise.reject(errorFile);
             }
 
@@ -134,16 +149,20 @@ export default class TextGenerator {
       } else {
         this.insertGeneratedText(context,editor);
       }  
+      logger("createToFile end");
     }
 
     async createTemplateFromEditor(editor:Editor) {
+        logger("createTemplateFromEditor");
         const title=this.app.workspace.activeLeaf.getDisplayText();
         const content= editor.getValue();
         await this.createTemplate(content,title);
+        logger("createTemplateFromEditor end");
     }
 
 
     async createTemplate(content:string,title:string=""){
+        logger("createTemplate");
 const promptInfo= 
 `PromptInfo:
  promptId: ${title}
@@ -170,27 +189,32 @@ const promptInfo=
         new SetPath(this.app,suggestedPath,async (path: string) => {
             const [errorFile,file]= await safeAwait(createFileWithInput(path,templateContent,this.app));
             if(errorFile) {
+                logger("createTemplate error",errorFile);
                 return Promise.reject(errorFile);
             }
             openFile(this.app,file);
           }).open(); 
+          logger("createTemplate end");
         }
 
     async getGeneratedText(reqParams: any) {
+            logger("getGeneratedText");
             const extractResult = reqParams?.extractResult;
             delete reqParams?.extractResult;
             let [errorRequest, requestResults ] = await safeAwait(request(reqParams));
             if(errorRequest) {
-                console.error(requestResults,errorRequest);
+                logger("getGeneratedText error",requestResults,errorRequest);
                 return Promise.reject(errorRequest);
             }
             requestResults=JSON.parse(requestResults);
             console.log({requestResults});
             const text = eval(extractResult);
+            logger("getGeneratedText  end");
             return text
     }
 
     insertGeneratedText(text: string,editor:Editor,cur:any=null) {
+        logger("insertGeneratedText");
         let cursor= this.getCursor(editor);
         if(cur){
             cursor=cur;
@@ -204,10 +228,11 @@ const promptInfo=
             }
         } 
         editor.replaceRange(text, cursor);
+        logger("insertGeneratedText end");
     }
 
     async tempalteToModel(params: any=this.plugin.settings,templatePath:string="",editor:Editor,activeFile:boolean=true) {
-
+        logger("tempalteToModel");
         const  templateFile = this.app.vault.getAbstractFileByPath(templatePath);
         let [errortemplateContent, templateContent ] = await safeAwait(this.app.vault.read(templateFile));
         if(errortemplateContent) {
@@ -225,11 +250,13 @@ const promptInfo=
            
             const [errorContext, context ] = await safeAwait(this.contextManager.getContext(editor,true,templatePath,results));
             if(errorContext) {
+                logger("tempalteToModel error",errorContext);
                 return Promise.reject(errorContext);
             }
 
             const [errortext, text ] = await safeAwait(this.generate(context,true,params,templatePath));
             if(errortext) {
+                logger("tempalteToModel error",errortext);
                 return Promise.reject(errortext);
             }
             
@@ -239,6 +266,7 @@ const promptInfo=
                 new SetPath(this.app,suggestedPath,async (path: string) => {
                     const [errorFile,file]= await safeAwait(createFileWithInput(path,context+text,this.app));
                     if(errorFile) {
+                        logger("tempalteToModel error",errorFile);
                         return Promise.reject(errorFile);
                     }
                     
@@ -248,9 +276,11 @@ const promptInfo=
                 this.insertGeneratedText(text,editor,cursor);
             }  
             }).open();
+            logger("tempalteToModel end");
     }
 
-    getMetadata(path:string) {
+    getMetadata(path:string) { 
+        logger("getMetadata");
         const metadata=this.getFrontmatter(path);
         const validedMetaData:any= {}
 
@@ -281,15 +311,18 @@ const promptInfo=
         if(metadata?.PromptInfo?.version){
           validedMetaData["version"]=metadata.PromptInfo.version;
         }
-
+        logger("getMetadata end");
         return validedMetaData;
     }
     
     getFrontmatter(path:string="") {
+        logger("getFrontmatter");
         const cache = this.app.metadataCache.getCache(path);
             if (cache.hasOwnProperty('frontmatter')) {
+                logger("getFrontmatter end");
                 return cache.frontmatter;
             }
+        logger("getFrontmatter end");
         return null
     }
 }

@@ -34,6 +34,7 @@
 		"@mui/material": "^5.10.12",
 		"ansi-to-html": "^0.7.2",
 		"compute-cosine-similarity": "^1.0.0",
+		"debug": "^4.3.4",
 		"handlebars": "^4.7.7",
 		"natural": "^5.2.4",
 		"pretty-error": "^4.0.0",

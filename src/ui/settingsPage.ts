@@ -288,5 +288,4 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 
 	
 		}
-		
 }

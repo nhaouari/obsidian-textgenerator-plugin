@@ -1,6 +1,7 @@
 import { App, Modal, Setting } from "obsidian";
 import TextGeneratorPlugin from "src/main";
-
+import debug from 'debug';
+const logger = debug('textgenerator:SetMaxTokens');
 export class SetMaxTokens extends Modal {
   result: string;
   plugin: TextGeneratorPlugin;
@@ -14,6 +15,7 @@ export class SetMaxTokens extends Modal {
   }
 
   onOpen() {
+    logger ("onOpen");
     const { contentEl } = this;
 
     contentEl.createEl("h1", { text: "Max number of tokens" });

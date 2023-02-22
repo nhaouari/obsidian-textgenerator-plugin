@@ -1,7 +1,8 @@
 import { App, Notice, FuzzySuggestModal, FuzzyMatch } from "obsidian";
 import TextGeneratorPlugin from "./main";
 import {Model} from './types';
-
+import debug from 'debug';
+const logger = debug('textgenerator:setModel');
 export class SetModel extends FuzzySuggestModal <Model> {
 plugin:TextGeneratorPlugin;
 title:string;
@@ -14,6 +15,7 @@ title:string;
       }
 
       getItems(): Model[] {
+        logger ("getItems");
         const templates = Array.from(this.plugin.settings.models.keys()).map(e=>({id:e}));
         return templates;
       }
@@ -23,6 +25,7 @@ title:string;
       }
     
       onChooseItem(model: Model, evt: MouseEvent | KeyboardEvent) {
+        logger ("onChooseItem",model);
         new Notice(`Selected ${model.id}`);
         this.onChoose(model.id);
       }

@@ -3,7 +3,8 @@ import {TextGeneratorSettings} from './types';
 import TextGeneratorPlugin from './main';
 import {IGNORE_IN_YMAL} from './constants';
 import ContextManager from './ContextManager';
-
+import debug from 'debug';
+const logger = debug('textgenerator:ReqFormatter');
 export default class ReqFormatter {
     plugin: TextGeneratorPlugin;
     app: App;
@@ -23,6 +24,7 @@ export default class ReqFormatter {
    }
    
     prepareReqParameters(params: TextGeneratorSettings,insertMetadata: boolean,templatePath:string="") {
+       logger("prepareReqParameters",params,insertMetadata,templatePath);
        let bodyParams:any = {
            "prompt": params.prompt,
            "max_tokens": params.max_tokens,
@@ -78,8 +80,8 @@ export default class ReqFormatter {
        } else {
            reqParams.body=	JSON.stringify(bodyParams);
        }
-
-       console.log({bodyParams,reqParams});
+       
+       logger("prepareReqParameters",{bodyParams,reqParams});
        return reqParams;
    }
 }

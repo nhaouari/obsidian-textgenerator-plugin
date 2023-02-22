@@ -1,7 +1,8 @@
 import { App, Notice, FuzzySuggestModal, FuzzyMatch } from "obsidian";
 import TextGeneratorPlugin from "./main";
 import {PromptTemplate} from './types';
-
+import debug from 'debug';
+const logger = debug('textgenerator:model');
 export class ExampleModal extends FuzzySuggestModal <PromptTemplate> {
 plugin:TextGeneratorPlugin;
 title:string;
@@ -14,14 +15,17 @@ title:string;
       }
 
       getItems(): PromptTemplate[] {
+        logger ("getItems");
         const promptsPath= this.plugin.settings.promptsPath;
         const paths = app.metadataCache.getCachedFiles().filter(path=>path.includes(promptsPath)&&!path.includes("/trash/"));
         const templates = paths.map(s=>({title:s.substring(promptsPath.length+1),path:s,...this.getMetadata(s)}))
+        logger ("getItems templates end",templates);
         return templates;
       }
 
     
        getMetadata(path:string) {
+        logger ("getMetadata",path);
         const metadata=this.getFrontmatter(path);
         const validedMetaData:any= {}
 
@@ -52,24 +56,29 @@ title:string;
         if(metadata?.PromptInfo?.version){
           validedMetaData["version"]=metadata.PromptInfo.version;
         }
-
+        logger ("getMetadata validedMetaData end",validedMetaData);
         return validedMetaData;
     }
     
     getFrontmatter(path:string="") {
+        logger ("getFrontmatter",path);
         const cache = this.app.metadataCache.getCache(path);
             if (cache.hasOwnProperty('frontmatter')) {
+              logger ("getFrontmatter end",{cache:cache.frontmatter});
                 return cache.frontmatter;
             }
+            logger ("getFrontmatter end",{cache:null});
         return null
     }
 
        // Renders each suggestion item.
     renderSuggestion(template: FuzzyMatch<PromptTemplate>, el: HTMLElement) {
+      logger("renderSuggestion",template);
       el.createEl("div", { text: template.item.name});
       el.createEl("small", { text: template.item.description,cls:"desc" });
       el.createEl("div",{});
       el.createEl("small", { text: template.item.path,cls:"path" });
+      logger("renderSuggestion end",template);
     }
 
       getItemText(template: PromptTemplate): string {
@@ -77,6 +86,7 @@ title:string;
       }
     
       onChooseItem(template: PromptTemplate, evt: MouseEvent | KeyboardEvent) {
+        logger("onChooseItem",template);
         new Notice(`Selected ${template.name}`);
         this.onChoose(template);
       }

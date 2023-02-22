@@ -13,6 +13,8 @@ import {spinnersPlugin} from './plugin';
 import Handlebars from 'handlebars';
 import PrettyError from 'pretty-error';
 import ansiToHtml from 'ansi-to-html';
+import debug from 'debug';
+const logger = debug('textgenerator:main');
 
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	api_key: "",
@@ -122,6 +124,7 @@ export default class TextGeneratorPlugin extends Plugin {
     }
 	
 	async onload() {
+		logger("loading textGenerator plugin");
 		addIcon("GENERATE_ICON",GENERATE_ICON);
 		addIcon("GENERATE_META_ICON",GENERATE_META_ICON);
 		await this.loadSettings();
@@ -130,7 +133,6 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.textGenerator=new TextGenerator(this.app,this);
 		this.packageManager= new PackageManager(this.app,this);
 		this.registerEditorExtension(spinnersPlugin);
-		
 		this.app.workspace.updateOptions();
 		this.statusBarItemEl = this.addStatusBarItem();
 		// This creates an icon in the left ribbon.

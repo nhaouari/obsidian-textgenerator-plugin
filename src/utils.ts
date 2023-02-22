@@ -1,13 +1,18 @@
 import {App,ViewState,WorkspaceLeaf,TFile} from 'obsidian';
 import {FileViewMode,NewTabDirection} from "./types"
+import debug from 'debug';
+const logger = debug('textgenerator:setModel');
 
 export function makeid(length:number) {
+    logger ("makeid");
 var result           = '';
 var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 var charactersLength = characters.length;
 for ( var i = 0; i < length; i++ ) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
 }
+
+logger ("makeid end",result);
 return result;
 }
 /**
@@ -15,11 +20,13 @@ return result;
  * @param folder 
  */
 export async function createFolder(folder: string,app:App): Promise<void> {
+    logger ("createFolder",folder);
     const folderExists = await app.vault.adapter.exists(folder);
 
     if (!folderExists) {
         await this.app.vault.createFolder(folder);
     }
+    logger ("createFolder end");
 }
 
 /**
@@ -29,6 +36,7 @@ export async function createFolder(folder: string,app:App): Promise<void> {
  * @returns 
  */
 export async function createFileWithInput(filePath: string, fileContent: string, app:App): Promise<TFile> {
+    logger ("createFileWithInput",filePath,fileContent);
     const dirMatch = filePath.match(/(.*)[\/\\]/);
     let dirName = "";
     if (dirMatch) dirName = dirMatch[1];
@@ -39,6 +47,7 @@ export async function createFileWithInput(filePath: string, fileContent: string,
         await createFolder(dirName,app);
         return await this.vault.create(filePath, fileContent)
     }
+    
 }
 
 /*
@@ -46,6 +55,8 @@ export async function createFileWithInput(filePath: string, fileContent: string,
 */
 
 export async function openFile(app: App, file: TFile, optional?: {openInNewTab?: boolean, direction?: NewTabDirection, mode?: FileViewMode, focus?: boolean}) {
+  
+   logger ("openFile",file,optional);
     let leaf: WorkspaceLeaf;
 
     if (optional?.openInNewTab && optional?.direction) {
@@ -63,8 +74,12 @@ export async function openFile(app: App, file: TFile, optional?: {openInNewTab?:
             popstate: true,
         } as ViewState, { focus: optional?.focus });
     }
+    logger ("openFile end");
 }   
 
 export function removeYMAL(content:string) {
-    return content.replace(/---(.|\n)*---/, '');
+    logger ("removeYMAL",content);
+    const newContent = content.replace(/---(.|\n)*---/, '')
+    logger ("removeYMAL",newContent);
+    return newContent ;
 }
