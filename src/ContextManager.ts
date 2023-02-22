@@ -4,10 +4,13 @@ import TextGeneratorPlugin from './main';
 import {IGNORE_IN_YMAL} from './constants';
 import Handlebars from 'handlebars';
 import {removeYMAL} from './utils';
+import debug from 'debug';
+const logger = debug('textgenerator:PackageManager');
 export default class ContextManager {
     plugin: TextGeneratorPlugin;
     app: App;
 	constructor(app: App, plugin: TextGeneratorPlugin) {
+        logger("ContextManager constructor");
         this.app = app;
 		this.plugin = plugin;
         Handlebars.registerHelper('substring', function(string:string, start:number, end:number ) {
@@ -17,10 +20,12 @@ export default class ContextManager {
 	}
     
     async getContext(editor:Editor,insertMetadata: boolean = false,templatePath:string="",addtionalOpts:any={}) {
+        logger("getContext",insertMetadata,templatePath,addtionalOpts);
         /* Template */
         if(templatePath.length > 0){  
             const options={...await this.getTemplateContext(editor,templatePath),...addtionalOpts};
             const context=await this.templateFromPath(templatePath,options);
+            logger("Context Template",{context});
             return context;
         } else {  /* Without template */
             let context = await this.getDefaultContext(editor);/* Text Generate */
@@ -32,11 +37,13 @@ export default class ContextManager {
                     new Notice("No valid Metadata (YAML front matter) found!");
                 }
             }
+            logger("Context without template",{context});
             return context;
         } 
     }
 
     async getTemplateContext(editor:Editor,templatePath:string=""){
+        logger("getTemplateContext",editor,templatePath);
         const contextOptions:Context = this.plugin.settings.context;
         const title = this.getActiveFileTitle();
         const selection = this.getSelection(editor); 
@@ -59,10 +66,12 @@ export default class ContextManager {
 
         const options={title,selection,...blocks["frontmatter"],...blocks["headings"],context: context,...blocks};
         console.log("Context Variables : ",{...options});
-    return options;
+        logger("getTemplateContext",{options});
+        return options;
     }
     
     async getDefaultContext(editor:Editor){
+        logger("getDefaultContext",editor);
         const contextOptions:Context = this.plugin.settings.context;
        
         const title = this.getActiveFileTitle();
@@ -79,7 +88,7 @@ export default class ContextManager {
         }
 
         context+=selection;
-
+        logger("getDefaultContext",{context});
         return context;
     }
 
@@ -87,15 +96,18 @@ export default class ContextManager {
 
 
     async templateFromPath(templatePath:string,options:any) {
+        logger("templateFromPath",templatePath,options);
         const templateFile = await this.app.vault.getAbstractFileByPath(templatePath);
         let templateContent= await this.app.vault.read(templateFile);
         templateContent=removeYMAL(templateContent);
         const template = Handlebars.compile(templateContent);
         templateContent=template(options);
+        logger("templateFromPath",{templateContent});
         return templateContent;
     }
 
     getSelection(editor:Editor) {
+        logger("getSelection",editor);
         let selectedText = editor.getSelection();
         if (selectedText.length === 0) {
             const lineNumber = editor.getCursor().line;
@@ -104,6 +116,7 @@ export default class ContextManager {
                 selectedText=editor.getValue()
             }
         }
+        logger("getSelection",{selectedText});
         return selectedText;
     }
 
