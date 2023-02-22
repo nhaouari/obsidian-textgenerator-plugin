@@ -17,6 +17,7 @@ type TextGeneratorSettings= {
 	prompt: string;
   promptsPath: string;
 	showStatusBar: boolean;
+  displayErrorInEditor: boolean;
   models: any;
   context:Context;
 }

@@ -126,7 +126,17 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 
           }));
 			containerEl.appendChild(createEl("a", {text: 'more information',href:"https://beta.openai.com/docs/models/overview",cls:'linkMoreInfo'}))
-
+		
+		new Setting(containerEl)
+			.setName('Display errors in the editor')
+			.setDesc('If you want to see the errors in the editor')
+			.addToggle(v => v
+				.setValue(this.plugin.settings.displayErrorInEditor )
+				.onChange(async (value) => {
+					this.plugin.settings.displayErrorInEditor = value;
+					await this.plugin.saveSettings();
+				}));
+					
 		containerEl.createEl('H2', {
 				text: 'Prompt parameters (completions)'
 			});	
@@ -278,5 +288,5 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 
 	
 		}
-
+		
 }

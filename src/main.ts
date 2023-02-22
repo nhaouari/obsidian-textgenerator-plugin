@@ -11,6 +11,8 @@ import { PackageManagerUI } from './ui/PackageManagerUI';
 import { EditorView } from "@codemirror/view";
 import {spinnersPlugin} from './plugin';
 import Handlebars from 'handlebars';
+import PrettyError from 'pretty-error';
+import ansiToHtml from 'ansi-to-html';
 
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	api_key: "",
@@ -29,7 +31,8 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		includeChildren:false,
 		includeMentions:false,
 		includeHighlights:true
-	}
+	},
+	displayErrorInEditor: false
 }
 
 export default class TextGeneratorPlugin extends Plugin {
@@ -82,11 +85,30 @@ export default class TextGeneratorPlugin extends Plugin {
 		}
 	}
 
-	handelError(error:any){
-		new Notice("🔴Error:Text Generator Plugin: Error check console CTRL+SHIFT+I");
+	formatError(error: any) {
+		const pe = new PrettyError();
+		const convert = new ansiToHtml();
+		let formattedError=convert.toHtml(pe.render(error));
+		const lines = formattedError.split("\n");
+		const formattedLines = lines.map((line) => `> ${line}`);
+		formattedError= `> [!failure]- Failure \n${formattedLines.join("\n")} \n`;
+		const errorContainer = document.createElement('div');
+		errorContainer.classList.add('error-container');
+		errorContainer.innerHTML = formattedError;
+
+		return errorContainer;
+	}
+
+	async handelError(error:any){
+		new Notice("🔴 Error: Text Generator Plugin: An error has occurred. Please check the console by pressing CTRL+SHIFT+I or turn on display errors in the editor within the settings for more information.");
 		console.error(error);
 		this.updateStatusBar(`Error check console`);
-		setTimeout(()=>this.updateStatusBar(``),3000);
+		const activeView = this.getActiveView();
+		if (activeView !== null && this.settings.displayErrorInEditor) {
+			activeView.editor.cm.contentDOM.appendChild(this.formatError(error));
+		}
+
+		setTimeout(()=>this.updateStatusBar(``),5000);
 	}
 
 	getActiveView() {
@@ -108,6 +130,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.textGenerator=new TextGenerator(this.app,this);
 		this.packageManager= new PackageManager(this.app,this);
 		this.registerEditorExtension(spinnersPlugin);
+		
 		this.app.workspace.updateOptions();
 		this.statusBarItemEl = this.addStatusBarItem();
 		// This creates an icon in the left ribbon.
@@ -129,7 +152,6 @@ export default class TextGeneratorPlugin extends Plugin {
 			new PackageManagerUI(this.app,this,async (result: string) => {
 			}).open();
 		});
-
 
 		this.addCommand({
 			id: 'generate-text',
