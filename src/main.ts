@@ -84,6 +84,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			if (plugin) {
 				plugin.remove(editor.posToOffset(editor.getCursor("to")),editorView);
 			}
+			editor.setCursor(editor.getCursor());
 		}
 	}
 
@@ -149,6 +150,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 			}
 		});
+
 
 		const ribbonIconEl2 = this.addRibbonIcon('boxes', 'Text Generator: Templates Packages Manager', async (evt: MouseEvent) => {
 			new PackageManagerUI(this.app,this,async (result: string) => {
@@ -323,6 +325,32 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 		});
 		
+		this.addCommand({
+			id: 'get-title',
+			name: 'Generate a Title',
+			icon: 'heading',
+			//hotkeys: [{ modifiers: ["Alt"], key: "c"}],
+			editorCallback: async (editor: Editor) => {
+				try {
+					const maxLength = 255;
+					const prompt = `generate a title for the current document (don't use * " \ / < > : | ? .):
+					${editor.getValue()}
+					` ;
+					
+					this.textGenerator.generate(prompt,false).then((result: string) => {
+		
+						this.app.fileManager.renameFile(this.app.workspace.getActiveFile(),`${result.replace(/[*\\"/<>:|?\.]/g, '').slice(0, maxLength)}`);
+						console.log(`${result.replace(/[*\\"/<>:|?\.]/g, '')}`);
+					}).catch((error: any) => {
+						this.handelError(error);
+					}	);
+				} catch (error) {
+					this.handelError(error);
+				}	
+			}
+		});
+
+
 		const blockTgHandler =
 			async (source: string, container: HTMLElement, { sourcePath: path }: MarkdownPostProcessorContext) => {
 				setTimeout(async ()=>
