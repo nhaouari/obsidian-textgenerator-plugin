@@ -3,10 +3,11 @@ import TextGeneratorPlugin from '../main';
 
 export default class TextGeneratorSettingTab extends PluginSettingTab {
 	plugin: TextGeneratorPlugin;
-
+	app:App;
 	constructor(app: App, plugin: TextGeneratorPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
+		this.app=app;
 		let models=new Map();
 		if (this.plugin.settings.models?.size>0){
 			models=this.plugin.settings.models;
@@ -285,7 +286,37 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 							this.plugin.settings.context.includeHighlights = value;
 							await this.plugin.saveSettings();
 						}));
+		containerEl.createEl('H3', {
+			text: 'Options'
+		});	
+		
+		
+		console.log(this.plugin.settings.commands);
 
-	
+		for (const key in this.plugin.settings.options) {
+			new Setting(containerEl)
+			  .setName(key)
+			  .setDesc(this.plugin.commands.find(c=>c.id===key || c.id==="obsidian-textgenerator-plugin:"+key)?.name )
+			  .addToggle(v => v
+				.setValue(this.plugin.settings.options[key])
+				.onChange(async (value) => {
+				  this.plugin.settings.options[key] = value;
+				  await this.plugin.saveSettings();
+				}));
+		  }
+
+		  new Setting(containerEl)
+			.setName('')
+			.setDesc('You need to reload the plugin to apply the changes in the options.')
+		  .addButton((btn) =>
+		  btn
+			.setButtonText("Reload the plugin")
+			.setCta()
+			.onClick(async() => {
+				 await this.app.plugins.disablePlugin('obsidian-textgenerator-plugin');
+				 await this.app.plugins.enablePlugin('obsidian-textgenerator-plugin');
+  
+			}));
+
 		}
 }

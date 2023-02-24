@@ -34,6 +34,21 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		includeMentions:false,
 		includeHighlights:true
 	},
+	options:
+	{
+		"generate-text": true,
+		"generate-text-with-metadata": true,
+		"insert-generated-text-From-template": true,
+		"create-generated-text-From-template": false,
+		"insert-text-From-template": false,
+		"create-text-From-template": false,
+		"show-model-From-template": true,
+		"set_max_tokens": true,
+		"set-model": true,
+		"packageManager": true,
+		"create-template": false,
+		"get-title": true
+	},
 	displayErrorInEditor: false
 }
 
@@ -157,7 +172,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			}).open();
 		});
 
-		this.addCommand({
+		this.commands= [{
 			id: 'generate-text',
 			name: 'Generate Text!',
 			icon: 'GENERATE_ICON',
@@ -169,9 +184,9 @@ export default class TextGeneratorPlugin extends Plugin {
 					this.handelError(error);
 				}	
 			}
-		});
+		}
 		
-		this.addCommand({
+		,{
 			id: 'generate-text-with-metadata',
 			name: 'Generate Text (use Metadata))!',
 			icon: 'GENERATE_META_ICON',
@@ -183,9 +198,9 @@ export default class TextGeneratorPlugin extends Plugin {
 					this.handelError(error);
 				}
 			}
-		});
-
-		this.addCommand({
+		}
+		
+		,{
 			id: 'insert-generated-text-From-template',
 			name: 'Generate and Insert Template',
 			icon: 'circle',
@@ -199,9 +214,9 @@ export default class TextGeneratorPlugin extends Plugin {
 					this.handelError(error);
 				}
 			}
-		});
-
-		this.addCommand({
+		}
+		
+		,{
 			id: 'create-generated-text-From-template',
 			name: 'Generate and Create a New File From Template',
 			icon: 'plus-circle',
@@ -216,9 +231,9 @@ export default class TextGeneratorPlugin extends Plugin {
 					this.handelError(error);
 				}
 			}
-		});
-
-		this.addCommand({
+		}
+		
+		,{
 			id: 'insert-text-From-template',
 			name: 'Insert Template',
 			icon: 'square',
@@ -232,9 +247,9 @@ export default class TextGeneratorPlugin extends Plugin {
 					this.handelError(error);
 				}	
 			}
-		});
-
-		this.addCommand({
+		}
+		
+		,{
 			id: 'create-text-From-template',
 			name: 'Create a New File From Template',
 			icon: 'plus-square',
@@ -248,9 +263,9 @@ export default class TextGeneratorPlugin extends Plugin {
 					this.handelError(error);
 				}	
 			}
-		});
-
-		this.addCommand({
+		}
+		
+		,{
 			id: 'show-model-From-template',
 			name: 'Show model From Template',
 			icon: 'layout',
@@ -264,9 +279,9 @@ export default class TextGeneratorPlugin extends Plugin {
 					this.handelError(error);
 				}	
 			}
-		});
-
-		this.addCommand({
+		}
+		
+		,{
 			id: 'set_max_tokens',
 			name: 'Set max_tokens',
 			icon: 'separator-horizontal',
@@ -278,11 +293,11 @@ export default class TextGeneratorPlugin extends Plugin {
 					new Notice(`Set Max Tokens to ${result}!`);
 					this.updateStatusBar("");
 				  }).open();
-
+		
 			}
-		});
-
-		this.addCommand({
+		}
+		
+		,{
 			id: 'set-model',
 			name: 'Choose a model',
 			icon: 'list-start',
@@ -297,9 +312,9 @@ export default class TextGeneratorPlugin extends Plugin {
 					this.handelError(error);
 				}	
 			}
-		});
-
-		this.addCommand({
+		}
+		
+		,{
 			id: 'packageManager',
 			name: 'Template Packages Manager',
 			icon: "boxes",
@@ -307,11 +322,11 @@ export default class TextGeneratorPlugin extends Plugin {
 			callback: async () => {
 				new PackageManagerUI(this.app,this,async (result: string) => {
 				  }).open();
-
-			}
-		});
 		
-		this.addCommand({
+			}
+		}
+		
+		,{
 			id: 'create-template',
 			name: 'Create a Template',
 			icon: 'plus',
@@ -323,9 +338,9 @@ export default class TextGeneratorPlugin extends Plugin {
 					this.handelError(error);
 				}	
 			}
-		});
+		}
 		
-		this.addCommand({
+		,{
 			id: 'get-title',
 			name: 'Generate a Title',
 			icon: 'heading',
@@ -348,9 +363,13 @@ export default class TextGeneratorPlugin extends Plugin {
 					this.handelError(error);
 				}	
 			}
+		}
+		]
+		
+		this.commands.filter(cmd=>this.settings.options[cmd.id]===true).forEach((command) => {
+			this.addCommand(command);
 		});
-
-
+		
 		const blockTgHandler =
 			async (source: string, container: HTMLElement, { sourcePath: path }: MarkdownPostProcessorContext) => {
 				setTimeout(async ()=>

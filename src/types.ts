@@ -20,6 +20,21 @@ type TextGeneratorSettings= {
   displayErrorInEditor: boolean;
   models: any;
   context:Context;
+  options:
+	{
+		"generate-text": boolean,
+		"generate-text-with-metadata": boolean,
+		"insert-generated-text-From-template": boolean,
+		"create-generated-text-From-template": boolean,
+		"insert-text-From-template": boolean,
+		"create-text-From-template": boolean,
+		"show-model-From-template": boolean,
+		"set_max_tokens": boolean,
+		"set-model": boolean,
+		"packageManager": boolean,
+		"create-template": boolean,
+		"get-title": boolean
+	}
 }
 
 type TextGeneratorConfiguration = {
