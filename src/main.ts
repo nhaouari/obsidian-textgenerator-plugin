@@ -138,7 +138,7 @@ export default class TextGeneratorPlugin extends Plugin {
             return null
         }
     }
-	
+
 	async onload() {
 		logger("loading textGenerator plugin");
 		addIcon("GENERATE_ICON",GENERATE_ICON);
@@ -399,8 +399,15 @@ export default class TextGeneratorPlugin extends Plugin {
 		)
 		
 		await this.packageManager.load();
-		
+	
+		this.loadPlugins();
 	}
+
+	async loadPlugins() {	
+
+	}
+
+
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
