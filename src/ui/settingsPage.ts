@@ -12,7 +12,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		if (this.plugin.settings.models?.size>0){
 			models=this.plugin.settings.models;
 		}else {
-			["text-davinci-003","text-davinci-002","text-davinci-001","text-curie-001","text-babbage-001","text-ada-001"].forEach(e=>models.set(e,''));
+			["gpt-3.5-turbo","text-davinci-003","text-davinci-002","text-davinci-001","text-curie-001","text-babbage-001","text-ada-001"].forEach(e=>models.set(e,''));
 			this.plugin.settings.models = models;
 			this.plugin.saveSettings();
 		}
@@ -69,7 +69,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		if (this.plugin.settings.models?.size>0){
 			models=this.plugin.settings.models;
 		}else {
-			["text-davinci-003","text-davinci-002","text-davinci-001","text-curie-001","text-babbage-001","text-ada-001"].forEach(e=>models.set(e,''));
+			["gpt-3.5-turbo","text-davinci-003","text-davinci-002","text-davinci-001","text-curie-001","text-babbage-001","text-ada-001"].forEach(e=>models.set(e,''));
 			this.plugin.settings.models = models;
 			this.plugin.saveSettings();
 		}
@@ -77,7 +77,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		let cbModelsEl:any
 		new Setting(containerEl)
 			.setName('Model')
-			.setDesc('text-davinci-002 is Most capable model. text-ada-001 is the fastest model.')
+			.setDesc('gpt-3.5-turbo is the most advanced language model. text-ada-001 is the fastest model.')
 			.addDropdown((cb) => {
 				cbModelsEl =cb;
 				models.forEach((value,key)=>{

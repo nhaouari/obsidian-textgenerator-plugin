@@ -25,23 +25,42 @@ export default class ReqFormatter {
    
     prepareReqParameters(params: TextGeneratorSettings,insertMetadata: boolean,templatePath:string="") {
        logger("prepareReqParameters",params,insertMetadata,templatePath);
-       let bodyParams:any = {
-           "prompt": params.prompt,
-           "max_tokens": params.max_tokens,
-           "temperature": params.temperature,
-           "frequency_penalty": params.frequency_penalty,
-       };
+       
+       let bodyParams:any= {
+        "prompt": params.prompt,
+        "max_tokens": params.max_tokens,
+        "temperature": params.temperature,
+        "frequency_penalty": params.frequency_penalty,
+        "stop": params.stop,
+     };
+
+       let reqUrl= `https://api.openai.com/v1/engines/${params.engine}/completions`;
+       let reqExtractResult = "requestResults?.choices[0].text";
+
+       if (params.engine==="gpt-3.5-turbo" ||  params.engine==="gpt-3.5-turbo-0301") {
+        bodyParams= {
+            "model": params.engine,
+            "messages": [{"role": "user", "content": params.prompt}],
+            "max_tokens": params.max_tokens,
+            "temperature": params.temperature,
+            "frequency_penalty": params.frequency_penalty,
+        };
+        reqUrl = "https://api.openai.com/v1/chat/completions";
+        reqExtractResult = "requestResults?.choices[0].message.content";
+       } 
+      
        
        
+
        let reqParams = {
-           url: `https://api.openai.com/v1/engines/${params.engine}/completions`,
+           url: reqUrl,
            method: 'POST',
            body:'',
            headers: {
                "Content-Type": "application/json",
                "Authorization": `Bearer ${params.api_key}`
            },
-           extractResult: "requestResults?.choices[0].text"
+           extractResult: reqExtractResult
        }
    
        if (insertMetadata) {
