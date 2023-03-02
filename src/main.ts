@@ -399,14 +399,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		)
 		
 		await this.packageManager.load();
-	
-		this.loadPlugins();
 	}
-
-	async loadPlugins() {	
-
-	}
-
 
 
 	async loadSettings() {
