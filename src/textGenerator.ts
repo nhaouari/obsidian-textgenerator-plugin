@@ -24,21 +24,23 @@ export default class TextGenerator {
         this.reqFormatter = new ReqFormatter(app,plugin,this.contextManager);
 	}
     
-    async generate(prompt:string,insertMetadata: boolean = false,params: any=this.plugin.settings,templatePath:string="") {
+    async generate(prompt:string,insertMetadata: boolean = false,params: any=this.plugin.settings,templatePath:string="",additionnalParams:any={}) {
         logger("generate");
         if(!this.plugin.processing){
             let reqParameters:any = this.reqFormatter.addContext(params,prompt);
-            reqParameters=this.reqFormatter.prepareReqParameters(reqParameters,insertMetadata,templatePath);
+            reqParameters=this.reqFormatter.prepareReqParameters(reqParameters,insertMetadata,templatePath,additionnalParams);
             this.plugin.startProcessing();
-            const [error, text ] = await safeAwait(this.getGeneratedText(reqParameters));
+            console.log({reqParameters})
+            const [error, result ] = await safeAwait(this.getGeneratedText(reqParameters));
             this.plugin.endProcessing();
 
             if (error) {
                 logger("generate error",error);
                 return Promise.reject(error);
             }
-            logger("generate end");
-            return text.replace(/^\n*/g," ");
+            logger("generate end",result);
+            return result;
+            //return text.replace(/^\n*/g," ");
             
         } else {
             logger("generate error","There is another generation process");
@@ -207,8 +209,9 @@ const promptInfo=
                 return Promise.reject(errorRequest);
             }
             requestResults=JSON.parse(requestResults);
-            console.log({requestResults});
+            
             const text = eval(extractResult);
+            console.log({requestResults,extractResult,text});
             logger("getGeneratedText  end");
             return text
     }

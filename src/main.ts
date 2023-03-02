@@ -14,6 +14,8 @@ import Handlebars from 'handlebars';
 import PrettyError from 'pretty-error';
 import ansiToHtml from 'ansi-to-html';
 import debug from 'debug';
+import { AutoSuggest} from './AutoSuggest';
+
 const logger = debug('textgenerator:main');
 
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
@@ -47,7 +49,13 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		"set-model": true,
 		"packageManager": true,
 		"create-template": false,
-		"get-title": true
+		"get-title": true,
+		"auto-suggest": false
+	},
+	autoSuggestOptions: {
+		numberOfSuggestions: 5,
+		triggerPhrase: "",
+		stop: "."
 	},
 	displayErrorInEditor: false
 }
@@ -58,6 +66,7 @@ export default class TextGeneratorPlugin extends Plugin {
 	textGenerator:TextGenerator;
 	packageManager:PackageManager;
 	processing:boolean=false;
+	defaultSettings:TextGeneratorSettings;
 	
     updateStatusBar(text: string) {
         let text2 = "";
@@ -143,6 +152,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		logger("loading textGenerator plugin");
 		addIcon("GENERATE_ICON",GENERATE_ICON);
 		addIcon("GENERATE_META_ICON",GENERATE_META_ICON);
+		this.defaultSettings=DEFAULT_SETTINGS;
 		await this.loadSettings();
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new TextGeneratorSettingTab(this.app, this));
@@ -349,13 +359,12 @@ export default class TextGeneratorPlugin extends Plugin {
 				try {
 					const maxLength = 255;
 					const prompt = `generate a title for the current document (don't use * " \ / < > : | ? .):
-					${editor.getValue()}
+					${editor.getValue().slice(0, maxLength)}
 					` ;
 					
 					this.textGenerator.generate(prompt,false).then((result: string) => {
-		
-						this.app.fileManager.renameFile(this.app.workspace.getActiveFile(),`${result.replace(/[*\\"/<>:|?\.]/g, '').slice(0, maxLength)}`);
-						console.log(`${result.replace(/[*\\"/<>:|?\.]/g, '')}`);
+						this.app.fileManager.renameFile(this.app.workspace.getActiveFile(),`${result.replace(/[*\\"/<>:|?\.]/g, '').replace(/^\n*/g,"")}`);
+						console.log(`${result.replace(/[*\\"/<>:|?\.]/g, '').replace(/^\n*/g,"")}`);
 					}).catch((error: any) => {
 						this.handelError(error);
 					}	);
@@ -399,15 +408,8 @@ export default class TextGeneratorPlugin extends Plugin {
 		)
 		
 		await this.packageManager.load();
-	
-		this.loadPlugins();
+		this.registerEditorSuggest(new AutoSuggest(this.app,this));
 	}
-
-	async loadPlugins() {	
-
-	}
-
-
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());

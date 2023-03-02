@@ -94,7 +94,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 			})
 			.addButton((btn) =>
         btn
-          .setButtonText("Update modeles")
+          .setButtonText("Update models")
           .setCta()
           .onClick(async() => {
 		  if(this.plugin.settings.api_key.length > 0) {
@@ -286,6 +286,56 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 							this.plugin.settings.context.includeHighlights = value;
 							await this.plugin.saveSettings();
 						}));
+
+
+		if(this.plugin.settings.options["auto-suggest"]) {
+			containerEl.createEl('H3', {
+				text: 'Auto Suggest Options'
+			});	
+			
+			if(this.plugin.settings.autoSuggestOptions == undefined) {
+				this.plugin.settings.autoSuggestOptions=this.plugin.defaultSettings.autoSuggestOptions;
+			}
+
+			
+
+			new Setting(containerEl)
+			.setName('Trigger Phrase')
+			.setDesc('Trigger Phrase for Auto Suggest')
+			.addText(text => text
+				.setPlaceholder('Trigger Phrase')
+				.setValue(this.plugin.settings.autoSuggestOptions.triggerPhrase?.toString())
+				.onChange(async (value) => {
+					this.plugin.settings.autoSuggestOptions.triggerPhrase = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Number of suggestions')
+			.setDesc('Number of suggestions')
+			.addText(text => text
+				
+				.setValue(this.plugin.settings.autoSuggestOptions.numberOfSuggestions?.toString())
+				.onChange(async (value) => {
+					this.plugin.settings.autoSuggestOptions.numberOfSuggestions = parseInt(value);
+					await this.plugin.saveSettings();
+				})
+				);
+
+		new Setting(containerEl)
+		.setName('Stop Phrase')
+		.setDesc('The generation will stop when the stop phrase is found (space for words, . for sentences, /p for paragraphs)')
+		.addText(text => text
+			.setPlaceholder('Stop Phrase')
+			.setValue(this.plugin.settings.autoSuggestOptions.stop?.toString())
+			.onChange(async (value) => {
+				this.plugin.settings.autoSuggestOptions.stop = value;
+				await this.plugin.saveSettings();
+			}));	
+		}
+
+
+
 		containerEl.createEl('H3', {
 			text: 'Options'
 		});	
@@ -304,10 +354,12 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
   
 			}));
 
-		for (const key in this.plugin.settings.options) {
+
+		const opts = {...this.plugin.defaultSettings.options, ...this.plugin.settings.options};
+		for (const key in opts) {
 			new Setting(containerEl)
 			  .setName(key)
-			  .setDesc(this.plugin.commands.find(c=>c.id===key || c.id==="obsidian-textgenerator-plugin:"+key)?.name )
+			  .setDesc(this.plugin.commands.find(c=>c.id===key || c.id==="obsidian-textgenerator-plugin:"+key)?.name ||  key)
 			  .addToggle(v => v
 				.setValue(this.plugin.settings.options[key])
 				.onChange(async (value) => {
@@ -319,4 +371,6 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		  
 
 		}
+
+
 }
