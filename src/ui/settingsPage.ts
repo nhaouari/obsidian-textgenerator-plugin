@@ -291,7 +291,18 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		});	
 		
 		
-		console.log(this.plugin.settings.commands);
+		new Setting(containerEl)
+			.setName('')
+			.setDesc('You need to reload the plugin to apply the changes in the options.')
+		  .addButton((btn) =>
+		  btn
+			.setButtonText("Reload the plugin")
+			.setCta()
+			.onClick(async() => {
+				 await this.app.plugins.disablePlugin('obsidian-textgenerator-plugin');
+				 await this.app.plugins.enablePlugin('obsidian-textgenerator-plugin');
+  
+			}));
 
 		for (const key in this.plugin.settings.options) {
 			new Setting(containerEl)
@@ -305,18 +316,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 				}));
 		  }
 
-		  new Setting(containerEl)
-			.setName('')
-			.setDesc('You need to reload the plugin to apply the changes in the options.')
-		  .addButton((btn) =>
-		  btn
-			.setButtonText("Reload the plugin")
-			.setCta()
-			.onClick(async() => {
-				 await this.app.plugins.disablePlugin('obsidian-textgenerator-plugin');
-				 await this.app.plugins.enablePlugin('obsidian-textgenerator-plugin');
-  
-			}));
+		  
 
 		}
 }
