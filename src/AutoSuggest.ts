@@ -23,24 +23,24 @@ export class AutoSuggest extends EditorSuggest<Completition> {
     constructor(private app: App, plugin:TextGeneratorPlugin) {
         super(app);
         this.plugin = plugin;
-        
-       
     }
 
     public onTrigger(cursor: EditorPosition, editor: Editor, file: TFile): EditorSuggestTriggerInfo {
-        if(!this.plugin.settings.options["auto-suggest"]) {
+        if (!this.plugin.settings.options["auto-suggest"]) {
             return;
         }
+    
         const line = editor.getLine(cursor.line).substring(0, cursor.ch);
-
-        if (!line.contains(this.plugin.settings.autoSuggestOptions.triggerPhrase)) {
+        const triggerPhrase = this.plugin.settings.autoSuggestOptions.triggerPhrase;
+    
+        if (!line.endsWith(triggerPhrase)) {
             return;
         }
-
-        const currentPart = line.split(this.plugin.settings.autoSuggestOptions.triggerPhrase).reverse()[0];
-        const currentStart = [...line.matchAll(new RegExp(this.plugin.settings.autoSuggestOptions.triggerPhrase, 'g'))].reverse()[0].index;
-
-        const result = {
+    
+        const currentPart = this.plugin.textGenerator.contextManager.getSelection(editor).replace(this.plugin.settings.autoSuggestOptions.triggerPhrase, "");
+        const currentStart = line.lastIndexOf(triggerPhrase);
+    
+        const result={
             start: {
                 ch: currentStart,
                 line: cursor.line,
@@ -48,11 +48,12 @@ export class AutoSuggest extends EditorSuggest<Completition> {
             end: cursor,
             query: currentPart,
         };
+    
         return result;
     }
 
     public async getSuggestions(context: EditorSuggestContext): Promise<Completition[]> {
-        const suggestions = await this.getMentionSuggestions(context);
+        const suggestions = await this.getGPTSuggestions(context);
         if (suggestions?.length) {
             return suggestions;
         }
@@ -65,20 +66,20 @@ export class AutoSuggest extends EditorSuggest<Completition> {
 
     public selectSuggestion(value: Completition, evt: MouseEvent | KeyboardEvent): void {
         const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-        const currenCursorPos = activeView.editor.getCursor();
-        const replacementValue = value.value;
-
-        console.log({replacementValue})
-        const newCursorPos = { ch: currenCursorPos.ch+replacementValue.length-1, line: currenCursorPos.line };
+        const currentCursorPos = activeView.editor.getCursor();
+    
+        let replacementValue = value.value.trimStart();
+        const newCursorPos = { ch: currentCursorPos.ch + replacementValue.length - 1, line: currentCursorPos.line };
 
         if (!activeView) {
             return;
         }
 
+        console.log({replacementValue,newCursorPos,context:this.context})
         activeView.editor.replaceRange(
             replacementValue,
             {
-                ch: this.context.start.ch,
+                ch: this.context.start.ch+1,
                 line: this.context.start.line,
             },
             this.context.end
@@ -88,25 +89,21 @@ export class AutoSuggest extends EditorSuggest<Completition> {
     }
 
 
-     private async getMentionSuggestions(context: EditorSuggestContext): Completition[] {
+     private async getGPTSuggestions(context: EditorSuggestContext): Promise<Completition[]> {
         const result: string[] = [];
-        const query = this.plugin.textGenerator.contextManager.getSelection(context.editor).replace(this.plugin.settings.autoSuggestOptions.triggerPhrase, "")
         try {
             const prompt = `continue the follwing text : 
-            ${query}
+            ${context.query}
             ` ;
-            
             const re = await this.plugin.textGenerator.generate(prompt,false,this.plugin.settings,"",{bodyParams:{n:parseInt(this.plugin.settings.autoSuggestOptions.numberOfSuggestions),stop:this.plugin.settings.autoSuggestOptions.stop},reqParams:{extractResult : "requestResults?.choices"}})
             let suggestions =re.map((r) => r.message.content);
-            suggestions=[...new Set(suggestions)];
-            for (let key of suggestions) {
-                if (key.toLocaleLowerCase().contains(context.query.toLocaleLowerCase())) {
-                    result.push(key);
-                }
-            }
-    
-            return result.map((r) => ({ label: r.replace(/^\n*/g,""), value: r.replace(/^\n*/g,"")}));
-
+            suggestions=[...new Set(suggestions)];   
+            return suggestions.map((r) => {
+            const label= r.replace(/^\n*/g, "").replace(/\n*$/g, "");;
+            return {
+                label: label,
+                value: label.toLowerCase().startsWith(context.query.toLowerCase()) ? label.substring(context.query.length).replace(/^\n*/g, "") : label.replace(/^\n*/g, "")
+              }});
         } catch (error) {
             this.plugin.handelError(error);
         }	
