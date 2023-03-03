@@ -26,7 +26,7 @@ export class AutoSuggest extends EditorSuggest<Completition> {
     }
 
     public onTrigger(cursor: EditorPosition, editor: Editor, file: TFile): EditorSuggestTriggerInfo {
-        if (!this.plugin.settings.options["auto-suggest"]) {
+        if (!this.plugin.settings.options["auto-suggest"] || !this.plugin.settings?.autoSuggestOptions?.status) {
             return;
         }
     

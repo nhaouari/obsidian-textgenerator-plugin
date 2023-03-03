@@ -53,6 +53,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		"auto-suggest": false
 	},
 	autoSuggestOptions: {
+		status: true,
 		numberOfSuggestions: 5,
 		triggerPhrase: "  ",
 		stop: "."
@@ -379,10 +380,10 @@ export default class TextGeneratorPlugin extends Plugin {
 			icon: 'heading',
 			//hotkeys: [{ modifiers: ["Alt"], key: "c"}],
 			callback: async () => {
-				this.settings.options['auto-suggest'] = !this.settings.options['auto-suggest'];
+				this.settings.autoSuggestOptions.status= !this.settings.autoSuggestOptions.status;
 				await this.saveSettings();
 				
-				if(this.settings.options['auto-suggest'] ) {
+				if(this.settings.autoSuggestOptions.status ) {
 					new Notice(`Auto Suggestion is on!`);
 				} else {
 					new Notice(`Auto Suggestion is off!`);

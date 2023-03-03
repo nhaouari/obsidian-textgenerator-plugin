@@ -293,11 +293,19 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 				text: 'Auto Suggest Options (🧪Experimental)'
 			});	
 			
-			if(this.plugin.settings.autoSuggestOptions == undefined) {
-				this.plugin.settings.autoSuggestOptions=this.plugin.defaultSettings.autoSuggestOptions;
-			}
-
 			
+			this.plugin.settings.autoSuggestOptions={...this.plugin.defaultSettings.autoSuggestOptions,...this.plugin.settings.autoSuggestOptions};
+			
+
+			new Setting(containerEl)
+			.setName("Enable/Disable")
+			.setDesc("Enable/Disable Auto Suggest")
+			.addToggle(v => v
+			  .setValue(this.plugin.settings.autoSuggestOptions.status)
+			  .onChange(async (value) => {
+				this.plugin.settings.autoSuggestOptions.status = value;
+				await this.plugin.saveSettings();
+			  }));
 
 			new Setting(containerEl)
 			.setName('Trigger Phrase')
@@ -310,28 +318,28 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
-		new Setting(containerEl)
-			.setName('Number of suggestions')
-			.setDesc('Number of suggestions (Please beware that increasing the value of parameter n in GPT-3 for text generation might significantly increase the cost of usage)')
-			.addText(text => text
-				
-				.setValue(this.plugin.settings.autoSuggestOptions.numberOfSuggestions?.toString())
-				.onChange(async (value) => {
-					this.plugin.settings.autoSuggestOptions.numberOfSuggestions = parseInt(value);
-					await this.plugin.saveSettings();
-				})
-				);
+			new Setting(containerEl)
+				.setName('Number of suggestions')
+				.setDesc('Number of suggestions (Please beware that increasing the value of parameter n in GPT-3 for text generation might significantly increase the cost of usage)')
+				.addText(text => text
+					
+					.setValue(this.plugin.settings.autoSuggestOptions.numberOfSuggestions?.toString())
+					.onChange(async (value) => {
+						this.plugin.settings.autoSuggestOptions.numberOfSuggestions = parseInt(value);
+						await this.plugin.saveSettings();
+					})
+					);
 
-		new Setting(containerEl)
-		.setName('Stop Phrase')
-		.setDesc('The generation will stop when the stop phrase is found (space for words, (.) for sentences, (/n) for paragraphs)')
-		.addText(text => text
-			.setPlaceholder('Stop Phrase')
-			.setValue(this.plugin.settings.autoSuggestOptions.stop?.toString())
-			.onChange(async (value) => {
-				this.plugin.settings.autoSuggestOptions.stop = value;
-				await this.plugin.saveSettings();
-			}));	
+			new Setting(containerEl)
+			.setName('Stop Phrase')
+			.setDesc('The generation will stop when the stop phrase is found (space for words, (.) for sentences, (/n) for paragraphs)')
+			.addText(text => text
+				.setPlaceholder('Stop Phrase')
+				.setValue(this.plugin.settings.autoSuggestOptions.stop?.toString())
+				.onChange(async (value) => {
+					this.plugin.settings.autoSuggestOptions.stop = value;
+					await this.plugin.saveSettings();
+				}));	
 		}
 
 

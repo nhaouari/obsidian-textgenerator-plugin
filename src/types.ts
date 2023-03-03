@@ -37,6 +37,7 @@ type TextGeneratorSettings= {
     "auto-suggest": boolean,
 	},
   autoSuggestOptions: {
+    status: boolean,
 		numberOfSuggestions: number,
 		triggerPhrase: string,
 		stop: string,
