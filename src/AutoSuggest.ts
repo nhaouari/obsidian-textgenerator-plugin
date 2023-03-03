@@ -28,6 +28,9 @@ export class AutoSuggest extends EditorSuggest<Completition> {
     }
 
     public onTrigger(cursor: EditorPosition, editor: Editor, file: TFile): EditorSuggestTriggerInfo {
+        if(!this.plugin.settings.options["auto-suggest"]) {
+            return;
+        }
         const line = editor.getLine(cursor.line).substring(0, cursor.ch);
 
         if (!line.contains(this.plugin.settings.autoSuggestOptions.triggerPhrase)) {
@@ -94,8 +97,8 @@ export class AutoSuggest extends EditorSuggest<Completition> {
             ` ;
             
             const re = await this.plugin.textGenerator.generate(prompt,false,this.plugin.settings,"",{bodyParams:{n:parseInt(this.plugin.settings.autoSuggestOptions.numberOfSuggestions),stop:this.plugin.settings.autoSuggestOptions.stop},reqParams:{extractResult : "requestResults?.choices"}})
-            const suggestions =re.map((r) => r.message.content);
-            
+            let suggestions =re.map((r) => r.message.content);
+            suggestions=[...new Set(suggestions)];
             for (let key of suggestions) {
                 if (key.toLocaleLowerCase().contains(context.query.toLocaleLowerCase())) {
                     result.push(key);

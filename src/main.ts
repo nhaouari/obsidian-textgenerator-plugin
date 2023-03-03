@@ -54,7 +54,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	},
 	autoSuggestOptions: {
 		numberOfSuggestions: 5,
-		triggerPhrase: "",
+		triggerPhrase: "  ",
 		stop: "."
 	},
 	displayErrorInEditor: false
@@ -372,9 +372,28 @@ export default class TextGeneratorPlugin extends Plugin {
 					this.handelError(error);
 				}	
 			}
+		},
+		{
+			id: 'auto-suggest',
+			name: 'Turn on or off the auto suggestion',
+			icon: 'heading',
+			//hotkeys: [{ modifiers: ["Alt"], key: "c"}],
+			callback: async () => {
+				this.settings.options['auto-suggest'] = !this.settings.options['auto-suggest'];
+				await this.saveSettings();
+				
+				if(this.settings.options['auto-suggest'] ) {
+					new Notice(`Auto Suggestion is on!`);
+				} else {
+					new Notice(`Auto Suggestion is off!`);
+				}		
+			}
 		}
 		]
 		
+
+
+
 		this.commands.filter(cmd=>this.settings.options[cmd.id]===true).forEach((command) => {
 			this.addCommand(command);
 		});

@@ -290,7 +290,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 
 		if(this.plugin.settings.options["auto-suggest"]) {
 			containerEl.createEl('H3', {
-				text: 'Auto Suggest Options'
+				text: 'Auto Suggest Options (🧪Experimental)'
 			});	
 			
 			if(this.plugin.settings.autoSuggestOptions == undefined) {
@@ -312,7 +312,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Number of suggestions')
-			.setDesc('Number of suggestions')
+			.setDesc('Number of suggestions (Please beware that increasing the value of parameter n in GPT-3 for text generation might significantly increase the cost of usage)')
 			.addText(text => text
 				
 				.setValue(this.plugin.settings.autoSuggestOptions.numberOfSuggestions?.toString())
@@ -324,7 +324,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 		.setName('Stop Phrase')
-		.setDesc('The generation will stop when the stop phrase is found (space for words, . for sentences, /p for paragraphs)')
+		.setDesc('The generation will stop when the stop phrase is found (space for words, (.) for sentences, (/n) for paragraphs)')
 		.addText(text => text
 			.setPlaceholder('Stop Phrase')
 			.setValue(this.plugin.settings.autoSuggestOptions.stop?.toString())
