@@ -23,7 +23,7 @@ export default class ReqFormatter {
        return params;
    }
    
-    prepareReqParameters(params: TextGeneratorSettings,insertMetadata: boolean,templatePath:string="") {
+    prepareReqParameters(params: TextGeneratorSettings,insertMetadata: boolean,templatePath:string="", additionnalParams:any={}) {
        logger("prepareReqParameters",params,insertMetadata,templatePath);
        
        let bodyParams:any= {
@@ -34,6 +34,7 @@ export default class ReqFormatter {
         "stop": params.stop,
      };
 
+    
        let reqUrl= `https://api.openai.com/v1/engines/${params.engine}/completions`;
        let reqExtractResult = "requestResults?.choices[0].text";
 
@@ -50,7 +51,7 @@ export default class ReqFormatter {
        } 
       
        
-       
+       bodyParams = {...bodyParams,...additionnalParams?.bodyParams};
 
        let reqParams = {
            url: reqUrl,
@@ -62,7 +63,9 @@ export default class ReqFormatter {
            },
            extractResult: reqExtractResult
        }
-   
+       
+       reqParams = {...reqParams,...additionnalParams?.reqParams};
+
        if (insertMetadata) {
            const activefileFrontmatter =  this.contextManager.getMetaData()?.frontmatter;
            const templateFrontmatter =  this.contextManager.getMetaData(templatePath)?.frontmatter;

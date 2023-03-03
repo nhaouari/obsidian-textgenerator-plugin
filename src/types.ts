@@ -33,8 +33,14 @@ type TextGeneratorSettings= {
 		"set-model": boolean,
 		"packageManager": boolean,
 		"create-template": boolean,
-		"get-title": boolean
-	}
+		"get-title": boolean,
+    "auto-suggest": boolean,
+	},
+  autoSuggestOptions: {
+		numberOfSuggestions: number,
+		triggerPhrase: string,
+		stop: string,
+	},
 }
 
 type TextGeneratorConfiguration = {
