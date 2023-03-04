@@ -38,6 +38,7 @@ type TextGeneratorSettings= {
 	},
   autoSuggestOptions: {
     status: boolean,
+    delay: number,
 		numberOfSuggestions: number,
 		triggerPhrase: string,
 		stop: string,

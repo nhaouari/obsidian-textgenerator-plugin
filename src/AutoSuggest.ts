@@ -8,10 +8,32 @@ import {
     EditorSuggestContext,
     EditorSuggestTriggerInfo,
     MarkdownView,
-    TFile,
+    TFile
 } from 'obsidian';
 
 
+function debounce<T extends unknown[], R>(
+    func: (...args: T) => Promise<R>,
+    wait: number
+  ): (...args: T) => Promise<R> {
+    let timeout: NodeJS.Timeout | null;
+  
+    return function debouncedFunction(...args: T): Promise<R> {
+      const context = this;
+  
+      return new Promise((resolve, reject) => {
+        if (timeout !== null) {
+          clearTimeout(timeout);
+        }
+  
+        timeout = setTimeout(() => {
+          func.apply(context, args)
+            .then((result) => resolve(result))
+            .catch((error) => reject(error));
+        }, wait);
+      });
+    };
+  }
 
 interface Completition {
     label: string;
@@ -20,13 +42,22 @@ interface Completition {
 
 export class AutoSuggest extends EditorSuggest<Completition> {
     plugin: TextGeneratorPlugin;
+    process: boolean=true;
+    delay = 2000;
+
     constructor(private app: App, plugin:TextGeneratorPlugin) {
         super(app);
         this.plugin = plugin;
+        this.scope.register([], "Tab", this.scope.keys.find(k=>k.key==="ArrowDown").func);
+    }
+
+    public updateSettings() {
+        this.delay = this.plugin.settings.autoSuggestOptions.delay;
     }
 
     public onTrigger(cursor: EditorPosition, editor: Editor, file: TFile): EditorSuggestTriggerInfo {
-        if (!this.plugin.settings.options["auto-suggest"] || !this.plugin.settings?.autoSuggestOptions?.status) {
+        if (!this.plugin.settings.options["auto-suggest"] || !this.plugin.settings?.autoSuggestOptions?.status || this.isOpen) {
+            this.process=false;
             return;
         }
     
@@ -34,10 +65,15 @@ export class AutoSuggest extends EditorSuggest<Completition> {
         const triggerPhrase = this.plugin.settings.autoSuggestOptions.triggerPhrase;
     
         if (!line.endsWith(triggerPhrase)) {
+            this.process=false;
             return;
         }
-    
-        const currentPart = this.plugin.textGenerator.contextManager.getSelection(editor).replace(this.plugin.settings.autoSuggestOptions.triggerPhrase, "");
+        this.process=true;
+
+        const selection = this.plugin.textGenerator.contextManager.getSelection(editor);
+        const lastOccurrenceIndex = selection.lastIndexOf(triggerPhrase);
+        const currentPart = selection.substr(0, lastOccurrenceIndex) + selection.substr(lastOccurrenceIndex).replace(triggerPhrase, "")
+
         const currentStart = line.lastIndexOf(triggerPhrase);
     
         const result={
@@ -51,13 +87,33 @@ export class AutoSuggest extends EditorSuggest<Completition> {
     
         return result;
     }
-
-    public async getSuggestions(context: EditorSuggestContext): Promise<Completition[]> {
-        const suggestions = await this.getGPTSuggestions(context);
-        if (suggestions?.length) {
-            return suggestions;
+    
+    private getSuggestionsDebounced = debounce(async (context: EditorSuggestContext): Promise<Completition[]> => {
+        console.log(this.delay);
+        try {
+            if (this.process) {
+                const suggestions = await this.getGPTSuggestions(context);
+                return suggestions?.length ? suggestions : [{ label: context.query, value: context.query }];
+            } else {
+                return  [{ label: context.query, value: context.query }];
+            }
+        } catch (error) {
+            throw error;
         }
-        return [{ label: context.query, value: context.query }];
+    }, this.delay);
+
+    public getSuggestions(context: EditorSuggestContext): Promise<Completition[]> {
+        this.updateSettings();
+        console.log({context});
+        return new Promise((resolve, reject) => {
+            this.getSuggestionsDebounced(context)
+                .then((suggestions) => {
+                    resolve(suggestions);
+                })
+                .catch((error) => {
+                    reject(error);
+                });
+        });
     }
 
     public renderSuggestion(value: Completition, el: HTMLElement): void {
@@ -68,35 +124,61 @@ export class AutoSuggest extends EditorSuggest<Completition> {
         const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
         const currentCursorPos = activeView.editor.getCursor();
     
-        let replacementValue = value.value.trimStart();
-        const newCursorPos = { ch: currentCursorPos.ch + replacementValue.length - 1, line: currentCursorPos.line };
+        let replacementValue = value.value.trimStart()+this.plugin.settings.autoSuggestOptions.stop;
+        
+        const prevChar = activeView.editor.getRange({ line: this.context.start.line, ch: this.context.start.ch - 1 }, this.context.start);
 
+        if (prevChar && prevChar.trim() !== '' && replacementValue.charAt(0) !== ' ') {
+            replacementValue = ' ' + replacementValue;
+        } 
+
+        const newCursorPos = { ch: this.context.start.ch + replacementValue.length, line: currentCursorPos.line };
         if (!activeView) {
             return;
         }
 
-        console.log({replacementValue,newCursorPos,context:this.context})
         activeView.editor.replaceRange(
             replacementValue,
             {
-                ch: this.context.start.ch+1,
+                ch: this.context.start.ch,
                 line: this.context.start.line,
             },
             this.context.end
         );
 
         activeView.editor.setCursor(newCursorPos);
+        this.processing = false;
     }
-
 
      private async getGPTSuggestions(context: EditorSuggestContext): Promise<Completition[]> {
         const result: string[] = [];
         try {
-            const prompt = `continue the follwing text : 
+            const prompt = `continue the follwing text :
             ${context.query}
             ` ;
-            const re = await this.plugin.textGenerator.generate(prompt,false,this.plugin.settings,"",{bodyParams:{n:parseInt(this.plugin.settings.autoSuggestOptions.numberOfSuggestions),stop:this.plugin.settings.autoSuggestOptions.stop},reqParams:{extractResult : "requestResults?.choices"}})
-            let suggestions =re.map((r) => r.message.content);
+
+            const additionalParams = {
+                showSpinner:false,
+            	bodyParams: {
+            		n: parseInt(this.plugin.settings.autoSuggestOptions.numberOfSuggestions),
+            		stop: this.plugin.settings.autoSuggestOptions.stop
+            	},
+            	reqParams: {
+            		extractResult: "requestResults?.choices"
+            	}
+            }
+            
+            const re = await this.plugin.textGenerator.generate(prompt,false,this.plugin.settings,"",additionalParams);
+           
+           
+            let suggestions = [];
+            
+            if (this.plugin.settings.engine==="gpt-3.5-turbo" ||  this.plugin.settings.engine==="gpt-3.5-turbo-0301") { 
+                suggestions =re.map((r) => r.message.content);
+            } else {
+                suggestions =re.map((r) => r.text);
+            }
+            
             suggestions=[...new Set(suggestions)];   
             return suggestions.map((r) => {
             const label= r.replace(/^\n*/g, "").replace(/\n*$/g, "");;

@@ -20,7 +20,7 @@ const logger = debug('textgenerator:main');
 
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	api_key: "",
-	engine: "text-davinci-003",
+	engine: "gpt-3.5-turbo",
 	max_tokens: 160,
 	temperature: 0.7,
 	frequency_penalty: 0.5,
@@ -54,6 +54,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	},
 	autoSuggestOptions: {
 		status: true,
+		delay: 300,
 		numberOfSuggestions: 5,
 		triggerPhrase: "  ",
 		stop: "."
@@ -79,11 +80,11 @@ export default class TextGeneratorPlugin extends Plugin {
         }
     }
 
-	startProcessing(){
+	startProcessing(showSpinner:boolean=true){
 		this.updateStatusBar(`processing... `);
 		this.processing=true;
 		const activeView = this.getActiveView();
-			if (activeView !== null) {
+			if (activeView !== null && showSpinner) {
 				const editor = activeView.editor;
 				// @ts-expect-error, not typed
 				const editorView = activeView.editor.cm as EditorView;
@@ -96,11 +97,11 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 	}
 
-	endProcessing(){ 
+	endProcessing(showSpinner:boolean=true){ 
 		this.updateStatusBar(``);
 		this.processing=false;
 		const activeView = this.getActiveView();
-		if (activeView !== null) {
+		if (activeView !== null && showSpinner) {
 			const editor = activeView.editor;
 			// @ts-expect-error, not typed
 			const editorView = activeView.editor.cm as EditorView;
@@ -362,9 +363,11 @@ export default class TextGeneratorPlugin extends Plugin {
 					const prompt = `generate a title for the current document (don't use * " \ / < > : | ? .):
 					${editor.getValue().slice(0, maxLength)}
 					` ;
-					
-					this.textGenerator.generate(prompt,false).then((result: string) => {
-						this.app.fileManager.renameFile(this.app.workspace.getActiveFile(),`${result.replace(/[*\\"/<>:|?\.]/g, '').replace(/^\n*/g,"")}`);
+					const additionalParams = {
+						showSpinner:false
+					}
+					this.textGenerator.generate(prompt,false,this.settings,"",additionalParams).then((result: string) => {
+						this.app.fileManager.renameFile(this.app.workspace.getActiveFile(),`${result.replace(/[*\\"/<>:|?\.]/g, '').replace(/^\n*/g,"")}.md`);
 						console.log(`${result.replace(/[*\\"/<>:|?\.]/g, '').replace(/^\n*/g,"")}`);
 					}).catch((error: any) => {
 						this.handelError(error);

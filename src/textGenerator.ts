@@ -24,15 +24,15 @@ export default class TextGenerator {
         this.reqFormatter = new ReqFormatter(app,plugin,this.contextManager);
 	}
     
-    async generate(prompt:string,insertMetadata: boolean = false,params: any=this.plugin.settings,templatePath:string="",additionnalParams:any={}) {
+    async generate(prompt:string,insertMetadata: boolean = false,params: any=this.plugin.settings,templatePath:string="",additionnalParams:any={showSpinner:true}) {
         logger("generate");
         if(!this.plugin.processing){
             let reqParameters:any = this.reqFormatter.addContext(params,prompt);
             reqParameters=this.reqFormatter.prepareReqParameters(reqParameters,insertMetadata,templatePath,additionnalParams);
-            this.plugin.startProcessing();
+            this.plugin.startProcessing(additionnalParams?.showSpinner);
             console.log({reqParameters})
             const [error, result ] = await safeAwait(this.getGeneratedText(reqParameters));
-            this.plugin.endProcessing();
+            this.plugin.endProcessing(additionnalParams?.showSpinner);
 
             if (error) {
                 logger("generate error",error);

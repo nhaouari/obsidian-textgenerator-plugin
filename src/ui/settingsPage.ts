@@ -299,17 +299,17 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 
 			new Setting(containerEl)
 			.setName("Enable/Disable")
-			.setDesc("Enable/Disable Auto Suggest")
-			.addToggle(v => v
-			  .setValue(this.plugin.settings.autoSuggestOptions.status)
-			  .onChange(async (value) => {
-				this.plugin.settings.autoSuggestOptions.status = value;
-				await this.plugin.saveSettings();
-			  }));
+			.setDesc("Enable or disable auto-suggest.")
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.autoSuggestOptions.status)
+				.onChange(async (value) => {
+					this.plugin.settings.autoSuggestOptions.status = value;
+					await this.plugin.saveSettings();
+				}));
 
 			new Setting(containerEl)
 			.setName('Trigger Phrase')
-			.setDesc('Trigger Phrase for Auto Suggest')
+			.setDesc('Enter the trigger phrase for auto-suggest. (The default is double spaces.)')
 			.addText(text => text
 				.setPlaceholder('Trigger Phrase')
 				.setValue(this.plugin.settings.autoSuggestOptions.triggerPhrase?.toString())
@@ -317,29 +317,44 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 					this.plugin.settings.autoSuggestOptions.triggerPhrase = value;
 					await this.plugin.saveSettings();
 				}));
+			
+			new Setting(containerEl)
+			.setName("Delay milli-seconds for trigger")
+			.addSlider((slider) =>
+				slider
+				.setLimits(0, 2000, 50)
+				.setValue(this.plugin.settings.autoSuggestOptions.delay)
+				.setDynamicTooltip()
+				.onChange(async (value) => {
+					this.plugin.settings.autoSuggestOptions.delay = value;
+					await this.plugin.saveSettings();
+				})
+			);
 
 			new Setting(containerEl)
-				.setName('Number of suggestions')
-				.setDesc('Number of suggestions (Please beware that increasing the value of parameter n in GPT-3 for text generation might significantly increase the cost of usage)')
-				.addText(text => text
-					
-					.setValue(this.plugin.settings.autoSuggestOptions.numberOfSuggestions?.toString())
-					.onChange(async (value) => {
-						this.plugin.settings.autoSuggestOptions.numberOfSuggestions = parseInt(value);
-						await this.plugin.saveSettings();
-					})
-					);
+			.setName('Number of Suggestions')
+			.setDesc('Enter the number of suggestions to generate. Please note that increasing this value may significantly increase the cost of usage with GPT-3.')
+			.addText(text => text
+				.setValue(this.plugin.settings.autoSuggestOptions.numberOfSuggestions?.toString())
+				.onChange(async (value) => {
+					this.plugin.settings.autoSuggestOptions.numberOfSuggestions = parseInt(value);
+					await this.plugin.saveSettings();
+				})
+			);
+		
 
 			new Setting(containerEl)
 			.setName('Stop Phrase')
-			.setDesc('The generation will stop when the stop phrase is found (space for words, (.) for sentences, (/n) for paragraphs)')
+			.setDesc('Enter the stop phrase to use for generating auto-suggestions. The generation will stop when the stop phrase is found. (Use a space for words, a period for sentences, and a newline for paragraphs.)')
 			.addText(text => text
 				.setPlaceholder('Stop Phrase')
 				.setValue(this.plugin.settings.autoSuggestOptions.stop?.toString())
 				.onChange(async (value) => {
 					this.plugin.settings.autoSuggestOptions.stop = value;
 					await this.plugin.saveSettings();
-				}));	
+				})
+			);
+
 		}
 
 
