@@ -25,12 +25,12 @@ export default class TextGenerator {
 	}
     
     async generate(prompt:string,insertMetadata: boolean = false,params: any=this.plugin.settings,templatePath:string="",additionnalParams:any={showSpinner:true}) {
-        logger("generate");
+        logger("generate",{prompt,insertMetadata,params,templatePath,additionnalParams});
         if(!this.plugin.processing){
             let reqParameters:any = this.reqFormatter.addContext(params,prompt);
             reqParameters=this.reqFormatter.prepareReqParameters(reqParameters,insertMetadata,templatePath,additionnalParams);
             this.plugin.startProcessing(additionnalParams?.showSpinner);
-            console.log({reqParameters})
+            logger( "generate ",{reqParameters});
             const [error, result ] = await safeAwait(this.getGeneratedText(reqParameters));
             this.plugin.endProcessing(additionnalParams?.showSpinner);
 
@@ -38,7 +38,7 @@ export default class TextGenerator {
                 logger("generate error",error);
                 return Promise.reject(error);
             }
-            logger("generate end",result);
+            logger("generate end",{result});
             return result;
             //return text.replace(/^\n*/g," ");
             

@@ -11,13 +11,16 @@ import {
     TFile
 } from 'obsidian';
 
+import debug from 'debug';
+const logger = debug('textgenerator:AutoSuggest');
 
 function debounce<T extends unknown[], R>(
     func: (...args: T) => Promise<R>,
     wait: number
   ): (...args: T) => Promise<R> {
     let timeout: NodeJS.Timeout | null;
-    console.log({wait});
+
+    logger("debounce",func,wait);
     return function debouncedFunction(...args: T): Promise<R> {
       const context = this;
   
@@ -27,6 +30,7 @@ function debounce<T extends unknown[], R>(
         }
   
         timeout = setTimeout(() => {
+          logger("debouncedFunction",args);
           func.apply(context, args)
             .then((result) => resolve(result))
             .catch((error) => reject(error));
@@ -46,6 +50,7 @@ export class AutoSuggest extends EditorSuggest<Completition> {
     delay :number= 0;
     getSuggestionsDebounced:any
     constructor(private app: App, plugin:TextGeneratorPlugin) {
+        logger("AutoSuggest",app,plugin);
         super(app);
         this.plugin = plugin;
         this.scope.register([], "Tab", this.scope.keys.find(k=>k.key==="ArrowDown").func);
@@ -53,10 +58,11 @@ export class AutoSuggest extends EditorSuggest<Completition> {
     }
 
     public updateSettings() {
+        logger("updateSettings");
         if(this.delay!==this.plugin.settings.autoSuggestOptions.delay || this.getSuggestionsDebounced === undefined) {
             this.delay = this.plugin.settings.autoSuggestOptions.delay;
             this.getSuggestionsDebounced = debounce(async (context: EditorSuggestContext): Promise<Completition[]> => {
-                console.log(this.delay);
+                logger("updateSettings",{delay:this.delay,context});
                 try {
                     if (this.process) {
                         const suggestions = await this.getGPTSuggestions(context);
@@ -73,6 +79,7 @@ export class AutoSuggest extends EditorSuggest<Completition> {
     }
 
     public onTrigger(cursor: EditorPosition, editor: Editor, file: TFile): EditorSuggestTriggerInfo {
+        logger("onTrigger",cursor,editor,file);
         if (!this.plugin.settings.options["auto-suggest"] || !this.plugin.settings?.autoSuggestOptions?.status || this.isOpen) {
             this.process=false;
             return;
@@ -101,18 +108,19 @@ export class AutoSuggest extends EditorSuggest<Completition> {
             end: cursor,
             query: currentPart,
         };
-    
+        logger("onTrigger",result);
         return result;
     }
     
     
 
     public getSuggestions(context: EditorSuggestContext): Promise<Completition[]> {
+        logger("getSuggestions",context);
         this.updateSettings();
-        console.log({context});
         return new Promise((resolve, reject) => {
             this.getSuggestionsDebounced(context)
                 .then((suggestions) => {
+                    logger("getSuggestions",suggestions);
                     resolve(suggestions);
                 })
                 .catch((error) => {
@@ -122,10 +130,12 @@ export class AutoSuggest extends EditorSuggest<Completition> {
     }
 
     public renderSuggestion(value: Completition, el: HTMLElement): void {
+        //logger("renderSuggestion",value,el);
         el.setText(value.label);
     }
 
     public selectSuggestion(value: Completition, evt: MouseEvent | KeyboardEvent): void {
+        logger("selectSuggestion",value,evt);
         const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
         const currentCursorPos = activeView.editor.getCursor();
     
@@ -156,6 +166,7 @@ export class AutoSuggest extends EditorSuggest<Completition> {
     }
 
      private async getGPTSuggestions(context: EditorSuggestContext): Promise<Completition[]> {
+        logger("getGPTSuggestions",context);
         const result: string[] = [];
         try {
             const prompt = `continue the follwing text :
@@ -186,12 +197,17 @@ export class AutoSuggest extends EditorSuggest<Completition> {
             
             suggestions=[...new Set(suggestions)];   
             return suggestions.map((r) => {
-            const label= r.replace(/^\n*/g, "").replace(/\n*$/g, "");;
-            return {
+            const label= r.replace(/^\n*/g, "").replace(/\n*$/g, "");
+            
+            const suggestionsObj={
                 label: label,
                 value: label.toLowerCase().startsWith(context.query.toLowerCase()) ? label.substring(context.query.length).replace(/^\n*/g, "") : label.replace(/^\n*/g, "")
-              }});
+              }
+            logger("getGPTSuggestions",suggestionsObj);
+            return suggestionsObj;
+            });
         } catch (error) {
+            logger("getGPTSuggestions error",error);
             this.plugin.handelError(error);
         }	
     }

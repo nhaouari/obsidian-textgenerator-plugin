@@ -13,9 +13,8 @@ import {spinnersPlugin} from './plugin';
 import Handlebars from 'handlebars';
 import PrettyError from 'pretty-error';
 import ansiToHtml from 'ansi-to-html';
-import debug from 'debug';
 import { AutoSuggest} from './AutoSuggest';
-
+import debug from 'debug';
 const logger = debug('textgenerator:main');
 
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
@@ -427,7 +426,7 @@ export default class TextGeneratorPlugin extends Plugin {
 					}
 					this.textGenerator.generate(prompt,false,this.settings,"",additionalParams).then((result: string) => {
 						this.app.fileManager.renameFile(this.app.workspace.getActiveFile(),`${result.replace(/[*\\"/<>:|?\.]/g, '').replace(/^\n*/g,"")}.md`);
-						console.log(`${result.replace(/[*\\"/<>:|?\.]/g, '').replace(/^\n*/g,"")}`);
+						logger(`Generate a Title: title: ${result.replace(/[*\\"/<>:|?\.]/g, '').replace(/^\n*/g,"")}`);
 					}).catch((error: any) => {
 						this.handelError(error);
 					}	);
@@ -521,14 +520,14 @@ export default class TextGeneratorPlugin extends Plugin {
 				const button = this.createRunButton("Generate Text",generateSVG);
 				button.addEventListener("click", async () => {
 					await this.textGenerator.generatePrompt(markdown,false,this.getActiveView().editor)
-					console.log(markdown);
+					logger(`addTGMenu Generate Text`,{markdown:markdown,source:source});
 				});
 
 				const createTemplateSVG=`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
 				const buttonMakeTemplate = this.createRunButton("Create a new Template",createTemplateSVG);
 				buttonMakeTemplate.addEventListener("click", async () => {
 					await this.textGenerator.createTemplate(source,"newTemplate");
-					console.log(source);
+					logger(`addTGMenu MakeTemplate`,{markdown:markdown,source:source});
 				});
 
 				

@@ -65,8 +65,7 @@ export default class ContextManager {
         if(contextOptions.includeMentions) blocks['mentions']= await this.getMentions(this.app.workspace.activeLeaf.getDisplayText());
 
         const options={title,selection,...blocks["frontmatter"],...blocks["headings"],context: context,...blocks};
-        console.log("Context Variables : ",{...options});
-        logger("getTemplateContext",{options});
+        logger("getTemplateContext Context Variables ",{...options});
         return options;
     }
     
