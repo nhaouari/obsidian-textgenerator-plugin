@@ -141,28 +141,31 @@ export class AutoSuggest extends EditorSuggest<Completition> {
         const currentCursorPos = activeView.editor.getCursor();
     
         let replacementValue = value.value.trimStart()+this.plugin.settings.autoSuggestOptions.stop;
-        
-        const prevChar = activeView.editor.getRange({ line: this.context.start.line, ch: this.context.start.ch - 1 }, this.context.start);
 
-        if (prevChar && prevChar.trim() !== '' && replacementValue.charAt(0) !== ' ') {
-            replacementValue = ' ' + replacementValue;
-        } 
+        if(replacementValue.length>0) {
+            replacementValue += this.plugin.settings.autoSuggestOptions.stop;
+            const prevChar = activeView.editor.getRange({ line: this.context.start.line, ch: this.context.start.ch - 1 }, this.context.start);
 
-        const newCursorPos = { ch: this.context.start.ch + replacementValue.length, line: currentCursorPos.line };
-        if (!activeView) {
-            return;
+            if (prevChar && prevChar.trim() !== '' && replacementValue.charAt(0) !== ' ') {
+                replacementValue = ' ' + replacementValue;
+            } 
+            
+            const newCursorPos = { ch: this.context.start.ch + replacementValue.length, line: currentCursorPos.line };
+            if (!activeView) {
+                return;
+            }
+
+            activeView.editor.replaceRange(
+                replacementValue,
+                {
+                    ch: this.context.start.ch,
+                    line: this.context.start.line,
+                },
+                this.context.end
+            );
+
+            activeView.editor.setCursor(newCursorPos);
         }
-
-        activeView.editor.replaceRange(
-            replacementValue,
-            {
-                ch: this.context.start.ch,
-                line: this.context.start.line,
-            },
-            this.context.end
-        );
-
-        activeView.editor.setCursor(newCursorPos);
         this.processing = false;
     }
 

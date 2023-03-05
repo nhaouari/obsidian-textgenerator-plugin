@@ -224,8 +224,8 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 				
 
 		new Setting(containerEl)
-		.setName('staredBlocks')
-		.setDesc('Include stared blocks in the considered context.')
+		.setName('starredBlocks')
+		.setDesc('Include starred blocks in the considered context.')
 		.addToggle(v => v
 			.setValue(this.plugin.settings.context.includeStaredBlocks)
 			.onChange(async (value) => {
