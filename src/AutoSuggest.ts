@@ -135,15 +135,23 @@ export class AutoSuggest extends EditorSuggest<Completition> {
         el.setText(value.label);
     }
 
+    public checkLastSubstring(str:string, substring:string):boolean {
+        const size = substring.length;
+        const lastSubstring = str.slice(-size);
+        return lastSubstring === substring;
+      }
+
     public selectSuggestion(value: Completition, evt: MouseEvent | KeyboardEvent): void {
         logger("selectSuggestion",value,evt);
         const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
         const currentCursorPos = activeView.editor.getCursor();
-    
-        let replacementValue = value.value.trimStart();
-
+        let replacementValue = value.value.trimStart().trimEnd();
         if(replacementValue.length>0) {
-            replacementValue += this.plugin.settings.autoSuggestOptions.stop;
+            if(!this.checkLastSubstring(replacementValue,this.plugin.settings.autoSuggestOptions.stop)) 
+            {
+                replacementValue += this.plugin.settings.autoSuggestOptions.stop;
+            }
+           
             const prevChar = activeView.editor.getRange({ line: this.context.start.line, ch: this.context.start.ch - 1 }, this.context.start);
 
             if (prevChar && prevChar.trim() !== '' && replacementValue.charAt(0) !== ' ') {
