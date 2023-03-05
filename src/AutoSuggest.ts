@@ -131,6 +131,7 @@ export class AutoSuggest extends EditorSuggest<Completition> {
 
     public renderSuggestion(value: Completition, el: HTMLElement): void {
         //logger("renderSuggestion",value,el);
+        el.setAttribute('dir', 'auto');
         el.setText(value.label);
     }
 
