@@ -53,7 +53,7 @@ export class AutoSuggest extends EditorSuggest<Completition> {
 
 
     public updateSettings() {
-        if(this.delay!==this.plugin.settings.autoSuggestOptions.delay) {
+        if(this.delay!==this.plugin.settings.autoSuggestOptions.delay || this.getSuggestionsDebounced === undefined) {
             this.delay = this.plugin.settings.autoSuggestOptions.delay;
             this.getSuggestionsDebounced = debounce(async (context: EditorSuggestContext): Promise<Completition[]> => {
                 console.log(this.delay);
