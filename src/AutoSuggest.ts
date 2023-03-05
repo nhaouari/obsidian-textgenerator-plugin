@@ -17,7 +17,7 @@ function debounce<T extends unknown[], R>(
     wait: number
   ): (...args: T) => Promise<R> {
     let timeout: NodeJS.Timeout | null;
-  
+    console.log({wait});
     return function debouncedFunction(...args: T): Promise<R> {
       const context = this;
   
@@ -43,16 +43,33 @@ interface Completition {
 export class AutoSuggest extends EditorSuggest<Completition> {
     plugin: TextGeneratorPlugin;
     process: boolean=true;
-    delay = 2000;
-
+    delay :number= 0;
+    getSuggestionsDebounced:any
     constructor(private app: App, plugin:TextGeneratorPlugin) {
         super(app);
         this.plugin = plugin;
         this.scope.register([], "Tab", this.scope.keys.find(k=>k.key==="ArrowDown").func);
     }
 
+
     public updateSettings() {
-        this.delay = this.plugin.settings.autoSuggestOptions.delay;
+        if(this.delay!==this.plugin.settings.autoSuggestOptions.delay) {
+            this.delay = this.plugin.settings.autoSuggestOptions.delay;
+            this.getSuggestionsDebounced = debounce(async (context: EditorSuggestContext): Promise<Completition[]> => {
+                console.log(this.delay);
+                try {
+                    if (this.process) {
+                        const suggestions = await this.getGPTSuggestions(context);
+                        return suggestions?.length ? suggestions : [{ label: context.query, value: context.query }];
+                    } else {
+                        return  [{ label: context.query, value: context.query }];
+                    }
+                } catch (error) {
+                    throw error;
+                }
+            }, this.delay);
+        }
+       
     }
 
     public onTrigger(cursor: EditorPosition, editor: Editor, file: TFile): EditorSuggestTriggerInfo {
@@ -88,19 +105,7 @@ export class AutoSuggest extends EditorSuggest<Completition> {
         return result;
     }
     
-    private getSuggestionsDebounced = debounce(async (context: EditorSuggestContext): Promise<Completition[]> => {
-        console.log(this.delay);
-        try {
-            if (this.process) {
-                const suggestions = await this.getGPTSuggestions(context);
-                return suggestions?.length ? suggestions : [{ label: context.query, value: context.query }];
-            } else {
-                return  [{ label: context.query, value: context.query }];
-            }
-        } catch (error) {
-            throw error;
-        }
-    }, this.delay);
+    
 
     public getSuggestions(context: EditorSuggestContext): Promise<Completition[]> {
         this.updateSettings();
