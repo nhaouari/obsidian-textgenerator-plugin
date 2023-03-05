@@ -140,7 +140,7 @@ export class AutoSuggest extends EditorSuggest<Completition> {
         const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
         const currentCursorPos = activeView.editor.getCursor();
     
-        let replacementValue = value.value.trimStart()+this.plugin.settings.autoSuggestOptions.stop;
+        let replacementValue = value.value.trimStart();
 
         if(replacementValue.length>0) {
             replacementValue += this.plugin.settings.autoSuggestOptions.stop;
@@ -149,7 +149,7 @@ export class AutoSuggest extends EditorSuggest<Completition> {
             if (prevChar && prevChar.trim() !== '' && replacementValue.charAt(0) !== ' ') {
                 replacementValue = ' ' + replacementValue;
             } 
-            
+
             const newCursorPos = { ch: this.context.start.ch + replacementValue.length, line: currentCursorPos.line };
             if (!activeView) {
                 return;
