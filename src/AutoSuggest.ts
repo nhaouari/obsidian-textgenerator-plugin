@@ -49,8 +49,8 @@ export class AutoSuggest extends EditorSuggest<Completition> {
         super(app);
         this.plugin = plugin;
         this.scope.register([], "Tab", this.scope.keys.find(k=>k.key==="ArrowDown").func);
+        this.scope.register(["Shift"], "Tab", this.scope.keys.find(k=>k.key==="ArrowUp").func);
     }
-
 
     public updateSettings() {
         if(this.delay!==this.plugin.settings.autoSuggestOptions.delay || this.getSuggestionsDebounced === undefined) {

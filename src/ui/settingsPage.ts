@@ -290,7 +290,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 
 		if(this.plugin.settings.options["auto-suggest"]) {
 			containerEl.createEl('H3', {
-				text: 'Auto Suggest Options (🧪Experimental)'
+				text: 'Auto-Suggest Options (🧪Experimental)'
 			});	
 			
 			
@@ -354,6 +354,17 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				})
 			);
+
+			new Setting(containerEl)
+			  .setName("Show/Hide Auto-suggest status in Status Bar")
+			  .setDesc("")
+			  .addToggle(v => v
+				.setValue(this.plugin.settings.autoSuggestOptions.showStatus)
+				.onChange(async (value) => {
+				  this.plugin.settings.autoSuggestOptions.showStatus = value;
+				  this.plugin.AutoSuggestStatusBar();
+				  await this.plugin.saveSettings();
+				}));
 
 		}
 

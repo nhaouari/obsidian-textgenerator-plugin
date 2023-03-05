@@ -42,6 +42,7 @@ type TextGeneratorSettings= {
 		numberOfSuggestions: number,
 		triggerPhrase: string,
 		stop: string,
+    showStatus: boolean,
 	},
 }
 

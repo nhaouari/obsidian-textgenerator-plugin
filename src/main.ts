@@ -1,4 +1,4 @@
-import {addIcon, Notice, Plugin, MarkdownView, Editor,MarkdownRenderer,MarkdownPostProcessorContext} from 'obsidian';
+import {addIcon, Notice, Plugin, MarkdownView, Editor,MarkdownRenderer,MarkdownPostProcessorContext,getIcon} from 'obsidian';
 import {ExampleModal} from './model';
 import {TextGeneratorSettings,Context} from './types';
 import {GENERATE_ICON,GENERATE_META_ICON} from './constants';
@@ -57,7 +57,8 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		delay: 300,
 		numberOfSuggestions: 5,
 		triggerPhrase: "  ",
-		stop: "."
+		stop: ".",
+		showStatus: true
 	},
 	displayErrorInEditor: false
 }
@@ -69,19 +70,37 @@ export default class TextGeneratorPlugin extends Plugin {
 	packageManager:PackageManager;
 	processing:boolean=false;
 	defaultSettings:TextGeneratorSettings;
-	
-    updateStatusBar(text: string) {
+	statusBarItem: HTMLElement = null;
+	statusBarText: HTMLElement = null;
+	notice:Notice;
+    updateStatusBar(text: string,processing:boolean=false) {
         let text2 = "";
         if (text.length > 0) {
             text2 = `: ${text}`;
         }
         if (this.settings.showStatusBar) {
-            this.statusBarItemEl.setText(`Text Generator(${this.settings.max_tokens})${text2}`);
-        }
+		this.statusBarItemEl.innerHTML = '';
+		const statusBarText = this.statusBarItemEl.createEl('span');
+		statusBarText.style.marginLeft = '5px';
+		statusBarText.textContent = `Text Generator(${this.settings.max_tokens})${text2}`;
+		if(processing) {
+			let span= document.createElement('span'); 
+			span.addClasses(["loading","dots"]); 
+			span.setAttribute('id','tg-loading');
+			this.statusBarItemEl.append(span);
+			this.notice&&this.notice.hide();
+			this.notice=new Notice(`Processing...`,100000);
+		} else if(this.notice) {
+			this.notice.hide();
+			if (text.length > 0) {
+				new Notice(text);
+			}
+		}
+	}
     }
 
 	startProcessing(showSpinner:boolean=true){
-		this.updateStatusBar(`processing... `);
+		this.updateStatusBar(``,true);
 		this.processing=true;
 		const activeView = this.getActiveView();
 			if (activeView !== null && showSpinner) {
@@ -150,6 +169,40 @@ export default class TextGeneratorPlugin extends Plugin {
         }
     }
 
+	AutoSuggestStatusBar() {
+		this.statusBarItem.innerHTML = '';
+		if(this.settings.autoSuggestOptions.showStatus){
+			let languageIcon
+			if(!this.settings.autoSuggestOptions.status) {
+				languageIcon = getIcon('zap-off');
+			} else {
+				languageIcon = getIcon('zap');
+			}
+			this.statusBarItem.append(languageIcon);
+			this.statusBarText = this.statusBarItem.createEl('span');
+			this.statusBarText.style.marginLeft = '5px';
+			this.statusBarItem.title = 'Text Generator AUTO-SUGGEST';
+			this.statusBarItem.addClass('mod-clickable');
+			this.statusBarText.textContent = "AUTO-SUGGEST";
+		}
+		
+	}
+
+	AddAutoSuggestStatusBar() {
+		this.AutoSuggestStatusBar();
+		const onClickAutoSuggestStatusBar = (event) => {
+			this.settings.autoSuggestOptions.status = !this.settings.autoSuggestOptions.status;
+			this.saveSettings();
+			this.AutoSuggestStatusBar();
+			if(this.settings.autoSuggestOptions.status ) {
+				new Notice(`Auto Suggestion is on!`);
+			} else {
+				new Notice(`Auto Suggestion is off!`);
+			}
+			};
+		this.statusBarItem.addEventListener('click', onClickAutoSuggestStatusBar);
+	}
+	
 	async onload() {
 		logger("loading textGenerator plugin");
 		addIcon("GENERATE_ICON",GENERATE_ICON);
@@ -163,6 +216,12 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.registerEditorExtension(spinnersPlugin);
 		this.app.workspace.updateOptions();
 		this.statusBarItemEl = this.addStatusBarItem();
+		this.statusBarItem = this.addStatusBarItem();
+
+		if(this.settings.autoSuggestOptions.showStatus) {
+			this.AddAutoSuggestStatusBar();
+		}
+
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('GENERATE_ICON', 'Generate Text!', async (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
@@ -385,6 +444,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			callback: async () => {
 				this.settings.autoSuggestOptions.status= !this.settings.autoSuggestOptions.status;
 				await this.saveSettings();
+				this.AutoSuggestStatusBar();
 				
 				if(this.settings.autoSuggestOptions.status ) {
 					new Notice(`Auto Suggestion is on!`);
