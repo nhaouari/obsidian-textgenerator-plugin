@@ -21,7 +21,7 @@ const logger = debug('textgenerator:main');
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	api_key: "",
 	engine: "gpt-3.5-turbo",
-	max_tokens: 1000,
+	max_tokens: 500,
 	temperature: 0.7,
 	frequency_penalty: 0.5,
 	prompt: "",
