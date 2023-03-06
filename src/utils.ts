@@ -83,3 +83,11 @@ export function removeYMAL(content:string) {
     logger ("removeYMAL",newContent);
     return newContent ;
 }
+
+export function numberToKFormat(number) {
+    if (number >= 1000) {
+      return (number/1000).toFixed(1) + 'k';
+    } else {
+      return number.toString();
+    }
+  }

@@ -1,6 +1,7 @@
 import {addIcon, Notice, Plugin, MarkdownView, Editor,MarkdownRenderer,MarkdownPostProcessorContext,getIcon} from 'obsidian';
 import {ExampleModal} from './model';
 import {TextGeneratorSettings,Context} from './types';
+import {numberToKFormat} from './utils';
 import {GENERATE_ICON,GENERATE_META_ICON} from './constants';
 import TextGeneratorSettingTab from './ui/settingsPage';
 import {SetMaxTokens} from './ui/setMaxTokens';
@@ -110,8 +111,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 			this.statusBarTokens.addClass('mod-clickable');
 			const statusBarTokens = this.statusBarTokens.createEl('span');
-			statusBarTokens.textContent = `${(this.settings.max_tokens/1000).toFixed(1) + 'k'}`;
-			statusBarTokens.style.marginLeft = '5px';
+			statusBarTokens.textContent = `${numberToKFormat(this.settings.max_tokens)}`;
 			statusBarTokens.title = 'Max Tokens for Output';
 			statusBarTokens.addClass('mod-clickable');
 			statusBarTokens.addEventListener('click', () => {
@@ -122,7 +122,6 @@ export default class TextGeneratorPlugin extends Plugin {
 					this.updateStatusBar("");
 				  }).open();
 			});
-			statusBarTokens.style.marginLeft = '5px';
 	}
     }
 
