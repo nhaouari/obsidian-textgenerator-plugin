@@ -20,7 +20,7 @@ const logger = debug('textgenerator:main');
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	api_key: "",
 	engine: "gpt-3.5-turbo",
-	max_tokens: 160,
+	max_tokens: 1000,
 	temperature: 0.7,
 	frequency_penalty: 0.5,
 	prompt: "",
@@ -245,7 +245,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.autoSuggestItem = this.addStatusBarItem();
 
 		this.updateStatusBar(``);
-		if(this.settings.autoSuggestOptions.showStatus) {
+		if(this.settings.options["auto-suggest"]&&this.settings.autoSuggestOptions.showStatus) {
 			this.AddAutoSuggestStatusBar();
 		}
 

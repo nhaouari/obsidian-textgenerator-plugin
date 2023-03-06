@@ -112,8 +112,6 @@ export class AutoSuggest extends EditorSuggest<Completition> {
         return result;
     }
     
-    
-
     public getSuggestions(context: EditorSuggestContext): Promise<Completition[]> {
         logger("getSuggestions",context);
         this.updateSettings();
@@ -145,36 +143,28 @@ export class AutoSuggest extends EditorSuggest<Completition> {
         logger("selectSuggestion",value,evt);
         const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
         const currentCursorPos = activeView.editor.getCursor();
-        let replacementValue = value.value.trimStart().trimEnd();
-        if(replacementValue.length>0) {
-            if(!this.checkLastSubstring(replacementValue,this.plugin.settings.autoSuggestOptions.stop)) 
-            {
-                replacementValue += this.plugin.settings.autoSuggestOptions.stop;
-            }
-           
-            const prevChar = activeView.editor.getRange({ line: this.context.start.line, ch: this.context.start.ch - 1 }, this.context.start);
+        let replacementValue = value.value;
+        const prevChar = activeView.editor.getRange({ line: this.context.start.line, ch: this.context.start.ch - 1 }, this.context.start);
 
-            if (prevChar && prevChar.trim() !== '' && replacementValue.charAt(0) !== ' ') {
-                replacementValue = ' ' + replacementValue;
-            } 
+        if (prevChar && prevChar.trim() !== '' && replacementValue.charAt(0) !== ' ') {
+            replacementValue = ' ' + replacementValue;
+        } 
 
-            const newCursorPos = { ch: this.context.start.ch + replacementValue.length, line: currentCursorPos.line };
-            if (!activeView) {
-                return;
-            }
-
-            activeView.editor.replaceRange(
-                replacementValue,
-                {
-                    ch: this.context.start.ch,
-                    line: this.context.start.line,
-                },
-                this.context.end
-            );
-
-            activeView.editor.setCursor(newCursorPos);
+        const newCursorPos = { ch: this.context.start.ch + replacementValue.length, line: currentCursorPos.line };
+        if (!activeView) {
+            return;
         }
-        this.processing = false;
+
+        activeView.editor.replaceRange(
+            replacementValue,
+            {
+                ch: this.context.start.ch,
+                line: this.context.start.line,
+            },
+            this.context.end
+        );
+
+        activeView.editor.setCursor(newCursorPos);
     }
 
      private async getGPTSuggestions(context: EditorSuggestContext): Promise<Completition[]> {
@@ -208,12 +198,16 @@ export class AutoSuggest extends EditorSuggest<Completition> {
             }
             
             suggestions=[...new Set(suggestions)];   
-            return suggestions.map((r) => {
-            const label= r.replace(/^\n*/g, "").replace(/\n*$/g, "");
-            
+            return suggestions.map((r) => {   
+            let label= r.trim();
+            if(!this.checkLastSubstring(label,this.plugin.settings.autoSuggestOptions.stop)) 
+            {
+                label+=this.plugin.settings.autoSuggestOptions.stop;
+            }
+
             const suggestionsObj={
                 label: label,
-                value: label.toLowerCase().startsWith(context.query.toLowerCase()) ? label.substring(context.query.length).replace(/^\n*/g, "") : label.replace(/^\n*/g, "")
+                value: label.toLowerCase().startsWith(context.query.toLowerCase()) ? label.substring(context.query.length).trim() : label.trim()
               }
             logger("getGPTSuggestions",suggestionsObj);
             return suggestionsObj;
