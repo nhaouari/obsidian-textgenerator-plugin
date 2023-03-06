@@ -64,37 +64,65 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 
 export default class TextGeneratorPlugin extends Plugin {
 	settings: TextGeneratorSettings;
-	statusBarItemEl: any;
 	textGenerator:TextGenerator;
 	packageManager:PackageManager;
 	processing:boolean=false;
 	defaultSettings:TextGeneratorSettings;
-	statusBarItem: HTMLElement = null;
-	statusBarText: HTMLElement = null;
+	textGeneratorIconItem: HTMLElement = null;
+	autoSuggestItem: HTMLElement = null;
+	statusBarTokens:HTMLElement = null;
 	notice:Notice;
+
     updateStatusBar(text: string,processing:boolean=false) {
         let text2 = "";
         if (text.length > 0) {
             text2 = `: ${text}`;
         }
         if (this.settings.showStatusBar) {
-		this.statusBarItemEl.innerHTML = '';
-		const statusBarText = this.statusBarItemEl.createEl('span');
-		statusBarText.style.marginLeft = '5px';
-		statusBarText.textContent = `Text Generator(${this.settings.max_tokens})${text2}`;
-		if(processing) {
-			let span= document.createElement('span'); 
-			span.addClasses(["loading","dots"]); 
-			span.setAttribute('id','tg-loading');
-			this.statusBarItemEl.append(span);
-			this.notice&&this.notice.hide();
-			this.notice=new Notice(`Processing...`,100000);
-		} else if(this.notice) {
-			this.notice.hide();
-			if (text.length > 0) {
-				new Notice(text);
+			this.textGeneratorIconItem.innerHTML = '';
+			this.statusBarTokens.innerHTML = '';
+
+			if(processing) {
+				let span= document.createElement('span'); 
+				span.addClasses(["loading","dots"]);
+				span.setAttribute('id','tg-loading');
+				span.style.width="16px";
+				span.style.alignContent="center";
+				this.textGeneratorIconItem.append(span);
+				this.textGeneratorIconItem.title = 'Generating Text...';
+				this.notice&&this.notice.hide();
+				this.notice=new Notice(`Processing...`,100000);
+			} else {
+				this.textGeneratorIconItem.append(getIcon('bot'));
+				this.textGeneratorIconItem.title = 'Text Generator';
+				this.textGeneratorIconItem.addClass('mod-clickable');
+				this.textGeneratorIconItem.addEventListener('click', () => {
+					this.app.setting.open();
+					this.app.setting.openTabById("obsidian-textgenerator-plugin").display();
+				});
+
+				if(this.notice) {
+					this.notice.hide();
+					if (text.length > 0) {
+						new Notice(text);
+					}
+				}
 			}
-		}
+			this.statusBarTokens.addClass('mod-clickable');
+			const statusBarTokens = this.statusBarTokens.createEl('span');
+			statusBarTokens.textContent = `${(this.settings.max_tokens/1000).toFixed(1) + 'k'}`;
+			statusBarTokens.style.marginLeft = '5px';
+			statusBarTokens.title = 'Max Tokens for Output';
+			statusBarTokens.addClass('mod-clickable');
+			statusBarTokens.addEventListener('click', () => {
+				new SetMaxTokens(this.app,this,this.settings.max_tokens.toString(),async (result: string) => {
+					this.settings.max_tokens = parseInt(result);
+					await this.saveSettings();
+					new Notice(`Set Max Tokens to ${result}!`);
+					this.updateStatusBar("");
+				  }).open();
+			});
+			statusBarTokens.style.marginLeft = '5px';
 	}
     }
 
@@ -169,7 +197,7 @@ export default class TextGeneratorPlugin extends Plugin {
     }
 
 	AutoSuggestStatusBar() {
-		this.statusBarItem.innerHTML = '';
+		this.autoSuggestItem.innerHTML = '';
 		if(this.settings.autoSuggestOptions.showStatus){
 			let languageIcon
 			if(!this.settings.autoSuggestOptions.status) {
@@ -177,12 +205,9 @@ export default class TextGeneratorPlugin extends Plugin {
 			} else {
 				languageIcon = getIcon('zap');
 			}
-			this.statusBarItem.append(languageIcon);
-			this.statusBarText = this.statusBarItem.createEl('span');
-			this.statusBarText.style.marginLeft = '5px';
-			this.statusBarItem.title = 'Text Generator AUTO-SUGGEST';
-			this.statusBarItem.addClass('mod-clickable');
-			this.statusBarText.textContent = "AUTO-SUGGEST";
+			this.autoSuggestItem.append(languageIcon);
+			this.autoSuggestItem.title = 'Text Generator Enable or disable Auto-suggest';
+			this.autoSuggestItem.addClass('mod-clickable');
 		}
 		
 	}
@@ -199,7 +224,7 @@ export default class TextGeneratorPlugin extends Plugin {
 				new Notice(`Auto Suggestion is off!`);
 			}
 			};
-		this.statusBarItem.addEventListener('click', onClickAutoSuggestStatusBar);
+		this.autoSuggestItem.addEventListener('click', onClickAutoSuggestStatusBar);
 	}
 	
 	async onload() {
@@ -209,17 +234,21 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.defaultSettings=DEFAULT_SETTINGS;
 		await this.loadSettings();
 		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new TextGeneratorSettingTab(this.app, this));
+		const settingTab=new TextGeneratorSettingTab(this.app, this);
+		this.addSettingTab(settingTab);
 		this.textGenerator=new TextGenerator(this.app,this);
 		this.packageManager= new PackageManager(this.app,this);
 		this.registerEditorExtension(spinnersPlugin);
 		this.app.workspace.updateOptions();
-		this.statusBarItemEl = this.addStatusBarItem();
-		this.statusBarItem = this.addStatusBarItem();
+		this.textGeneratorIconItem = this.addStatusBarItem();
+		this.statusBarTokens = this.addStatusBarItem();
+		this.autoSuggestItem = this.addStatusBarItem();
 
+		this.updateStatusBar(``);
 		if(this.settings.autoSuggestOptions.showStatus) {
 			this.AddAutoSuggestStatusBar();
 		}
+
 
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('GENERATE_ICON', 'Generate Text!', async (evt: MouseEvent) => {

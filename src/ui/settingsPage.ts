@@ -385,6 +385,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 			.onClick(async() => {
 				 await this.app.plugins.disablePlugin('obsidian-textgenerator-plugin');
 				 await this.app.plugins.enablePlugin('obsidian-textgenerator-plugin');
+				 this.app.setting.openTabById("obsidian-textgenerator-plugin").display();
   
 			}));
 
