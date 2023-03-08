@@ -50,7 +50,8 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		"packageManager": true,
 		"create-template": false,
 		"get-title": true,
-		"auto-suggest": false
+		"auto-suggest": false,
+		"generated-text-to-clipboard-From-template": false,
 	},
 	autoSuggestOptions: {
 		status: true,
@@ -155,7 +156,6 @@ export default class TextGeneratorPlugin extends Plugin {
 			if (plugin) {
 				plugin.remove(editor.posToOffset(editor.getCursor("to")),editorView);
 			}
-			editor.setCursor(editor.getCursor());
 		}
 	}
 
@@ -264,12 +264,12 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 		});
 
-
 		const ribbonIconEl2 = this.addRibbonIcon('boxes', 'Text Generator: Templates Packages Manager', async (evt: MouseEvent) => {
 			new PackageManagerUI(this.app,this,async (result: string) => {
 			}).open();
 		});
-
+		
+	console.log('Copied document to clipboard');
 		this.commands= [{
 			id: 'generate-text',
 			name: 'Generate Text!',
@@ -300,14 +300,30 @@ export default class TextGeneratorPlugin extends Plugin {
 		
 		,{
 			id: 'insert-generated-text-From-template',
-			name: 'Generate and Insert Template',
+			name: 'Templates: Generate & Insert ',
 			icon: 'circle',
 			//hotkeys: [{ modifiers: ["Mod"], key: "q"}],
 			editorCallback: async (editor: Editor) => {
 				try {
 					new ExampleModal(this.app, this,async (result) => {		
 						await this.textGenerator.generateFromTemplate(this.settings, result.path, true, editor,true);		
-					  },'Generate and Insert Template').open();
+					  },'Generate and Insert Template In The Active Note').open();
+				} catch (error) {
+					this.handelError(error);
+				}
+			}
+		}
+		,{
+			id: 'generated-text-to-clipboard-From-template',
+			name: 'Templates: Generate & Copy To Clipboard ',
+			icon: 'circle',
+			//hotkeys: [{ modifiers: ["Mod"], key: "q"}],
+			editorCallback: async (editor: Editor) => {
+				try {
+					new ExampleModal(this.app, this,async (result) => {		
+						await this.textGenerator.generateToClipboard(this.settings, result.path, true,editor);
+
+				},'Generate & Copy To Clipboard').open();
 				} catch (error) {
 					this.handelError(error);
 				}
@@ -316,14 +332,14 @@ export default class TextGeneratorPlugin extends Plugin {
 		
 		,{
 			id: 'create-generated-text-From-template',
-			name: 'Generate and Create a New File From Template',
+			name: 'Templates: Generate & Create Note',
 			icon: 'plus-circle',
 			//hotkeys: [{ modifiers: ["Mod","Shift"], key: "q"}],
 			editorCallback: async (editor: Editor) => {
 				try {
 					new ExampleModal(this.app, this,async (result) => {
 						await this.textGenerator.generateFromTemplate(this.settings, result.path, true, editor,false);
-					  },'Generate and Create a New File From Template').open();
+					  },'Generate and Create a New Note From Template').open();
 					
 				} catch (error) {
 					this.handelError(error);
@@ -333,14 +349,14 @@ export default class TextGeneratorPlugin extends Plugin {
 		
 		,{
 			id: 'insert-text-From-template',
-			name: 'Insert Template',
+			name: 'Templates: Insert Template',
 			icon: 'square',
 			//hotkeys: [{ modifiers: ['Alt'], key: "q"}],
 			editorCallback: async (editor: Editor) => {
 				try {
 					new ExampleModal(this.app, this,async (result) => {
 						await this.textGenerator.createToFile(this.settings, result.path, true, editor,true);
-					  },'Insert Template').open();
+					  },'Insert Template In The Active Note').open();
 				} catch (error) {
 					this.handelError(error);
 				}	
@@ -349,14 +365,14 @@ export default class TextGeneratorPlugin extends Plugin {
 		
 		,{
 			id: 'create-text-From-template',
-			name: 'Create a New File From Template',
+			name: 'Templates: Insert & Create Note',
 			icon: 'plus-square',
 			//hotkeys: [{ modifiers: ["Shift","Alt"], key: "q"}],
 			editorCallback: async (editor: Editor) => {
 				try {
 					new ExampleModal(this.app, this,async (result) => {
 						await this.textGenerator.createToFile(this.settings, result.path, true, editor,false);
-					  },'Create a New File From Template').open();
+					  },'Create a New Note From Template').open();
 				} catch (error) {
 					this.handelError(error);
 				}	
@@ -484,11 +500,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		
 
 
-
-		this.commands.filter(cmd=>this.settings.options[cmd.id]===true).forEach((command) => {
-			this.addCommand(command);
-		});
-		
+		this.addCommands();
 		const blockTgHandler =
 			async (source: string, container: HTMLElement, { sourcePath: path }: MarkdownPostProcessorContext) => {
 				setTimeout(async ()=>
@@ -530,6 +542,63 @@ export default class TextGeneratorPlugin extends Plugin {
 	}
 	
 
+	addCommands() {
+		let cmds=this.commands.filter(cmd=>this.settings.options[cmd.id]===true)
+		const promptsPath= this.settings.promptsPath;
+        const paths = app.metadataCache.getCachedFiles().filter(path=>path.includes(promptsPath)&&!path.includes("/trash/"));
+		const templates = paths.map(s=>({title:s.substring(promptsPath.length+1),path:s,...this.textGenerator.getMetadata(s)}))
+		//debugger
+
+		const templatesWithCommands=templates.filter(t=>t?.commands);
+		logger("Templates with commands ",{templatesWithCommands});
+
+		templatesWithCommands.forEach((template) => {
+			//debugger
+			template.commands.forEach((command) => {
+				logger("Tempate commands ",{template,command});
+				const cmd = {
+					id: `${template.path.split("/").slice(-2, -1)[0]}-${command}-${template.id}`,
+					name: `${command.toUpperCase()} ${template.title}`,
+					editorCallback: async (editor: Editor) => {
+						try {
+							switch (command) {
+								case "generate":
+									await this.textGenerator.generateFromTemplate(this.settings, template.path, true, editor,true);
+									break;
+								case "insert":
+									await this.textGenerator.createToFile(this.settings, template.path, true, editor,true);
+									break;
+								case "generate&create":
+									await this.textGenerator.generateFromTemplate(this.settings, template.path, true, editor,false);
+								break;
+								case "insert&create":
+									await this.textGenerator.createToFile(this.settings,template.path, true, editor,false);
+								break;
+								case "model":
+									await this.textGenerator.tempalteToModel(this.settings,template.path,editor)
+									break;
+								case "clipboard":
+									await this.textGenerator.generateToClipboard(this.settings, template.path, true,editor);
+									break;
+								default:
+									console.error("command name not found");
+									break;
+							}
+							} catch (error) {
+							this.handelError(error);
+						}
+					}
+				}
+				logger("command ",{cmd,template});
+				cmds.push(cmd);
+			});
+			
+		});
+
+		cmds.forEach((command) => {
+			this.addCommand(command);
+		});
+	}
 	createRunButton(label:string,svg:string) {
 		const button = document.createElement("div");
 		button.classList.add("clickable-icon");

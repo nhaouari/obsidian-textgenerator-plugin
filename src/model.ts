@@ -29,8 +29,8 @@ title:string;
         const metadata=this.getFrontmatter(path);
         const validedMetaData:any= {}
 
-        if(metadata?.PromptInfo?.id){
-          validedMetaData["id"]=metadata.PromptInfo.id;
+        if(metadata?.PromptInfo?.promptId){
+          validedMetaData["id"]=metadata.PromptInfo.promptId;
         }
 
         if(metadata?.PromptInfo?.name){
@@ -56,6 +56,11 @@ title:string;
         if(metadata?.PromptInfo?.version){
           validedMetaData["version"]=metadata.PromptInfo.version;
         }
+
+        if(metadata?.PromptInfo?.commands){
+          validedMetaData["commands"]=metadata.PromptInfo.commands;
+        }
+
         logger ("getMetadata validedMetaData end",validedMetaData);
         return validedMetaData;
     }

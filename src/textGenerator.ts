@@ -113,6 +113,31 @@ export default class TextGenerator {
         logger("generateInEditor end");
     }
   
+
+    async generateToClipboard(params: TextGeneratorSettings, templatePath: string, insertMetadata: boolean = false, editor:Editor) {
+        logger("generateToClipboard");
+        const [errorContext, context ] = await safeAwait(this.contextManager.getContext(editor,insertMetadata,templatePath));
+        const [errorGeneration, text ] = await safeAwait(this.generate(context,insertMetadata,params,templatePath));
+
+        if(errorContext) {
+            return Promise.reject(errorContext);
+        }
+
+        if(errorGeneration) {
+            return Promise.reject(errorGeneration);
+        }
+        const data =
+			new ClipboardItem({
+				"text/plain": new Blob([text], {
+					type: "text/plain"
+				}),
+			});
+		await navigator.clipboard.write([data]);
+        new Notice("Generated Text copied to clipboard");
+        editor.setCursor(editor.getCursor());
+        logger("generateToClipboard end");
+    }
+    
     async generatePrompt(promptText: string, insertMetadata: boolean = false,editor:Editor) {
         logger("generatePrompt");
         const cursor= this.getCursor(editor);
@@ -231,6 +256,7 @@ const promptInfo=
             }
         } 
         editor.replaceRange(text, cursor);
+        editor.setCursor(editor.getCursor());
         logger("insertGeneratedText end");
     }
 
@@ -287,8 +313,8 @@ const promptInfo=
         const metadata=this.getFrontmatter(path);
         const validedMetaData:any= {}
 
-        if(metadata?.PromptInfo?.id){
-          validedMetaData["id"]=metadata.PromptInfo.id;
+        if(metadata?.PromptInfo?.promptId){
+          validedMetaData["id"]=metadata.PromptInfo.promptId;
         }
 
         if(metadata?.PromptInfo?.name){
@@ -314,6 +340,11 @@ const promptInfo=
         if(metadata?.PromptInfo?.version){
           validedMetaData["version"]=metadata.PromptInfo.version;
         }
+
+        if(metadata?.PromptInfo?.commands){
+            validedMetaData["commands"]=metadata.PromptInfo.commands;
+          }
+
         logger("getMetadata end");
         return validedMetaData;
     }

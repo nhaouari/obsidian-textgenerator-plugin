@@ -35,6 +35,7 @@ type TextGeneratorSettings= {
 		"create-template": boolean,
 		"get-title": boolean,
     "auto-suggest": boolean,
+    "generated-text-to-clipboard-From-template": boolean
 	},
   autoSuggestOptions: {
     status: boolean,
