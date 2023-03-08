@@ -269,7 +269,6 @@ export default class TextGeneratorPlugin extends Plugin {
 			}).open();
 		});
 		
-	console.log('Copied document to clipboard');
 		this.commands= [{
 			id: 'generate-text',
 			name: 'Generate Text!',
