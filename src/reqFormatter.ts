@@ -27,30 +27,23 @@ export default class ReqFormatter {
        logger("prepareReqParameters",params,insertMetadata,templatePath);
        
        let bodyParams:any= {
-        "prompt": params.prompt,
+        "model": params.engine,
         "max_tokens": params.max_tokens,
         "temperature": params.temperature,
-        "frequency_penalty": params.frequency_penalty,
-        "stop": params.stop,
+        "frequency_penalty": params.frequency_penalty
      };
 
-    
-       let reqUrl= `https://api.openai.com/v1/engines/${params.engine}/completions`;
+       let reqUrl= `https://api.openai.com/v1/completions`;
        let reqExtractResult = "requestResults?.choices[0].text";
 
        if (params.engine==="gpt-3.5-turbo" ||  params.engine==="gpt-3.5-turbo-0301") {
-        bodyParams= {
-            "model": params.engine,
-            "messages": [{"role": "user", "content": params.prompt}],
-            "max_tokens": params.max_tokens,
-            "temperature": params.temperature,
-            "frequency_penalty": params.frequency_penalty,
-        };
-        reqUrl = "https://api.openai.com/v1/chat/completions";
-        reqExtractResult = "requestResults?.choices[0].message.content";
-       } 
-      
-       
+            reqUrl = "https://api.openai.com/v1/chat/completions";
+            reqExtractResult = "requestResults?.choices[0].message.content";
+            bodyParams["messages"]=[{"role": "user", "content": params.prompt}];
+        } else {
+            bodyParams["prompt"]= params.prompt;
+        }
+ 
        bodyParams = {...bodyParams,...additionnalParams?.bodyParams};
 
        let reqParams = {

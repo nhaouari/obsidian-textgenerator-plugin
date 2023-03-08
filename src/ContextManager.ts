@@ -5,7 +5,7 @@ import {IGNORE_IN_YMAL} from './constants';
 import Handlebars from 'handlebars';
 import {removeYMAL} from './utils';
 import debug from 'debug';
-const logger = debug('textgenerator:PackageManager');
+const logger = debug('textgenerator:ContextManager');
 export default class ContextManager {
     plugin: TextGeneratorPlugin;
     app: App;
@@ -112,9 +112,14 @@ export default class ContextManager {
             const lineNumber = editor.getCursor().line;
             selectedText = editor.getLine(lineNumber);
             if (selectedText.length===0){
-                selectedText=editor.getValue()
+                selectedText= editor.getValue()
+                let frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document 
+                if ((typeof frontmatter !== 'undefined')  && Object.keys(frontmatter).length !== 0) { /* Text Generate with metadata */
+                selectedText=removeYMAL(selectedText);
+                }
             }
-        }
+
+            }
         logger("getSelection",{selectedText});
         return selectedText;
     }
