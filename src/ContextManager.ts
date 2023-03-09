@@ -46,7 +46,8 @@ export default class ContextManager {
         logger("getTemplateContext",editor,templatePath);
         const contextOptions:Context = this.plugin.settings.context;
         const title = this.getActiveFileTitle();
-        const selection = this.getSelection(editor); 
+        const selection = this.getSelection(editor);
+        const selections = this.getSelections(editor);
         const context = await this.getDefaultContext(editor);
         const activeDocCache = this.getMetaData(""); // active document
         
@@ -64,7 +65,7 @@ export default class ContextManager {
         
         if(contextOptions.includeMentions) blocks['mentions']= await this.getMentions(this.app.workspace.activeLeaf.getDisplayText());
 
-        const options={title,selection,...blocks["frontmatter"],...blocks["headings"],context: context,...blocks};
+        const options={title,selection,selections,...blocks["frontmatter"],...blocks["headings"],context: context,...blocks};
         logger("getTemplateContext Context Variables ",{...options});
         return options;
     }
@@ -91,9 +92,6 @@ export default class ContextManager {
         return context;
     }
 
-
-
-
     async templateFromPath(templatePath:string,options:any) {
         logger("templateFromPath",templatePath,options);
         const templateFile = await this.app.vault.getAbstractFileByPath(templatePath);
@@ -103,6 +101,13 @@ export default class ContextManager {
         templateContent=template(options);
         logger("templateFromPath",{templateContent});
         return templateContent;
+    }
+
+    getSelections(editor:Editor) {
+        logger("getSelections",editor);
+        const selections = editor.listSelections().map(r=>editor.getRange(r.anchor,r.head)).filter(text=>text.length>0);
+        logger("getSelections",{selections});
+        return selections;
     }
 
     getSelection(editor:Editor) {
@@ -118,7 +123,6 @@ export default class ContextManager {
                 selectedText=removeYMAL(selectedText);
                 }
             }
-
             }
         logger("getSelection",{selectedText});
         return selectedText;
