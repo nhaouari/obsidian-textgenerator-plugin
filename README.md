@@ -8,7 +8,8 @@ For example, use Text Generator to generate ideas, attractive titles, summaries,
 
 The possibilities are endless!
 
-If you're looking for a place to discuss the use cases of this plugin and share your experiences, head over to the [Discussion](https://github.com/nhaouari/obsidian-textgenerator-plugin/discussions/categories/use-cases). There, you'll find a community of like-minded users who are eager to help you make the most of this powerful tool.
+
+If you're looking for a place to discuss the use cases of this plugin and share your experiences, head over to our [**Discord Server**](https://discord.gg/bJm33Rqk) or the [Discussion](https://github.com/nhaouari/obsidian-textgenerator-plugin/discussions/categories/use-cases). There, you'll find a community of like-minded users who are eager to help you make the most of this powerful tool.
 
 # Features
 
