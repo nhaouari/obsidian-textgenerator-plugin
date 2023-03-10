@@ -255,6 +255,15 @@ const promptInfo=
                 cursor= editor.listSelections()[0].anchor;
             }
         } 
+
+        if(this.plugin.settings.outputToBlockQuote){
+            let lines = text.split("\n");
+            for (let i = 2; i < lines.length; i++) {
+            lines[i] = "> " + lines[i];
+            }
+            text = lines.join("\n");
+        }
+
         editor.replaceRange(text, cursor);
         editor.setCursor(editor.getCursor());
         logger("insertGeneratedText end");
