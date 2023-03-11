@@ -453,7 +453,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 		}
 		
-		,{
+		, {
 			id: 'get-title',
 			name: 'Generate a Title',
 			icon: 'heading',
@@ -461,21 +461,21 @@ export default class TextGeneratorPlugin extends Plugin {
 			editorCallback: async (editor: Editor) => {
 				try {
 					const maxLength = 255;
-					const prompt = `generate a title for the current document (don't use * " \ / < > : | ? .):
-					${editor.getValue().slice(0, maxLength)}
-					` ;
+					const prompt = `Generate a title for the current document (do not use * " \ / < > : | ? .):
+			  ${editor.getValue().slice(0, maxLength)}
+			  `;
 					const additionalParams = {
-						showSpinner:false
+						showSpinner: false
 					}
-					this.textGenerator.generate(prompt,false,this.settings,"",additionalParams).then((result: string) => {
-						this.app.fileManager.renameFile(this.app.workspace.getActiveFile(),`${result.replace(/[*\\"/<>:|?\.]/g, '').replace(/^\n*/g,"")}.md`);
-						logger(`Generate a Title: title: ${result.replace(/[*\\"/<>:|?\.]/g, '').replace(/^\n*/g,"")}`);
-					}).catch((error: any) => {
-						this.handelError(error);
-					}	);
+					const generatedTitle = await this.textGenerator.generate(prompt, false, this.settings, "", additionalParams);
+					const sanitizedTitle = generatedTitle.replace(/[*\\"/<>:|?\.]/g, '').replace(/^\n*/g, '');
+					const activeFile = this.app.workspace.getActiveFile();
+					const renamedFilePath = activeFile.path.replace(activeFile.name, `${sanitizedTitle}.md`);
+					await this.app.fileManager.renameFile(activeFile, renamedFilePath);
+					logger(`Generated a title: ${sanitizedTitle}`);
 				} catch (error) {
-					this.handelError(error);
-				}	
+					this.handleError(error);
+				}
 			}
 		},
 		{
