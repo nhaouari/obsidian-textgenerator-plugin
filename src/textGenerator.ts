@@ -259,6 +259,12 @@ const promptInfo=
         if(this.plugin.settings.outputToBlockQuote){
             let lines = text.split("\n");
             for (let i = 2; i < lines.length; i++) {
+                
+                if(lines[i].includes("[!ai] AI")){
+                    lines.splice(i, 1);
+                }
+
+                if(lines[i].startsWith(">")) continue;
                 lines[i] = "> " + lines[i];
             }
 
