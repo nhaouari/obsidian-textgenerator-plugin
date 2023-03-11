@@ -259,9 +259,13 @@ const promptInfo=
         if(this.plugin.settings.outputToBlockQuote){
             let lines = text.split("\n");
             for (let i = 2; i < lines.length; i++) {
-            lines[i] = "> " + lines[i];
+                lines[i] = "> " + lines[i];
             }
-            text = lines.join("\n");
+
+            text = "\n> [!ai] AI \n> \n"+lines.join("\n").trimStart()+"\n\n";
+        
+         //   text = "```tg\n"+text+"\n```";
+       
         }
 
         editor.replaceRange(text, cursor);

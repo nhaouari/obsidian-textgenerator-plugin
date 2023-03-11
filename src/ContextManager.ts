@@ -112,10 +112,11 @@ export default class ContextManager {
 
     getSelection(editor:Editor) {
         logger("getSelection",editor);
-        let selectedText = editor.getSelection();
+        let selectedText = editor.getSelection().trimStart();
         if (selectedText.length === 0) {
             const lineNumber = editor.getCursor().line;
-            selectedText = editor.getLine(lineNumber);
+            selectedText = editor.getLine(lineNumber).trimStart();
+
             if (selectedText.length===0){
                 selectedText= editor.getValue()
                 let frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document 
