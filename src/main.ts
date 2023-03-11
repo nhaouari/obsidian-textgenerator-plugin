@@ -26,6 +26,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	frequency_penalty: 0.5,
 	prompt: "",
 	showStatusBar: true,
+	outputToBlockQuote: false,
 	promptsPath:"textgenerator/prompts",
 	context:{
 		includeTitle:false,
