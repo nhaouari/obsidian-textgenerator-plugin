@@ -184,6 +184,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		containerEl.createEl('H3', {
 					text: 'General'
 				});	
+
 		new Setting(containerEl)
 			.setName('Show Status in  StatusBar')
 			.setDesc('Show information in the Status Bar')
@@ -191,6 +192,16 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.showStatusBar)
 				.onChange(async (value) => {
 					this.plugin.settings.showStatusBar = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Output generated text to blockquote')
+			.setDesc('Distinguish between AI generated text and typed text using a blockquote')
+			.addToggle(v => v
+				.setValue(this.plugin.settings.outputToBlockQuote)
+				.onChange(async (value) => {
+					this.plugin.settings.outputToBlockQuote = value;
 					await this.plugin.saveSettings();
 				}));
 

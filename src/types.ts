@@ -18,6 +18,7 @@ type TextGeneratorSettings= {
   promptsPath: string;
 	showStatusBar: boolean;
   displayErrorInEditor: boolean;
+  outputToBlockQuote: boolean;
   models: any;
   context:Context;
   options:
