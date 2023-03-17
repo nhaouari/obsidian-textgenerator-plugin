@@ -12,7 +12,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		if (this.plugin.settings.models?.size>0){
 			models=this.plugin.settings.models;
 		}else {
-			["gpt-3.5-turbo","text-davinci-003","text-davinci-002","text-davinci-001","text-curie-001","text-babbage-001","text-ada-001"].forEach(e=>models.set(e,''));
+			["gpt-3.5-turbo","gpt-4","text-davinci-003","text-davinci-002","text-davinci-001","text-curie-001","text-babbage-001","text-ada-001"].forEach(e=>models.set(e,''));
 			this.plugin.settings.models = models;
 			this.plugin.saveSettings();
 		}
@@ -69,7 +69,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		if (this.plugin.settings.models?.size>0){
 			models=this.plugin.settings.models;
 		}else {
-			["gpt-3.5-turbo","text-davinci-003","text-davinci-002","text-davinci-001","text-curie-001","text-babbage-001","text-ada-001"].forEach(e=>models.set(e,''));
+			["gpt-3.5-turbo","gpt-4","text-davinci-003","text-davinci-002","text-davinci-001","text-curie-001","text-babbage-001","text-ada-001"].forEach(e=>models.set(e,''));
 			this.plugin.settings.models = models;
 			this.plugin.saveSettings();
 		}

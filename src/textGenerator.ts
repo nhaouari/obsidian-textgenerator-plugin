@@ -234,10 +234,8 @@ const promptInfo=
                 return Promise.reject(errorRequest);
             }
             requestResults=JSON.parse(requestResults);
-            
             const text = eval(extractResult);
-            console.log({requestResults,extractResult,text});
-            logger("getGeneratedText  end");
+            logger("getGeneratedText  end",{requestResults,extractResult,text});
             return text
     }
 

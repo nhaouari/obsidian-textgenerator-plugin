@@ -36,7 +36,8 @@ export default class ReqFormatter {
        let reqUrl= `https://api.openai.com/v1/completions`;
        let reqExtractResult = "requestResults?.choices[0].text";
 
-       if (params.engine==="gpt-3.5-turbo" ||  params.engine==="gpt-3.5-turbo-0301") {
+       const chatModels=["gpt-3.5-turbo","gpt-3.5-turbo-0301","gpt-4"];
+       if (params.engine && chatModels.includes(params.engine)) {
             reqUrl = "https://api.openai.com/v1/chat/completions";
             reqExtractResult = "requestResults?.choices[0].message.content";
             bodyParams["messages"]=[{"role": "user", "content": params.prompt}];
