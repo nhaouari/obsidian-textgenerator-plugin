@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting, request } from "obsidian";
 import TextGeneratorPlugin from "scr/main";
+import packageJson from "package.json";
 export default class TextGeneratorSettingTab extends PluginSettingTab {
 	plugin: TextGeneratorPlugin;
 	app: App;
@@ -30,9 +31,24 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 
 		containerEl.empty();
-
 		containerEl.createEl("H1", {
-			text: "Text Generator Plugin Settings",
+			text: "Text Generator v" + packageJson.version,
+		});
+		containerEl.createEl("a", {
+			text: "Discord \u{1F44B} |",
+			href: "https://discord.com/invite/BRYqetyjag",
+		});
+		containerEl.createEl("a", {
+			text: " Documentation \u{1F4D6} |",
+			href: "https://text-gen.com/",
+		});
+		containerEl.createEl("a", {
+			text: " Twitter \u{1F426} |",
+			href: "https://twitter.com/TextGenPlugin",
+		});
+		containerEl.createEl("a", {
+			text: " YouTube \u{1F3A5} |",
+			href: "https://www.youtube.com/@uwrite",
 		});
 
 		containerEl.createEl("H1", {
@@ -106,7 +122,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Model")
 			.setDesc(
-				"gpt-3.5-turbo is the most advanced language model. text-ada-001 is the fastest model."
+				"gpt-3.5-turbo is the most advanced language model. text-ada-001 is the fastest model. GPT-4 is currently in a limited beta and only accessible to those who have been granted access."
 			)
 			.addDropdown((cb) => {
 				cbModelsEl = cb;
@@ -171,10 +187,11 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 					})
 			);
 
-		containerEl.createEl("H2", {
-			text: "Prompt parameters (completions)",
+		containerEl.createEl("H1", {
+			text: "Default model parameters",
 		});
-		containerEl.createEl("H3", {
+
+		containerEl.createEl("H5", {
 			text: "You can specify more paramters in the Frontmatter YMAL",
 		});
 		containerEl.appendChild(
@@ -187,7 +204,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Max tokens")
 			.setDesc(
-				"The max number of the tokens that will be generated (1000 tokens ~ 750 words)"
+				"The maximum number of tokens to generate in the chat completion. The total length of input tokens and generated tokens is limited by the model's context length. (1000 tokens ~ 750 words)"
 			)
 			.addText((text) =>
 				text
@@ -201,7 +218,9 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Temperature")
-			.setDesc("temperature")
+			.setDesc(
+				"What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+			)
 			.addText((text) =>
 				text
 					.setPlaceholder("temperature")
@@ -214,7 +233,9 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Frequency Penalty")
-			.setDesc("frequency_penalty")
+			.setDesc(
+				"Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
+			)
 			.addText((text) =>
 				text
 
@@ -225,12 +246,6 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
-		containerEl.createEl("H1", {
-			text: "Text Generator",
-		});
-		containerEl.createEl("H3", {
-			text: "General",
-		});
 		new Setting(containerEl)
 			.setName("Timeout")
 			.setDesc(
@@ -245,6 +260,12 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+		containerEl.createEl("H1", {
+			text: "Text Generator",
+		});
+		containerEl.createEl("H3", {
+			text: "General",
+		});
 		new Setting(containerEl)
 			.setName("Show Status in  StatusBar")
 			.setDesc("Show information in the Status Bar")
