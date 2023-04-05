@@ -36,19 +36,19 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		});
 		containerEl.createEl("a", {
 			text: "Discord \u{1F44B} |",
-			href: "https://discord.com/invite/BRYqetyjag",
+			href: "https://bit.ly/Tg-discord",
 		});
 		containerEl.createEl("a", {
 			text: " Documentation \u{1F4D6} |",
-			href: "https://text-gen.com/",
+			href: "https://bit.ly/tg-doc",
 		});
 		containerEl.createEl("a", {
 			text: " Twitter \u{1F426} |",
-			href: "https://twitter.com/TextGenPlugin",
+			href: "https://bit.ly/tg-twitter2",
 		});
 		containerEl.createEl("a", {
 			text: " YouTube \u{1F3A5} |",
-			href: "https://www.youtube.com/@uwrite",
+			href: "https://bit.ly/tg-youtube2",
 		});
 
 		containerEl.createEl("H1", {
