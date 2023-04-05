@@ -1,19 +1,7 @@
-import {
-	App,
-	addIcon,
-	Notice,
-	Plugin,
-	PluginSettingTab,
-	Setting,
-	request,
-	MarkdownView,
-	Editor,
-	parseFrontMatterAliases,
-} from "obsidian";
+import { App, Notice } from "obsidian";
 import { TextGeneratorSettings } from "./types";
 import TextGeneratorPlugin from "./main";
-import { IGNORE_IN_YMAL } from "./constants";
-import ContextManager from "./ContextManager";
+import ContextManager from "./context-manager";
 import debug from "debug";
 const logger = debug("textgenerator:ReqFormatter");
 export default class ReqFormatter {
@@ -41,7 +29,7 @@ export default class ReqFormatter {
 	prepareReqParameters(
 		params: TextGeneratorSettings,
 		insertMetadata: boolean,
-		templatePath: string = "",
+		templatePath = "",
 		additionnalParams: any = {}
 	) {
 		logger("prepareReqParameters", params, insertMetadata, templatePath);
