@@ -8,25 +8,29 @@ import {
 	MarkdownPostProcessorContext,
 	getIcon,
 } from "obsidian";
-import { ExampleModal } from "./model";
-import { TextGeneratorSettings, Context } from "./types";
+import { ExampleModal } from "./models/model";
+import { TextGeneratorSettings } from "./types";
 import { numberToKFormat } from "./utils";
-import { GENERATE_ICON, GENERATE_META_ICON } from "./constants";
-import TextGeneratorSettingTab from "./ui/settingsPage";
-import { SetMaxTokens } from "./ui/setMaxTokens";
-import TextGenerator from "./textGenerator";
-import { SetModel } from "./ui/setModel";
-import PackageManager from "./PackageManager";
-import { PackageManagerUI } from "./ui/PackageManagerUI";
+import { GENERATE_ICON, GENERATE_META_ICON, OPENAI_MODELS } from "./constants";
+import TextGeneratorSettingTab from "./ui/settings/settings-page";
+import { SetMaxTokens } from "./ui/settings/set-max-tokens";
+import TextGenerator from "./text-generator";
+import { SetModel } from "./ui/settings/set-model";
+import PackageManager from "./ui/package-manager/package-manager";
+import { PackageManagerUI } from "./ui/package-manager/package-manager-ui";
 import { EditorView } from "@codemirror/view";
-import { spinnersPlugin } from "./plugin";
+import { spinnersPlugin } from "./cm/plugin";
 import Handlebars from "handlebars";
 import PrettyError from "pretty-error";
 import ansiToHtml from "ansi-to-html";
-import { AutoSuggest } from "./AutoSuggest";
+import { AutoSuggest } from "./auto-suggest";
 import debug from "debug";
+import { init, Tiktoken } from "@dqbd/tiktoken/lite/init";
+import wasm from "../node_modules/@dqbd/tiktoken/tiktoken_bg.wasm";
+import cl100k_base from "@dqbd/tiktoken/encoders/cl100k_base.json";
+import r50k_base from "@dqbd/tiktoken/encoders/r50k_base.json";
+import p50k_base from "@dqbd/tiktoken/encoders/p50k_base.json";
 const logger = debug("textgenerator:main");
-
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	api_key: "",
 	engine: "gpt-3.5-turbo",
@@ -46,6 +50,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		includeMentions: false,
 		includeHighlights: true,
 	},
+	timeout: 30000,
 	options: {
 		"generate-text": true,
 		"generate-text-with-metadata": true,
@@ -61,6 +66,8 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		"get-title": true,
 		"auto-suggest": false,
 		"generated-text-to-clipboard-From-template": false,
+		"calculate-tokens": true,
+		"calculate-tokens-for-template": true,
 	},
 	autoSuggestOptions: {
 		status: true,
@@ -77,14 +84,14 @@ export default class TextGeneratorPlugin extends Plugin {
 	settings: TextGeneratorSettings;
 	textGenerator: TextGenerator;
 	packageManager: PackageManager;
-	processing: boolean = false;
+	processing: false;
 	defaultSettings: TextGeneratorSettings;
 	textGeneratorIconItem: HTMLElement = null;
 	autoSuggestItem: HTMLElement = null;
 	statusBarTokens: HTMLElement = null;
 	notice: Notice;
 
-	updateStatusBar(text: string, processing: boolean = false) {
+	updateStatusBar(text: string, processing = false) {
 		let text2 = "";
 		if (text.length > 0) {
 			text2 = `: ${text}`;
@@ -200,11 +207,16 @@ export default class TextGeneratorPlugin extends Plugin {
 	}
 
 	async handelError(error: any) {
-		new Notice(
-			"🔴 Error: Text Generator Plugin: An error has occurred. Please check the console by pressing CTRL+SHIFT+I or turn on display errors in the editor within the settings for more information."
-		);
+		if (error.message) {
+			new Notice("🔴 " + error.message);
+		} else {
+			new Notice(
+				"🔴 Error: Text Generator Plugin: An error has occurred. Please check the console by pressing CTRL+SHIFT+I or turn on display errors in the editor within the settings for more information."
+			);
+		}
+
 		console.error(error);
-		this.updateStatusBar(`Error check console`);
+		//this.updateStatusBar(`Error check console`);
 		const activeView = this.getActiveView();
 		if (activeView !== null && this.settings.displayErrorInEditor) {
 			activeView.editor.cm.contentDOM.appendChild(
@@ -260,8 +272,77 @@ export default class TextGeneratorPlugin extends Plugin {
 		);
 	}
 
+	getModelInfo(model) {
+		if (model in OPENAI_MODELS) {
+			return OPENAI_MODELS[model];
+		} else {
+			null;
+		}
+	}
+
+	getTokens(text: string) {
+		let tokens: Uint32Array = null;
+		const modelName = this.settings.engine;
+		const modelInfo = this.getModelInfo(modelName);
+		if (modelInfo) {
+			logger("encoding wasm");
+			let model;
+			switch (modelInfo.encoding) {
+				case "cl100k_base":
+					model = cl100k_base;
+					break;
+				case "r50k_base":
+					model = r50k_base;
+					break;
+				case "p50k_base":
+					model = p50k_base;
+					break;
+				default:
+					break;
+			}
+			const encoder = new Tiktoken(
+				model.bpe_ranks,
+				model.special_tokens,
+				model.pat_str
+			);
+			logger("encoding wasm");
+			tokens = encoder.encode(text);
+		}
+		return { tokens, modelInfo };
+	}
+
+	estimateTokens(text: string) {
+		const result = this.getTokens(text);
+		const tokens = result.tokens.length;
+		logger("done wasm");
+
+		const summaryEl = document.createElement("div");
+		summaryEl.classList.add("summary");
+
+		const { engine, max_tokens } = this.settings;
+		const { maxTokens, prices } = result.modelInfo;
+		const total = tokens + max_tokens;
+
+		summaryEl.innerHTML = `
+  <table>
+    <tr><td><strong>Model</strong></td><td>${engine}</td></tr>
+    <tr><td><strong>Prompt tokens</strong></td><td>${tokens}</td></tr>
+    <tr><td><strong>Completion tokens</strong></td><td>${max_tokens}</td></tr>
+    <tr><td><strong>Total tokens</strong></td><td>${total}</td></tr>
+    <tr><td><strong>Max Tokens</strong></td><td>${maxTokens}</td></tr>
+    <tr><td><strong>Estimated Price</strong></td><td class="price">$${(
+		(tokens * prices.prompt + max_tokens * prices.completion) /
+		1000
+	).toLocaleString()}</td></tr>
+  </table>
+`;
+
+		logger(summaryEl);
+		new Notice(summaryEl, 5000);
+	}
 	async onload() {
 		logger("loading textGenerator plugin");
+		await init((imports) => WebAssembly.instantiate(wasm, imports));
 		addIcon("GENERATE_ICON", GENERATE_ICON);
 		addIcon("GENERATE_META_ICON", GENERATE_META_ICON);
 		this.defaultSettings = DEFAULT_SETTINGS;
@@ -273,9 +354,11 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.packageManager = new PackageManager(this.app, this);
 		this.registerEditorExtension(spinnersPlugin);
 		this.app.workspace.updateOptions();
+
 		this.textGeneratorIconItem = this.addStatusBarItem();
 		this.statusBarTokens = this.addStatusBarItem();
 		this.autoSuggestItem = this.addStatusBarItem();
+		this.statusBarItemEl = this.addStatusBarItem();
 
 		this.updateStatusBar(``);
 		if (
@@ -319,6 +402,17 @@ export default class TextGeneratorPlugin extends Plugin {
 				).open();
 			}
 		);
+
+		/*const ribbonIconEl3 = this.addRibbonIcon(
+			"square",
+			"Download webpage as markdown",
+			async (evt: MouseEvent) => {
+				const contentExtractor = new ContentExtractor(this.app);
+				contentExtractor.setExtractor(ExtractorMethod.WebPageExtractor);
+				const urls = await contentExtractor.extract("");
+				console.log(await contentExtractor.convert(urls[0]));
+			}
+		);*/
 
 		this.commands = [
 			{
@@ -603,7 +697,7 @@ export default class TextGeneratorPlugin extends Plugin {
 						};
 						const generatedTitle =
 							await this.textGenerator.generate(
-								prompt,
+								{ context: prompt },
 								false,
 								this.settings,
 								"",
@@ -623,7 +717,7 @@ export default class TextGeneratorPlugin extends Plugin {
 						);
 						logger(`Generated a title: ${sanitizedTitle}`);
 					} catch (error) {
-						this.handleError(error);
+						this.handelError(error);
 					}
 				},
 			},
@@ -642,6 +736,42 @@ export default class TextGeneratorPlugin extends Plugin {
 						new Notice(`Auto Suggestion is on!`);
 					} else {
 						new Notice(`Auto Suggestion is off!`);
+					}
+				},
+			},
+			{
+				id: "calculate-tokens",
+				name: "Estimate tokens for the current document",
+				icon: "heading",
+				//hotkeys: [{ modifiers: ["Alt"], key: "c"}],
+				editorCallback: async (editor: Editor) => {
+					this.estimateTokens(editor.getValue());
+				},
+			},
+			{
+				id: "calculate-tokens-for-template",
+				name: "Estimate tokens for a Template",
+				icon: "layout",
+				//hotkeys: [{ modifiers: ["Alt"], key: "4"}],
+				editorCallback: async (editor: Editor) => {
+					try {
+						new ExampleModal(
+							this.app,
+							this,
+							async (result) => {
+								const text = (
+									await this.textGenerator.contextManager.getContext(
+										editor,
+										true,
+										result.path
+									)
+								).context;
+								this.estimateTokens(text);
+							},
+							"Choose a template"
+						).open();
+					} catch (error) {
+						this.handelError(error);
 					}
 				},
 			},
@@ -780,6 +910,18 @@ export default class TextGeneratorPlugin extends Plugin {
 										true,
 										editor
 									);
+									break;
+								case "estimate":
+									{
+										const text = (
+											await this.textGenerator.contextManager.getContext(
+												editor,
+												true,
+												template.path
+											)
+										).context;
+										this.estimateTokens(text);
+									}
 									break;
 								default:
 									console.error("command name not found");

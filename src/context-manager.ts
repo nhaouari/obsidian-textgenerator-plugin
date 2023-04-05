@@ -6,6 +6,8 @@ import Handlebars from "handlebars";
 import { removeYMAL } from "./utils";
 import debug from "debug";
 const logger = debug("textgenerator:ContextManager");
+import Helpers from "./handlebars-helpers";
+
 export default class ContextManager {
 	plugin: TextGeneratorPlugin;
 	app: App;
@@ -13,13 +15,9 @@ export default class ContextManager {
 		logger("ContextManager constructor");
 		this.app = app;
 		this.plugin = plugin;
-		Handlebars.registerHelper(
-			"substring",
-			function (string: string, start: number, end: number) {
-				const subString = string.substring(start, end);
-				return new Handlebars.SafeString(subString);
-			}
-		);
+		Object.keys(Helpers).forEach((key) => {
+			Handlebars.registerHelper(key, Helpers[key].bind(this));
+		});
 	}
 
 	async getContext(
@@ -35,14 +33,16 @@ export default class ContextManager {
 				...(await this.getTemplateContext(editor, templatePath)),
 				...addtionalOpts,
 			};
-			const context = await this.templateFromPath(templatePath, options);
-			logger("Context Template", { context });
-			return context;
+			const { context, template } = await this.templateFromPath(
+				templatePath,
+				options
+			);
+			logger("Context Template", { context, options });
+			return { context, options, template };
 		} else {
 			/* Without template */
-			let context = await this.getDefaultContext(
-				editor
-			); /* Text Generate */
+			let options = await this.getDefaultContext(editor);
+			let context = this.getContextAsString(options);
 			if (insertMetadata) {
 				let frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document
 				if (
@@ -50,13 +50,14 @@ export default class ContextManager {
 					Object.keys(frontmatter).length !== 0
 				) {
 					/* Text Generate with metadata */
+					options["frontmatter"] = frontmatter;
 					context = this.getMetaDataAsStr(frontmatter) + context;
 				} else {
 					new Notice("No valid Metadata (YAML front matter) found!");
 				}
 			}
-			logger("Context without template", { context });
-			return context;
+			logger("Context without template", { context, options });
+			return { context, options };
 		}
 	}
 
@@ -66,7 +67,9 @@ export default class ContextManager {
 		const title = this.getActiveFileTitle();
 		const selection = this.getSelection(editor);
 		const selections = this.getSelections(editor);
-		const context = await this.getDefaultContext(editor);
+		const context = this.getContextAsString(
+			await this.getDefaultContext(editor)
+		);
 		const activeDocCache = this.getMetaData(""); // active document
 
 		let blocks: any = {};
@@ -109,23 +112,43 @@ export default class ContextManager {
 	async getDefaultContext(editor: Editor) {
 		logger("getDefaultContext", editor);
 		const contextOptions: Context = this.plugin.settings.context;
+		let context = {};
 
 		const title = this.getActiveFileTitle();
 		const selection = this.getSelection(editor);
-
-		let context = "";
-
+		const selections = this.getSelections(editor);
 		if (contextOptions.includeTitle) {
-			context += `title: ${title}\n`;
+			context["title"] = title;
 		}
 
 		if (contextOptions.includeStaredBlocks) {
-			context += await this.getStaredBlocks();
+			context["starredBlocks"] = await this.getStarredBlocks();
 		}
 
-		context += selection;
+		if (selections.length > 1) {
+			context["selections"] = selections;
+		} else {
+			context["selection"] = selection;
+		}
+
 		logger("getDefaultContext", { context });
 		return context;
+	}
+
+	getContextAsString(context, withKey = ["title"]) {
+		let contextString = "";
+		for (const key in context) {
+			if (withKey.includes(key)) {
+				contextString += `${key}:`;
+			}
+			// Check if value is an array and join with \n
+			if (Array.isArray(context[key])) {
+				contextString += `${context[key].join("\n")}\n`;
+			} else {
+				contextString += `${context[key]}\n`;
+			}
+		}
+		return contextString;
 	}
 
 	async templateFromPath(templatePath: string, options: any) {
@@ -138,7 +161,7 @@ export default class ContextManager {
 		const template = Handlebars.compile(templateContent);
 		templateContent = template(options);
 		logger("templateFromPath", { templateContent });
-		return templateContent;
+		return { context: templateContent, template };
 	}
 
 	getSelections(editor: Editor) {
@@ -277,7 +300,7 @@ export default class ContextManager {
 		return { linked, unlinked };
 	}
 
-	async getStaredBlocks(path: string = "") {
+	async getStarredBlocks(path: string = "") {
 		const fileCache = this.getMetaData(path);
 		let content = "";
 		const staredHeadings = fileCache?.headings?.filter(

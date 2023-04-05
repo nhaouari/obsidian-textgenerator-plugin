@@ -1,8 +1,7 @@
 import { App, Modal } from "obsidian";
 import TextGeneratorPlugin from "src/main";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
-import { PackageManagerView } from "./PackageManagerView";
+import { PackageManagerView } from "./package-manager-view";
 import { createRoot } from "react-dom/client";
 
 export class PackageManagerUI extends Modal {

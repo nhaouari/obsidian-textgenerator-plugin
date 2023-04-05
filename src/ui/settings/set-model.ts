@@ -1,6 +1,6 @@
 import { App, Notice, FuzzySuggestModal, FuzzyMatch } from "obsidian";
-import TextGeneratorPlugin from "./main";
-import { Model } from "./types";
+import TextGeneratorPlugin from "src/main";
+import { Model } from "src/types";
 import debug from "debug";
 const logger = debug("textgenerator:setModel");
 export class SetModel extends FuzzySuggestModal<Model> {

@@ -7,3 +7,134 @@ export const IGNORE_IN_YMAL = [
 	"bodyParams",
 	"reqParams",
 ];
+
+export const OPENAI_MODELS = {
+	"gpt-4": {
+		encoding: "cl100k_base",
+		prices: {
+			prompt: 0.03,
+			completion: 0.06,
+		},
+		maxTokens: 8192,
+	},
+	"gpt-4-0314": {
+		encoding: "cl100k_base",
+		prices: {
+			prompt: 0.03,
+			completion: 0.06,
+		},
+		maxTokens: 8192,
+	},
+	"gpt-4-32k": {
+		encoding: "cl100k_base",
+		prices: {
+			prompt: 0.06,
+			completion: 0.12,
+		},
+		maxTokens: 32768,
+	},
+	"gpt-4-32k-0314": {
+		encoding: "cl100k_base",
+		prices: {
+			prompt: 0.06,
+			completion: 0.12,
+		},
+		maxTokens: 32768,
+	},
+	"gpt-3.5-turbo": {
+		encoding: "cl100k_base",
+		prices: {
+			prompt: 0.002,
+			completion: 0.002,
+		},
+		maxTokens: 4096,
+	},
+	"gpt-3.5-turbo-0301": {
+		encoding: "cl100k_base",
+		prices: {
+			prompt: 0.002,
+			completion: 0.002,
+		},
+		maxTokens: 4096,
+	},
+	"text-davinci-003": {
+		encoding: "p50k_base",
+		prices: {
+			prompt: 0.02,
+			completion: 0.02,
+		},
+		maxTokens: 4097,
+	},
+	"text-davinci-002": {
+		encoding: "p50k_base",
+		prices: {
+			prompt: 0.02,
+			completion: 0.02,
+		},
+		maxTokens: 4097,
+	},
+	"text-davinci-001": {
+		encoding: "r50k_base",
+		prices: {
+			prompt: 0.02,
+			completion: 0.02,
+		},
+		maxTokens: 2049,
+	},
+	"text-curie-001": {
+		encoding: "r50k_base",
+		prices: {
+			prompt: 0.002,
+			completion: 0.002,
+		},
+		maxTokens: 2049,
+	},
+	"text-babbage-001": {
+		encoding: "r50k_base",
+		prices: {
+			prompt: 0.0005,
+			completion: 0.0005,
+		},
+		maxTokens: 2049,
+	},
+	"text-ada-001": {
+		encoding: "r50k_base",
+		prices: {
+			prompt: 0.0004,
+			completion: 0.0004,
+		},
+		maxTokens: 2049,
+	},
+	davinci: {
+		encoding: "r50k_base",
+		prices: {
+			prompt: 0.02,
+			completion: 0.02,
+		},
+		maxTokens: 2049,
+	},
+	curie: {
+		encoding: "r50k_base",
+		prices: {
+			prompt: 0.002,
+			completion: 0.002,
+		},
+		maxTokens: 2049,
+	},
+	babbage: {
+		encoding: "r50k_base",
+		prices: {
+			prompt: 0.0005,
+			completion: 0.0005,
+		},
+		maxTokens: 2049,
+	},
+	ada: {
+		encoding: "r50k_base",
+		prices: {
+			prompt: 0.0004,
+			completion: 0.0004,
+		},
+		maxTokens: 2049,
+	},
+};

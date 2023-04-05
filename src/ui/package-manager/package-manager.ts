@@ -2,7 +2,7 @@ import {
 	TextGeneratorConfiguration,
 	PackageTemplate,
 	PromptTemplate,
-} from "./types";
+} from "src/types";
 import {
 	App,
 	normalizePath,
@@ -10,7 +10,7 @@ import {
 	MarkdownRenderer,
 	Notice,
 } from "obsidian";
-import TextGeneratorPlugin from "./main";
+import TextGeneratorPlugin from "src/main";
 import { gt } from "semver";
 import debug from "debug";
 const logger = debug("textgenerator:PackageManager");

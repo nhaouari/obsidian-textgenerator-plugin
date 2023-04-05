@@ -21,6 +21,7 @@
 		"@typescript-eslint/parser": "^5.2.0",
 		"builtin-modules": "^3.2.0",
 		"esbuild": "0.13.12",
+		"esbuild-plugin-wasm": "^1.0.0",
 		"obsidian": "^0.13.26",
 		"prettier": "^2.8.7",
 		"tslib": "2.3.1",
@@ -29,15 +30,18 @@
 	"dependencies": {
 		"@codemirror/language": "^6.3.1",
 		"@codemirror/state": "^6.1.4",
+		"@dqbd/tiktoken": "^1.0.2",
 		"@emotion/react": "^11.10.5",
 		"@emotion/styled": "^11.10.5",
 		"@material-ui/core": "^4.12.4",
 		"@material-ui/icons": "^4.11.3",
+		"@mozilla/readability": "^0.4.4",
 		"@mui/icons-material": "^5.10.9",
 		"@mui/material": "^5.10.12",
 		"ansi-to-html": "^0.7.2",
 		"compute-cosine-similarity": "^1.0.0",
 		"debug": "^2.6.9",
+		"esbuild-wasm": "^0.17.13",
 		"handlebars": "^4.7.7",
 		"natural": "^5.2.4",
 		"pretty-error": "^4.0.0",
@@ -45,6 +49,8 @@
 		"react-dom": "^18.2.0",
 		"request": "^2.88.2",
 		"safe-await": "^2.0.0",
-		"text-spinners": "^1.0.5"
+		"text-spinners": "^1.0.5",
+		"turndown": "^7.1.2",
+		"uuid": "^9.0.0"
 	}
 }

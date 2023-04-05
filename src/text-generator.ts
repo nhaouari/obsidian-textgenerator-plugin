@@ -1,22 +1,10 @@
-import { TemplateModelUI } from "./ui/TemplateModelUI";
-import {
-	App,
-	addIcon,
-	Notice,
-	Plugin,
-	PluginSettingTab,
-	Setting,
-	request,
-	MarkdownView,
-	Editor,
-	parseFrontMatterAliases,
-	MetadataCache,
-} from "obsidian";
+import { TemplateModelUI } from "./ui/template-model-ui";
+import { App, Notice, Editor, RequestUrlParam } from "obsidian";
 import { TextGeneratorSettings } from "./types";
 import TextGeneratorPlugin from "./main";
-import ReqFormatter from "./reqFormatter";
-import { SetPath } from "./ui/setPath";
-import ContextManager from "./ContextManager";
+import ReqFormatter from "./api-request-formatter";
+import { SetPath } from "./ui/settings/set-path";
+import ContextManager from "./context-manager";
 import { makeid, createFileWithInput, openFile, removeYMAL } from "./utils";
 import safeAwait from "safe-await";
 import debug from "debug";
@@ -27,6 +15,7 @@ export default class TextGenerator {
 	app: App;
 	reqFormatter: ReqFormatter;
 	contextManager: ContextManager;
+	signal: AbortSignal;
 
 	constructor(app: App, plugin: TextGeneratorPlugin) {
 		this.app = app;
@@ -37,12 +26,18 @@ export default class TextGenerator {
 	}
 
 	async generate(
-		prompt: string,
-		insertMetadata: boolean = false,
+		context: any,
+		insertMetadata = false,
 		params: any = this.plugin.settings,
-		templatePath: string = "",
-		additionnalParams: any = { showSpinner: true }
+		templatePath = "",
+		additionnalParams: any = {
+			showSpinner: true,
+		}
 	) {
+		const { options, template } = context;
+
+		const prompt = template ? template(options) : context.context;
+
 		logger("generate", {
 			prompt,
 			insertMetadata,
@@ -50,36 +45,36 @@ export default class TextGenerator {
 			templatePath,
 			additionnalParams,
 		});
-		if (!this.plugin.processing) {
-			let reqParameters: any = this.reqFormatter.addContext(
-				params,
-				prompt
-			);
-			reqParameters = this.reqFormatter.prepareReqParameters(
-				reqParameters,
-				insertMetadata,
-				templatePath,
-				additionnalParams
-			);
-			this.plugin.startProcessing(additionnalParams?.showSpinner);
-			logger("generate ", { reqParameters });
-			const [error, result] = await safeAwait(
-				this.getGeneratedText(reqParameters)
-			);
-			this.plugin.endProcessing(additionnalParams?.showSpinner);
 
-			if (error) {
-				logger("generate error", error);
-				return Promise.reject(error);
-			}
-			logger("generate end", { result });
-			return result;
-			//return text.replace(/^\n*/g," ");
-		} else {
+		if (this.plugin.processing) {
 			logger("generate error", "There is another generation process");
 			return Promise.reject(
 				new Error("There is another generation process")
 			);
+		}
+		this.plugin.startProcessing(additionnalParams?.showSpinner);
+		let reqParameters: any = this.reqFormatter.addContext(params, prompt);
+		reqParameters = this.reqFormatter.prepareReqParameters(
+			reqParameters,
+			insertMetadata,
+			templatePath,
+			additionnalParams
+		);
+		try {
+			let result = await this.getGeneratedText(reqParameters);
+			// Remove leading/trailing newlines
+			if (String.isString(result)) {
+				result.replace(/^\n*/g, "\n");
+			}
+			logger("generate end", {
+				result,
+			});
+			return result;
+		} catch (error) {
+			logger("generate error", error);
+			return Promise.reject(error);
+		} finally {
+			this.plugin.endProcessing(additionnalParams?.showSpinner);
 		}
 	}
 
@@ -133,7 +128,7 @@ export default class TextGenerator {
 
 			new SetPath(this.app, suggestedPath, async (path: string) => {
 				const [errorFile, file] = await safeAwait(
-					createFileWithInput(path, context + text, this.app)
+					createFileWithInput(path, context.context + text, this.app)
 				);
 				if (errorFile) {
 					return Promise.reject(errorFile);
@@ -235,7 +230,7 @@ export default class TextGenerator {
 		if (errorContext) {
 			return Promise.reject(errorContext);
 		}
-
+		const contextAsString = context.context;
 		if (activeFile === false) {
 			const title = this.app.workspace.activeLeaf.getDisplayText();
 			let suggestedPath =
@@ -243,7 +238,7 @@ export default class TextGenerator {
 
 			new SetPath(this.app, suggestedPath, async (path: string) => {
 				const [errorFile, file] = await safeAwait(
-					createFileWithInput(path, context, this.app)
+					createFileWithInput(path, contextAsString, this.app)
 				);
 
 				if (errorFile) {
@@ -254,7 +249,7 @@ export default class TextGenerator {
 				openFile(this.app, file);
 			}).open();
 		} else {
-			this.insertGeneratedText(context, editor);
+			this.insertGeneratedText(contextAsString, editor);
 		}
 		logger("createToFile end");
 	}
@@ -312,13 +307,13 @@ export default class TextGenerator {
 		const extractResult = reqParams?.extractResult;
 		delete reqParams?.extractResult;
 		let [errorRequest, requestResults] = await safeAwait(
-			request(reqParams)
+			this.request(reqParams)
 		);
+
 		if (errorRequest) {
 			logger("getGeneratedText error", requestResults, errorRequest);
 			return Promise.reject(errorRequest);
 		}
-		requestResults = JSON.parse(requestResults);
 		const text = eval(extractResult);
 		logger("getGeneratedText  end", {
 			requestResults,
@@ -328,6 +323,39 @@ export default class TextGenerator {
 		return text;
 	}
 
+	async request(params: RequestUrlParam) {
+		return new Promise((resolve, reject) => {
+			const controller = new AbortController();
+			this.signal = controller.signal;
+			const timeoutId = setTimeout(() => {
+				controller.abort();
+				reject(new Error("Timeout Reached"));
+			}, this.plugin.settings.timeout);
+			const raw = params.body;
+			const requestOptions = {
+				method: params.method,
+				headers: params.headers,
+				body: raw,
+				redirect: "follow",
+				signal: this.signal,
+			};
+
+			logger({ params, requestOptions });
+			fetch(params.url, requestOptions)
+				.then((response) => response.json())
+				.then((result) => {
+					clearTimeout(timeoutId);
+					if (result.error) {
+						reject(result.error);
+					} else {
+						resolve(result);
+					}
+				})
+				.catch((error) => {
+					reject(error);
+				});
+		});
+	}
 	insertGeneratedText(text: string, editor: Editor, cur: any = null) {
 		logger("insertGeneratedText");
 		let cursor = this.getCursor(editor);
@@ -349,7 +377,7 @@ export default class TextGenerator {
 		if (this.plugin.settings.outputToBlockQuote) {
 			let lines = text.split("\n");
 			for (let i = 2; i < lines.length; i++) {
-				if (lines[i].includes("[!ai] AI")) {
+				if (lines[i].includes("[!ai]+ AI")) {
 					lines.splice(i, 1);
 				}
 
@@ -358,7 +386,7 @@ export default class TextGenerator {
 			}
 
 			text =
-				"\n> [!ai] AI \n> \n" + lines.join("\n").trimStart() + "\n\n";
+				"\n> [!ai]+ AI \n> \n" + lines.join("\n").trimStart() + "\n\n";
 
 			//   text = "```tg\n"+text+"\n```";
 		}
@@ -412,9 +440,9 @@ export default class TextGenerator {
 					logger("tempalteToModel error", errorContext);
 					return Promise.reject(errorContext);
 				}
-
+				const contextAsString = context.context;
 				const [errortext, text] = await safeAwait(
-					this.generate(context, true, params, templatePath)
+					this.generate(contextAsString, true, params, templatePath)
 				);
 				if (errortext) {
 					logger("tempalteToModel error", errortext);
@@ -437,7 +465,7 @@ export default class TextGenerator {
 							const [errorFile, file] = await safeAwait(
 								createFileWithInput(
 									path,
-									context + text,
+									contextAsString + text,
 									this.app
 								)
 							);

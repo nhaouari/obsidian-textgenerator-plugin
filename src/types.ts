@@ -21,6 +21,7 @@ type TextGeneratorSettings = {
 	outputToBlockQuote: boolean;
 	models: any;
 	context: Context;
+	timeout: number;
 	options: {
 		"generate-text": boolean;
 		"generate-text-with-metadata": boolean;
@@ -36,6 +37,8 @@ type TextGeneratorSettings = {
 		"get-title": boolean;
 		"auto-suggest": boolean;
 		"generated-text-to-clipboard-From-template": boolean;
+		"calculate-tokens": boolean;
+		"calculate-tokens-for-template": boolean;
 	};
 	autoSuggestOptions: {
 		status: boolean;

@@ -1,6 +1,6 @@
 import { App, Notice, FuzzySuggestModal, FuzzyMatch } from "obsidian";
-import TextGeneratorPlugin from "./main";
-import { PromptTemplate } from "./types";
+import TextGeneratorPlugin from "src/main";
+import { PromptTemplate } from "src/types";
 import debug from "debug";
 const logger = debug("textgenerator:model");
 export class ExampleModal extends FuzzySuggestModal<PromptTemplate> {

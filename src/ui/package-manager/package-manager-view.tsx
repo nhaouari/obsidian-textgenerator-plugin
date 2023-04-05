@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import TemplateItem from "./PackageManager/TemplateItem";
-import TemplateDetails from "./PackageManager/TemplateDetails";
+import TemplateItem from "./components/template-item";
+import TemplateDetails from "./components/template-details";
 
 export const PackageManagerView = (p) => {
 	const [items, setItems] = useState([]);

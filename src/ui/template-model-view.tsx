@@ -1,7 +1,4 @@
 import React, { useState, useEffect } from "react";
-import TemplateItem from "./PackageManager/TemplateItem";
-import TemplateDetails from "./PackageManager/TemplateDetails";
-
 export const TemplateModelView = ({ p, labels, onSubmit, metadata }) => {
 	const [formValues, setFormValues] = useState([]);
 	const [meta, setMeta] = useState(metadata);

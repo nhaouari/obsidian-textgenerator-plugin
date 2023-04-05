@@ -1,6 +1,5 @@
-import { App, PluginSettingTab, Setting, Notice, request } from "obsidian";
-import TextGeneratorPlugin from "../main";
-
+import { App, PluginSettingTab, Setting, request } from "obsidian";
+import TextGeneratorPlugin from "scr/main";
 export default class TextGeneratorSettingTab extends PluginSettingTab {
 	plugin: TextGeneratorPlugin;
 	app: App;
@@ -232,7 +231,20 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		containerEl.createEl("H3", {
 			text: "General",
 		});
-
+		new Setting(containerEl)
+			.setName("Timeout")
+			.setDesc(
+				"Timeout in milli seconds. If the request takes longer than the timeout, the request will be aborted. (default: 5000ms)"
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("max_tokens")
+					.setValue(this.plugin.settings.timeout.toString())
+					.onChange(async (value) => {
+						this.plugin.settings.timeout = parseInt(value);
+						await this.plugin.saveSettings();
+					})
+			);
 		new Setting(containerEl)
 			.setName("Show Status in  StatusBar")
 			.setDesc("Show information in the Status Bar")

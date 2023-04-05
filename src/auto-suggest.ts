@@ -1,5 +1,4 @@
-import { AutoSuggest } from "./AutoSuggest";
-import { TextGeneratorPlugin } from "src/main";
+import TextGeneratorPlugin from "src/main";
 import {
 	App,
 	Editor,
@@ -245,15 +244,13 @@ export class AutoSuggest extends EditorSuggest<Completition> {
 			};
 
 			const re = await this.plugin.textGenerator.generate(
-				prompt,
+				{ context: prompt },
 				false,
 				this.plugin.settings,
 				"",
 				additionalParams
 			);
-
 			let suggestions = [];
-
 			if (
 				this.plugin.settings.engine === "gpt-3.5-turbo" ||
 				this.plugin.settings.engine === "gpt-3.5-turbo-0301"
@@ -262,7 +259,6 @@ export class AutoSuggest extends EditorSuggest<Completition> {
 			} else {
 				suggestions = re.map((r) => r.text);
 			}
-
 			suggestions = [...new Set(suggestions)];
 			return suggestions.map((r) => {
 				let label = r.trim();
