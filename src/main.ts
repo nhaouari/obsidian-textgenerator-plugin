@@ -58,7 +58,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		"create-generated-text-From-template": false,
 		"insert-text-From-template": false,
 		"create-text-From-template": false,
-		"show-model-From-template": true,
+		"show-modal-From-template": true,
 		set_max_tokens: true,
 		"set-model": true,
 		packageManager: true,
@@ -585,7 +585,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			},
 
 			{
-				id: "show-model-From-template",
+				id: "show-modal-From-template",
 				name: "Show model From Template",
 				icon: "layout",
 				//hotkeys: [{ modifiers: ["Alt"], key: "4"}],

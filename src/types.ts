@@ -29,7 +29,7 @@ type TextGeneratorSettings = {
 		"create-generated-text-From-template": boolean;
 		"insert-text-From-template": boolean;
 		"create-text-From-template": boolean;
-		"show-model-From-template": boolean;
+		"show-modal-From-template": boolean;
 		set_max_tokens: boolean;
 		"set-model": boolean;
 		packageManager: boolean;
