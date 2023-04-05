@@ -356,8 +356,29 @@ export default class TextGenerator {
 				});
 		});
 	}
-	insertGeneratedText(text: string, editor: Editor, cur: any = null) {
+
+	outputToBlockQuote(text: string) {
+		let lines = text
+			.split("\n")
+			.map((line) => line.trim())
+			.filter((line) => line !== "" && line !== ">");
+		lines = lines
+			.map((line, index) => {
+				if (line.includes("[!ai]+ AI")) {
+					return ">";
+				}
+
+				return line.startsWith(">") ? line : "> " + line;
+			})
+			.filter((line) => line !== "");
+
+		return "\n> [!ai]+ AI\n>\n" + lines.join("\n").trim() + "\n\n";
+	}
+
+	insertGeneratedText(text: string, editor: Editor, cur = null) {
+		const logger = (message) => console.log(message);
 		logger("insertGeneratedText");
+
 		let cursor = this.getCursor(editor);
 		if (cur) {
 			cursor = cur;
@@ -375,20 +396,7 @@ export default class TextGenerator {
 		}
 
 		if (this.plugin.settings.outputToBlockQuote) {
-			let lines = text.split("\n");
-			for (let i = 2; i < lines.length; i++) {
-				if (lines[i].includes("[!ai]+ AI")) {
-					lines.splice(i, 1);
-				}
-
-				if (lines[i].startsWith(">")) continue;
-				lines[i] = "> " + lines[i];
-			}
-
-			text =
-				"\n> [!ai]+ AI \n> \n" + lines.join("\n").trimStart() + "\n\n";
-
-			//   text = "```tg\n"+text+"\n```";
+			text = this.outputToBlockQuote(text);
 		}
 
 		editor.replaceRange(text, cursor);
@@ -398,9 +406,9 @@ export default class TextGenerator {
 
 	async tempalteToModel(
 		params: any = this.plugin.settings,
-		templatePath: string = "",
+		templatePath = "",
 		editor: Editor,
-		activeFile: boolean = true
+		activeFile = true
 	) {
 		logger("tempalteToModel");
 		const templateFile = this.app.vault.getAbstractFileByPath(templatePath);
