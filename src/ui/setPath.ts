@@ -1,68 +1,68 @@
-import { App, Modal, Setting,Notice } from "obsidian";
-import debug from 'debug';
-const logger = debug('textgenerator:SetPath');
+import { App, Modal, Setting, Notice } from "obsidian";
+import debug from "debug";
+const logger = debug("textgenerator:SetPath");
 export class SetPath extends Modal {
-  result: string;
-  onSubmit: (result: string) => void;
+	result: string;
+	onSubmit: (result: string) => void;
 
-  constructor(app: App, result:string, onSubmit: (result: string) => void) {
-    super(app);
-    this.result=result;
-    this.onSubmit = onSubmit;
-  }
+	constructor(app: App, result: string, onSubmit: (result: string) => void) {
+		super(app);
+		this.result = result;
+		this.onSubmit = onSubmit;
+	}
 
-  onOpen() {
-    logger ("onOpen");
-    const { contentEl } = this;
+	onOpen() {
+		logger("onOpen");
+		const { contentEl } = this;
 
-    contentEl.createEl("h1", { text: "New Document Path" });
-    setTimeout(()=>{
-      contentEl.addEventListener("keyup", async(event)=> {
-        event.preventDefault();
-        if (event.key === "Enter") {
-          try {
-             await this.onSubmit(this.result);
-             this.close();
-           } catch (error) {
-             new Notice("🔴Error: File already exists. Choose another path.");
-             console.error(error);    
-           }
-        }
-    })
+		contentEl.createEl("h1", { text: "New Document Path" });
+		setTimeout(() => {
+			contentEl.addEventListener("keyup", async (event) => {
+				event.preventDefault();
+				if (event.key === "Enter") {
+					try {
+						await this.onSubmit(this.result);
+						this.close();
+					} catch (error) {
+						new Notice(
+							"🔴Error: File already exists. Choose another path."
+						);
+						console.error(error);
+					}
+				}
+			});
+		}, 100);
 
-    },100);
+		new Setting(contentEl).setName("Path").addText((text) =>
+			text
+				.setPlaceholder("Path")
+				.setValue(this.result.toString())
+				.onChange((value) => {
+					this.result = value;
+				})
+				.inputEl.setAttribute("size", "50")
+		);
 
-    new Setting(contentEl)
-      .setName("Path")
-      .addText((text) =>text
-        .setPlaceholder('Path')
-	      .setValue(this.result.toString())
-        .onChange((value) => {
-          this.result = value
-        })
-        .inputEl.setAttribute("size","50")
-        );
+		new Setting(contentEl).addButton((btn) =>
+			btn
+				.setButtonText("Submit")
+				.setCta()
+				.onClick(async () => {
+					try {
+						await this.onSubmit(this.result);
+						this.close();
+					} catch (error) {
+						new Notice(
+							"🔴Error: File already exists. Choose another path."
+						);
+						console.error(error);
+					}
+				})
+		);
+	}
 
-    new Setting(contentEl)
-      .addButton((btn) =>
-        btn
-          .setButtonText("Submit")
-          .setCta()
-          .onClick(async() => {
-            try {
-             await this.onSubmit(this.result);
-              this.close();
-            } catch (error) {
-              new Notice("🔴Error: File already exists. Choose another path.");
-              console.error(error);    
-            }
-
-
-          }));
-  }
-
-  onClose() {
-    let { contentEl } = this;
-    contentEl.empty();
-  }
+	onClose() {
+		let { contentEl } = this;
+		contentEl.empty();
+	}
 }
