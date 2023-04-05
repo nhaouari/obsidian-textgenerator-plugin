@@ -399,6 +399,17 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+		new Setting(containerEl)
+			.setName("includeExtractions")
+			.setDesc("Include Extracted Information")
+			.addToggle((v) =>
+				v
+					.setValue(this.plugin.settings.context.includeExtractions)
+					.onChange(async (value) => {
+						this.plugin.settings.context.includeExtractions = value;
+						await this.plugin.saveSettings();
+					})
+			);
 
 		if (this.plugin.settings.options["auto-suggest"]) {
 			containerEl.createEl("H3", {
