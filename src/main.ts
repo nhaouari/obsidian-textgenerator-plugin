@@ -30,6 +30,10 @@ import wasm from "../node_modules/@dqbd/tiktoken/tiktoken_bg.wasm";
 import cl100k_base from "@dqbd/tiktoken/encoders/cl100k_base.json";
 import r50k_base from "@dqbd/tiktoken/encoders/r50k_base.json";
 import p50k_base from "@dqbd/tiktoken/encoders/p50k_base.json";
+import {
+	ExtractorMethod,
+	ContentExtractor,
+} from "./extractors/content-extractor";
 const logger = debug("textgenerator:main");
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	api_key: "",
@@ -49,6 +53,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		includeChildren: false,
 		includeMentions: false,
 		includeHighlights: true,
+		includeExtractions: false,
 	},
 	timeout: 30000,
 	options: {
@@ -403,16 +408,35 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 		);
 
-		/*const ribbonIconEl3 = this.addRibbonIcon(
+		const ribbonIconEl3 = this.addRibbonIcon(
 			"square",
 			"Download webpage as markdown",
 			async (evt: MouseEvent) => {
-				const contentExtractor = new ContentExtractor(this.app);
+				/*const contentExtractor = new ContentExtractor(this.app);
 				contentExtractor.setExtractor(ExtractorMethod.WebPageExtractor);
 				const urls = await contentExtractor.extract("");
 				console.log(await contentExtractor.convert(urls[0]));
+				*/
+				let extractedContent: any = {};
+				const contentExtractor = new ContentExtractor(this.app);
+				for (let key in ExtractorMethod) {
+					if (!isNaN(parseInt(key))) {
+						contentExtractor.setExtractor(parseInt(key));
+						const links = await contentExtractor.extract("");
+						extractedContent[ExtractorMethod[key]] = "";
+						if (links.length > 0) {
+							extractedContent[ExtractorMethod[key]] =
+								await Promise.all(
+									links.map((link) =>
+										contentExtractor.convert(link)
+									)
+								);
+						}
+					}
+				}
+				console.log(extractedContent);
 			}
-		);*/
+		);
 
 		this.commands = [
 			{

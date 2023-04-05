@@ -31,15 +31,19 @@ export default class PDFExtractor implements Extractor<TAbstractFile> {
 	}
 
 	async extract(filePath: string): Promise<TAbstractFile[]> {
-		const activeFilePath = this.app.workspace.getActiveFile().path;
 		const embeds = this.app.metadataCache
-			.getCache(activeFilePath)
-			.embeds.filter((embed) => embed.link.endsWith(".pdf"));
+			.getCache(filePath)
+			?.embeds.filter((embed) => embed.link.endsWith(".pdf"));
+
+		if (!embeds) {
+			return [];
+		}
+
 		return embeds.map(
 			(embed) =>
 				this.app.metadataCache.getFirstLinkpathDest(
 					embed.link,
-					activeFilePath
+					filePath
 				) as TAbstractFile
 		);
 	}

@@ -7,6 +7,10 @@ import { removeYMAL } from "./utils";
 import debug from "debug";
 const logger = debug("textgenerator:ContextManager");
 import Helpers from "./handlebars-helpers";
+import {
+	ContentExtractor,
+	ExtractorMethod,
+} from "./extractors/content-extractor";
 
 export default class ContextManager {
 	plugin: TextGeneratorPlugin;
@@ -96,6 +100,9 @@ export default class ContextManager {
 				this.app.workspace.activeLeaf.getDisplayText()
 			);
 
+		if (contextOptions.includeExtractions)
+			blocks["extractions"] = await this.getExtractions();
+
 		const options = {
 			title,
 			selection,
@@ -105,6 +112,7 @@ export default class ContextManager {
 			context: context,
 			...blocks,
 		};
+
 		logger("getTemplateContext Context Variables ", { ...options });
 		return options;
 	}
@@ -341,6 +349,24 @@ export default class ContextManager {
 		} else {
 			console.error("Heading not found ");
 		}
+	}
+
+	async getExtractions() {
+		let extractedContent: any = {};
+		const contentExtractor = new ContentExtractor(this.app);
+		for (let key in ExtractorMethod) {
+			if (!isNaN(parseInt(key))) {
+				contentExtractor.setExtractor(parseInt(key));
+				const links = await contentExtractor.extract("");
+				extractedContent[ExtractorMethod[key]] = "";
+				if (links.length > 0) {
+					extractedContent[ExtractorMethod[key]] = await Promise.all(
+						links.map((link) => contentExtractor.convert(link))
+					);
+				}
+			}
+		}
+		return extractedContent;
 	}
 
 	getActiveFileTitle() {
