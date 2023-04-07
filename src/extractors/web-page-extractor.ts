@@ -19,7 +19,7 @@ export default class WebPageExtractor implements Extractor<string> {
 		const turndownService = new TurndownService();
 		const article = new Readability(doc).parse();
 		const markdown = turndownService.turndown(
-			"# " + article.title + "/n" + article.content
+			"# " + article?.title + "/n" + article.content
 		);
 		logger("convert end", { markdown });
 		return markdown;
@@ -37,10 +37,12 @@ export default class WebPageExtractor implements Extractor<string> {
 
 	private extractUrls(text: string): string[] {
 		const urlRegex = /(https?:\/\/[^\s]+)/g;
+		const youtubeRegex =
+			/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[^\s]+/g;
 		const matches = text.match(urlRegex);
 		if (!matches) {
 			return [];
 		}
-		return matches;
+		return matches.filter((url) => !youtubeRegex.test(url));
 	}
 }

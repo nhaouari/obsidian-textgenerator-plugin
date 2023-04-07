@@ -269,10 +269,13 @@ export default class ContextManager {
 					if (contextOptions.includeHeadings)
 						blocks["headings"] = metadata?.headings;
 
-					children.push({ ...file, content, ...blocks });
+					const childInfo = { ...file, content, ...blocks };
+
+					children.push(childInfo);
 				}
 			}
 		}
+		debugger;
 		return children;
 	}
 
