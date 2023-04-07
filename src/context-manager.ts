@@ -1,9 +1,9 @@
 import { App, Notice, Editor } from "obsidian";
 import { Context } from "./types";
 import TextGeneratorPlugin from "./main";
-import { IGNORE_IN_YMAL } from "./constants";
+import { IGNORE_IN_YAML } from "./constants";
 import Handlebars from "handlebars";
-import { removeYMAL } from "./utils";
+import { removeYAML } from "./utils";
 import debug from "debug";
 const logger = debug("textgenerator:ContextManager");
 import Helpers from "./handlebars-helpers";
@@ -165,7 +165,7 @@ export default class ContextManager {
 			templatePath
 		);
 		let templateContent = await this.app.vault.read(templateFile);
-		templateContent = removeYMAL(templateContent);
+		templateContent = removeYAML(templateContent);
 		const template = Handlebars.compile(templateContent);
 		templateContent = template(options);
 		logger("templateFromPath", { templateContent });
@@ -197,7 +197,7 @@ export default class ContextManager {
 					Object.keys(frontmatter).length !== 0
 				) {
 					/* Text Generate with metadata */
-					selectedText = removeYMAL(selectedText);
+					selectedText = removeYAML(selectedText);
 				}
 			}
 		}
@@ -394,7 +394,7 @@ export default class ContextManager {
 	getMetaDataAsStr(frontmatter: any) {
 		let cleanFrontMatter = "";
 		for (const [key, value] of Object.entries(frontmatter)) {
-			if (IGNORE_IN_YMAL.findIndex((e) => e === key) != -1) continue;
+			if (IGNORE_IN_YAML.findIndex((e) => e === key) != -1) continue;
 			if (Array.isArray(value)) {
 				cleanFrontMatter += `${key} : `;
 				value.forEach((v) => {
