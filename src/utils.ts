@@ -97,10 +97,10 @@ export async function openFile(
 	logger("openFile end");
 }
 
-export function removeYMAL(content: string) {
-	logger("removeYMAL", content);
+export function removeYAML(content: string) {
+	logger("removeYAML", content);
 	const newContent = content.replace(/---(.|\n)*---/, "");
-	logger("removeYMAL", newContent);
+	logger("removeYAML", newContent);
 	return newContent;
 }
 

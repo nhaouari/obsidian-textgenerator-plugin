@@ -192,7 +192,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		});
 
 		containerEl.createEl("H5", {
-			text: "You can specify more paramters in the Frontmatter YMAL",
+			text: "You can specify more parameters in the Frontmatter YAML",
 		});
 		containerEl.appendChild(
 			createEl("a", {
