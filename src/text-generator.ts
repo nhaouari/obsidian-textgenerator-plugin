@@ -5,7 +5,7 @@ import TextGeneratorPlugin from "./main";
 import ReqFormatter from "./api-request-formatter";
 import { SetPath } from "./ui/settings/set-path";
 import ContextManager from "./context-manager";
-import { makeid, createFileWithInput, openFile, removeYMAL } from "./utils";
+import { makeid, createFileWithInput, openFile, removeYAML } from "./utils";
 import safeAwait from "safe-await";
 import debug from "debug";
 const logger = debug("textgenerator:TextGenerator");
@@ -419,7 +419,7 @@ export default class TextGenerator {
 			return Promise.reject(errortemplateContent);
 		}
 
-		templateContent = removeYMAL(templateContent);
+		templateContent = removeYAML(templateContent);
 
 		// console.log(templateContent);
 		const variables =
