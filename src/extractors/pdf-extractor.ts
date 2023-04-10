@@ -1,12 +1,15 @@
 import { loadPdfJs, App, TAbstractFile } from "obsidian";
 import { Extractor } from "./content-extractor";
+import TextGeneratorPlugin from "src/main";
 import debug from "debug";
 const logger = debug("textgenerator:Extractor:PdfExtractor");
 
 export default class PDFExtractor implements Extractor<TAbstractFile> {
-	app: App;
-	constructor(app: App) {
+	private app: App;
+	private plugin: TextGeneratorPlugin;
+	constructor(app: App, plugin: TextGeneratorPlugin) {
 		this.app = app;
+		this.plugin = plugin;
 	}
 	async convert(doc: TAbstractFile): Promise<string> {
 		logger("convert", { doc });

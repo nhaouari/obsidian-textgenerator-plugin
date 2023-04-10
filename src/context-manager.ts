@@ -356,11 +356,13 @@ export default class ContextManager {
 
 	async getExtractions() {
 		let extractedContent: any = {};
-		const contentExtractor = new ContentExtractor(this.app);
+		const contentExtractor = new ContentExtractor(this.app, this.plugin);
 		for (let key in ExtractorMethod) {
 			if (!isNaN(parseInt(key))) {
 				contentExtractor.setExtractor(parseInt(key));
-				const links = await contentExtractor.extract("");
+				const links = await contentExtractor.extract(
+					this.app.workspace.getActiveFile().path
+				);
 				extractedContent[ExtractorMethod[key]] = "";
 				if (links.length > 0) {
 					extractedContent[ExtractorMethod[key]] = await Promise.all(

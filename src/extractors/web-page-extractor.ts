@@ -2,13 +2,16 @@ import { App, request } from "obsidian";
 import TurndownService from "turndown";
 import { Extractor } from "./extractor";
 import { Readability } from "@mozilla/readability";
+import TextGeneratorPlugin from "src/main";
 import debug from "debug";
 
 const logger = debug("textgenerator:Extractor:WebPageExtractor");
 export default class WebPageExtractor implements Extractor<string> {
-	app: App;
-	constructor(app: App) {
+	private app: App;
+	private plugin: TextGeneratorPlugin;
+	constructor(app: App, plugin: TextGeneratorPlugin) {
 		this.app = app;
+		this.plugin = plugin;
 	}
 
 	async convert(url: string): Promise<string> {

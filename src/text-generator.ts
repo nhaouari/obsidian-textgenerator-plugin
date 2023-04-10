@@ -34,6 +34,7 @@ export default class TextGenerator {
 			showSpinner: true,
 		}
 	) {
+		debugger;
 		const { options, template } = context;
 
 		const prompt = template ? template(options) : context.context;

@@ -408,21 +408,24 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 		);
 
+		/*
 		const ribbonIconEl3 = this.addRibbonIcon(
 			"square",
 			"Download webpage as markdown",
 			async (evt: MouseEvent) => {
-				/*const contentExtractor = new ContentExtractor(this.app);
+			const contentExtractor = new ContentExtractor(this.app);
 				contentExtractor.setExtractor(ExtractorMethod.WebPageExtractor);
 				const urls = await contentExtractor.extract("");
 				console.log(await contentExtractor.convert(urls[0]));
-				*/
+				
 				let extractedContent: any = {};
-				const contentExtractor = new ContentExtractor(this.app);
+				const contentExtractor = new ContentExtractor(this.app, this);
 				for (let key in ExtractorMethod) {
 					if (!isNaN(parseInt(key))) {
 						contentExtractor.setExtractor(parseInt(key));
-						const links = await contentExtractor.extract("");
+						const links = await contentExtractor.extract(
+							this.app.workspace.getActiveFile().path
+						);
 						extractedContent[ExtractorMethod[key]] = "";
 						if (links.length > 0) {
 							extractedContent[ExtractorMethod[key]] =
@@ -435,8 +438,10 @@ export default class TextGeneratorPlugin extends Plugin {
 					}
 				}
 				console.log(extractedContent);
+				
 			}
-		);
+				
+		);*/
 
 		this.commands = [
 			{

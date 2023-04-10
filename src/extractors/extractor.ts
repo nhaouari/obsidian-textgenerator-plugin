@@ -1,6 +1,12 @@
 import { App } from "obsidian";
+import TextGeneratorPlugin from "../main";
 abstract class Extractor<document> {
-	app: App;
+	private app: App;
+	private plugin: TextGeneratorPlugin;
+	constructor(app: App, plugin: TextGeneratorPlugin) {
+		this.app = app;
+		this.plugin = plugin;
+	}
 	convert(doc: document): Promise<string> {
 		throw new Error("Method not implemented.");
 	}

@@ -2,7 +2,9 @@ import { App, TAbstractFile } from "obsidian";
 import PDFExtractor from "./pdf-extractor";
 import WebPageExtractor from "./web-page-extractor";
 import YoutubeExtractor from "./youtube-extractor";
+import AudioExtractor from "./audio-extractor";
 import { Extractor } from "./extractor";
+import TextGeneratorPlugin from "../main";
 import debug from "debug";
 const logger = debug("textgenerator:Extractor");
 
@@ -11,13 +13,16 @@ enum ExtractorMethod {
 	PDFExtractor,
 	WebPageExtractor,
 	YoutubeExtractor,
+	AudioExtractor,
 }
 
 class ContentExtractor {
 	private extractor: Extractor<any>;
 	private app: App;
-	constructor(app: App) {
+	private plugin: TextGeneratorPlugin;
+	constructor(app: App, plugin: TextGeneratorPlugin) {
 		this.app = app;
+		this.plugin = plugin;
 	}
 
 	setExtractor(extractorName: ExtractorMethod) {
@@ -37,11 +42,13 @@ class ContentExtractor {
 	private createExtractor(extractorName: ExtractorMethod): Extractor<any> {
 		switch (extractorName) {
 			case ExtractorMethod.PDFExtractor:
-				return new PDFExtractor(this.app);
+				return new PDFExtractor(this.app, this.plugin);
 			case ExtractorMethod.WebPageExtractor:
-				return new WebPageExtractor(this.app);
+				return new WebPageExtractor(this.app, this.plugin);
 			case ExtractorMethod.YoutubeExtractor:
-				return new YoutubeExtractor(this.app);
+				return new YoutubeExtractor(this.app, this.plugin);
+			case ExtractorMethod.AudioExtractor:
+				return new AudioExtractor(this.app, this.plugin);
 			default:
 				throw new Error(`Unknown Extractor: ${extractorName}`);
 		}

@@ -2,13 +2,15 @@ import { App } from "obsidian";
 import { YoutubeTranscript } from "youtube-transcript";
 import { Extractor } from "./Extractor";
 import debug from "debug";
+import TextGeneratorPlugin from "src/main";
 
 const logger = debug("textgenerator:Extractor:YoutubeTranscriptionExtractor");
 
 export default class YoutubeExtractor implements Extractor<string> {
-	app: App;
-	constructor(app: App) {
+	private app: App;
+	constructor(app: App, plugin: TextGeneratorPlugin) {
 		this.app = app;
+		this.plugin = plugin;
 	}
 
 	async convert(url: string): Promise<string> {
