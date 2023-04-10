@@ -163,7 +163,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 							this.plugin.settings.models = models;
 							await this.plugin.saveSettings();
 						} else {
-							console.error("Please provide a valide api key.");
+							console.error("Please provide a valid api key.");
 						}
 					})
 			);
@@ -192,7 +192,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		});
 
 		containerEl.createEl("H5", {
-			text: "You can specify more paramters in the Frontmatter YMAL",
+			text: "You can specify more parameters in the Frontmatter YAML",
 		});
 		containerEl.appendChild(
 			createEl("a", {
@@ -249,7 +249,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Timeout")
 			.setDesc(
-				"Timeout in milli seconds. If the request takes longer than the timeout, the request will be aborted. (default: 5000ms)"
+				"Timeout in milliseconds. If the request takes longer than the timeout, the request will be aborted. (default: 5000ms)"
 			)
 			.addText((text) =>
 				text
@@ -267,7 +267,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 			text: "General",
 		});
 		new Setting(containerEl)
-			.setName("Show Status in  StatusBar")
+			.setName("Show Status in StatusBar")
 			.setDesc("Show information in the Status Bar")
 			.addToggle((v) =>
 				v
@@ -366,7 +366,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("includeChildren")
-			.setDesc("Include of the content of internal md links on the page.")
+			.setDesc("Include the content of internal md links on the page.")
 			.addToggle((v) =>
 				v
 					.setValue(this.plugin.settings.context.includeChildren)
@@ -455,7 +455,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 				);
 
 			new Setting(containerEl)
-				.setName("Delay milli-seconds for trigger")
+				.setName("Delay milliseconds for trigger")
 				.addSlider((slider) =>
 					slider
 						.setLimits(0, 2000, 50)
