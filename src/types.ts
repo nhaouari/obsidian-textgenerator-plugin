@@ -36,7 +36,6 @@ type TextGeneratorSettings = {
 		packageManager: boolean;
 		"create-template": boolean;
 		"get-title": boolean;
-		"auto-suggest": boolean;
 		"generated-text-to-clipboard-From-template": boolean;
 		"calculate-tokens": boolean;
 		"calculate-tokens-for-template": boolean;

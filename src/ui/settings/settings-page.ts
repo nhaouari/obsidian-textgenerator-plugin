@@ -411,114 +411,107 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 					})
 			);
 
-		if (this.plugin.settings.options["auto-suggest"]) {
-			containerEl.createEl("H3", {
-				text: "Auto-Suggest Options (🧪Experimental)",
-			});
+		containerEl.createEl("H3", {
+			text: "Auto-Suggest Options",
+		});
 
-			this.plugin.settings.autoSuggestOptions = {
-				...this.plugin.defaultSettings.autoSuggestOptions,
-				...this.plugin.settings.autoSuggestOptions,
-			};
+		this.plugin.settings.autoSuggestOptions = {
+			...this.plugin.defaultSettings.autoSuggestOptions,
+			...this.plugin.settings.autoSuggestOptions,
+		};
 
-			new Setting(containerEl)
-				.setName("Enable/Disable")
-				.setDesc("Enable or disable auto-suggest.")
-				.addToggle((toggle) =>
-					toggle
-						.setValue(
-							this.plugin.settings.autoSuggestOptions.status
-						)
-						.onChange(async (value) => {
-							this.plugin.settings.autoSuggestOptions.status =
-								value;
-							await this.plugin.saveSettings();
-						})
-				);
+		new Setting(containerEl)
+			.setName("Enable/Disable")
+			.setDesc("Enable or disable auto-suggest.")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.autoSuggestOptions.status)
+					.onChange(async (value) => {
+						this.plugin.settings.autoSuggestOptions.status = value;
+						await this.plugin.saveSettings();
+					})
+			);
 
-			new Setting(containerEl)
-				.setName("Trigger Phrase")
-				.setDesc(
-					"Enter the trigger phrase for auto-suggest. (The default is double spaces.)"
-				)
-				.addText((text) =>
-					text
-						.setPlaceholder("Trigger Phrase")
-						.setValue(
-							this.plugin.settings.autoSuggestOptions.triggerPhrase?.toString()
-						)
-						.onChange(async (value) => {
-							this.plugin.settings.autoSuggestOptions.triggerPhrase =
-								value;
-							await this.plugin.saveSettings();
-						})
-				);
+		new Setting(containerEl)
+			.setName("Trigger Phrase")
+			.setDesc(
+				"Enter the trigger phrase for auto-suggest. (The default is double spaces.)"
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("Trigger Phrase")
+					.setValue(
+						this.plugin.settings.autoSuggestOptions.triggerPhrase?.toString()
+					)
+					.onChange(async (value) => {
+						this.plugin.settings.autoSuggestOptions.triggerPhrase =
+							value;
+						await this.plugin.saveSettings();
+					})
+			);
 
-			new Setting(containerEl)
-				.setName("Delay milli-seconds for trigger")
-				.addSlider((slider) =>
-					slider
-						.setLimits(0, 2000, 50)
-						.setValue(this.plugin.settings.autoSuggestOptions.delay)
-						.setDynamicTooltip()
-						.onChange(async (value) => {
-							this.plugin.settings.autoSuggestOptions.delay =
-								value;
-							await this.plugin.saveSettings();
-						})
-				);
+		new Setting(containerEl)
+			.setName("Delay milli-seconds for trigger")
+			.addSlider((slider) =>
+				slider
+					.setLimits(0, 2000, 50)
+					.setValue(this.plugin.settings.autoSuggestOptions.delay)
+					.setDynamicTooltip()
+					.onChange(async (value) => {
+						this.plugin.settings.autoSuggestOptions.delay = value;
+						await this.plugin.saveSettings();
+					})
+			);
 
-			new Setting(containerEl)
-				.setName("Number of Suggestions")
-				.setDesc(
-					"Enter the number of suggestions to generate. Please note that increasing this value may significantly increase the cost of usage with GPT-3."
-				)
-				.addText((text) =>
-					text
-						.setValue(
-							this.plugin.settings.autoSuggestOptions.numberOfSuggestions?.toString()
-						)
-						.onChange(async (value) => {
-							this.plugin.settings.autoSuggestOptions.numberOfSuggestions =
-								parseInt(value);
-							await this.plugin.saveSettings();
-						})
-				);
+		new Setting(containerEl)
+			.setName("Number of Suggestions")
+			.setDesc(
+				"Enter the number of suggestions to generate. Please note that increasing this value may significantly increase the cost of usage with GPT-3."
+			)
+			.addText((text) =>
+				text
+					.setValue(
+						this.plugin.settings.autoSuggestOptions.numberOfSuggestions?.toString()
+					)
+					.onChange(async (value) => {
+						this.plugin.settings.autoSuggestOptions.numberOfSuggestions =
+							parseInt(value);
+						await this.plugin.saveSettings();
+					})
+			);
 
-			new Setting(containerEl)
-				.setName("Stop Phrase")
-				.setDesc(
-					"Enter the stop phrase to use for generating auto-suggestions. The generation will stop when the stop phrase is found. (Use a space for words, a period for sentences, and a newline for paragraphs.)"
-				)
-				.addText((text) =>
-					text
-						.setPlaceholder("Stop Phrase")
-						.setValue(
-							this.plugin.settings.autoSuggestOptions.stop?.toString()
-						)
-						.onChange(async (value) => {
-							this.plugin.settings.autoSuggestOptions.stop =
-								value;
-							await this.plugin.saveSettings();
-						})
-				);
+		new Setting(containerEl)
+			.setName("Stop Phrase")
+			.setDesc(
+				"Enter the stop phrase to use for generating auto-suggestions. The generation will stop when the stop phrase is found. (Use a space for words, a period for sentences, and a newline for paragraphs.)"
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("Stop Phrase")
+					.setValue(
+						this.plugin.settings.autoSuggestOptions.stop?.toString()
+					)
+					.onChange(async (value) => {
+						this.plugin.settings.autoSuggestOptions.stop = value;
+						await this.plugin.saveSettings();
+					})
+			);
 
-			new Setting(containerEl)
-				.setName("Show/Hide Auto-suggest status in Status Bar")
-				.setDesc("")
-				.addToggle((v) =>
-					v
-						.setValue(
-							this.plugin.settings.autoSuggestOptions.showStatus
-						)
-						.onChange(async (value) => {
-							this.plugin.settings.autoSuggestOptions.showStatus =
-								value;
-							this.plugin.AutoSuggestStatusBar();
-							await this.plugin.saveSettings();
-						})
-				);
-		}
+		new Setting(containerEl)
+			.setName("Show/Hide Auto-suggest status in Status Bar")
+			.setDesc("")
+			.addToggle((v) =>
+				v
+					.setValue(
+						this.plugin.settings.autoSuggestOptions.showStatus
+					)
+					.onChange(async (value) => {
+						this.plugin.settings.autoSuggestOptions.showStatus =
+							value;
+						this.plugin.AutoSuggestStatusBar();
+						await this.plugin.saveSettings();
+					})
+			);
 
 		containerEl.createEl("H3", {
 			text: "Options",
