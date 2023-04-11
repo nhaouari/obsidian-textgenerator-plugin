@@ -109,11 +109,7 @@ export class AutoSuggest extends EditorSuggest<Completition> {
 		file: TFile
 	): EditorSuggestTriggerInfo {
 		logger("onTrigger", cursor, editor, file);
-		if (
-			!this.plugin.settings.options["auto-suggest"] ||
-			!this.plugin.settings?.autoSuggestOptions?.status ||
-			this.isOpen
-		) {
+		if (!this.plugin.settings?.autoSuggestOptions?.status || this.isOpen) {
 			this.process = false;
 			return;
 		}

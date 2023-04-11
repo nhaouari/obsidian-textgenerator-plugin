@@ -275,7 +275,6 @@ export default class ContextManager {
 				}
 			}
 		}
-		debugger;
 		return children;
 	}
 

@@ -30,9 +30,12 @@ class ContentExtractor {
 		this.extractor = this.createExtractor(extractorName);
 	}
 
-	async convert(doc: any): Promise<string> {
+	async convert(doc: any): string {
 		// Use the selected splitter to split the text
-		return this.extractor.convert(doc);
+		this.plugin.startProcessing(false);
+		const text = await this.extractor.convert(doc);
+		this.plugin.endProcessing(false);
+		return text;
 	}
 
 	async extract(filePath: string): Promise<TAbstractFile[]> {

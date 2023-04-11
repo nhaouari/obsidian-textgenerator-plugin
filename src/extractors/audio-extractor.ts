@@ -53,7 +53,7 @@ export default class AudioExtractor implements Extractor<TAbstractFile> {
 	}
 
 	async generateTranscript(audioBuffer: ArrayBuffer, filetype: string) {
-		if (this.plugin.settings.api_key.length <= 1)
+		if (this.plugin.settings.api_key.length < 1)
 			this.plugin.handelError(
 				new Error("OpenAI API Key is not provided.")
 			);
