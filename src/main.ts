@@ -81,6 +81,12 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		stop: ".",
 		showStatus: true,
 	},
+	extractorsOptions: {
+		PDFExtractor: true,
+		WebPageExtractor: true,
+		YoutubeExtractor: true,
+		AudioExtractor: false,
+	},
 	displayErrorInEditor: false,
 };
 

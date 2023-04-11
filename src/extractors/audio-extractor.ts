@@ -15,6 +15,15 @@ export default class AudioExtractor implements Extractor<TAbstractFile> {
 	async convert(doc: TAbstractFile): Promise<string> {
 		logger("convert", { doc });
 		const audioBuffer = await this.app.vault.adapter.readBinary(doc.path);
+		const fileSizeInMB = audioBuffer.byteLength / (1024 * 1024);
+
+		if (fileSizeInMB > 24) {
+			this.plugin.handelError(
+				new Error("File size exceeds the 24 MB limit.")
+			);
+			return "";
+		}
+
 		const transcript = await this.generateTranscript(
 			audioBuffer,
 			doc.extension

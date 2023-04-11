@@ -36,7 +36,7 @@ export default class PDFExtractor implements Extractor<TAbstractFile> {
 	async extract(filePath: string): Promise<TAbstractFile[]> {
 		const embeds = this.app.metadataCache
 			.getCache(filePath)
-			?.embeds.filter((embed) => embed.link.endsWith(".pdf"));
+			?.embeds?.filter((embed) => embed.link.endsWith(".pdf"));
 
 		if (!embeds) {
 			return [];

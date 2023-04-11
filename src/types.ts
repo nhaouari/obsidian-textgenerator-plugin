@@ -48,6 +48,12 @@ type TextGeneratorSettings = {
 		stop: string;
 		showStatus: boolean;
 	};
+	extractorsOptions: {
+		PDFExtractor: boolean;
+		WebPageExtractor: boolean;
+		YoutubeExtractor: boolean;
+		AudioExtractor: boolean;
+	};
 };
 
 type TextGeneratorConfiguration = {

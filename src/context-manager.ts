@@ -353,23 +353,32 @@ export default class ContextManager {
 		}
 	}
 
+	getExtractorMethods() {
+		return Object.keys(ExtractorMethod).filter(
+			(e) => !(parseInt(e) || e === "0")
+		);
+	}
+
 	async getExtractions() {
 		let extractedContent: any = {};
 		const contentExtractor = new ContentExtractor(this.app, this.plugin);
-		for (let key in ExtractorMethod) {
-			if (!isNaN(parseInt(key))) {
-				contentExtractor.setExtractor(parseInt(key));
-				const links = await contentExtractor.extract(
-					this.app.workspace.getActiveFile().path
+		const extractorMethods = this.getExtractorMethods().filter(
+			(e) => this.plugin.settings.extractorsOptions[e]
+		);
+		for (let index = 0; index < extractorMethods.length; index++) {
+			const key = extractorMethods[index];
+			contentExtractor.setExtractor(ExtractorMethod[key]);
+			const links = await contentExtractor.extract(
+				this.app.workspace.getActiveFile().path
+			);
+			extractedContent[key] = "";
+			if (links.length > 0) {
+				extractedContent[key] = await Promise.all(
+					links.map((link) => contentExtractor.convert(link))
 				);
-				extractedContent[ExtractorMethod[key]] = "";
-				if (links.length > 0) {
-					extractedContent[ExtractorMethod[key]] = await Promise.all(
-						links.map((link) => contentExtractor.convert(link))
-					);
-				}
 			}
 		}
+
 		return extractedContent;
 	}
 

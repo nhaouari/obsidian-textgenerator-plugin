@@ -410,6 +410,71 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+		containerEl.createEl("H5", {
+			text: "Extractors Options",
+		});
+
+		new Setting(containerEl)
+			.setName("PDF Extractor")
+			.setDesc("Enable or disable PDF extractor.")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(
+						this.plugin.settings.extractorsOptions.PDFExtractor
+					)
+					.onChange(async (value) => {
+						this.plugin.settings.extractorsOptions.PDFExtractor =
+							value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Web Page Extractor")
+			.setDesc("Enable or disable web page extractor.")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(
+						this.plugin.settings.extractorsOptions.WebPageExtractor
+					)
+					.onChange(async (value) => {
+						this.plugin.settings.extractorsOptions.WebPageExtractor =
+							value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Youtube Extractor")
+			.setDesc("Enable or disable Youtube extractor.")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(
+						this.plugin.settings.extractorsOptions.YoutubeExtractor
+					)
+					.onChange(async (value) => {
+						this.plugin.settings.extractorsOptions.YoutubeExtractor =
+							value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Audio Extractor (Whisper)")
+			.setDesc(
+				"Enable or disable audio extractor using Whisper OpenAI ($0.006 / minute) supports multi-languages and accepts a variety of formats (m4a, mp3, mp4, mpeg, mpga, wav, webm)."
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(
+						this.plugin.settings.extractorsOptions.AudioExtractor
+					)
+					.onChange(async (value) => {
+						this.plugin.settings.extractorsOptions.AudioExtractor =
+							value;
+						await this.plugin.saveSettings();
+					})
+			);
 
 		containerEl.createEl("H3", {
 			text: "Auto-Suggest Options",
