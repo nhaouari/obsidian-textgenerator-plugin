@@ -1,5 +1,5 @@
 import { App, TAbstractFile } from "obsidian";
-//import PDFExtractor from "./pdf-extractor";
+import PDFExtractor from "./pdf-extractor";
 import WebPageExtractor from "./web-page-extractor";
 import YoutubeExtractor from "./youtube-extractor";
 import AudioExtractor from "./audio-extractor";
@@ -10,7 +10,7 @@ const logger = debug("textgenerator:Extractor");
 
 // Add the new Extractor here
 enum ExtractorMethod {
-	//	PDFExtractor,
+	PDFExtractor,
 	WebPageExtractor,
 	YoutubeExtractor,
 	AudioExtractor,
@@ -44,8 +44,8 @@ class ContentExtractor {
 
 	private createExtractor(extractorName: ExtractorMethod): Extractor<any> {
 		switch (extractorName) {
-			/*case ExtractorMethod.PDFExtractor:
-				return new PDFExtractor(this.app, this.plugin);*/
+			case ExtractorMethod.PDFExtractor:
+				return new PDFExtractor(this.app, this.plugin);
 			case ExtractorMethod.WebPageExtractor:
 				return new WebPageExtractor(this.app, this.plugin);
 			case ExtractorMethod.YoutubeExtractor:

@@ -30,10 +30,7 @@ import wasm from "../node_modules/@dqbd/tiktoken/tiktoken_bg.wasm";
 import cl100k_base from "@dqbd/tiktoken/encoders/cl100k_base.json";
 import r50k_base from "@dqbd/tiktoken/encoders/r50k_base.json";
 import p50k_base from "@dqbd/tiktoken/encoders/p50k_base.json";
-import {
-	ExtractorMethod,
-	ContentExtractor,
-} from "./extractors/content-extractor";
+
 const logger = debug("textgenerator:main");
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	api_key: "",
