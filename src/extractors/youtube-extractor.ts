@@ -1,5 +1,5 @@
 import { App } from "obsidian";
-import { YoutubeTranscript } from "youtube-transcript";
+import { YoutubeTranscript } from "./youtube-extractor/youtube-transcript";
 import { Extractor } from "./Extractor";
 import debug from "debug";
 import TextGeneratorPlugin from "src/main";
