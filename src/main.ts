@@ -874,13 +874,13 @@ export default class TextGeneratorPlugin extends Plugin {
 			path: s,
 			...this.textGenerator.getMetadata(s),
 		}));
-		//debugger
+		//
 
 		const templatesWithCommands = templates.filter((t) => t?.commands);
 		logger("Templates with commands ", { templatesWithCommands });
 
 		templatesWithCommands.forEach((template) => {
-			//debugger
+			//
 			template.commands.forEach((command) => {
 				logger("Tempate commands ", { template, command });
 				const cmd = {

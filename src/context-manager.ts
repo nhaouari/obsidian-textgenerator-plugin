@@ -1,4 +1,4 @@
-import { App, Notice, Editor } from "obsidian";
+import { App, Notice, Editor, Component } from "obsidian";
 import { Context } from "./types";
 import TextGeneratorPlugin from "./main";
 import { IGNORE_IN_YAML } from "./constants";
@@ -11,6 +11,15 @@ import {
 	ContentExtractor,
 	ExtractorMethod,
 } from "./extractors/content-extractor";
+import { getAPI as getDataviewApi } from "obsidian-dataview";
+
+interface CodeBlock {
+	type: string;
+	content: string;
+	full: string;
+}
+
+type CodeBlockProcessor = (block: CodeBlock) => Promise<string>;
 
 export default class ContextManager {
 	plugin: TextGeneratorPlugin;
@@ -37,11 +46,13 @@ export default class ContextManager {
 				...(await this.getTemplateContext(editor, templatePath)),
 				...addtionalOpts,
 			};
-			const { context, template } = await this.templateFromPath(
+			let { context, template } = await this.templateFromPath(
 				templatePath,
 				options
 			);
+			context = await this.executeTemplateDataviewQueries(context);
 			logger("Context Template", { context, options });
+
 			return { context, options, template };
 		} else {
 			/* Without template */
@@ -419,5 +430,57 @@ export default class ContextManager {
 			}
 		}
 		return cleanFrontMatter;
+	}
+	async processCodeBlocks(
+		input: string,
+		processor: CodeBlockProcessor
+	): Promise<string> {
+		const regex = /```(.+?)\n([\s\S]*?)```/g;
+		let match: RegExpExecArray | null;
+		let output = input;
+
+		while ((match = regex.exec(input)) !== null) {
+			const full = match[0];
+			const type = match[1];
+			const content = match[2];
+			const block = { type, content, full };
+			const replacement = await processor(block); // Assuming 'process' is a method in the CodeBlockProcessor class
+			output = output.replace(full, replacement);
+		}
+		return output;
+	}
+	async executeTemplateDataviewQueries(templateMD: string): Promise<string> {
+		const parsedTemplateMD: string = await this.processCodeBlocks(
+			templateMD,
+			async ({ type, content, full }) => {
+				switch (type.trim()) {
+					case "dataview": {
+						const res = await getDataviewApi().queryMarkdown(
+							content
+						);
+						if (res.successful) {
+							return res.value;
+						} else {
+							this.plugin.handelError(new Error(res.value));
+							return "";
+						}
+					}
+					case "dataviewjs": {
+						const container = document.createElement("div");
+						const component = new Component();
+						const res = await getDataviewApi().executeJs(
+							content,
+							container,
+							component,
+							""
+						);
+						return container.innerHTML;
+					}
+					default:
+						return full;
+				}
+			}
+		);
+		return parsedTemplateMD;
 	}
 }

@@ -44,6 +44,7 @@
 		"esbuild-wasm": "^0.17.13",
 		"handlebars": "^4.7.7",
 		"natural": "^5.2.4",
+		"obsidian-dataview": "^0.5.55",
 		"pretty-error": "^4.0.0",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
