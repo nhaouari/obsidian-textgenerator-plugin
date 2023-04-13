@@ -44,7 +44,7 @@ export default class AudioExtractor implements Extractor<TAbstractFile> {
 		];
 		const embeds = this.app.metadataCache
 			.getCache(filePath)
-			?.embeds.filter((embed) =>
+			?.embeds?.filter((embed) =>
 				supportedAudioExtensions.some((ext) =>
 					embed.link.endsWith(`.${ext}`)
 				)
