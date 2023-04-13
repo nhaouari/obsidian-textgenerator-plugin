@@ -77,6 +77,28 @@ export default class TextGenerator {
 		}
 	}
 
+	async gen(prompt, settings = {}) {
+		console.log("gen ", prompt, settings);
+		const params = { ...this.plugin.settings, ...settings };
+		let reqParameters: any = this.reqFormatter.addContext(params, prompt);
+		reqParameters = this.reqFormatter.prepareReqParameters(
+			reqParameters,
+			false,
+			""
+		);
+		try {
+			const result = await this.getGeneratedText(reqParameters);
+
+			logger("gen results", {
+				result,
+			});
+			return result;
+		} catch (error) {
+			logger("gen  error", error);
+			return Promise.reject(error);
+		}
+	}
+
 	getCursor(editor: Editor) {
 		logger("getCursor");
 		let cursor = editor.getCursor();
