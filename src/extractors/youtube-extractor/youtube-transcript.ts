@@ -1,3 +1,4 @@
+//source: https://github.com/Kakulukian/youtube-transcript
 import { request } from "obsidian";
 
 const RE_YOUTUBE =
