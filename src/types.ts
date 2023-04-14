@@ -23,6 +23,7 @@ type TextGeneratorSettings = {
 	models: any;
 	context: Context;
 	timeout: number;
+	prefix: string;
 	options: {
 		"generate-text": boolean;
 		"generate-text-with-metadata": boolean;

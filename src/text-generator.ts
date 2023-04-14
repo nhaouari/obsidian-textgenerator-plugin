@@ -35,7 +35,9 @@ export default class TextGenerator {
 		}
 	) {
 		const { options, template } = context;
-		const prompt = template ? template(options) : context.context;
+		const prompt = template
+			? template.inputTemplate(options)
+			: context.context;
 
 		logger("generate", {
 			prompt,
@@ -61,10 +63,12 @@ export default class TextGenerator {
 		);
 		try {
 			let result = await this.getGeneratedText(reqParameters);
+
 			// Remove leading/trailing newlines
-			if (String.isString(result)) {
-				result.replace(/^\n*/g, "\n");
-			}
+
+			result = template?.outputTemplate
+				? template.outputTemplate({ ...options, output: result })
+				: result;
 			logger("generate end", {
 				result,
 			});
@@ -221,16 +225,20 @@ export default class TextGenerator {
 	async generatePrompt(
 		promptText: string,
 		insertMetadata: boolean = false,
-		editor: Editor
+		editor: Editor,
+		outputTemplate: any
 	) {
 		logger("generatePrompt");
 		const cursor = this.getCursor(editor);
-		const [errorGeneration, text] = await safeAwait(
-			this.generate(promptText, insertMetadata)
+		let [errorGeneration, text] = await safeAwait(
+			this.generate({ context: promptText }, insertMetadata)
 		);
 
 		if (errorGeneration) {
 			return Promise.reject(errorGeneration);
+		}
+		if (outputTemplate) {
+			text = outputTemplate({ output: text });
 		}
 		this.insertGeneratedText(text, editor, cursor);
 		logger("generatePrompt end");
@@ -396,10 +404,12 @@ export default class TextGenerator {
 		return "\n> [!ai]+ AI\n>\n" + lines.join("\n").trim() + "\n\n";
 	}
 
-	insertGeneratedText(text: string, editor: Editor, cur = null) {
+	insertGeneratedText(completion: string, editor: Editor, cur = null) {
 		const logger = (message) => console.log(message);
 		logger("insertGeneratedText");
 
+		let text =
+			this.plugin.settings.prefix.replace(/\\n/g, "\n") + completion;
 		let cursor = this.getCursor(editor);
 		if (cur) {
 			cursor = cur;

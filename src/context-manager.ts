@@ -46,14 +46,16 @@ export default class ContextManager {
 				...(await this.getTemplateContext(editor, templatePath)),
 				...addtionalOpts,
 			};
-			let { context, template } = await this.templateFromPath(
-				templatePath,
-				options
-			);
+			let { context, inputTemplate, outputTemplate } =
+				await this.templateFromPath(templatePath, options);
 			context = await this.executeTemplateDataviewQueries(context);
 			logger("Context Template", { context, options });
 
-			return { context, options, template };
+			return {
+				context,
+				options,
+				template: { inputTemplate, outputTemplate },
+			};
 		} else {
 			/* Without template */
 			let options = await this.getDefaultContext(editor);
@@ -170,17 +172,39 @@ export default class ContextManager {
 		return contextString;
 	}
 
+	splitTemplate(templateContent: string) {
+		logger("splitTemplate", templateContent);
+		templateContent = removeYAML(templateContent);
+
+		let inputTemplate, outputTemplate;
+		if (templateContent.includes("***")) {
+			const splitContent = templateContent.split("***");
+			const inputContent = splitContent[0];
+			const outputContent = splitContent[1];
+
+			inputTemplate = Handlebars.compile(inputContent);
+			outputTemplate = Handlebars.compile(outputContent);
+		} else {
+			const template = Handlebars.compile(templateContent);
+			inputTemplate = template;
+			outputTemplate = null;
+		}
+		return { inputTemplate, outputTemplate };
+	}
 	async templateFromPath(templatePath: string, options: any) {
 		logger("templateFromPath", templatePath, options);
 		const templateFile = await this.app.vault.getAbstractFileByPath(
 			templatePath
 		);
-		let templateContent = await this.app.vault.read(templateFile);
-		templateContent = removeYAML(templateContent);
-		const template = Handlebars.compile(templateContent);
-		templateContent = template(options);
-		logger("templateFromPath", { templateContent });
-		return { context: templateContent, template };
+		const templateContent = await this.app.vault.read(templateFile);
+
+		const { inputTemplate, outputTemplate } =
+			this.splitTemplate(templateContent);
+
+		const input = inputTemplate(options);
+
+		logger("templateFromPath", { input });
+		return { context: input, inputTemplate, outputTemplate };
 	}
 
 	getSelections(editor: Editor) {
