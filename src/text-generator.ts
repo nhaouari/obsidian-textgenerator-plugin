@@ -162,7 +162,8 @@ export default class TextGenerator {
 				openFile(this.app, file);
 			}).open();
 		} else {
-			this.insertGeneratedText(text, editor, cursor);
+			const mode = context?.options?.config?.mode || "insert";
+			this.insertGeneratedText(text, editor, cursor, mode);
 		}
 		logger("generateFromTemplate end");
 	}
@@ -174,19 +175,19 @@ export default class TextGenerator {
 	) {
 		logger("generateInEditor");
 		const cursor = this.getCursor(editor);
+		const context = await this.contextManager.getContext(
+			editor,
+			insertMetadata
+		);
 		const [errorGeneration, text] = await safeAwait(
-			this.generate(
-				await this.contextManager.getContext(editor, insertMetadata),
-				insertMetadata,
-				params
-			)
+			this.generate(context, insertMetadata, params)
 		);
 
 		if (errorGeneration) {
 			return Promise.reject(errorGeneration);
 		}
-
-		this.insertGeneratedText(text, editor, cursor);
+		const mode = context?.options?.config?.mode || "insert";
+		this.insertGeneratedText(text, editor, cursor, mode);
 		logger("generateInEditor end");
 	}
 
@@ -278,7 +279,8 @@ export default class TextGenerator {
 				openFile(this.app, file);
 			}).open();
 		} else {
-			this.insertGeneratedText(contextAsString, editor);
+			const mode = context?.options?.config?.mode || "insert";
+			this.insertGeneratedText(contextAsString, editor, undefined, mode);
 		}
 		logger("createToFile end");
 	}
@@ -404,7 +406,12 @@ export default class TextGenerator {
 		return "\n> [!ai]+ AI\n>\n" + lines.join("\n").trim() + "\n\n";
 	}
 
-	insertGeneratedText(completion: string, editor: Editor, cur = null) {
+	async insertGeneratedText(
+		completion: string,
+		editor: Editor,
+		cur = null,
+		mode = "insert"
+	) {
 		const logger = (message) => console.log(message);
 		logger("insertGeneratedText");
 
@@ -430,7 +437,22 @@ export default class TextGenerator {
 			text = this.outputToBlockQuote(text);
 		}
 
-		editor.replaceRange(text, cursor);
+		if (mode === "insert") {
+			editor.replaceRange(text, cursor);
+		} else if (mode === "replace") {
+			editor.replaceSelection(text);
+		} else if (mode === "rename") {
+			const sanitizedTitle = text
+				.replace(/[*\\"/<>:|?\.]/g, "")
+				.replace(/^\n*/g, "");
+			const activeFile = this.app.workspace.getActiveFile();
+			const renamedFilePath = activeFile.path.replace(
+				activeFile.name,
+				`${sanitizedTitle}.md`
+			);
+			await this.app.fileManager.renameFile(activeFile, renamedFilePath);
+		}
+
 		editor.setCursor(editor.getCursor());
 		logger("insertGeneratedText end");
 	}
@@ -517,7 +539,8 @@ export default class TextGenerator {
 						}
 					).open();
 				} else {
-					this.insertGeneratedText(text, editor, cursor);
+					const mode = context?.options?.config?.mode || "insert";
+					this.insertGeneratedText(text, editor, cursor, mode);
 				}
 			}
 		).open();
