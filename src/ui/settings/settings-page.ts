@@ -253,10 +253,24 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 			)
 			.addText((text) =>
 				text
-					.setPlaceholder("max_tokens")
+					.setPlaceholder("Timeout")
 					.setValue(this.plugin.settings.timeout.toString())
 					.onChange(async (value) => {
 						this.plugin.settings.timeout = parseInt(value);
+						await this.plugin.saveSettings();
+					})
+			);
+		new Setting(containerEl)
+			.setName("Prefix")
+			.setDesc(
+				"Prefix to add to the beginning of the completion (default: '\n\n')"
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("Prefix")
+					.setValue(this.plugin.settings.prefix)
+					.onChange(async (value) => {
+						this.plugin.settings.prefix = value;
 						await this.plugin.saveSettings();
 					})
 			);
