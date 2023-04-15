@@ -1,9 +1,15 @@
-import { App, request } from "obsidian";
+import { App, request, Platform } from "obsidian";
 import TurndownService from "turndown";
 import { Extractor } from "./extractor";
 import { Readability } from "@mozilla/readability";
 import TextGeneratorPlugin from "src/main";
 import debug from "debug";
+
+let remote: typeof import("electron").remote;
+
+if (!Platform.isMobile) {
+	remote = require("electron").remote;
+}
 
 const logger = debug("textgenerator:Extractor:WebPageExtractor");
 export default class WebPageExtractor implements Extractor<string> {
@@ -16,16 +22,35 @@ export default class WebPageExtractor implements Extractor<string> {
 
 	async convert(url: string): Promise<string> {
 		logger("convert", { url });
-		const response = await request({ url });
+		let response: string;
+
+		if (Platform.isMobile) {
+			response = await request({ url });
+		} else {
+			const win = new remote.BrowserWindow({ show: false });
+			win.webContents.userAgent =
+				"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36";
+			await win.loadURL(url);
+			response = await win.webContents.executeJavaScript(
+				"document.documentElement.outerHTML"
+			);
+		}
+
 		const parser = new DOMParser();
 		const doc = parser.parseFromString(response, "text/html");
 		const turndownService = new TurndownService();
 		const article = new Readability(doc).parse();
 		const markdown = turndownService.turndown(
-			"# " + article?.title + "/n" + article.content
+			"# " + article?.title + "\n" + article?.content
 		);
+
 		logger("convert end", { markdown });
-		return markdown;
+
+		if (article?.content) {
+			return markdown;
+		} else {
+			return "No content found";
+		}
 	}
 
 	async extract(filePath?: string): Promise<string[]> {
