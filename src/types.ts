@@ -42,7 +42,7 @@ type TextGeneratorSettings = {
 		"calculate-tokens-for-template": boolean;
 	};
 	autoSuggestOptions: {
-		status: boolean;
+		isEnabled: boolean;
 		delay: number;
 		numberOfSuggestions: number;
 		triggerPhrase: string;

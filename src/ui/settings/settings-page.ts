@@ -504,9 +504,10 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 			.setDesc("Enable or disable auto-suggest.")
 			.addToggle((toggle) =>
 				toggle
-					.setValue(this.plugin.settings.autoSuggestOptions.status)
+					.setValue(this.plugin.settings.autoSuggestOptions.isEnabled)
 					.onChange(async (value) => {
-						this.plugin.settings.autoSuggestOptions.status = value;
+						this.plugin.settings.autoSuggestOptions.isEnabled =
+							value;
 						await this.plugin.saveSettings();
 					})
 			);

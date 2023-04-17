@@ -72,7 +72,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		"calculate-tokens-for-template": true,
 	},
 	autoSuggestOptions: {
-		status: false,
+		isEnabled: false,
 		delay: 300,
 		numberOfSuggestions: 5,
 		triggerPhrase: "  ",
@@ -249,7 +249,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.autoSuggestItem.innerHTML = "";
 		if (this.settings.autoSuggestOptions.showStatus) {
 			let languageIcon;
-			if (!this.settings.autoSuggestOptions.status) {
+			if (!this.settings.autoSuggestOptions.isEnabled) {
 				languageIcon = getIcon("zap-off");
 			} else {
 				languageIcon = getIcon("zap");
@@ -264,11 +264,11 @@ export default class TextGeneratorPlugin extends Plugin {
 	AddAutoSuggestStatusBar() {
 		this.AutoSuggestStatusBar();
 		const onClickAutoSuggestStatusBar = (event) => {
-			this.settings.autoSuggestOptions.status =
-				!this.settings.autoSuggestOptions.status;
+			this.settings.autoSuggestOptions.isEnabled =
+				!this.settings.autoSuggestOptions.isEnabled;
 			this.saveSettings();
 			this.AutoSuggestStatusBar();
-			if (this.settings.autoSuggestOptions.status) {
+			if (this.settings.autoSuggestOptions.isEnabled) {
 				new Notice(`Auto Suggestion is on!`);
 			} else {
 				new Notice(`Auto Suggestion is off!`);
@@ -759,12 +759,12 @@ export default class TextGeneratorPlugin extends Plugin {
 				icon: "heading",
 				//hotkeys: [{ modifiers: ["Alt"], key: "c"}],
 				callback: async () => {
-					this.settings.autoSuggestOptions.status =
-						!this.settings.autoSuggestOptions.status;
+					this.settings.autoSuggestOptions.isEnabled =
+						!this.settings.autoSuggestOptions.isEnabled;
 					await this.saveSettings();
 					this.AutoSuggestStatusBar();
 
-					if (this.settings.autoSuggestOptions.status) {
+					if (this.settings.autoSuggestOptions.isEnabled) {
 						new Notice(`Auto Suggestion is on!`);
 					} else {
 						new Notice(`Auto Suggestion is off!`);
