@@ -34,18 +34,17 @@ export default class TextGenerator {
 			showSpinner: true,
 		}
 	) {
-		const { options, template } = context;
-		const prompt = template
-			? template.inputTemplate(options)
-			: context.context;
-
 		logger("generate", {
-			prompt,
+			context,
 			insertMetadata,
 			params,
 			templatePath,
 			additionnalParams,
 		});
+		const { options, template } = context;
+		const prompt = template
+			? template.inputTemplate(options)
+			: context.context;
 
 		if (this.plugin.processing) {
 			logger("generate error", "There is another generation process");
@@ -124,7 +123,7 @@ export default class TextGenerator {
 	async generateFromTemplate(
 		params: TextGeneratorSettings,
 		templatePath: string,
-		insertMetadata: boolean = false,
+		insertMetadata: boolean = true,
 		editor: Editor,
 		activeFile: boolean = true
 	) {
@@ -162,10 +161,14 @@ export default class TextGenerator {
 				openFile(this.app, file);
 			}).open();
 		} else {
-			const mode = context?.options?.config?.mode || "insert";
+			const mode = this.getMode(context);
 			this.insertGeneratedText(text, editor, cursor, mode);
 		}
 		logger("generateFromTemplate end");
+	}
+
+	getMode(context: any) {
+		return context?.options?.frontmatter?.config?.mode || "insert";
 	}
 
 	async generateInEditor(
@@ -186,7 +189,7 @@ export default class TextGenerator {
 		if (errorGeneration) {
 			return Promise.reject(errorGeneration);
 		}
-		const mode = context?.options?.config?.mode || "insert";
+		const mode = this.getMode(context);
 		this.insertGeneratedText(text, editor, cursor, mode);
 		logger("generateInEditor end");
 	}
@@ -279,7 +282,7 @@ export default class TextGenerator {
 				openFile(this.app, file);
 			}).open();
 		} else {
-			const mode = context?.options?.config?.mode || "insert";
+			const mode = this.getMode(context);
 			this.insertGeneratedText(contextAsString, editor, undefined, mode);
 		}
 		logger("createToFile end");

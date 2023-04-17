@@ -3,6 +3,7 @@ import { TextGeneratorSettings } from "./types";
 import TextGeneratorPlugin from "./main";
 import ContextManager from "./context-manager";
 import debug from "debug";
+import { transformStringsToChatFormat } from "./utils";
 const logger = debug("textgenerator:ReqFormatter");
 export default class ReqFormatter {
 	plugin: TextGeneratorPlugin;
@@ -81,6 +82,32 @@ export default class ReqFormatter {
 			if (frontmatter == null) {
 				new Notice("No valid Metadata (YAML front matter) found!");
 			} else {
+				if (bodyParams["messages"]) {
+					//chat mode
+					let messages = [];
+					if (frontmatter["config"]?.system) {
+						messages = [
+							{
+								role: "system",
+								content: frontmatter["config"].system,
+							},
+						];
+					}
+
+					if (frontmatter["config"]?.messages) {
+						messages.push(
+							...transformStringsToChatFormat(
+								frontmatter["config"].messages
+							)
+						);
+					}
+
+					bodyParams["messages"] = [
+						...messages,
+						...bodyParams["messages"],
+					];
+				}
+
 				if (
 					frontmatter["bodyParams"] &&
 					frontmatter["config"]?.append?.bodyParams == false

@@ -111,3 +111,16 @@ export function numberToKFormat(number) {
 		return number.toString();
 	}
 }
+
+export function transformStringsToChatFormat(arr: string[]) {
+	const roles = ["user", "assistant"]; // define the roles
+	const result = []; // initialize the result array
+	for (let i = 0; i < arr.length; i++) {
+		result.push({
+			role: roles[i % 2], // alternate between the two roles
+			content: arr[i],
+		});
+	}
+
+	return result;
+}
