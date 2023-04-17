@@ -83,6 +83,9 @@ const Helpers = {
 		const output = `filename: ${fileName}\n content: ${content}`;
 		return output;
 	},
+	eq: function (value1: any, value2: any) {
+		return value1 === value2;
+	},
 };
 
 export default Helpers;
