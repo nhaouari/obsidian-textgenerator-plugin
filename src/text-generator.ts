@@ -460,13 +460,13 @@ export default class TextGenerator {
 		logger("insertGeneratedText end");
 	}
 
-	async tempalteToModel(
+	async tempalteToModal(
 		params: any = this.plugin.settings,
 		templatePath = "",
 		editor: Editor,
 		activeFile = true
 	) {
-		logger("tempalteToModel");
+		logger("tempalteToModal");
 		const templateFile = this.app.vault.getAbstractFileByPath(templatePath);
 		let [errortemplateContent, templateContent] = await safeAwait(
 			this.app.vault.read(templateFile)
@@ -501,15 +501,20 @@ export default class TextGenerator {
 					)
 				);
 				if (errorContext) {
-					logger("tempalteToModel error", errorContext);
+					logger("tempalteToModal error", errorContext);
 					return Promise.reject(errorContext);
 				}
 				const contextAsString = context.context;
 				const [errortext, text] = await safeAwait(
-					this.generate(contextAsString, true, params, templatePath)
+					this.generate(
+						{ context: contextAsString },
+						true,
+						params,
+						templatePath
+					)
 				);
 				if (errortext) {
-					logger("tempalteToModel error", errortext);
+					logger("tempalteToModal error", errortext);
 					return Promise.reject(errortext);
 				}
 
@@ -534,7 +539,7 @@ export default class TextGenerator {
 								)
 							);
 							if (errorFile) {
-								logger("tempalteToModel error", errorFile);
+								logger("tempalteToModal error", errorFile);
 								return Promise.reject(errorFile);
 							}
 
@@ -547,7 +552,7 @@ export default class TextGenerator {
 				}
 			}
 		).open();
-		logger("tempalteToModel end");
+		logger("tempalteToModal end");
 	}
 
 	getMetadata(path: string) {
