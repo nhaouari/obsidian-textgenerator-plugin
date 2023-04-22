@@ -19,15 +19,7 @@ export default class ReqFormatter {
 		this.contextManager = contextManager;
 	}
 
-	addContext(parameters: TextGeneratorSettings, prompt: string) {
-		const params = {
-			...parameters,
-			prompt,
-		};
-		return params;
-	}
-
-	prepareReqParameters(
+	getRequestParameters(
 		params: TextGeneratorSettings,
 		insertMetadata: boolean,
 		templatePath = "",
@@ -151,6 +143,6 @@ export default class ReqFormatter {
 		}
 
 		logger("prepareReqParameters", { bodyParams, reqParams });
-		return reqParams;
+		return { bodyParams, reqParams };
 	}
 }

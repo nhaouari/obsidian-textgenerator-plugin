@@ -288,12 +288,9 @@ export default class TextGeneratorPlugin extends Plugin {
 		}
 	}
 
-	getTokens(text: string) {
-		let tokens: Uint32Array = null;
-		const modelName = this.settings.engine;
+	getEncoder(modelName: string) {
 		const modelInfo = this.getModelInfo(modelName);
 		if (modelInfo) {
-			logger("encoding wasm");
 			let model;
 			switch (modelInfo.encoding) {
 				case "cl100k_base":
@@ -313,41 +310,120 @@ export default class TextGeneratorPlugin extends Plugin {
 				model.special_tokens,
 				model.pat_str
 			);
-			logger("encoding wasm");
-			tokens = encoder.encode(text);
+			return { encoder, modelInfo };
 		}
-		return { tokens, modelInfo };
+		return null;
 	}
 
-	estimateTokens(text: string) {
-		const result = this.getTokens(text);
-		const tokens = result.tokens.length;
-		logger("done wasm");
+	numTokensFromMessages(
+		messages: any,
+		model = "gpt-3.5-turbo-0301",
+		encoder: any
+	): number {
+		if (model === "gpt-3.5-turbo") {
+			return this.numTokensFromMessages(
+				messages,
+				"gpt-3.5-turbo-0301",
+				encoder
+			);
+		} else if (model === "gpt-4") {
+			return this.numTokensFromMessages(messages, "gpt-4-0314", encoder);
+		}
 
+		let tokensPerMessage, tokensPerName;
+		if (model === "gpt-3.5-turbo-0301") {
+			tokensPerMessage = 4;
+			tokensPerName = -1;
+		} else if (model === "gpt-4-0314") {
+			tokensPerMessage = 3;
+			tokensPerName = 1;
+		} else {
+			throw new Error(
+				`numTokensFromMessages() is not implemented for model ${model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.`
+			);
+		}
+
+		let numTokens = 0;
+		for (const message of messages) {
+			numTokens += tokensPerMessage;
+			for (const [key, value] of Object.entries(message)) {
+				numTokens += encoder.encode(value).length;
+				if (key === "name") {
+					numTokens += tokensPerName;
+				}
+			}
+		}
+
+		numTokens += 3; // every reply is primed with assistant
+		return numTokens;
+	}
+
+	estimateTokens(context: any) {
+		logger("estimateTokens", context);
+		const { options, template } = context;
+
+		const prompt = template
+			? template.inputTemplate(options)
+			: context.context;
+
+		const { bodyParams } =
+			this.textGenerator.reqFormatter.getRequestParameters(
+				{
+					...this.settings,
+					prompt,
+				},
+				true,
+				""
+			);
+
+		const { encoder, modelInfo } = this.getEncoder(bodyParams.model);
+
+		let tokens = 0;
+		if (bodyParams.messages) {
+			tokens = this.numTokensFromMessages(
+				bodyParams.messages,
+				bodyParams.model,
+				encoder
+			);
+		} else {
+			tokens = encoder.encode(bodyParams.prompt).length;
+		}
+
+		const { engine, max_tokens: completionTokens } = this.settings;
+		const { maxTokens, prices } = modelInfo;
+		const total = tokens + completionTokens;
+		const result = {
+			engine,
+			tokens,
+			completionTokens,
+			maxTokens,
+			prices,
+			total,
+		};
+		logger("estimateTokens", result);
+		return result;
+	}
+
+	showTokens({ engine, tokens, completionTokens, maxTokens, prices, total }) {
 		const summaryEl = document.createElement("div");
 		summaryEl.classList.add("summary");
-
-		const { engine, max_tokens } = this.settings;
-		const { maxTokens, prices } = result.modelInfo;
-		const total = tokens + max_tokens;
-
 		summaryEl.innerHTML = `
   <table>
     <tr><td><strong>Model</strong></td><td>${engine}</td></tr>
     <tr><td><strong>Prompt tokens</strong></td><td>${tokens}</td></tr>
-    <tr><td><strong>Completion tokens</strong></td><td>${max_tokens}</td></tr>
+    <tr><td><strong>Completion tokens</strong></td><td>${completionTokens}</td></tr>
     <tr><td><strong>Total tokens</strong></td><td>${total}</td></tr>
     <tr><td><strong>Max Tokens</strong></td><td>${maxTokens}</td></tr>
     <tr><td><strong>Estimated Price</strong></td><td class="price">$${(
-		(tokens * prices.prompt + max_tokens * prices.completion) /
+		(tokens * prices.prompt + completionTokens * prices.completion) /
 		1000
 	).toLocaleString()}</td></tr>
   </table>
 `;
-
 		logger(summaryEl);
 		new Notice(summaryEl, 5000);
 	}
+
 	async onload() {
 		logger("loading textGenerator plugin");
 		await init((imports) => WebAssembly.instantiate(wasm, imports));
@@ -777,7 +853,12 @@ export default class TextGeneratorPlugin extends Plugin {
 				icon: "heading",
 				//hotkeys: [{ modifiers: ["Alt"], key: "c"}],
 				editorCallback: async (editor: Editor) => {
-					this.estimateTokens(editor.getValue());
+					const context =
+						await this.textGenerator.contextManager.getContext(
+							editor,
+							true
+						);
+					this.showTokens(this.estimateTokens(context));
 				},
 			},
 			{
@@ -791,14 +872,13 @@ export default class TextGeneratorPlugin extends Plugin {
 							this.app,
 							this,
 							async (result) => {
-								const text = (
+								const context =
 									await this.textGenerator.contextManager.getContext(
 										editor,
 										true,
 										result.path
-									)
-								).context;
-								this.estimateTokens(text);
+									);
+								this.showTokens(this.estimateTokens(context));
 							},
 							"Choose a template"
 						).open();
@@ -949,14 +1029,15 @@ export default class TextGeneratorPlugin extends Plugin {
 									break;
 								case "estimate":
 									{
-										const text = (
+										const context =
 											await this.textGenerator.contextManager.getContext(
 												editor,
 												true,
 												template.path
-											)
-										).context;
-										this.estimateTokens(text);
+											);
+										this.showTokens(
+											this.estimateTokens(context)
+										);
 									}
 									break;
 								default:

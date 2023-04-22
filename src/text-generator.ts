@@ -53,15 +53,17 @@ export default class TextGenerator {
 			);
 		}
 		this.plugin.startProcessing(additionnalParams?.showSpinner);
-		let reqParameters: any = this.reqFormatter.addContext(params, prompt);
-		reqParameters = this.reqFormatter.prepareReqParameters(
-			reqParameters,
+		const { reqParams } = this.reqFormatter.getRequestParameters(
+			{
+				...params,
+				prompt,
+			},
 			insertMetadata,
 			templatePath,
 			additionnalParams
 		);
 		try {
-			let result = await this.getGeneratedText(reqParameters);
+			let result = await this.getGeneratedText(reqParams);
 
 			// Remove leading/trailing newlines
 
@@ -83,14 +85,17 @@ export default class TextGenerator {
 	async gen(prompt, settings = {}) {
 		console.log("gen ", prompt, settings);
 		const params = { ...this.plugin.settings, ...settings };
-		let reqParameters: any = this.reqFormatter.addContext(params, prompt);
-		reqParameters = this.reqFormatter.prepareReqParameters(
-			reqParameters,
+		const { reqParams } = this.reqFormatter.getRequestParameters(
+			{
+				...params,
+				prompt,
+			},
 			false,
 			""
 		);
+
 		try {
-			const result = await this.getGeneratedText(reqParameters);
+			const result = await this.getGeneratedText(reqParams);
 
 			logger("gen results", {
 				result,
