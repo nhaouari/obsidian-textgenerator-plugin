@@ -45,8 +45,8 @@ interface Completition {
 
 export class AutoSuggest extends EditorSuggest<Completition> {
 	plugin: TextGeneratorPlugin;
-	process: boolean = true;
-	delay: number = 0;
+	process = true;
+	delay = 0;
 	getSuggestionsDebounced: any;
 	constructor(private app: App, plugin: TextGeneratorPlugin) {
 		logger("AutoSuggest", app, plugin);
@@ -76,26 +76,20 @@ export class AutoSuggest extends EditorSuggest<Completition> {
 					context: EditorSuggestContext
 				): Promise<Completition[]> => {
 					logger("updateSettings", { delay: this.delay, context });
-					try {
-						if (this.process) {
-							const suggestions = await this.getGPTSuggestions(
-								context
-							);
-							return suggestions?.length
-								? suggestions
-								: [
-										{
-											label: context.query,
-											value: context.query,
-										},
-								  ];
-						} else {
-							return [
-								{ label: context.query, value: context.query },
-							];
-						}
-					} catch (error) {
-						throw error;
+					if (this.process) {
+						const suggestions = await this.getGPTSuggestions(
+							context
+						);
+						return suggestions?.length
+							? suggestions
+							: [
+									{
+										label: context.query,
+										value: context.query,
+									},
+							  ];
+					} else {
+						return [{ label: context.query, value: context.query }];
 					}
 				},
 				this.delay
