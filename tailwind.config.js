@@ -1,6 +1,6 @@
 module.exports = {
 	content: {
-		content: ['./src/**/*.{js,jsx,ts,tsx,vue,css}']
+		content: ["./src/**/*.{js,jsx,ts,tsx,vue,css}"],
 	},
 	darkMode: false, // or 'media' or 'class'
 	theme: {
@@ -10,4 +10,4 @@ module.exports = {
 		extend: {},
 	},
 	plugins: [],
-}
+};
