@@ -38,12 +38,12 @@ function debounce<T extends unknown[], R>(
 	};
 }
 
-interface Completition {
+interface Completion {
 	label: string;
 	value: string;
 }
 
-export class AutoSuggest extends EditorSuggest<Completition> {
+export class AutoSuggest extends EditorSuggest<Completion> {
 	plugin: TextGeneratorPlugin;
 	process = true;
 	delay = 0;
@@ -74,7 +74,7 @@ export class AutoSuggest extends EditorSuggest<Completition> {
 			this.getSuggestionsDebounced = debounce(
 				async (
 					context: EditorSuggestContext
-				): Promise<Completition[]> => {
+				): Promise<Completion[]> => {
 					logger("updateSettings", { delay: this.delay, context });
 					if (this.process) {
 						const suggestions = await this.getGPTSuggestions(
@@ -144,7 +144,7 @@ export class AutoSuggest extends EditorSuggest<Completition> {
 
 	public getSuggestions(
 		context: EditorSuggestContext
-	): Promise<Completition[]> {
+	): Promise<Completion[]> {
 		logger("getSuggestions", context);
 		this.updateSettings();
 		return new Promise((resolve, reject) => {
@@ -159,7 +159,7 @@ export class AutoSuggest extends EditorSuggest<Completition> {
 		});
 	}
 
-	public renderSuggestion(value: Completition, el: HTMLElement): void {
+	public renderSuggestion(value: Completion, el: HTMLElement): void {
 		//logger("renderSuggestion",value,el);
 		el.setAttribute("dir", "auto");
 		el.setText(value.label);
@@ -172,7 +172,7 @@ export class AutoSuggest extends EditorSuggest<Completition> {
 	}
 
 	public selectSuggestion(
-		value: Completition,
+		value: Completion,
 		evt: MouseEvent | KeyboardEvent
 	): void {
 		logger("selectSuggestion", value, evt);
@@ -214,7 +214,7 @@ export class AutoSuggest extends EditorSuggest<Completition> {
 
 	private async getGPTSuggestions(
 		context: EditorSuggestContext
-	): Promise<Completition[]> {
+	): Promise<Completion[]> {
 		logger("getGPTSuggestions", context);
 		const result: string[] = [];
 		try {
