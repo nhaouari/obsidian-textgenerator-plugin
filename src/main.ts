@@ -33,6 +33,7 @@ import p50k_base from "@dqbd/tiktoken/encoders/p50k_base.json";
 
 const logger = debug("textgenerator:main");
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
+	endpoint: "https://api.openai.com",
 	api_key: "",
 	engine: "gpt-3.5-turbo",
 	max_tokens: 500,

@@ -10,6 +10,7 @@ type Context = {
 };
 
 type TextGeneratorSettings = {
+	endpoint: string;
 	api_key: string;
 	engine: string;
 	max_tokens: number;
