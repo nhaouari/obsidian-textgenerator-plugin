@@ -369,7 +369,7 @@ export default class TextGenerator {
 			const timeoutId = setTimeout(() => {
 				controller.abort();
 				reject(new Error("Timeout Reached"));
-			}, this.plugin.settings.timeout);
+			}, this.plugin.settings.requestTimeout);
 			const raw = params.body;
 			const requestOptions = {
 				method: params.method,

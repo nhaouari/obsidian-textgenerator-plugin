@@ -254,9 +254,9 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 			.addText((text) =>
 				text
 					.setPlaceholder("Timeout")
-					.setValue(this.plugin.settings.timeout.toString())
+					.setValue(this.plugin.settings.requestTimeout.toString())
 					.onChange(async (value) => {
-						this.plugin.settings.timeout = parseInt(value);
+						this.plugin.settings.requestTimeout = parseInt(value);
 						await this.plugin.saveSettings();
 					})
 			);

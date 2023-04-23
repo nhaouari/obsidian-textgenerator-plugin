@@ -53,7 +53,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		includeHighlights: true,
 		includeExtractions: false,
 	},
-	timeout: 30000,
+	requestTimeout: 300000,
 	options: {
 		"generate-text": true,
 		"generate-text-with-metadata": true,

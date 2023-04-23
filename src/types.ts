@@ -22,7 +22,7 @@ type TextGeneratorSettings = {
 	outputToBlockQuote: boolean;
 	models: any;
 	context: Context;
-	timeout: number;
+	requestTimeout: number;
 	prefix: string;
 	options: {
 		"generate-text": boolean;
