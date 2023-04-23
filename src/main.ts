@@ -24,6 +24,7 @@ import Handlebars from "handlebars";
 import PrettyError from "pretty-error";
 import ansiToHtml from "ansi-to-html";
 import { AutoSuggest } from "./auto-suggest";
+import { ModelSuggest } from "./modal-suggest";
 import debug from "debug";
 import { init, Tiktoken } from "@dqbd/tiktoken/lite/init";
 import wasm from "../node_modules/@dqbd/tiktoken/tiktoken_bg.wasm";
@@ -929,6 +930,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
 		await this.packageManager.load();
 		this.registerEditorSuggest(new AutoSuggest(this.app, this));
+		this.registerEditorSuggest(new ModelSuggest(this.app, this));
 	}
 
 	async loadSettings() {
