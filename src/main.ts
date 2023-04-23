@@ -71,6 +71,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		"generated-text-to-clipboard-From-template": false,
 		"calculate-tokens": true,
 		"calculate-tokens-for-template": true,
+		"modal-suggest": false,
 	},
 	autoSuggestOptions: {
 		isEnabled: false,
@@ -123,12 +124,15 @@ export default class TextGeneratorPlugin extends Plugin {
 				this.textGeneratorIconItem.append(getIcon("bot"));
 				this.textGeneratorIconItem.title = "Text Generator";
 				this.textGeneratorIconItem.addClass("mod-clickable");
-				this.textGeneratorIconItem.addEventListener("click", () => {
-					this.app.setting.open();
-					this.app.setting
-						.openTabById("obsidian-textgenerator-plugin")
-						.display();
-				});
+				this.textGeneratorIconItem.addEventListener(
+					"click",
+					async () => {
+						await this.app.setting.open();
+						await this.app.setting
+							.openTabById("obsidian-textgenerator-plugin")
+							.display();
+					}
+				);
 
 				if (this.notice) {
 					this.notice.hide();
@@ -446,10 +450,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		this.statusBarItemEl = this.addStatusBarItem();
 
 		this.updateStatusBar(``);
-		if (
-			this.settings.options["auto-suggest"] &&
-			this.settings.autoSuggestOptions.showStatus
-		) {
+		if (this.settings.autoSuggestOptions.showStatus) {
 			this.AddAutoSuggestStatusBar();
 		}
 
@@ -930,7 +931,9 @@ export default class TextGeneratorPlugin extends Plugin {
 
 		await this.packageManager.load();
 		this.registerEditorSuggest(new AutoSuggest(this.app, this));
-		this.registerEditorSuggest(new ModelSuggest(this.app, this));
+		if (this.settings.options["modal-suggest"]) {
+			this.registerEditorSuggest(new ModelSuggest(this.app, this));
+		}
 	}
 
 	async loadSettings() {

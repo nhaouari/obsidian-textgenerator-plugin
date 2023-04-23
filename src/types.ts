@@ -40,6 +40,7 @@ type TextGeneratorSettings = {
 		"generated-text-to-clipboard-From-template": boolean;
 		"calculate-tokens": boolean;
 		"calculate-tokens-for-template": boolean;
+		"modal-suggest": boolean;
 	};
 	autoSuggestOptions: {
 		isEnabled: boolean;
