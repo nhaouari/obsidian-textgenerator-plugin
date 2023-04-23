@@ -694,7 +694,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
 			{
 				id: "show-modal-From-template",
-				name: "Show model From Template",
+				name: "Show modal From Template",
 				icon: "layout",
 				//hotkeys: [{ modifiers: ["Alt"], key: "4"}],
 				editorCallback: async (editor: Editor) => {
@@ -703,7 +703,7 @@ export default class TextGeneratorPlugin extends Plugin {
 							this.app,
 							this,
 							async (result) => {
-								await this.textGenerator.tempalteToModel(
+								await this.textGenerator.tempalteToModal(
 									this.settings,
 									result.path,
 									editor
@@ -1012,8 +1012,8 @@ export default class TextGeneratorPlugin extends Plugin {
 										false
 									);
 									break;
-								case "model":
-									await this.textGenerator.tempalteToModel(
+								case "modal":
+									await this.textGenerator.tempalteToModal(
 										this.settings,
 										template.path,
 										editor
