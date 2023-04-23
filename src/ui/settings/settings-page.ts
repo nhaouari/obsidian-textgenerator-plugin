@@ -61,8 +61,22 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 				cls: "linkMoreInfo",
 			})
 		);
-		let inputEl;
 
+		new Setting(containerEl)
+			.setName("Endpoint")
+			.setDesc("You can define openai api endpoint.")
+			.addText((text) =>
+				text
+					.setPlaceholder("Enter your API endpoint")
+					.setValue(this.plugin.settings.endpoint)
+					.onChange(async (value) => {
+						this.plugin.settings.endpoint = value;
+						await this.plugin.saveSettings();
+					})
+					.inputEl.setAttribute("type", "text")
+			);
+
+		let inputEl;
 		const apikeuEl = new Setting(containerEl)
 			.setName("API Key")
 			.setDesc(
@@ -142,7 +156,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 					.onClick(async () => {
 						if (this.plugin.settings.api_key.length > 0) {
 							let reqParams = {
-								url: `https://api.openai.com/v1/models`,
+								url: `${this.plugin.settings.endpoint}/v1/models`,
 								method: "GET",
 								body: "",
 								headers: {
