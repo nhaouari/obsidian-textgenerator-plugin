@@ -1,4 +1,4 @@
-import { TemplateModelUI } from "./ui/template-model-ui";
+import { TemplateModalUI } from "./ui/template-modal-ui";
 import { App, Notice, Editor, RequestUrlParam } from "obsidian";
 import { TextGeneratorSettings } from "./types";
 import TextGeneratorPlugin from "./main";
@@ -489,7 +489,7 @@ export default class TextGenerator {
 				?.map((e) => e.replace("{{", "").replace("}}", "")) || [];
 		// console.log(variables);
 		const metadata = this.getMetadata(templatePath);
-		new TemplateModelUI(
+		new TemplateModalUI(
 			this.app,
 			this.plugin,
 			variables,

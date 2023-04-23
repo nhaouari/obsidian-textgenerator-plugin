@@ -1,10 +1,10 @@
 import { App, Modal } from "obsidian";
 import TextGeneratorPlugin from "src/main";
 import * as React from "react";
-import { TemplateModelView } from "./template-model-view";
+import { TemplateModalView } from "./template-modal-view";
 import { createRoot } from "react-dom/client";
 
-export class TemplateModelUI extends Modal {
+export class TemplateModalUI extends Modal {
 	result: string;
 	plugin: TextGeneratorPlugin;
 	onSubmit: (result: string) => void;
@@ -31,13 +31,12 @@ export class TemplateModelUI extends Modal {
 		this.root = createRoot(this.containerEl.children[1]);
 		this.root.render(
 			<React.StrictMode>
-				<TemplateModelView
+				<TemplateModalView
 					p={this}
 					labels={this.variables}
 					onSubmit={this.onSubmit}
 					metadata={this.metadata}
 				/>
-				,
 			</React.StrictMode>
 		);
 	}
