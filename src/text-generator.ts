@@ -480,20 +480,26 @@ export default class TextGenerator {
 			return Promise.reject(errortemplateContent);
 		}
 
-		templateContent = removeYAML(templateContent);
-
+		const { inputContent } =
+			this.contextManager.splitTemplate(templateContent);
 		// console.log(templateContent);
 		const variables =
-			templateContent
-				.match(/\{\{(.*?)\}\}/gi)
-				?.map((e) => e.replace("{{", "").replace("}}", "")) || [];
+			inputContent
+				.match(/\{\{\{?(.*?)\}\}\}?/gs)
+				?.map((e) => e.match(/\{\{\{?(.*?)\}\}\}?/s)[1]) || [];
+
 		// console.log(variables);
 		const metadata = this.getMetadata(templatePath);
+		const tempateContext = await this.contextManager.getTemplateContext(
+			editor,
+			templatePath
+		);
 		new TemplateModalUI(
 			this.app,
 			this.plugin,
 			variables,
 			metadata,
+			tempateContext,
 			async (results: any) => {
 				const cursor = this.getCursor(editor);
 
@@ -509,14 +515,9 @@ export default class TextGenerator {
 					logger("tempalteToModal error", errorContext);
 					return Promise.reject(errorContext);
 				}
-				const contextAsString = context.context;
+
 				const [errortext, text] = await safeAwait(
-					this.generate(
-						{ context: contextAsString },
-						true,
-						params,
-						templatePath
-					)
+					this.generate(context, true, params, templatePath)
 				);
 				if (errortext) {
 					logger("tempalteToModal error", errortext);
@@ -526,7 +527,7 @@ export default class TextGenerator {
 				if (activeFile === false) {
 					const title =
 						this.app.workspace.activeLeaf.getDisplayText();
-					let suggestedPath =
+					const suggestedPath =
 						"textgenerator/generations/" +
 						title +
 						"-" +
@@ -539,7 +540,7 @@ export default class TextGenerator {
 							const [errorFile, file] = await safeAwait(
 								createFileWithInput(
 									path,
-									contextAsString + text,
+									context.context + text,
 									this.app
 								)
 							);

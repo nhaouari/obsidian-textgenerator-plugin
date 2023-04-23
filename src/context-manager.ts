@@ -176,20 +176,22 @@ export default class ContextManager {
 		logger("splitTemplate", templateContent);
 		templateContent = removeYAML(templateContent);
 
-		let inputTemplate, outputTemplate;
+		let inputTemplate, outputTemplate, inputContent, outputContent;
 		if (templateContent.includes("***")) {
 			const splitContent = templateContent.split("***");
-			const inputContent = splitContent[0];
-			const outputContent = splitContent[1];
+			inputContent = splitContent[0];
+			outputContent = splitContent[1];
 
 			inputTemplate = Handlebars.compile(inputContent);
 			outputTemplate = Handlebars.compile(outputContent);
 		} else {
 			const template = Handlebars.compile(templateContent);
+			inputContent = templateContent;
+			outputContent = "";
 			inputTemplate = template;
 			outputTemplate = null;
 		}
-		return { inputTemplate, outputTemplate };
+		return { inputContent, outputContent, inputTemplate, outputTemplate };
 	}
 	async templateFromPath(templatePath: string, options: any) {
 		logger("templateFromPath", templatePath, options);

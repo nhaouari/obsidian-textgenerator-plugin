@@ -11,12 +11,13 @@ export class TemplateModalUI extends Modal {
 	root: any;
 	variables: string[];
 	metadata: any;
-
+	templateContext: any;
 	constructor(
 		app: App,
 		plugin: TextGeneratorPlugin,
 		variables: string[],
 		metadata: any,
+		templateContext: any,
 		onSubmit: (result: string) => void
 	) {
 		super(app);
@@ -24,6 +25,7 @@ export class TemplateModalUI extends Modal {
 		this.onSubmit = onSubmit;
 		this.variables = variables;
 		this.metadata = metadata;
+		this.templateContext=templateContext;
 	}
 
 	async onOpen() {
@@ -34,6 +36,7 @@ export class TemplateModalUI extends Modal {
 				<TemplateModalView
 					p={this}
 					labels={this.variables}
+					templateContext={this.templateContext}
 					onSubmit={this.onSubmit}
 					metadata={this.metadata}
 				/>

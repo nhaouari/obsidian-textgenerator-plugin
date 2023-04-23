@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 
-export const TemplateModalView = ({ p, labels, onSubmit, metadata }) => {
-	const [formValues, setFormValues] = useState([]);
+export const TemplateModalView = ({ p, labels,templateContext, onSubmit, metadata }) => {
+	const [formValues, setFormValues] = useState(() => {
+		const initialValues = labels.map(label => templateContext[label] || '');
+		return initialValues;
+	});
 	const [meta, setMeta] = useState(metadata);
 
 	const getFormData = () => {
@@ -28,6 +31,7 @@ export const TemplateModalView = ({ p, labels, onSubmit, metadata }) => {
 
 	useEffect(() => {
 		firstTextareaRef.current.focus();
+
 	}, []);
 
 	return (
