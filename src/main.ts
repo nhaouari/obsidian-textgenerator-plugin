@@ -493,7 +493,7 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 		);
 
-		const ribbonIconEl3 = this.addRibbonIcon(
+		/*const ribbonIconEl3 = this.addRibbonIcon(
 			"square",
 			"Download webpage as markdown",
 			async (evt: MouseEvent) => {
@@ -505,7 +505,7 @@ export default class TextGeneratorPlugin extends Plugin {
 					console.log(text);
 				});
 			}
-		);
+		);*/
 
 		this.commands = [
 			{
