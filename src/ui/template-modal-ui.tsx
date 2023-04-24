@@ -25,7 +25,7 @@ export class TemplateModalUI extends Modal {
 		this.onSubmit = onSubmit;
 		this.variables = variables;
 		this.metadata = metadata;
-		this.templateContext=templateContext;
+		this.templateContext = templateContext;
 	}
 
 	async onOpen() {

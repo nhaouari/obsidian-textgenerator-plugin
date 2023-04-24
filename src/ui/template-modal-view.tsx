@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from "react";
 
-export const TemplateModalView = ({ p, labels,templateContext, onSubmit, metadata }) => {
+export const TemplateModalView = ({
+	p,
+	labels,
+	templateContext,
+	onSubmit,
+	metadata,
+}) => {
 	const [formValues, setFormValues] = useState(() => {
-		const initialValues = labels.map(label => templateContext[label] || '');
+		const initialValues = labels.map(
+			(label) => templateContext[label] || ""
+		);
 		return initialValues;
 	});
 	const [meta, setMeta] = useState(metadata);
@@ -31,7 +39,6 @@ export const TemplateModalView = ({ p, labels,templateContext, onSubmit, metadat
 
 	useEffect(() => {
 		firstTextareaRef.current.focus();
-
 	}, []);
 
 	return (
