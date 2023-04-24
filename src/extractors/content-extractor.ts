@@ -6,6 +6,8 @@ import AudioExtractor from "./audio-extractor";
 import { Extractor } from "./extractor";
 import TextGeneratorPlugin from "../main";
 import debug from "debug";
+import ImageExtractor from "./image-extractor";
+import ImageExtractorEmbded from "./image-extractor-embded";
 const logger = debug("textgenerator:Extractor");
 
 // Add the new Extractor here
@@ -14,6 +16,8 @@ enum ExtractorMethod {
 	WebPageExtractor,
 	YoutubeExtractor,
 	AudioExtractor,
+	ImageExtractor,
+	ImageExtractorEmbded,
 }
 
 class ContentExtractor {
@@ -52,6 +56,10 @@ class ContentExtractor {
 				return new YoutubeExtractor(this.app, this.plugin);
 			case ExtractorMethod.AudioExtractor:
 				return new AudioExtractor(this.app, this.plugin);
+			case ExtractorMethod.ImageExtractor:
+				return new ImageExtractor(this.app, this.plugin);
+			case ExtractorMethod.ImageExtractorEmbded:
+				return new ImageExtractorEmbded(this.app, this.plugin);
 			default:
 				throw new Error(`Unknown Extractor: ${extractorName}`);
 		}

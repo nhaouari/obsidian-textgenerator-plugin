@@ -1,4 +1,5 @@
 import { TextExtractorTool } from "./ui/text-extractor-tool";
+import Tesseract from "tesseract.js";
 import {
 	addIcon,
 	Notice,
@@ -492,14 +493,20 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 		);
 
-		/*const ribbonIconEl3 = this.addRibbonIcon(
+		const ribbonIconEl3 = this.addRibbonIcon(
 			"square",
 			"Download webpage as markdown",
 			async (evt: MouseEvent) => {
-				new ExtractionsTool(this.app, this).open();
+				Tesseract.recognize(
+					"https://tesseract.projectnaptha.com/img/eng_bw.png",
+					"eng",
+					{ logger: (m) => console.log(m) }
+				).then(({ data: { text } }) => {
+					console.log(text);
+				});
 			}
 		);
-*/
+
 		this.commands = [
 			{
 				id: "generate-text",
