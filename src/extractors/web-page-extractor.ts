@@ -65,13 +65,16 @@ export default class WebPageExtractor implements Extractor<string> {
 
 	private extractUrls(text: string): string[] {
 		const urlRegex =
-			/(https?:\/\/(?!.*\.(?:mp3|mp4|mov|avi|pdf|png|jpe?g|gif))[^\s]+)/g;
+			/(https?:\/\/(?!.*\.(?:mp3|mp4|mov|avi|pdf|png|jpe?g|gif))[^\s)\]]+)/g;
 		const youtubeRegex =
-			/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[^\s]+/g;
+			/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[^\s)\]]+/g;
 		const matches = text.match(urlRegex);
 		if (!matches) {
 			return [];
 		}
-		return matches.filter((url) => !youtubeRegex.test(url));
+		const uniqueUrls = new Set(
+			matches.filter((url) => !youtubeRegex.test(url))
+		);
+		return [...uniqueUrls];
 	}
 }
