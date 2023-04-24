@@ -103,7 +103,7 @@ export default class ContextManager {
 		);
 	}
 
-	async getTemplateContext(editor: Editor, templatePath: string = "") {
+	async getTemplateContext(editor: Editor, templatePath = "", content = "") {
 		logger("getTemplateContext", editor, templatePath);
 		const contextOptions: Context = this.plugin.settings.context;
 		const title = this.getActiveFileTitle();
@@ -117,11 +117,16 @@ export default class ContextManager {
 		let blocks: any = {};
 		blocks["frontmatter"] = {};
 		blocks["headings"] = {};
-		const templateFile = await this.app.vault.getAbstractFileByPath(
-			templatePath
-		);
-		const templateContent = await this.app.vault.read(templateFile);
+		let templateContent = content;
+		if (templatePath.length > 0) {
+			const templateFile = await this.app.vault.getAbstractFileByPath(
+				templatePath
+			);
+			templateContent = await this.app.vault.read(templateFile);
+		}
+
 		const variables = this.extractVariablesFromTemplate(templateContent);
+
 		logger("getTemplateContext Variables ", { variables });
 		if (contextOptions.includeFrontmatter)
 			blocks["frontmatter"] = {

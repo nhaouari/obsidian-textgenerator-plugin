@@ -894,19 +894,17 @@ export default class TextGeneratorPlugin extends Plugin {
 		) => {
 			setTimeout(async () => {
 				try {
-					const { inputTemplate, outputTemplate } =
+					const { inputTemplate, outputTemplate, inputContent } =
 						this.textGenerator.contextManager.splitTemplate(source);
 
-					Handlebars.compile(source, {
-						noEscape: true,
-						strict: true,
-					});
 					const markdown = inputTemplate({
 						...(await this.textGenerator.contextManager.getTemplateContext(
-							this.getActiveView().editor
+							this.getActiveView().editor,
+							"",
+							inputContent
 						)),
-						output: "{{output}}",
 					});
+
 					await MarkdownRenderer.renderMarkdown(
 						markdown,
 						container,
