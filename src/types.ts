@@ -42,6 +42,7 @@ type TextGeneratorSettings = {
 		"calculate-tokens": boolean;
 		"calculate-tokens-for-template": boolean;
 		"modal-suggest": boolean;
+		"text-extractor-tool": boolean;
 	};
 	autoSuggestOptions: {
 		isEnabled: boolean;

@@ -1,3 +1,4 @@
+import { TextExtractorTool } from "./ui/text-extractor-tool";
 import {
 	addIcon,
 	Notice,
@@ -73,6 +74,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		"calculate-tokens": true,
 		"calculate-tokens-for-template": true,
 		"modal-suggest": false,
+		"text-extractor-tool": false,
 	},
 	autoSuggestOptions: {
 		isEnabled: false,
@@ -490,41 +492,14 @@ export default class TextGeneratorPlugin extends Plugin {
 			}
 		);
 
-		/*
-		const ribbonIconEl3 = this.addRibbonIcon(
+		/*const ribbonIconEl3 = this.addRibbonIcon(
 			"square",
 			"Download webpage as markdown",
 			async (evt: MouseEvent) => {
-			const contentExtractor = new ContentExtractor(this.app);
-				contentExtractor.setExtractor(ExtractorMethod.WebPageExtractor);
-				const urls = await contentExtractor.extract("");
-				console.log(await contentExtractor.convert(urls[0]));
-				
-				let extractedContent: any = {};
-				const contentExtractor = new ContentExtractor(this.app, this);
-				for (let key in ExtractorMethod) {
-					if (!isNaN(parseInt(key))) {
-						contentExtractor.setExtractor(parseInt(key));
-						const links = await contentExtractor.extract(
-							this.app.workspace.getActiveFile().path
-						);
-						extractedContent[ExtractorMethod[key]] = "";
-						if (links.length > 0) {
-							extractedContent[ExtractorMethod[key]] =
-								await Promise.all(
-									links.map((link) =>
-										contentExtractor.convert(link)
-									)
-								);
-						}
-					}
-				}
-				console.log(extractedContent);
-				
+				new ExtractionsTool(this.app, this).open();
 			}
-				
-		);*/
-
+		);
+*/
 		this.commands = [
 			{
 				id: "generate-text",
@@ -885,6 +860,18 @@ export default class TextGeneratorPlugin extends Plugin {
 							},
 							"Choose a template"
 						).open();
+					} catch (error) {
+						this.handelError(error);
+					}
+				},
+			},
+			{
+				id: "text-extractor-tool",
+				name: "Text Extractor Tool",
+				icon: "layout",
+				editorCallback: async (editor: Editor) => {
+					try {
+						new TextExtractorTool(this.app, this).open();
 					} catch (error) {
 						this.handelError(error);
 					}
