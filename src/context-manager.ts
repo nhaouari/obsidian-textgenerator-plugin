@@ -78,6 +78,31 @@ export default class ContextManager {
 		}
 	}
 
+	extractVariablesFromTemplate(templateContent: string): string[] {
+		// source : https://stackoverflow.com/a/64746774
+		const ast: hbs.AST.Program =
+			Handlebars.parseWithoutProcessing(templateContent);
+		const handlebarsVariables = ast.body
+			.filter(
+				({ type }: hbs.AST.Statement) => type === "MustacheStatement"
+			)
+			.map((statement: hbs.AST.Statement) => {
+				const moustacheStatement: hbs.AST.MustacheStatement =
+					statement as hbs.AST.MustacheStatement;
+				const paramsExpressionList =
+					moustacheStatement.params as hbs.AST.PathExpression[];
+				const pathExpression =
+					moustacheStatement.path as hbs.AST.PathExpression;
+
+				return (
+					paramsExpressionList[0]?.original || pathExpression.original
+				);
+			});
+		return handlebarsVariables.filter(
+			(value, index) => handlebarsVariables.indexOf(value) === index
+		);
+	}
+
 	async getTemplateContext(editor: Editor, templatePath: string = "") {
 		logger("getTemplateContext", editor, templatePath);
 		const contextOptions: Context = this.plugin.settings.context;
@@ -92,7 +117,12 @@ export default class ContextManager {
 		let blocks: any = {};
 		blocks["frontmatter"] = {};
 		blocks["headings"] = {};
-
+		const templateFile = await this.app.vault.getAbstractFileByPath(
+			templatePath
+		);
+		const templateContent = await this.app.vault.read(templateFile);
+		const variables = this.extractVariablesFromTemplate(templateContent);
+		logger("getTemplateContext Variables ", { variables });
 		if (contextOptions.includeFrontmatter)
 			blocks["frontmatter"] = {
 				...this.getFrontmatter(this.getMetaData(templatePath)),
@@ -102,18 +132,27 @@ export default class ContextManager {
 		if (contextOptions.includeHeadings)
 			blocks["headings"] = await this.getHeadingContent(activeDocCache);
 
-		if (contextOptions.includeChildren)
+		if (
+			contextOptions.includeChildren &&
+			this.templateContains(variables, "children")
+		)
 			blocks["children"] = await this.getChildrenContent(activeDocCache);
 
 		if (contextOptions.includeHighlights)
 			blocks["highlights"] = await this.getHighlights(editor);
 
-		if (contextOptions.includeMentions)
+		if (
+			contextOptions.includeMentions &&
+			this.templateContains(variables, "mentions")
+		)
 			blocks["mentions"] = await this.getMentions(
 				this.app.workspace.activeLeaf.getDisplayText()
 			);
 
-		if (contextOptions.includeExtractions)
+		if (
+			contextOptions.includeExtractions &&
+			this.templateContains(variables, "extractions")
+		)
 			blocks["extractions"] = await this.getExtractions();
 
 		const options = {
@@ -128,6 +167,10 @@ export default class ContextManager {
 
 		logger("getTemplateContext Context Variables ", { ...options });
 		return options;
+	}
+
+	templateContains(variables, searchVariable) {
+		return variables.some((variable) => variable.includes(searchVariable));
 	}
 
 	async getDefaultContext(editor: Editor) {

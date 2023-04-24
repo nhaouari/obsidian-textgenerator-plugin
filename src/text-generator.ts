@@ -482,13 +482,10 @@ export default class TextGenerator {
 
 		const { inputContent } =
 			this.contextManager.splitTemplate(templateContent);
-		// console.log(templateContent);
-		const variables =
-			inputContent
-				.match(/\{\{\{?(.*?)\}\}\}?/gs)
-				?.map((e) => e.match(/\{\{\{?(.*?)\}\}\}?/s)[1]) || [];
 
-		// console.log(variables);
+		const variables =
+			this.contextManager.extractVariablesFromTemplate(inputContent);
+
 		const metadata = this.getMetadata(templatePath);
 		const tempateContext = await this.contextManager.getTemplateContext(
 			editor,
