@@ -34,11 +34,14 @@ export default class YoutubeExtractor implements Extractor<string> {
 	}
 
 	private extractUrls(text: string): string[] {
-		const urlRegex = /(https?:\/\/www\.youtube\.com\/watch\?v=[^\s]+)/g;
+		const urlRegex =
+			/(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[^\s)\]]+)/g;
 		const matches = text.match(urlRegex);
 		if (!matches) {
 			return [];
 		}
-		return matches;
+
+		const uniqueUrls = new Set(matches);
+		return [...uniqueUrls];
 	}
 }
