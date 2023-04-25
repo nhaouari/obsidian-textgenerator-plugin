@@ -97,7 +97,10 @@ export class ExampleModal extends FuzzySuggestModal<PromptTemplate> {
 	renderSuggestion(template: FuzzyMatch<PromptTemplate>, el: HTMLElement) {
 		logger("renderSuggestion", template);
 		el.createEl("div", { text: template.item.name });
-		el.createEl("small", { text: template.item.description, cls: "desc" });
+		el.createEl("small", {
+			text: template.item.description?.substring(0, 150),
+			cls: "desc",
+		});
 		el.createEl("div", {});
 		el.createEl("small", { text: template.item.path, cls: "path" });
 		logger("renderSuggestion end", template);
