@@ -244,10 +244,15 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 				additionalParams
 			);
 			let suggestions = [];
-			if (
-				this.plugin.settings.engine === "gpt-3.5-turbo" ||
-				this.plugin.settings.engine === "gpt-3.5-turbo-0301"
-			) {
+			const chatModels = [
+				"gpt-3.5-turbo",
+				"gpt-3.5-turbo-0301",
+				"gpt-4",
+				"gpt-4-0314",
+				"gpt-4-32k",
+				"gpt-4-32k-0314",
+			];
+			if (chatModels.includes(this.plugin.settings.engine)) {
 				suggestions = re.map((r) => r.message.content);
 			} else {
 				suggestions = re.map((r) => r.text);
