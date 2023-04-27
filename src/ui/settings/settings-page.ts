@@ -534,6 +534,51 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 					})
 			);
 
+		new Setting(containerEl)
+			.setName("Image Extractor")
+			.setDesc("Enable or disable Image Extractor from URLs.")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(
+						this.plugin.settings.extractorsOptions.ImageExtractor
+					)
+					.onChange(async (value) => {
+						this.plugin.settings.extractorsOptions.ImageExtractor =
+							value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Embedded Image Extractor")
+			.setDesc("Enable or disable Embedded Image Extractor.")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(
+						this.plugin.settings.extractorsOptions
+							.ImageExtractorEmbded
+					)
+					.onChange(async (value) => {
+						this.plugin.settings.extractorsOptions.ImageExtractorEmbded =
+							value;
+						await this.plugin.saveSettings();
+					})
+			);
+		new Setting(containerEl)
+			.setName("Youtube Extractor")
+			.setDesc("Enable or disable Youtube extractor.")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(
+						this.plugin.settings.extractorsOptions.YoutubeExtractor
+					)
+					.onChange(async (value) => {
+						this.plugin.settings.extractorsOptions.YoutubeExtractor =
+							value;
+						await this.plugin.saveSettings();
+					})
+			);
+
 		containerEl.createEl("H3", {
 			text: "Auto-Suggest Options",
 		});

@@ -92,6 +92,8 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		WebPageExtractor: true,
 		YoutubeExtractor: true,
 		AudioExtractor: false,
+		ImageExtractorEmbded: true,
+		ImageExtractor: true,
 	},
 	displayErrorInEditor: false,
 };

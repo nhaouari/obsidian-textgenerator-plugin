@@ -59,6 +59,8 @@ type TextGeneratorSettings = {
 		WebPageExtractor: boolean;
 		YoutubeExtractor: boolean;
 		AudioExtractor: boolean;
+		ImageExtractorEmbded: boolean;
+		ImageExtractor: boolean;
 	};
 };
 

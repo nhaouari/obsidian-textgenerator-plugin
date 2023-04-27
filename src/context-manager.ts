@@ -79,28 +79,49 @@ export default class ContextManager {
 	}
 
 	extractVariablesFromTemplate(templateContent: string): string[] {
-		// source : https://stackoverflow.com/a/64746774
 		const ast: hbs.AST.Program =
 			Handlebars.parseWithoutProcessing(templateContent);
-		const handlebarsVariables = ast.body
-			.filter(
-				({ type }: hbs.AST.Statement) => type === "MustacheStatement"
-			)
-			.map((statement: hbs.AST.Statement) => {
-				const moustacheStatement: hbs.AST.MustacheStatement =
-					statement as hbs.AST.MustacheStatement;
-				const paramsExpressionList =
-					moustacheStatement.params as hbs.AST.PathExpression[];
-				const pathExpression =
-					moustacheStatement.path as hbs.AST.PathExpression;
 
-				return (
-					paramsExpressionList[0]?.original || pathExpression.original
-				);
-			});
-		return handlebarsVariables.filter(
-			(value, index) => handlebarsVariables.indexOf(value) === index
-		);
+		const extractVariablesFromBody = (
+			body: hbs.AST.Statement[],
+			eachContext: string | null = null
+		): string[] => {
+			return body
+				.flatMap((statement: hbs.AST.Statement) => {
+					if (statement.type === "MustacheStatement") {
+						const moustacheStatement: hbs.AST.MustacheStatement =
+							statement as hbs.AST.MustacheStatement;
+						const paramsExpressionList =
+							moustacheStatement.params as hbs.AST.PathExpression[];
+						const pathExpression =
+							moustacheStatement.path as hbs.AST.PathExpression;
+						const fullPath = eachContext
+							? `${eachContext}.${pathExpression.original}`
+							: pathExpression.original;
+
+						return paramsExpressionList[0]?.original || fullPath;
+					} else if (
+						statement.type === "BlockStatement" &&
+						statement.path.original === "each"
+					) {
+						const blockStatement: hbs.AST.BlockStatement =
+							statement as hbs.AST.BlockStatement;
+						const eachVariable = blockStatement.path.original;
+						const eachContext = blockStatement.params[0]?.original;
+
+						return extractVariablesFromBody(
+							blockStatement.program.body,
+							eachContext
+						);
+					} else {
+						return [];
+					}
+				})
+				.filter((value, index, self) => self.indexOf(value) === index);
+		};
+
+		const handlebarsVariables = extractVariablesFromBody(ast.body);
+		return handlebarsVariables;
 	}
 
 	async getTemplateContext(editor: Editor, templatePath = "", content = "") {
@@ -153,7 +174,6 @@ export default class ContextManager {
 			blocks["mentions"] = await this.getMentions(
 				this.app.workspace.activeLeaf.getDisplayText()
 			);
-
 		if (
 			contextOptions.includeExtractions &&
 			this.templateContains(variables, "extractions")
@@ -463,7 +483,6 @@ export default class ContextManager {
 				);
 			}
 		}
-
 		return extractedContent;
 	}
 

@@ -638,8 +638,9 @@ export default class TextGenerator {
 		const { inputContent } =
 			this.contextManager.splitTemplate(templateContent);
 
-		const variables =
-			this.contextManager.extractVariablesFromTemplate(inputContent);
+		const variables = this.contextManager
+			.extractVariablesFromTemplate(inputContent)
+			.filter((variable) => !variable.includes("."));
 
 		const metadata = this.getMetadata(templatePath);
 		const tempateContext = await this.contextManager.getTemplateContext(
