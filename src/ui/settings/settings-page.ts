@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting, request } from "obsidian";
+import { App, PluginSettingTab, Setting, request, Notice } from "obsidian";
 import TextGeneratorPlugin from "scr/main";
 import packageJson from "package.json";
 export default class TextGeneratorSettingTab extends PluginSettingTab {
@@ -27,6 +27,11 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 		}
 	}
 
+	async reloadPlugin() {
+		await this.app.plugins.disablePlugin("obsidian-textgenerator-plugin");
+		await this.app.plugins.enablePlugin("obsidian-textgenerator-plugin");
+		this.app.setting.openTabById("obsidian-textgenerator-plugin").display();
+	}
 	display(): void {
 		const { containerEl } = this;
 
@@ -198,6 +203,17 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.displayErrorInEditor = value;
 						await this.plugin.saveSettings();
+					})
+			);
+		new Setting(containerEl)
+			.setName("")
+			.setDesc("Reload the plugin")
+			.addButton((btn) =>
+				btn
+					.setButtonText("Reload the plugin")
+					.setCta()
+					.onClick(async () => {
+						await this.reloadPlugin();
 					})
 			);
 
@@ -607,29 +623,8 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 
 		containerEl.createEl("H3", {
 			text: "Options",
+			cls: "tg-opts",
 		});
-
-		new Setting(containerEl)
-			.setName("")
-			.setDesc(
-				"You need to reload the plugin to apply the changes in the options."
-			)
-			.addButton((btn) =>
-				btn
-					.setButtonText("Reload the plugin")
-					.setCta()
-					.onClick(async () => {
-						await this.app.plugins.disablePlugin(
-							"obsidian-textgenerator-plugin"
-						);
-						await this.app.plugins.enablePlugin(
-							"obsidian-textgenerator-plugin"
-						);
-						this.app.setting
-							.openTabById("obsidian-textgenerator-plugin")
-							.display();
-					})
-			);
 
 		const opts = {
 			...this.plugin.defaultSettings.options,
@@ -651,6 +646,13 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 						.onChange(async (value) => {
 							this.plugin.settings.options[key] = value;
 							await this.plugin.saveSettings();
+							if (this.plugin.settings.options[key]) {
+								new Notice(`${key} is enabled.`);
+							} else {
+								new Notice(`${key} is disabled.`);
+							}
+							await this.reloadPlugin();
+							document.querySelector(".tg-opts").scrollIntoView();
 						})
 				);
 		}
