@@ -304,6 +304,20 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+		new Setting(containerEl)
+			.setName("Streaming")
+			.setDesc(
+				"Enable streaming for commands Generate Text and Generate Text(with metadata)"
+			)
+			.addToggle((v) =>
+				v
+					.setValue(this.plugin.settings.stream)
+					.onChange(async (value) => {
+						this.plugin.settings.stream = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
 		containerEl.createEl("H1", {
 			text: "Text Generator",
 		});

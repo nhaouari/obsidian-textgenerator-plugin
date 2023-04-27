@@ -25,6 +25,7 @@ type TextGeneratorSettings = {
 	context: Context;
 	requestTimeout: number;
 	prefix: string;
+	stream: boolean;
 	options: {
 		"generate-text": boolean;
 		"generate-text-with-metadata": boolean;
@@ -43,6 +44,7 @@ type TextGeneratorSettings = {
 		"calculate-tokens-for-template": boolean;
 		"modal-suggest": boolean;
 		"text-extractor-tool": boolean;
+		"stop-stream": boolean;
 	};
 	autoSuggestOptions: {
 		isEnabled: boolean;

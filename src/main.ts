@@ -47,6 +47,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 	outputToBlockQuote: false,
 	promptsPath: "textgenerator/prompts",
 	prefix: "\n\n",
+	stream: false,
 	context: {
 		includeTitle: false,
 		includeStaredBlocks: true,
@@ -76,6 +77,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		"calculate-tokens-for-template": true,
 		"modal-suggest": false,
 		"text-extractor-tool": false,
+		"stop-stream": true,
 	},
 	autoSuggestOptions: {
 		isEnabled: false,
@@ -881,6 +883,17 @@ export default class TextGeneratorPlugin extends Plugin {
 						new TextExtractorTool(this.app, this).open();
 					} catch (error) {
 						this.handelError(error);
+					}
+				},
+			},
+			{
+				id: "stop-stream",
+				name: "Stop Stream",
+				icon: "layout",
+				editorCallback: async (editor: Editor) => {
+					if (this.textGenerator.sse) {
+						this.textGenerator.sse.close();
+						this.textGenerator.sse = null;
 					}
 				},
 			},

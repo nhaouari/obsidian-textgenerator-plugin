@@ -9,13 +9,14 @@ import { makeid, createFileWithInput, openFile, removeYAML } from "./utils";
 import safeAwait from "safe-await";
 import debug from "debug";
 const logger = debug("textgenerator:TextGenerator");
-
+import { SSE } from "sse";
 export default class TextGenerator {
 	plugin: TextGeneratorPlugin;
 	app: App;
 	reqFormatter: ReqFormatter;
 	contextManager: ContextManager;
 	signal: AbortSignal;
+	sse: any;
 
 	constructor(app: App, plugin: TextGeneratorPlugin) {
 		this.app = app;
@@ -82,6 +83,58 @@ export default class TextGenerator {
 		}
 	}
 
+	async streamGenerate(
+		context: any,
+		insertMetadata = false,
+		params: any = this.plugin.settings,
+		templatePath = "",
+		additionnalParams: any = {
+			showSpinner: true,
+		}
+	) {
+		logger("generate", {
+			context,
+			insertMetadata,
+			params,
+			templatePath,
+			additionnalParams,
+		});
+		const { options, template } = context;
+		const prompt = template
+			? template.inputTemplate(options)
+			: context.context;
+
+		if (this.plugin.processing) {
+			logger(
+				"streamGenerate error",
+				"There is another generation process"
+			);
+			return Promise.reject(
+				new Error("There is another generation process")
+			);
+		}
+		const { reqParams } = this.reqFormatter.getRequestParameters(
+			{
+				...params,
+				prompt,
+			},
+			insertMetadata,
+			templatePath,
+			additionnalParams
+		);
+		try {
+			//const stream = await this.streamRequest(reqParams);
+			const stream = await this.sseRequest(reqParams);
+			logger("streamGenerate end", {
+				stream,
+			});
+
+			return stream;
+		} catch (error) {
+			logger("streamGenerate error", error);
+			return Promise.reject(error);
+		}
+	}
 	async gen(prompt, settings = {}) {
 		console.log("gen ", prompt, settings);
 		const params = { ...this.plugin.settings, ...settings };
@@ -176,11 +229,61 @@ export default class TextGenerator {
 		return context?.options?.frontmatter?.config?.mode || "insert";
 	}
 
+	async generateStreamInEditor(
+		params: TextGeneratorSettings,
+		insertMetadata: boolean = false,
+		editor: Editor
+	) {
+		logger("generateStreamInEditor");
+		let cursor = this.getCursor(editor);
+		const context = await this.contextManager.getContext(
+			editor,
+			insertMetadata
+		);
+
+		const [errorGeneration, sse] = await safeAwait(
+			this.streamGenerate(context, insertMetadata, params)
+		);
+
+		sse.addEventListener("message", (e: any) => {
+			if (e.data != "[DONE]") {
+				const payload = JSON.parse(e.data);
+				const content = payload.choices[0].delta.content;
+				logger("generateStreamInEditor message", { payload, content });
+				const cursor = editor.getCursor();
+				this.insertGeneratedText(content, editor, cursor, "stream");
+
+				const newCursor = {
+					line: cursor.line,
+					ch: cursor.ch + content?.length,
+				};
+
+				editor.setCursor(newCursor);
+			} else {
+				sse.close();
+			}
+		});
+
+		sse.addEventListener("error", (error: any) => {
+			return Promise.reject(error);
+		});
+		this.sse = sse;
+		sse.stream();
+
+		if (errorGeneration) {
+			return Promise.reject(errorGeneration);
+		}
+	}
+
 	async generateInEditor(
 		params: TextGeneratorSettings,
 		insertMetadata: boolean = false,
 		editor: Editor
 	) {
+		if (this.plugin.settings.stream) {
+			return this.generateStreamInEditor(params, insertMetadata, editor);
+		}
+
 		logger("generateInEditor");
 		const cursor = this.getCursor(editor);
 		const context = await this.contextManager.getContext(
@@ -198,7 +301,7 @@ export default class TextGenerator {
 		this.insertGeneratedText(text, editor, cursor, mode);
 		logger("generateInEditor end");
 	}
-
+	async;
 	async generateToClipboard(
 		params: TextGeneratorSettings,
 		templatePath: string,
@@ -396,6 +499,55 @@ export default class TextGenerator {
 		});
 	}
 
+	async streamRequest(params: RequestUrlParam) {
+		return new Promise(async (resolve, reject) => {
+			const controller = new AbortController();
+			this.signal = controller.signal;
+			const timeoutId = setTimeout(() => {
+				controller.abort();
+				reject(new Error("Timeout Reached"));
+			}, this.plugin.settings.requestTimeout);
+			const raw = params.body;
+			const requestOptions = {
+				method: params.method,
+				headers: params.headers,
+				body: raw,
+				redirect: "follow",
+				signal: this.signal,
+			};
+
+			logger({ params, requestOptions });
+
+			try {
+				clearTimeout(timeoutId);
+				const response = await fetch(params.url, requestOptions);
+				const reader = response.body.getReader();
+				resolve(reader);
+			} catch (error) {
+				reject(error);
+			}
+		});
+	}
+
+	async sseRequest(params: RequestUrlParam) {
+		return new Promise(async (resolve, reject) => {
+			const controller = new AbortController();
+			this.signal = controller.signal;
+			const raw = JSON.stringify({
+				...JSON.parse(params.body),
+				stream: true,
+			});
+
+			const source = new SSE(params.url, {
+				headers: params.headers,
+				method: "POST",
+				payload: raw,
+			});
+
+			resolve(source);
+		});
+	}
+
 	outputToBlockQuote(text: string) {
 		let lines = text
 			.split("\n")
@@ -423,8 +575,11 @@ export default class TextGenerator {
 		const logger = (message) => console.log(message);
 		logger("insertGeneratedText");
 
-		let text =
-			this.plugin.settings.prefix.replace(/\\n/g, "\n") + completion;
+		let text = completion;
+		if (mode !== "stream") {
+			text = this.plugin.settings.prefix.replace(/\\n/g, "\n") + text;
+		}
+
 		let cursor = this.getCursor(editor);
 		if (cur) {
 			cursor = cur;
@@ -441,11 +596,11 @@ export default class TextGenerator {
 			}
 		}
 
-		if (this.plugin.settings.outputToBlockQuote) {
+		if (this.plugin.settings.outputToBlockQuote && mode !== "stream") {
 			text = this.outputToBlockQuote(text);
 		}
 
-		if (mode === "insert") {
+		if (mode === "insert" || mode === "stream") {
 			editor.replaceRange(text, cursor);
 		} else if (mode === "replace") {
 			editor.replaceSelection(text);

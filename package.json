@@ -55,6 +55,7 @@
 		"react-dom": "^18.2.0",
 		"request": "^2.88.2",
 		"safe-await": "^2.0.0",
+		"sse": "github:mpetazzoni/sse.js",
 		"tailwindcss": "^3.3.1",
 		"tesseract.js": "^4.0.3",
 		"text-spinners": "^1.0.5",
