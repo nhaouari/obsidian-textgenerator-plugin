@@ -161,7 +161,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 					.onClick(async () => {
 						if (this.plugin.settings.api_key.length > 0) {
 							let reqParams = {
-								url: `${this.plugin.settings.endpoint}/v1/models`,
+								url: new URL("/v1/models", this.plugin.settings.endpoint).href,
 								method: "GET",
 								body: "",
 								headers: {

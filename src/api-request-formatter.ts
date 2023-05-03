@@ -34,12 +34,12 @@ export default class ReqFormatter {
 			frequency_penalty: params.frequency_penalty,
 		};
 
-		let reqUrl = `${params.endpoint}/v1/completions`;
+		let reqUrl = new URL(`/v1/completions`, params.endpoint).href;
 		let reqExtractResult = "requestResults?.choices[0].text";
 
 		const chatModels = ["gpt-3.5-turbo", "gpt-3.5-turbo-0301", "gpt-4"];
 		if (params.engine && chatModels.includes(params.engine)) {
-			reqUrl = `${params.endpoint}/v1/chat/completions`;
+			reqUrl = new URL(`/v1/chat/completions`, params.endpoint).href;
 			reqExtractResult = "requestResults?.choices[0].message.content";
 			bodyParams["messages"] = [{ role: "user", content: params.prompt }];
 		} else {

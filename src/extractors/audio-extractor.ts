@@ -69,7 +69,7 @@ export default class AudioExtractor implements Extractor<TAbstractFile> {
 		const formData = this.createFormData(audioBuffer, filetype);
 		this.plugin.startProcessing(false);
 		const response = await fetch(
-			`${this.plugin.settings.endpoint}/v1/audio/transcriptions`,
+			new URL("/v1/audio/transcriptions", this.plugin.settings.endpoint).href,
 			{
 				method: "POST",
 				headers: {
