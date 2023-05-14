@@ -7,6 +7,7 @@ type Context = {
 	includeMentions: boolean;
 	includeHighlights: boolean;
 	includeExtractions: boolean;
+	includeClipboard: boolean;
 };
 
 type TextGeneratorSettings = {

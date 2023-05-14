@@ -468,6 +468,17 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+		new Setting(containerEl)
+			.setName("includeClipboard")
+			.setDesc("Include clipboard content")
+			.addToggle((v) =>
+				v
+					.setValue(this.plugin.settings.context.includeClipboard)
+					.onChange(async (value) => {
+						this.plugin.settings.context.includeClipboard = value;
+						await this.plugin.saveSettings();
+					})
+			);
 		containerEl.createEl("H5", {
 			text: "Extractors Options",
 		});

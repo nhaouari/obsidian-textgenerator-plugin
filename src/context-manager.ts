@@ -155,6 +155,9 @@ export default class ContextManager {
 				...this.getFrontmatter(activeDocCache),
 			};
 
+		if (contextOptions.includeClipboard)
+			blocks["clipboard"] = await this.getClipboard();
+
 		if (contextOptions.includeHeadings)
 			blocks["headings"] = await this.getHeadingContent(activeDocCache);
 
@@ -391,6 +394,9 @@ export default class ContextManager {
 		return highlights;
 	}
 
+	async getClipboard() {
+		return await navigator.clipboard.readText();
+	}
 	async getMentions(title: string) {
 		let linked: any = [];
 		let unlinked: any = [];

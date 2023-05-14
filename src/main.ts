@@ -57,6 +57,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		includeMentions: false,
 		includeHighlights: true,
 		includeExtractions: false,
+		includeClipboard: true,
 	},
 	requestTimeout: 300000,
 	options: {
@@ -501,16 +502,10 @@ export default class TextGeneratorPlugin extends Plugin {
 			"square",
 			"Download webpage as markdown",
 			async (evt: MouseEvent) => {
-				Tesseract.recognize(
-					"https://tesseract.projectnaptha.com/img/eng_bw.png",
-					"eng",
-					{ logger: (m) => console.log(m) }
-				).then(({ data: { text } }) => {
-					console.log(text);
-				});
+				console.log(await navigator.clipboard.readText());
 			}
-		);*/
-
+		);
+		*/
 		this.commands = [
 			{
 				id: "generate-text",
