@@ -124,3 +124,8 @@ export function transformStringsToChatFormat(arr: string[]) {
 
 	return result;
 }
+
+// Adapted from Stackoverflow: https://stackoverflow.com/a/6969486/19687
+export function escapeRegExp(text: string) {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
