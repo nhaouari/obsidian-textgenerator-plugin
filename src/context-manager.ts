@@ -3,7 +3,10 @@ import { Context } from "./types";
 import TextGeneratorPlugin from "./main";
 import { IGNORE_IN_YAML } from "./constants";
 import Handlebars from "handlebars";
-import { removeYAML } from "./utils";
+import {
+	escapeRegExp,
+	removeYAML,
+} from "./utils";
 import debug from "debug";
 const logger = debug("textgenerator:ContextManager");
 import Helpers from "./handlebars-helpers";
@@ -327,8 +330,9 @@ export default class ContextManager {
 					textBlock.indexOf(headings[i].heading),
 					textBlock.length - 1
 				);
+				const reSafeHeading = escapeRegExp(headings[i].heading);
 				const headingRegex = new RegExp(
-					`${headings[i].heading}\\s*?\n`,
+					`${reSafeHeading}\\s*?\n`,
 					"ig"
 				);
 				textBlock = textBlock.replace(headingRegex, "");
