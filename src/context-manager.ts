@@ -3,10 +3,7 @@ import { Context } from "./types";
 import TextGeneratorPlugin from "./main";
 import { IGNORE_IN_YAML } from "./constants";
 import Handlebars from "handlebars";
-import {
-	escapeRegExp,
-	removeYAML,
-} from "./utils";
+import { escapeRegExp, removeYAML } from "./utils";
 import debug from "debug";
 const logger = debug("textgenerator:ContextManager");
 import Helpers from "./handlebars-helpers";

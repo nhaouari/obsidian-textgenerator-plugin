@@ -46,6 +46,7 @@ export default class ReqFormatter {
 			"gpt-4-32k-0613",
 			"gpt-3.5-turbo-0613",
 			"gpt-3.5-turbo-16k",
+			"gpt-3.5-turbo-16k-0613",
 		];
 		if (params.engine && chatModels.includes(params.engine)) {
 			reqUrl = `${params.endpoint}/v1/chat/completions`;
