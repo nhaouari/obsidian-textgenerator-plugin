@@ -1,15 +1,15 @@
 import { App, ViewState, WorkspaceLeaf, TFile } from "obsidian";
-import { FileViewMode, NewTabDirection } from "./types";
+import { FileViewMode, Message, NewTabDirection } from "../types";
 import debug from "debug";
 const logger = debug("textgenerator:setModel");
 
 export function makeid(length: number) {
 	logger("makeid");
-	var result = "";
-	var characters =
+	let result = "";
+	const characters =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-	var charactersLength = characters.length;
-	for (var i = 0; i < length; i++) {
+	const charactersLength = characters.length;
+	for (let i = 0; i < length; i++) {
 		result += characters.charAt(
 			Math.floor(Math.random() * charactersLength)
 		);
@@ -44,7 +44,7 @@ export async function createFileWithInput(
 	app: App
 ): Promise<TFile> {
 	logger("createFileWithInput", filePath, fileContent);
-	const dirMatch = filePath.match(/(.*)[\/\\]/);
+	const dirMatch = filePath.match(/(.*)[/\\]/);
 	let dirName = "";
 	if (dirMatch) dirName = dirMatch[1];
 
@@ -104,7 +104,7 @@ export function removeYAML(content: string) {
 	return newContent;
 }
 
-export function numberToKFormat(number) {
+export function numberToKFormat(number: number) {
 	if (number >= 1000) {
 		return (number / 1000).toFixed(1) + "k";
 	} else {
@@ -128,4 +128,60 @@ export function transformStringsToChatFormat(arr: string[]) {
 // Adapted from Stackoverflow: https://stackoverflow.com/a/6969486/19687
 export function escapeRegExp(text: string) {
 	return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+}
+
+export function getContextAsString(
+	context: Record<string, string | string[]>,
+	withKey = ["title"]
+) {
+	let contextString = "";
+	for (const key in context) {
+		if (withKey.includes(key)) {
+			contextString += `${key}:`;
+		}
+		// Check if value is an array and join with \n
+		if (Array.isArray(context[key])) {
+			contextString += `${(context[key] as string[]).join("\n")}\n`;
+		} else {
+			contextString += `${context[key]}\n`;
+		}
+	}
+	return contextString;
+}
+
+export function removeRepetitiveObjects<T>(
+	objects: T[],
+	key = "path"
+): T[] {
+	const uniqueObjects: { [key: string]: T } = {};
+	for (const obj of objects) {
+		const objKey: any = obj?.[key as keyof typeof obj];
+		if (!(objKey in uniqueObjects)) {
+			uniqueObjects[objKey] = obj;
+		}
+	}
+
+	return Object.values(uniqueObjects).filter(Boolean) as T[];
+}
+
+import {
+	HumanMessage,
+	AIMessage,
+	BaseMessage,
+	SystemMessage,
+} from "langchain/schema";
+
+export function mapMessagesToLangchainMessages(
+	messages: Message[]
+): BaseMessage[] {
+	return messages.map((msg) => {
+		switch (msg.role?.toLocaleLowerCase()) {
+			case "system":
+				return new SystemMessage(msg.content);
+			case "assistant":
+				return new AIMessage(msg.content);
+			default:
+				return new HumanMessage(msg.content);
+		}
+	});
 }

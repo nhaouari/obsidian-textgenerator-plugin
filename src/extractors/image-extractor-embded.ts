@@ -6,23 +6,22 @@ import { Extractor } from "./extractor";
 
 const logger = debug("textgenerator:Extractor:ImageExtractorEmbded");
 
-export default class ImageExtractorEmbded implements Extractor<TAbstractFile> {
-	private app: App;
-	private plugin: TextGeneratorPlugin;
-
+export default class ImageExtractorEmbded extends Extractor<TAbstractFile> {
 	constructor(app: App, plugin: TextGeneratorPlugin) {
-		this.app = app;
-		this.plugin = plugin;
+		super(app, plugin);
 	}
 
-	async convert(doc: TAbstractFile): Promise<string> {
+	async convert(doc: TAbstractFile) {
 		logger("convert", { doc });
 		const imageBuffer = await this.app.vault.adapter.readBinary(doc.path);
-
 		try {
-			const result = await Tesseract.recognize(imageBuffer, "eng", {
-				logger: (m) => logger(m),
-			});
+			const result = await Tesseract.recognize(
+				Buffer.from(imageBuffer),
+				"eng",
+				{
+					logger: (m) => logger(m),
+				}
+			);
 
 			const extractedText = result.data.text;
 			logger("convert end", { extractedText });
@@ -34,7 +33,7 @@ export default class ImageExtractorEmbded implements Extractor<TAbstractFile> {
 		}
 	}
 
-	async extract(filePath?: string): Promise<TAbstractFile[]> {
+	async extract(filePath?: string) {
 		const embeds = this.app.metadataCache
 			.getCache(filePath)
 			?.embeds?.filter((embed) =>

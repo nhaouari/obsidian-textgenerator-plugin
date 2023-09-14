@@ -1,102 +1,115 @@
-import { App, TAbstractFile, requestUrl, RequestUrlParam } from "obsidian";
+import { App, TAbstractFile } from "obsidian";
 import { Extractor } from "./content-extractor";
 import TextGeneratorPlugin from "src/main";
 import debug from "debug";
+
 const logger = debug("textgenerator:Extractor:AudioExtractor");
 
-export default class AudioExtractor implements Extractor<TAbstractFile> {
-	private app: App;
-	private plugin: TextGeneratorPlugin;
-	constructor(app: App, plugin: TextGeneratorPlugin) {
-		this.app = app;
-		this.plugin = plugin;
-	}
+import { WhisperProviderName } from "../ui/settings/sections/otherProviders/whisper";
+export default class AudioExtractor extends Extractor<TAbstractFile> {
+  constructor(app: App, plugin: TextGeneratorPlugin) {
+    super(app, plugin);
+  }
 
-	async convert(doc: TAbstractFile): Promise<string> {
-		logger("convert", { doc });
-		const audioBuffer = await this.app.vault.adapter.readBinary(doc.path);
-		const fileSizeInMB = audioBuffer.byteLength / (1024 * 1024);
+  async convert(doc: TAbstractFile) {
+    logger("convert", { doc });
+    const audioBuffer = await this.app.vault.adapter.readBinary(doc.path);
+    const fileSizeInMB = audioBuffer.byteLength / (1024 * 1024);
 
-		if (fileSizeInMB > 24) {
-			this.plugin.handelError(
-				new Error("File size exceeds the 24 MB limit.")
-			);
-			return "";
-		}
+    if (fileSizeInMB > 24) {
+      this.plugin.handelError(new Error("File size exceeds the 24 MB limit."));
+      return "";
+    }
 
-		const transcript = await this.generateTranscript(
-			audioBuffer,
-			doc.extension
-		);
-		logger("convert end", { transcript });
-		return transcript;
-	}
+    const transcript = await this.generateTranscript(
+      audioBuffer,
+      // TODO: Why is this not in the types
+      // @ts-ignore
+      doc.extension
+    );
+    logger("convert end", { transcript });
+    return transcript;
+  }
 
-	async extract(filePath: string): Promise<TAbstractFile[]> {
-		const supportedAudioExtensions = [
-			"mp3",
-			"mp4",
-			"mpeg",
-			"mpga",
-			"m4a",
-			"wav",
-			"webm",
-		];
-		const embeds = this.app.metadataCache
-			.getCache(filePath)
-			?.embeds?.filter((embed) =>
-				supportedAudioExtensions.some((ext) =>
-					embed.link.endsWith(`.${ext}`)
-				)
-			);
-		if (!embeds) {
-			return [];
-		}
-		return embeds.map(
-			(embed) =>
-				this.app.metadataCache.getFirstLinkpathDest(
-					embed.link,
-					filePath
-				) as TAbstractFile
-		);
-	}
+  async extract(filePath: string) {
+    const supportedAudioExtensions = [
+      "mp3",
+      "mp4",
+      "mpeg",
+      "mpga",
+      "m4a",
+      "wav",
+      "webm",
+    ];
+    const embeds = this.app.metadataCache
+      .getCache(filePath)
+      ?.embeds?.filter((embed) =>
+        supportedAudioExtensions.some((ext) => embed.link.endsWith(`.${ext}`))
+      );
+    if (!embeds) {
+      return [];
+    }
+    return embeds.map(
+      (embed) =>
+        this.app.metadataCache.getFirstLinkpathDest(
+          embed.link,
+          filePath
+        ) as TAbstractFile
+    );
+  }
 
-	async generateTranscript(audioBuffer: ArrayBuffer, filetype: string) {
-		if (this.plugin.settings.api_key.length < 1)
-			this.plugin.handelError(
-				new Error("OpenAI API Key is not provided.")
-			);
-		const formData = this.createFormData(audioBuffer, filetype);
-		this.plugin.startProcessing(false);
-		const response = await fetch(
-			`${this.plugin.settings.endpoint}/v1/audio/transcriptions`,
-			{
-				method: "POST",
-				headers: {
-					Authorization: `Bearer ${this.plugin.settings.api_key}`,
-				},
-				body: formData,
-			}
-		).catch((error) => {
-			this.plugin.endProcessing(false);
-			this.plugin.handelError(error);
-		});
+  async generateTranscript(audioBuffer: ArrayBuffer, filetype: string) {
+    try {
+      const endpoint = new URL(
+        this.plugin.settings.LLMProviderOptions[WhisperProviderName]?.basePath
+          ?.length
+          ? this.plugin.settings.LLMProviderOptions[WhisperProviderName]
+              ?.basePath
+          : this.plugin.settings.endpoint
+      );
 
-		const jsonResponse = await response.json();
-		this.plugin.endProcessing(false);
-		if ("text" in jsonResponse) return jsonResponse.text;
-		else
-			this.plugin.handelError(
-				new Error("Error. " + JSON.stringify(jsonResponse))
-			);
-	}
+      if (
+        endpoint.host.contains("openai") &&
+        this.plugin.settings.api_key.length < 1
+      )
+        throw new Error("OpenAI API Key is not provided.");
 
-	createFormData(audioBuffer, filetype) {
-		const formData = new FormData();
-		const blob = new Blob([audioBuffer], { type: `audio/${filetype}` });
-		formData.append("file", blob, `audio.${filetype}`);
-		formData.append("model", "whisper-1");
+      const formData = this.createFormData(audioBuffer, filetype);
+      this.plugin.startProcessing(false);
 
-		return formData;
-	}
+      // TODO: this needs to be supported in the llm provider, or searches for llm with openai key
+      // if not, then show error message
+      const response = await fetch(
+        new URL(`${endpoint.pathname}/audio/transcriptions`, endpoint).href,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.plugin.settings.api_key}`,
+          },
+          body: formData,
+        }
+      );
+
+      const jsonResponse = await response.json();
+
+      if ("text" in jsonResponse) return jsonResponse.text;
+      else
+        this.plugin.handelError(
+          new Error("Error. " + JSON.stringify(jsonResponse))
+        );
+    } catch (err: any) {
+      this.plugin.handelError(err);
+    } finally {
+      this.plugin.endProcessing(false);
+    }
+  }
+
+  createFormData(audioBuffer: BlobPart, filetype: string) {
+    const formData = new FormData();
+    const blob = new Blob([audioBuffer], { type: `audio/${filetype}` });
+    formData.append("file", blob, `audio.${filetype}`);
+    formData.append("model", "whisper-1");
+
+    return formData;
+  }
 }

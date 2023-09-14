@@ -6,11 +6,12 @@ const logger = debug("textgenerator:setModel");
 export class SetModel extends FuzzySuggestModal<Model> {
 	plugin: TextGeneratorPlugin;
 	title: string;
+	onChoose: (result: string) => void;
 	constructor(
 		app: App,
 		plugin: TextGeneratorPlugin,
 		onChoose: (result: string) => void,
-		title: string = ""
+		title = ""
 	) {
 		super(app);
 		this.onChoose = onChoose;
@@ -22,10 +23,10 @@ export class SetModel extends FuzzySuggestModal<Model> {
 		);
 	}
 
-	getItems(): Model[] {
+	getItems() {
 		logger("getItems");
 		const templates = Array.from(this.plugin.settings.models.keys()).map(
-			(e) => ({ id: e })
+			(e: Model["id"]) => ({ id: e })
 		);
 		return templates;
 	}

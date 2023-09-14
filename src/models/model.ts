@@ -6,11 +6,12 @@ const logger = debug("textgenerator:model");
 export class ExampleModal extends FuzzySuggestModal<PromptTemplate> {
 	plugin: TextGeneratorPlugin;
 	title: string;
+	onChoose: (result: PromptTemplate) => void;
 	constructor(
 		app: App,
 		plugin: TextGeneratorPlugin,
-		onChoose: (result: string) => void,
-		title: string = ""
+		onChoose: (result: PromptTemplate) => void,
+		title = ""
 	) {
 		super(app);
 		this.onChoose = onChoose;
@@ -26,9 +27,10 @@ export class ExampleModal extends FuzzySuggestModal<PromptTemplate> {
 		logger("getItems");
 		const promptsPath = this.plugin.settings.promptsPath;
 		const paths = app.metadataCache
+			// @ts-ignore
 			.getCachedFiles()
 			.filter(
-				(path) =>
+				(path: string) =>
 					path.includes(promptsPath) && !path.includes("/trash/")
 			);
 		const templates = paths.map((s) => ({
@@ -82,7 +84,7 @@ export class ExampleModal extends FuzzySuggestModal<PromptTemplate> {
 		return validedMetaData;
 	}
 
-	getFrontmatter(path: string = "") {
+	getFrontmatter(path = "") {
 		logger("getFrontmatter", path);
 		const cache = this.app.metadataCache.getCache(path);
 		if (cache.hasOwnProperty("frontmatter")) {

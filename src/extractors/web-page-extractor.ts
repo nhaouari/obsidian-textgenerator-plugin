@@ -5,6 +5,7 @@ import { Readability } from "@mozilla/readability";
 import TextGeneratorPlugin from "src/main";
 import debug from "debug";
 
+// @ts-ignore
 let remote: typeof import("electron").remote;
 
 if (!Platform.isMobile) {
@@ -12,15 +13,12 @@ if (!Platform.isMobile) {
 }
 
 const logger = debug("textgenerator:Extractor:WebPageExtractor");
-export default class WebPageExtractor implements Extractor<string> {
-	private app: App;
-	private plugin: TextGeneratorPlugin;
+export default class WebPageExtractor extends Extractor<string> {
 	constructor(app: App, plugin: TextGeneratorPlugin) {
-		this.app = app;
-		this.plugin = plugin;
+		super(app, plugin);
 	}
 
-	async convert(url: string): Promise<string> {
+	async convert(url: string) {
 		logger("convert", { url });
 		let response: string;
 
@@ -53,9 +51,10 @@ export default class WebPageExtractor implements Extractor<string> {
 		}
 	}
 
-	async extract(filePath?: string): Promise<string[]> {
+	async extract(filePath?: string) {
 		logger("extract", { filePath });
 		const activeFileValue = this.app.workspace
+			// @ts-ignore
 			.getActiveFileView()
 			.editor.getValue();
 		const urls = this.extractUrls(activeFileValue);

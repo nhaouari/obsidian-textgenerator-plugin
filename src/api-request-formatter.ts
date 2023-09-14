@@ -1,9 +1,10 @@
-import { App, Notice } from "obsidian";
-import { TextGeneratorSettings } from "./types";
+import { App } from "obsidian";
+import { Message, TextGeneratorSettings } from "./types";
 import TextGeneratorPlugin from "./main";
 import ContextManager from "./context-manager";
 import debug from "debug";
 import { transformStringsToChatFormat } from "./utils";
+import { LLMConfig } from "./LLMProviders/interface";
 const logger = debug("textgenerator:ReqFormatter");
 export default class ReqFormatter {
 	plugin: TextGeneratorPlugin;
@@ -20,22 +21,30 @@ export default class ReqFormatter {
 	}
 
 	getRequestParameters(
-		params: TextGeneratorSettings,
+		params: Partial<TextGeneratorSettings>,
 		insertMetadata: boolean,
 		templatePath = "",
-		additionnalParams: any = {}
+		additionnalParams: {
+			reqParams?: RequestInit;
+			bodyParams?: any;
+			showSpinner?: boolean;
+		} = {}
 	) {
 		logger("prepareReqParameters", params, insertMetadata, templatePath);
 
-		let bodyParams: any = {
-			model: params.engine,
-			max_tokens: params.max_tokens,
-			temperature: params.temperature,
-			frequency_penalty: params.frequency_penalty,
+		let bodyParams: Partial<
+			LLMConfig & { messages: Message[]; prompt: string }
+		> = {
+			...(params.engine && { engine: params.engine }),
+			...(params.max_tokens && { max_tokens: params.max_tokens }),
+			...(params.temperature && { temperature: params.temperature }),
+			...(params.frequency_penalty && {
+				frequency_penalty: params.frequency_penalty,
+			}),
 		};
 
-		let reqUrl = `${params.endpoint}/v1/completions`;
-		let reqExtractResult = "requestResults?.choices[0].text";
+		// let reqUrl = new URL(`${params.endpoint?.contains("v1") ? "" : "/v1"}/v1/completions`, params.endpoint).href;
+		let reqExtractResult = "choices[0].text";
 
 		const chatModels = [
 			"gpt-3.5-turbo",
@@ -48,18 +57,24 @@ export default class ReqFormatter {
 			"gpt-3.5-turbo-16k",
 			"gpt-3.5-turbo-16k-0613",
 		];
+
 		if (params.engine && chatModels.includes(params.engine)) {
-			reqUrl = `${params.endpoint}/v1/chat/completions`;
-			reqExtractResult = "requestResults?.choices[0].message.content";
-			bodyParams["messages"] = [{ role: "user", content: params.prompt }];
+			// reqUrl = new URL(`${params.endpoint?.contains("v1") ? "" : "/v1"}/chat/completions`, params.endpoint).href;
+			reqExtractResult = "choices[0].message.content";
+			bodyParams["messages"] = [
+				{ role: "user", content: params.prompt || "" },
+			];
 		} else {
 			bodyParams["prompt"] = params.prompt;
 		}
 
 		bodyParams = { ...bodyParams, ...additionnalParams?.bodyParams };
 
-		let reqParams = {
-			url: reqUrl,
+		let reqParams: RequestInit & {
+			// url: string,
+			extractResult?: any;
+		} = {
+			// url: reqUrl,
 			method: "POST",
 			body: "",
 			headers: {
@@ -67,9 +82,9 @@ export default class ReqFormatter {
 				Authorization: `Bearer ${params.api_key}`,
 			},
 			extractResult: reqExtractResult,
-		};
 
-		reqParams = { ...reqParams, ...additionnalParams?.reqParams };
+			...additionnalParams?.reqParams,
+		};
 
 		if (insertMetadata) {
 			const activefileFrontmatter =
@@ -82,18 +97,22 @@ export default class ReqFormatter {
 			};
 			//console.log({templateFrontmatter,activefileFrontmatter,frontmatter});
 			if (frontmatter == null) {
-				new Notice("No valid Metadata (YAML front matter) found!");
+				this.plugin.handelError(
+					"No valid Metadata (YAML front matter) found!"
+				);
 			} else {
 				if (bodyParams["messages"]) {
 					//chat mode
-					let messages = [];
+					const messages: {
+						role: string;
+						content: string;
+					}[] = [];
+
 					if (frontmatter["config"]?.system) {
-						messages = [
-							{
-								role: "system",
-								content: frontmatter["config"].system,
-							},
-						];
+						messages.push({
+							role: "system",
+							content: frontmatter["config"].system,
+						});
 					}
 
 					if (frontmatter["config"]?.messages) {
@@ -129,7 +148,10 @@ export default class ReqFormatter {
 					frontmatter["config"]?.context &&
 					frontmatter["config"]?.context !== "prompt"
 				) {
-					bodyParams[frontmatter["config"].context] = params.prompt;
+					bodyParams[
+						frontmatter["config"]
+							.context as never as keyof typeof bodyParams
+					] = params.prompt;
 					delete bodyParams.prompt;
 				}
 
@@ -153,6 +175,13 @@ export default class ReqFormatter {
 		}
 
 		logger("prepareReqParameters", { bodyParams, reqParams });
-		return { bodyParams, reqParams };
+
+		return {
+			bodyParams: {
+				...bodyParams,
+				messages: bodyParams.messages || [],
+			},
+			reqParams,
+		};
 	}
 }

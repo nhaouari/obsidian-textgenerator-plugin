@@ -6,16 +6,12 @@ import { Extractor } from "./extractor";
 
 const logger = debug("textgenerator:Extractor:ImageExtractor");
 
-export default class ImageExtractor implements Extractor<string> {
-	private app: App;
-	private plugin: TextGeneratorPlugin;
-
+export default class ImageExtractor extends Extractor<string> {
 	constructor(app: App, plugin: TextGeneratorPlugin) {
-		this.app = app;
-		this.plugin = plugin;
+		super(app, plugin);
 	}
 
-	async convert(url: string): Promise<string> {
+	async convert(url: string) {
 		logger("convert", { url });
 
 		try {
@@ -33,9 +29,10 @@ export default class ImageExtractor implements Extractor<string> {
 		}
 	}
 
-	async extract(filePath?: string): Promise<string[]> {
+	async extract(filePath?: string) {
 		logger("extract", { filePath });
 		const activeFileValue = this.app.workspace
+			// @ts-ignore
 			.getActiveFileView()
 			.editor.getValue();
 		const urls = this.extractUrls(activeFileValue);

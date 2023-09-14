@@ -25,7 +25,23 @@ export const OPENAI_MODELS = {
 		},
 		maxTokens: 8192,
 	},
+	"gpt-4-0613": {
+		encoding: "cl100k_base",
+		prices: {
+			prompt: 0.03,
+			completion: 0.06,
+		},
+		maxTokens: 8192,
+	},
 	"gpt-4-32k": {
+		encoding: "cl100k_base",
+		prices: {
+			prompt: 0.06,
+			completion: 0.12,
+		},
+		maxTokens: 32768,
+	},
+	"gpt-4-32k-0613": {
 		encoding: "cl100k_base",
 		prices: {
 			prompt: 0.06,
@@ -44,18 +60,42 @@ export const OPENAI_MODELS = {
 	"gpt-3.5-turbo": {
 		encoding: "cl100k_base",
 		prices: {
-			prompt: 0.002,
+			prompt: 0.0015,
 			completion: 0.002,
 		},
-		maxTokens: 4096,
+		maxTokens: 4097,
+	},
+	"gpt-3.5-turbo-16k": {
+		encoding: "cl100k_base",
+		prices: {
+			prompt: 0.003,
+			completion: 0.004,
+		},
+		maxTokens: 16385,
+	},
+	"gpt-3.5-turbo-16k-0613": {
+		encoding: "cl100k_base",
+		prices: {
+			prompt: 0.003,
+			completion: 0.004,
+		},
+		maxTokens: 16385,
 	},
 	"gpt-3.5-turbo-0301": {
 		encoding: "cl100k_base",
 		prices: {
-			prompt: 0.002,
+			prompt: 0.0015,
 			completion: 0.002,
 		},
-		maxTokens: 4096,
+		maxTokens: 4097,
+	},
+	"gpt-3.5-turbo-0613": {
+		encoding: "cl100k_base",
+		prices: {
+			prompt: 0.0015,
+			completion: 0.002,
+		},
+		maxTokens: 4097,
 	},
 	"text-davinci-003": {
 		encoding: "p50k_base",

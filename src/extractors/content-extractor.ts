@@ -1,4 +1,4 @@
-import { App, TAbstractFile } from "obsidian";
+import { App } from "obsidian";
 import PDFExtractor from "./pdf-extractor";
 import WebPageExtractor from "./web-page-extractor";
 import YoutubeExtractor from "./youtube-extractor";
@@ -11,59 +11,54 @@ import ImageExtractorEmbded from "./image-extractor-embded";
 const logger = debug("textgenerator:Extractor");
 
 // Add the new Extractor here
-enum ExtractorMethod {
-	PDFExtractor,
-	WebPageExtractor,
-	YoutubeExtractor,
-	AudioExtractor,
-	ImageExtractor,
-	ImageExtractorEmbded,
+export const Extractors = {
+  PDFExtractor,
+  WebPageExtractor,
+  YoutubeExtractor,
+  AudioExtractor,
+  ImageExtractor,
+  ImageExtractorEmbded,
+} as const;
+
+export type ExtractorMethod = keyof typeof Extractors;
+
+export class ContentExtractor<d> {
+  private extractor: Extractor<d>;
+  private app: App;
+  private plugin: TextGeneratorPlugin;
+  constructor(app: App, plugin: TextGeneratorPlugin) {
+    this.app = app;
+    this.plugin = plugin;
+  }
+
+  setExtractor(extractorName: ExtractorMethod) {
+    logger("set Extractor", { extractorName });
+    this.extractor = this.createExtractor(extractorName);
+  }
+
+  async convert(doc: d): Promise<string> {
+    // Use the selected splitter to split the text
+    this.plugin.startProcessing(false);
+    const text = await this.extractor.convert(doc);
+    this.plugin.endProcessing(false);
+    return text;
+  }
+
+  async extract(filePath: string) {
+    return this.extractor.extract(filePath);
+  }
+
+  private createExtractor(extractorName: ExtractorMethod) {
+    if (!Extractors[extractorName])
+      throw new Error(`Unknown Extractor: ${extractorName}`);
+    return new Extractors[extractorName](this.app, this.plugin) as Extractor<d>;
+  }
 }
 
-class ContentExtractor {
-	private extractor: Extractor<any>;
-	private app: App;
-	private plugin: TextGeneratorPlugin;
-	constructor(app: App, plugin: TextGeneratorPlugin) {
-		this.app = app;
-		this.plugin = plugin;
-	}
+export const getExtractorMethods = () => {
+  return Object.keys(Extractors).filter(
+    (e) => !(parseInt(e) || e === "0")
+  ) as unknown as ExtractorMethod[];
+};
 
-	setExtractor(extractorName: ExtractorMethod) {
-		logger("set Extractor", { extractorName });
-		this.extractor = this.createExtractor(extractorName);
-	}
-
-	async convert(doc: any): string {
-		// Use the selected splitter to split the text
-		this.plugin.startProcessing(false);
-		const text = await this.extractor.convert(doc);
-		this.plugin.endProcessing(false);
-		return text;
-	}
-
-	async extract(filePath: string): Promise<TAbstractFile[]> {
-		return this.extractor.extract(filePath);
-	}
-
-	private createExtractor(extractorName: ExtractorMethod): Extractor<any> {
-		switch (extractorName) {
-			case ExtractorMethod.PDFExtractor:
-				return new PDFExtractor(this.app, this.plugin);
-			case ExtractorMethod.WebPageExtractor:
-				return new WebPageExtractor(this.app, this.plugin);
-			case ExtractorMethod.YoutubeExtractor:
-				return new YoutubeExtractor(this.app, this.plugin);
-			case ExtractorMethod.AudioExtractor:
-				return new AudioExtractor(this.app, this.plugin);
-			case ExtractorMethod.ImageExtractor:
-				return new ImageExtractor(this.app, this.plugin);
-			case ExtractorMethod.ImageExtractorEmbded:
-				return new ImageExtractorEmbded(this.app, this.plugin);
-			default:
-				throw new Error(`Unknown Extractor: ${extractorName}`);
-		}
-	}
-}
-
-export { ContentExtractor, ExtractorMethod, Extractor };
+export { Extractor };

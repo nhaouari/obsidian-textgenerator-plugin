@@ -1,19 +1,17 @@
 import { App } from "obsidian";
 import { YoutubeTranscript } from "./youtube-extractor/youtube-transcript";
-import { Extractor } from "./Extractor";
+import { Extractor } from "./extractor";
 import debug from "debug";
 import TextGeneratorPlugin from "src/main";
 
 const logger = debug("textgenerator:Extractor:YoutubeTranscriptionExtractor");
 
-export default class YoutubeExtractor implements Extractor<string> {
-	private app: App;
+export default class YoutubeExtractor extends Extractor<string> {
 	constructor(app: App, plugin: TextGeneratorPlugin) {
-		this.app = app;
-		this.plugin = plugin;
+		super(app, plugin);
 	}
 
-	async convert(url: string): Promise<string> {
+	async convert(url: string) {
 		logger("convert", { url });
 		const transcription = await YoutubeTranscript.fetchTranscript(url);
 		const text = transcription.reduce((acc, curr) => {
@@ -23,9 +21,10 @@ export default class YoutubeExtractor implements Extractor<string> {
 		return text;
 	}
 
-	async extract(filePath?: string): Promise<string[]> {
+	async extract(filePath?: string) {
 		logger("extract", { filePath });
 		const activeFileValue = this.app.workspace
+			// @ts-ignore
 			.getActiveFileView()
 			.editor.getValue();
 		const urls = this.extractUrls(activeFileValue);

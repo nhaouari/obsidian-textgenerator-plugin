@@ -13,6 +13,7 @@ import {
 import TextGeneratorPlugin from "src/main";
 import { gt } from "semver";
 import debug from "debug";
+import Confirm from "./components/confirm";
 const logger = debug("textgenerator:PackageManager");
 
 const packageRegistry = `https://raw.githubusercontent.com/text-gen/text-generator-packages/master/community-packages.json`;
@@ -70,7 +71,7 @@ export default class PackageManager {
 	async checkUpdates() {
 		logger("checkUpdates");
 		await this.fetch();
-		let packagesIdsToUpdate: string[] = [];
+		const packagesIdsToUpdate: string[] = [];
 		this.configuration.installedPackages.forEach((installedPackage) => {
 			if (
 				gt(
@@ -95,7 +96,7 @@ export default class PackageManager {
 		logger("fetch updatePackagesInfo OK");
 	}
 
-	async installPackage(packageId: string, installAllPrompts: boolean = true) {
+	async installPackage(packageId: string, installAllPrompts = true) {
 		logger("installPackage", { packageId, installAllPrompts });
 		const p = await this.getPackageById(packageId);
 		const repo = p.repo;
@@ -335,7 +336,7 @@ export default class PackageManager {
 		const url = `https://raw.githubusercontent.com/${repo}/main/README.md`;
 		try {
 			const readmeMD = await request({ url: url });
-			let el = document.createElement("div");
+			const el = document.createElement("div");
 			MarkdownRenderer.renderMarkdown(readmeMD, el);
 			logger(" getReadme end", { packageId });
 			return el;
@@ -355,7 +356,7 @@ export default class PackageManager {
 	async installPrompt(
 		packageId: string,
 		promptId: string,
-		overwrite: boolean = true
+		overwrite = true
 	) {
 		logger("installPrompt", { packageId, promptId, overwrite });
 		const repo = await this.getPackageById(packageId).repo;
@@ -405,11 +406,11 @@ export default class PackageManager {
 			}
 			let write = true;
 			if (!overwrite && (await adapter.exists(path))) {
-				let text =
+				const text =
 					"Template " +
 					path +
 					" exists!\nEither OK to Overread or over Cancel.";
-				if ((await confirm(text)) == false) {
+				if ((await Confirm(text)) == false) {
 					write = false;
 				}
 			}
@@ -428,7 +429,7 @@ export default class PackageManager {
 	async updatePackagesList() {
 		logger("updatePackagesList");
 		const remotePackagesListUrl = packageRegistry;
-		let remotePackagesList: PackageTemplate[] = JSON.parse(
+		const remotePackagesList: PackageTemplate[] = JSON.parse(
 			await request({ url: remotePackagesListUrl })
 		);
 		const newPackages = remotePackagesList.filter(
