@@ -96,11 +96,11 @@ esbuild.build({
 			else {
 				// after the main.js is built, run the postcss command
 				console.log('build:css')
-				exec('postcss ./src/css/styles.css -o styles.css')
+				exec('postcss ./src/css/global.css -o styles.css')
 			}
 		}
 	},
-	target: 'es2016',
+	target: 'es2020',
 	logLevel: "info",
 	sourcemap: prod ? false : 'inline',
 	treeShaking: true,

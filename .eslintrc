@@ -8,16 +8,26 @@
     "extends": [
       "eslint:recommended",
       "plugin:@typescript-eslint/eslint-recommended",
-      "plugin:@typescript-eslint/recommended"
+      "plugin:@typescript-eslint/recommended",
+      "plugin:tailwindcss/recommended"
     ], 
     "parserOptions": {
         "sourceType": "module"
     },
     "rules": {
       "no-unused-vars": "off",
-      "@typescript-eslint/no-unused-vars": ["error", { "args": "none" }],
+      "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/ban-ts-comment": "off",
       "no-prototype-builtins": "off",
-      "@typescript-eslint/no-empty-function": "off"
+      "@typescript-eslint/no-empty-function": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-this-alias": "off",
+      "no-undef": "off",
+      "no-cond-assign": "off",
+      "no-async-promise-executor": "off",
+      "@typescript-eslint/no-var-requires": "off",
+      "no-useless-escape":"off",
+      "no-unsafe-optional-chaining": "off",
+      "tailwindcss/no-custom-classname": "off"
     } 
   }

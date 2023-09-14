@@ -56,16 +56,19 @@ const Helpers = {
 		minLength = 100,
 		maxLength = 1500
 	) {
-		let files = this.app.vault.getMarkdownFiles();
+		let files: any[] = this.app.vault.getMarkdownFiles();
+
 		if (str) {
 			const filteredFiles = files.filter(
-				(file) => file.path.includes(str) && file.stat.size >= minLength
+				(file: any) =>
+					file.path.includes(str) && file.stat.size >= minLength
 			);
 			if (filteredFiles.length === 0) {
 				throw new Error(`No files match the pattern ${str}`);
 			}
 			files = filteredFiles;
 		}
+
 		console.log({ files });
 
 		const randomIndex = Math.floor(Math.random() * files.length);

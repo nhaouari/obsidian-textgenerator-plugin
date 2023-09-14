@@ -62,7 +62,7 @@ export class SetMaxTokens extends Modal {
 	}
 
 	onClose() {
-		let { contentEl } = this;
+		const { contentEl } = this;
 		contentEl.empty();
 	}
 }

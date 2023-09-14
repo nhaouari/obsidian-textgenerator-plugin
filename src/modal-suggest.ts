@@ -1,9 +1,11 @@
 import { PromptTemplate } from "src/types";
 import {
+	App,
 	Editor,
+	EditorPosition,
 	EditorSuggest,
-	EditorSuggestContext,
 	MarkdownView,
+	Scope,
 } from "obsidian";
 import TextGeneratorPlugin from "./main";
 import { ExampleModal } from "./models/model";
@@ -11,6 +13,7 @@ import { ExampleModal } from "./models/model";
 export class ModelSuggest extends EditorSuggest<PromptTemplate> {
 	private app: App;
 	private plugin: TextGeneratorPlugin;
+	scope: Scope;
 	constructor(app: App, plugin: TextGeneratorPlugin) {
 		super(app);
 		this.app = app;
@@ -20,11 +23,11 @@ export class ModelSuggest extends EditorSuggest<PromptTemplate> {
 		});
 	}
 
-	public onTrigger(cursor, editor) {
+	public onTrigger(cursor: EditorPosition, editor: Editor) {
 		const line: string = editor
 			.getLine(cursor.line)
 			.substring(0, cursor.ch);
-		if (!line.startsWith("/")) return;
+		if (!line.startsWith("/")) return null;
 		const currentPart = line.substring(1, cursor.ch);
 		const currentStart = currentPart.lastIndexOf("/");
 		return {
@@ -34,40 +37,46 @@ export class ModelSuggest extends EditorSuggest<PromptTemplate> {
 		};
 	}
 
-	public async getSuggestions(context): Promise<PromptTemplate[]> {
-		return new Promise((resolve) => {
-			const { query } = context;
+	public async getSuggestions(context: PromptTemplate["context"]) {
+		const { query } = context;
 
-			const modal = new ExampleModal(
-				this.app,
-				this.plugin,
-				async (result) => {},
-				"Choose a template"
-			);
-			let suggestions = modal.getSuggestions(query);
-			suggestions = suggestions.map((s) => ({ ...s, context }));
-			resolve(suggestions);
-		});
+		const modal = new ExampleModal(
+			this.app,
+			this.plugin,
+			async (result) => {},
+			"Choose a template"
+		);
+		const suggestions = modal.getSuggestions(query);
+		return suggestions.map((s) => ({
+			...s.item,
+			context,
+		})) as PromptTemplate[];
 	}
 
-	renderSuggestion(template: PromptTemplate, el) {
-		el.createEl("div", { text: template.item.name });
+	renderSuggestion(template: PromptTemplate, el: HTMLElement) {
+		el.createEl("div", { text: template.name });
 		el.createEl("small", {
-			text: template.item.description?.substring(0, 150),
+			text: template.description?.substring(0, 150),
 			cls: "desc",
 		});
 		el.createEl("div", {});
-		el.createEl("small", { text: template.item.path, cls: "path" });
+		el.createEl("small", { text: template.path, cls: "path" });
 	}
 
-	async selectSuggestion(value, evt) {
+	async selectSuggestion(
+		value: PromptTemplate,
+		evt: MouseEvent | KeyboardEvent
+	) {
 		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+
+		if (!activeView) return console.warn("couldn't find activeView");
+
 		const editor: Editor = activeView.editor;
 
 		editor.replaceRange("", value.context.start, value.context.end);
 		await this.plugin.textGenerator.tempalteToModal(
 			this.plugin.settings,
-			value.item.path,
+			value.path,
 			editor
 		);
 

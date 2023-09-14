@@ -7,6 +7,7 @@ import {
 	EditorSuggestContext,
 	EditorSuggestTriggerInfo,
 	MarkdownView,
+	Scope,
 	TFile,
 } from "obsidian";
 
@@ -31,8 +32,8 @@ function debounce<T extends unknown[], R>(
 			timeout = setTimeout(() => {
 				logger("debouncedFunction", args);
 				func.apply(context, args)
-					.then((result) => resolve(result))
-					.catch((error) => reject(error));
+					.then((result: any) => resolve(result))
+					.catch((error: any) => reject(error));
 			}, wait);
 		});
 	};
@@ -47,7 +48,16 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 	plugin: TextGeneratorPlugin;
 	process = true;
 	delay = 0;
-	getSuggestionsDebounced: any;
+	getSuggestionsDebounced: (
+		context: EditorSuggestContext
+	) => Promise<Completion[]>;
+	scope: Scope & {
+		keys: {
+			key: string;
+			func: any;
+		}[];
+	};
+	isOpen: boolean;
 	constructor(private app: App, plugin: TextGeneratorPlugin) {
 		logger("AutoSuggest", app, plugin);
 		super(app);
@@ -55,12 +65,12 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 		this.scope.register(
 			[],
 			"Tab",
-			this.scope.keys.find((k) => k.key === "ArrowDown").func
+			this.scope.keys.find((k) => k.key === "ArrowDown")?.func
 		);
 		this.scope.register(
 			["Shift"],
 			"Tab",
-			this.scope.keys.find((k) => k.key === "ArrowUp").func
+			this.scope.keys.find((k) => k.key === "ArrowUp")?.func
 		);
 	}
 
@@ -83,11 +93,11 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 						return suggestions?.length
 							? suggestions
 							: [
-									{
-										label: context.query,
-										value: context.query,
-									},
-							  ];
+								{
+									label: context.query,
+									value: context.query,
+								},
+							];
 					} else {
 						return [{ label: context.query, value: context.query }];
 					}
@@ -101,32 +111,35 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 		cursor: EditorPosition,
 		editor: Editor,
 		file: TFile
-	): EditorSuggestTriggerInfo {
+	): EditorSuggestTriggerInfo | null {
 		logger("onTrigger", cursor, editor, file);
+
 		if (
 			!this.plugin.settings?.autoSuggestOptions?.isEnabled ||
 			this.isOpen
 		) {
 			this.process = false;
-			return;
+			return null;
 		}
 
-		const line = editor.getLine(cursor.line).substring(0, cursor.ch);
 		const triggerPhrase =
 			this.plugin.settings.autoSuggestOptions.triggerPhrase;
 
+		const line = editor.getLine(cursor.line).substring(0, cursor.ch);
+
 		if (!line.endsWith(triggerPhrase)) {
 			this.process = false;
-			return;
+			return null;
 		}
+
 		this.process = true;
 
 		const selection =
 			this.plugin.textGenerator.contextManager.getSelection(editor);
 		const lastOccurrenceIndex = selection.lastIndexOf(triggerPhrase);
 		const currentPart =
-			selection.substr(0, lastOccurrenceIndex) +
-			selection.substr(lastOccurrenceIndex).replace(triggerPhrase, "");
+			selection.substring(0, lastOccurrenceIndex) +
+			selection.substring(lastOccurrenceIndex).replace(triggerPhrase, "");
 
 		const currentStart = line.lastIndexOf(triggerPhrase);
 
@@ -162,6 +175,7 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 	public renderSuggestion(value: Completion, el: HTMLElement): void {
 		//logger("renderSuggestion",value,el);
 		el.setAttribute("dir", "auto");
+		el.addClass("cursor-pointer");
 		el.setText(value.label);
 	}
 
@@ -177,6 +191,11 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 	): void {
 		logger("selectSuggestion", value, evt);
 		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+
+		if (!activeView || !this.context) {
+			return;
+		}
+
 		const currentCursorPos = activeView.editor.getCursor();
 		let replacementValue = value.value;
 		const prevChar = activeView.editor.getRange(
@@ -196,9 +215,6 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 			ch: this.context.start.ch + replacementValue.length,
 			line: currentCursorPos.line,
 		};
-		if (!activeView) {
-			return;
-		}
 
 		activeView.editor.replaceRange(
 			replacementValue,
@@ -214,50 +230,47 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 
 	private async getGPTSuggestions(
 		context: EditorSuggestContext
-	): Promise<Completion[]> {
+	): Promise<Completion[] | []> {
 		logger("getGPTSuggestions", context);
-		const result: string[] = [];
 		try {
 			const prompt = `continue the follwing text :
             ${context.query}
             `;
 
-			const additionalParams = {
-				showSpinner: false,
-				bodyParams: {
-					n: parseInt(
-						this.plugin.settings.autoSuggestOptions
-							.numberOfSuggestions
-					),
-					stop: this.plugin.settings.autoSuggestOptions.stop,
-				},
-				reqParams: {
-					extractResult: "requestResults?.choices",
-				},
-			};
+			this.plugin.startProcessing(false);
 
-			const re = await this.plugin.textGenerator.generate(
-				{ context: prompt },
-				false,
-				this.plugin.settings,
-				"",
-				additionalParams
-			);
-			let suggestions = [];
-			const chatModels = [
-				"gpt-3.5-turbo",
-				"gpt-3.5-turbo-0301",
-				"gpt-4",
-				"gpt-4-0314",
-				"gpt-4-32k",
-				"gpt-4-32k-0314",
-			];
-			if (chatModels.includes(this.plugin.settings.engine)) {
-				suggestions = re.map((r) => r.message.content);
-			} else {
-				suggestions = re.map((r) => r.text);
-			}
-			suggestions = [...new Set(suggestions)];
+			const re =
+				await this.plugin.textGenerator.LLMProvider.generateMultiple(
+					[{ role: "user", content: prompt }],
+					{
+						...this.plugin.settings,
+						stream: false,
+						n: parseInt(
+							"" +
+							this.plugin.settings.autoSuggestOptions
+								.numberOfSuggestions
+						),
+						stop: [this.plugin.settings.autoSuggestOptions.stop],
+					}
+				);
+
+			this.plugin.endProcessing(false);
+
+			// let suggestions: string[] = [];
+			// const chatModels = [
+			// 	"gpt-3.5-turbo",
+			// 	"gpt-3.5-turbo-0301",
+			// 	"gpt-4",
+			// 	"gpt-4-0314",
+			// 	"gpt-4-32k",
+			// 	"gpt-4-32k-0314",
+			// ];
+			// if (chatModels.includes(this.plugin.settings.engine)) {
+			// 	suggestions = re.map((r) => r.message.content);
+			// } else {
+			// 	suggestions = re.map((r) => r.text);
+			// }
+			const suggestions = [...new Set(re)];
 			return suggestions.map((r) => {
 				let label = r.trim();
 				if (
@@ -284,5 +297,6 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 			logger("getGPTSuggestions error", error);
 			this.plugin.handelError(error);
 		}
+		return [];
 	}
 }

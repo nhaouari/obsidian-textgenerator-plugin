@@ -13,6 +13,7 @@ type Context = {
 type TextGeneratorSettings = {
 	endpoint: string;
 	api_key: string;
+	api_key_encrypted?: Buffer;
 	engine: string;
 	max_tokens: number;
 	temperature: number;
@@ -22,6 +23,7 @@ type TextGeneratorSettings = {
 	showStatusBar: boolean;
 	displayErrorInEditor: boolean;
 	outputToBlockQuote: boolean;
+	freeCursorOnStreaming: boolean;
 	models: any;
 	context: Context;
 	requestTimeout: number;
@@ -36,7 +38,7 @@ type TextGeneratorSettings = {
 		"create-text-From-template": boolean;
 		"show-modal-From-template": boolean;
 		set_max_tokens: boolean;
-		"set-model": boolean;
+		"set-llm": boolean;
 		packageManager: boolean;
 		"create-template": boolean;
 		"get-title": boolean;
@@ -63,6 +65,12 @@ type TextGeneratorSettings = {
 		ImageExtractorEmbded: boolean;
 		ImageExtractor: boolean;
 	};
+
+	selectedProvider?: string;
+	// TODO: FUTURE IMPLEMENTATION
+	// reason: it will clean code, and also help with custom llm providers later on
+	LLMProviderOptions: Record<string, Record<string, any>>;
+	LLMProviderOptionsKeysHashed: Record<string, Buffer>;
 };
 
 type TextGeneratorConfiguration = {
@@ -105,6 +113,7 @@ type PromptTemplate = {
 	author: string;
 	tags: string;
 	version: string;
+	context: any;
 };
 
 type FileViewMode = "source" | "preview" | "default";
@@ -126,4 +135,15 @@ export type {
 	Context,
 	InstalledPackage,
 	TextGeneratorConfiguration,
+};
+
+export type AsyncReturnType<T extends (...args: any) => Promise<any>> =
+	T extends (...args: any) => Promise<infer R> ? R : any;
+
+type LiteralUnion<T extends U, U = string> = T | (U & { zz_IGNORE_ME?: never });
+
+export type Role = LiteralUnion<"assistant" | "user" | "system" | "admin">;
+export type Message = {
+	role: Role;
+	content: string;
 };

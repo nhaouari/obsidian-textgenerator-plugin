@@ -11,17 +11,19 @@ import {
 } from "@codemirror/view";
 
 import debug from "debug";
+
 const logger = debug("cm:SpinnersPlugin");
+
 class Spinners extends WidgetType {
 	toDOM() {
-		let span = document.createElement("span");
+		const span = document.createElement("span");
 		span.addClasses(["loading", "dots"]);
 		span.setAttribute("id", "tg-loading");
 		return span;
 	}
 }
 
-class SpinnersPlugin implements PluginValue {
+export class SpinnersPlugin implements PluginValue {
 	decorations: DecorationSet;
 	listOfPositions: number[];
 
@@ -32,8 +34,15 @@ class SpinnersPlugin implements PluginValue {
 	}
 
 	add(position: number, update: EditorView) {
-		logger("add", position);
+		logger("add", position, update);
 		this.listOfPositions.push(position);
+		//@ts-ignore
+		this.decorations = this.buildDecorations(update.viewState);
+	}
+
+	updatePos(position: number, update: EditorView) {
+		this.listOfPositions[0] = position;
+		//@ts-ignore
 		this.decorations = this.buildDecorations(update.viewState);
 	}
 
@@ -41,14 +50,15 @@ class SpinnersPlugin implements PluginValue {
 		logger("remove", position);
 		this.listOfPositions = [];
 		/*
-    const index = this.listOfPositions.indexOf(position);
-    this.listOfPositions.splice(index, 1);
-    */
+	const index = this.listOfPositions.indexOf(position);
+	this.listOfPositions.splice(index, 1);
+	*/
+		//@ts-ignore
 		this.decorations = this.buildDecorations(update.viewState);
 	}
 
 	update(update: ViewUpdate) {
-		logger("update", update);
+		// logger("update", update);
 		if (update.docChanged || update.viewportChanged) {
 			this.decorations = this.buildDecorations(update.view);
 		}

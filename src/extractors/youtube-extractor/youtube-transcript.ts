@@ -2,10 +2,10 @@
 import { request } from "obsidian";
 
 const RE_YOUTUBE =
-	/^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/im;
+	/^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|&v(?:i)?=))([^#&?]*).*/im;
 
 export class YoutubeTranscriptError extends Error {
-	constructor(message) {
+	constructor(message: string) {
 		super(`[YoutubeTranscript] 🚨 ${message}`);
 	}
 }
@@ -32,7 +32,7 @@ export class YoutubeTranscript {
 	public static async fetchTranscript(
 		videoId: string,
 		config?: TranscriptConfig
-	): Promise<TranscriptResponse[]> {
+	): Promise<TranscriptResponse[] | undefined> {
 		const identifier = this.retrieveVideoId(videoId);
 		try {
 			const videoPageBody = await request(
@@ -63,7 +63,7 @@ export class YoutubeTranscript {
 							.transcriptRenderer.body.transcriptBodyRenderer
 							.cueGroups;
 
-					return transcripts.map((cue) => ({
+					return transcripts.map((cue: any) => ({
 						text: cue.transcriptCueGroupRenderer.cues[0]
 							.transcriptCueRenderer.cue.simpleText,
 						duration: parseInt(
@@ -119,8 +119,8 @@ export class YoutubeTranscript {
 				},
 				request: {
 					sessionId,
-					internalExperimentFlags: [],
-					consistencyTokenJars: [],
+					internalExperimentFlags: [] as string[],
+					consistencyTokenJars: [] as string[],
 				},
 				user: {},
 				clientScreenNonce: this.generateNonce(),
