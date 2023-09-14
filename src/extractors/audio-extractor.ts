@@ -5,7 +5,7 @@ import debug from "debug";
 
 const logger = debug("textgenerator:Extractor:AudioExtractor");
 
-import { WisperProviderName } from "../ui/settings/sections/otherProviders/wisper";
+import { WhisperProviderName } from "../ui/settings/sections/otherProviders/whisper";
 export default class AudioExtractor extends Extractor<TAbstractFile> {
   constructor(app: App, plugin: TextGeneratorPlugin) {
     super(app, plugin);
@@ -61,9 +61,9 @@ export default class AudioExtractor extends Extractor<TAbstractFile> {
   async generateTranscript(audioBuffer: ArrayBuffer, filetype: string) {
     try {
       const endpoint = new URL(
-        this.plugin.settings.LLMProviderOptions[WisperProviderName]?.basePath
+        this.plugin.settings.LLMProviderOptions[WhisperProviderName]?.basePath
           ?.length
-          ? this.plugin.settings.LLMProviderOptions[WisperProviderName]
+          ? this.plugin.settings.LLMProviderOptions[WhisperProviderName]
               ?.basePath
           : this.plugin.settings.endpoint
       );
