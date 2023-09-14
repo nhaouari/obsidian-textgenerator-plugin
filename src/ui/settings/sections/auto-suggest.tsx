@@ -42,7 +42,7 @@ export default function AutoSuggestSetting(props: { register: Register }) {
 
       <SettingItem
         name="Trigger Phrase"
-        description="Trigger Phrase"
+        description="Trigger Phrase (by default double space)"
         register={props.register}
         sectionId={sectionId}
       >
