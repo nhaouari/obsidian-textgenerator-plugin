@@ -116,6 +116,7 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 
 		if (
 			!this.plugin.settings?.autoSuggestOptions?.isEnabled ||
+			this.app.workspace.activeEditor?.editor?.cm?.state?.vim?.mode !== "insert" ||
 			this.isOpen
 		) {
 			this.process = false;
