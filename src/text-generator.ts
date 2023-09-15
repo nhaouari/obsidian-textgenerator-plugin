@@ -139,6 +139,9 @@ export default class TextGenerator extends RequestHandler {
       console.log({ content });
 
       if (first) {
+        const alreadyDidnewLine = this.plugin.settings.prefix?.contains(`
+`);
+
         // here you can do some addition magic
 
         // check if its starting by space, and space doens't exist in note (used to detirmin if we should add space at the begining).
@@ -146,8 +149,13 @@ export default class TextGenerator extends RequestHandler {
           content = " " + content;
         }
 
-        if (txt == ":" && cntnt != "\n") {
+        if (!alreadyDidnewLine && txt == ":" && cntnt != "\n") {
           content = "\n" + content;
+        }
+
+        // adding prefix here
+        if (this.plugin.settings.prefix?.length) {
+          content = this.plugin.settings.prefix + content;
         }
       }
 
@@ -222,7 +230,16 @@ export default class TextGenerator extends RequestHandler {
       return Promise.reject(errorGeneration);
     }
     const mode = this.getMode(context);
-    this.insertGeneratedText(text, editor, cursor, mode);
+
+    const prefix = this.plugin.settings.prefix;
+
+    this.insertGeneratedText(
+      prefix.length ? prefix + text : text,
+      editor,
+      cursor,
+      mode
+    );
+
     logger("generateInEditor end");
   }
 

@@ -113,10 +113,21 @@ export default function DMPSetting(props: { register: Register }) {
         sectionId={sectionId}
       >
         <Input
-          value={"" + global.plugin.settings.prefix?.replaceAll("\n", "\\n")}
+          value={
+            "" +
+            global.plugin.settings.prefix?.replaceAll(
+              `
+`,
+              "\\n"
+            )
+          }
           placeholder="Prefix"
           setValue={async (val) => {
-            global.plugin.settings.prefix = val.replaceAll("\\n", "\n");
+            global.plugin.settings.prefix = val.replaceAll(
+              "\\n",
+              `
+`
+            );
             await global.plugin.saveSettings();
             global.triggerReload();
           }}
