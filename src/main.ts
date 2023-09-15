@@ -397,7 +397,6 @@ export default class TextGeneratorPlugin extends Plugin {
   }
 
   async saveSettings() {
-    console.log(this.removeApikeys(this.settings as typeof this.settings));
     await this.saveData(
       this.removeApikeys(this.settings as typeof this.settings)
     );
@@ -435,7 +434,7 @@ export default class TextGeneratorPlugin extends Plugin {
           id: `${template.path.split("/").slice(-2, -1)[0]}-${command}-${
             template.id
           }`,
-          name: `${command.toUpperCase()} ${template.title}`,
+          name: `${template.id || template.name}: ${command.toUpperCase()}`,
           editorCallback: async (editor: Editor) => {
             try {
               switch (command) {

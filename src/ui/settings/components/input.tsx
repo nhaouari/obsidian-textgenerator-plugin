@@ -1,15 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IconEyeClosed, IconEye } from "@tabler/icons-react";
 import clsx from "clsx";
+import { ZodSchema } from "zod";
+import { useDebounce } from "usehooks-ts";
 
 export default function Input(props: {
   type?: string;
-  value: string;
+  value: any;
   placeholder?: string;
   setValue: (nval: string) => void;
   className?: string;
+  validator?: ZodSchema;
 }) {
   const [showPass, setShowPass] = useState(false);
+  const [error, setError] = useState("");
+
+  const valueDebounced = useDebounce(props.value, 100);
+
+  useEffect(() => {
+    setError("");
+    if (props.validator) {
+      try {
+        props.validator?.parse(valueDebounced);
+      } catch (err: any) {
+        setError(err);
+      }
+    }
+  }, [valueDebounced]);
 
   return (
     <div
@@ -35,9 +52,10 @@ export default function Input(props: {
         }
         placeholder={props.placeholder}
         className={clsx(
-          "dz-input bg-[var(--background-modifier-form-field)]",
+          "dz-input dz-tooltip bg-[var(--background-modifier-form-field)]",
           {
             "dz-toggle": props.type == "checkbox",
+            "outline outline-red-400 text-red-300": error,
           },
           props.className
         )}
@@ -45,6 +63,7 @@ export default function Input(props: {
         defaultChecked={
           props.type == "checkbox" ? props.value == "true" : undefined
         }
+        data-tip={error}
         onChange={
           props.type != "checkbox"
             ? (e) => {

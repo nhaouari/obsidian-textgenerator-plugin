@@ -27,9 +27,7 @@ export default class LangchainChatgptProvider
   implements LLMProviderInterface
 {
   id = id;
-  getConfig(
-    options: LLMConfig
-  ): Partial<OpenAIChatInput & BaseChatModelParams> {
+  getConfig(options: LLMConfig) {
     return this.cleanConfig({
       openAIApiKey: options.api_key,
 
@@ -42,7 +40,7 @@ export default class LangchainChatgptProvider
       stop: options.stop,
       streaming: options.stream,
       maxRetries: 3,
-    });
+    } as Partial<OpenAIChatInput & BaseChatModelParams>);
   }
 
   getLLM(options: LLMConfig) {
