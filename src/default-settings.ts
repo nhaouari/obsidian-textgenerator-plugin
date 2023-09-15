@@ -46,7 +46,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
 		"calculate-tokens": true,
 		"calculate-tokens-for-template": true,
 		"modal-suggest": false,
-		"text-extractor-tool": false,
+		"text-extractor-tool": true,
 		"stop-stream": true,
 
 	},
