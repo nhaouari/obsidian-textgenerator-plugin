@@ -313,7 +313,9 @@ margin-left: 2rem;
 
 
 
-
+.small{
+	@apply text-sm;
+}
 
 
 

@@ -167,6 +167,7 @@ export default class ContextManager {
     const variables = this.extractVariablesFromTemplate(templateContent);
 
     logger("getTemplateContext Variables ", { variables });
+
     if (contextOptions.includeFrontmatter)
       blocks["frontmatter"] = {
         ...this.getFrontmatter(this.getMetaData(templatePath)),
@@ -437,7 +438,8 @@ export default class ContextManager {
     const fileCache = this.getMetaData(path);
     let content = "";
     const staredHeadings = fileCache?.headings?.filter(
-      (e) => e.heading.substring(e.heading.length - 1) === "*"
+      (e: { heading: string }) =>
+        e.heading.substring(e.heading.length - 1) === "*"
     );
     if (staredHeadings) {
       for (let i = 0; i < staredHeadings.length; i++) {
@@ -525,12 +527,24 @@ export default class ContextManager {
         ? this.plugin.textGenerator.embeddingsScope.getActiveNote()
         : { path };
 
-    if (activeFile?.path) {
-      const cache = app.metadataCache.getCache(activeFile.path);
-      this.app.metadataCache.getCache(activeFile.path);
-      return { ...cache, path: activeFile.path };
-    }
-    return null;
+    if (!activeFile?.path) return null;
+
+    const cache = app.metadataCache.getCache(activeFile.path);
+    this.app.metadataCache.getCache(activeFile.path);
+
+    return {
+      ...cache,
+
+      frontmatter: {
+        ...cache?.frontmatter,
+        PromptInfo: {
+          ...cache?.frontmatter,
+          ...(cache?.frontmatter?.PromptInfo || {}),
+        },
+      },
+
+      path: activeFile.path,
+    };
   }
 
   getMetaDataAsStr(frontmatter: any) {

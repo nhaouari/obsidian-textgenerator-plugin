@@ -91,11 +91,12 @@ export default class LangchainProvider
             ...(onToken &&
               params.stream && {
                 async handleLLMNewToken(token: string) {
+                  const d = first;
+                  first = false;
                   alreadyBegainGenerating = true;
-                  const tk = (await onToken(token, first)) || token;
+                  const tk = (await onToken(token, d)) || token;
                   allText += tk;
                   result += tk;
-                  first = false;
                 },
               }),
 
