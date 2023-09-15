@@ -23,7 +23,7 @@ export default function Input(props: {
       try {
         props.validator?.parse(valueDebounced);
       } catch (err: any) {
-        setError(err);
+        setError(JSON.parse(err?.message)?.[0]?.message);
       }
     }
   }, [valueDebounced]);
@@ -33,6 +33,7 @@ export default function Input(props: {
       className={clsx("flex items-center gap-2 ", {
         "checkbox-container cursor-pointer": props.type == "checkbox",
         "is-enabled": props.type == "checkbox" && props.value == "true",
+        "dz-tooltip": error,
       })}
       onClick={
         props.type == "checkbox"
@@ -41,6 +42,7 @@ export default function Input(props: {
             }
           : undefined
       }
+      data-tip={error || ""}
     >
       <input
         type={
@@ -52,7 +54,7 @@ export default function Input(props: {
         }
         placeholder={props.placeholder}
         className={clsx(
-          "dz-input dz-tooltip bg-[var(--background-modifier-form-field)]",
+          "dz-input bg-[var(--background-modifier-form-field)]",
           {
             "dz-toggle": props.type == "checkbox",
             "outline outline-red-400 text-red-300": error,
@@ -63,7 +65,6 @@ export default function Input(props: {
         defaultChecked={
           props.type == "checkbox" ? props.value == "true" : undefined
         }
-        data-tip={error}
         onChange={
           props.type != "checkbox"
             ? (e) => {
