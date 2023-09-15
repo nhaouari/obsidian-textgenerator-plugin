@@ -6,6 +6,7 @@ import Input from "../components/input";
 import type { Register } from ".";
 import { z } from "zod";
 
+const MaxTokensSchema = z.number().min(0);
 const TemperatureSchema = z.number().min(0).max(1);
 const FrequencySchema = z.number().min(-20).max(20);
 const TimeoutSchema = z.number().min(0);
@@ -36,10 +37,12 @@ export default function DMPSetting(props: { register: Register }) {
         sectionId={sectionId}
       >
         <Input
-          value={"" + global.plugin.settings.max_tokens}
+          value={global.plugin.settings.max_tokens}
           placeholder="max_tokens"
+          validator={MaxTokensSchema}
           setValue={async (val) => {
-            global.plugin.settings.max_tokens = parseInt(val);
+            // @ts-ignore
+            global.plugin.settings.max_tokens = parseInt(val) || val;
             await global.plugin.saveSettings();
             global.triggerReload();
           }}
