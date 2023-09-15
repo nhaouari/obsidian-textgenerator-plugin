@@ -63,8 +63,10 @@ export default function AutoSuggestSetting(props: { register: Register }) {
       >
         <input
           type="range"
+          className="dz-tooltip"
           min={0}
           max={2000}
+          data-tip={global.plugin.settings.autoSuggestOptions.delay + "ms"}
           value={global.plugin.settings.autoSuggestOptions.delay}
           onChange={async (e) => {
             global.plugin.settings.autoSuggestOptions.delay = parseInt(

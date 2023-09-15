@@ -3,8 +3,14 @@ import useGlobal from "../../context/global";
 import SettingItem from "../components/item";
 import SettingsSection from "../components/section";
 import Input from "../components/input";
-import { useToggle } from "usehooks-ts";
 import type { Register } from ".";
+import { z } from "zod";
+
+const MaxTokensSchema = z.number().min(0);
+const TemperatureSchema = z.number().min(0).max(1);
+const FrequencySchema = z.number().min(-20).max(20);
+const TimeoutSchema = z.number().min(0);
+
 export default function DMPSetting(props: { register: Register }) {
   const global = useGlobal();
   const sectionId = useId();
@@ -31,10 +37,12 @@ export default function DMPSetting(props: { register: Register }) {
         sectionId={sectionId}
       >
         <Input
-          value={"" + global.plugin.settings.max_tokens}
+          value={global.plugin.settings.max_tokens}
           placeholder="max_tokens"
+          validator={MaxTokensSchema}
           setValue={async (val) => {
-            global.plugin.settings.max_tokens = parseInt(val);
+            // @ts-ignore
+            global.plugin.settings.max_tokens = parseInt(val) || val;
             await global.plugin.saveSettings();
             global.triggerReload();
           }}
@@ -48,10 +56,12 @@ export default function DMPSetting(props: { register: Register }) {
         sectionId={sectionId}
       >
         <Input
-          value={"" + global.plugin.settings.temperature}
+          value={global.plugin.settings.temperature}
           placeholder="temperature"
+          validator={TemperatureSchema}
           setValue={async (val) => {
-            global.plugin.settings.temperature = parseInt(val);
+            // @ts-ignore
+            global.plugin.settings.temperature = parseFloat(val) || val;
             await global.plugin.saveSettings();
             global.triggerReload();
           }}
@@ -65,10 +75,12 @@ export default function DMPSetting(props: { register: Register }) {
         sectionId={sectionId}
       >
         <Input
-          value={"" + global.plugin.settings.frequency_penalty}
+          value={global.plugin.settings.frequency_penalty}
           placeholder="frequency_penalty"
+          validator={FrequencySchema}
           setValue={async (val) => {
-            global.plugin.settings.frequency_penalty = parseFloat(val);
+            // @ts-ignore
+            global.plugin.settings.frequency_penalty = parseFloat(val) || val;
             await global.plugin.saveSettings();
             global.triggerReload();
           }}
@@ -83,9 +95,11 @@ export default function DMPSetting(props: { register: Register }) {
       >
         <Input
           placeholder="Timeout"
-          value={"" + global.plugin.settings.requestTimeout}
+          value={global.plugin.settings.requestTimeout}
+          validator={TimeoutSchema}
           setValue={async (val) => {
-            global.plugin.settings.requestTimeout = parseInt(val);
+            // @ts-ignore
+            global.plugin.settings.requestTimeout = parseInt(val) || val;
             await global.plugin.saveSettings();
             global.triggerReload();
           }}
@@ -99,10 +113,21 @@ export default function DMPSetting(props: { register: Register }) {
         sectionId={sectionId}
       >
         <Input
-          value={"" + global.plugin.settings.prefix}
+          value={
+            "" +
+            global.plugin.settings.prefix?.replaceAll(
+              `
+`,
+              "\\n"
+            )
+          }
           placeholder="Prefix"
           setValue={async (val) => {
-            global.plugin.settings.prefix = val;
+            global.plugin.settings.prefix = val.replaceAll(
+              "\\n",
+              `
+`
+            );
             await global.plugin.saveSettings();
             global.triggerReload();
           }}
