@@ -136,7 +136,7 @@ export default class TextGenerator extends RequestHandler {
 
     const allText = await strm(async (cntnt, first) => {
       let content = cntnt.length ? cntnt : " ";
-      console.log({ content });
+      //   console.log({ content, first });
 
       if (first) {
         const alreadyDidnewLine = this.plugin.settings.prefix?.contains(`
@@ -155,19 +155,24 @@ export default class TextGenerator extends RequestHandler {
 
         // adding prefix here
         if (this.plugin.settings.prefix?.length) {
+          console.log(content);
           content = this.plugin.settings.prefix + content;
         }
       }
 
-      logger("generateStreamInEditor message", { content });
       // const cursor = editor.getCursor();
-      await this.insertGeneratedText(content, editor, cursor, "stream");
+      this.insertGeneratedText(content, editor, cursor, "stream");
+
+      console.log("inserting", content);
+
       cursor.ch += content.length;
+      //   cursor.line += content.split("\n").length;
 
       if (!this.plugin.settings.freeCursorOnStreaming) editor.setCursor(cursor);
 
       this.plugin.updateSpinnerPos();
 
+      logger("generateStreamInEditor message", { content });
       return content;
     });
 
@@ -547,19 +552,35 @@ export default class TextGenerator extends RequestHandler {
     logger("tempalteToModal end");
   }
 
+  getTemplates(promptsPath: string = this.plugin.settings.promptsPath) {
+    const files = app.vault.getFiles();
+    const paths: string[] = files
+      .filter(
+        (f) => f.path.includes(promptsPath) && !f.path.includes("/trash/")
+      )
+      .map((f) => f.path);
+
+    return paths.map((s) => ({
+      title: s.substring(promptsPath.length + 1),
+      path: s,
+      ...this.getMetadata(s),
+    }));
+  }
+
   getMetadata(path: string) {
     logger("getMetadata");
     const metadata = this.getFrontmatter(path);
-    const validedMetaData: {
-      id?: string;
-      name?: string;
-      description?: string;
-      required_values?: any;
-      author?: any;
-      tags?: any;
-      version?: any;
-      commands?: any;
-    } = {};
+
+    const validedMetaData: Partial<{
+      id: string;
+      name: string;
+      description: string;
+      required_values: string[];
+      author: string;
+      tags: string[];
+      version: string;
+      commands: string[];
+    }> = {};
 
     if (metadata?.PromptInfo?.promptId) {
       validedMetaData["id"] = metadata.PromptInfo.promptId;
@@ -574,7 +595,10 @@ export default class TextGenerator extends RequestHandler {
     }
 
     if (metadata?.PromptInfo?.required_values) {
-      validedMetaData["required_values"] = metadata.PromptInfo.required_values;
+      validedMetaData["required_values"] =
+        typeof metadata.PromptInfo.required_values == "string"
+          ? metadata.PromptInfo.required_values.split(",")
+          : metadata.PromptInfo.required_values;
     }
 
     if (metadata?.PromptInfo?.author) {
@@ -582,7 +606,10 @@ export default class TextGenerator extends RequestHandler {
     }
 
     if (metadata?.PromptInfo?.tags) {
-      validedMetaData["tags"] = metadata.PromptInfo.tags;
+      validedMetaData["tags"] =
+        typeof metadata.PromptInfo.tags == "string"
+          ? metadata.PromptInfo.tags.split(",")
+          : metadata.PromptInfo.tags;
     }
 
     if (metadata?.PromptInfo?.version) {
@@ -590,7 +617,10 @@ export default class TextGenerator extends RequestHandler {
     }
 
     if (metadata?.PromptInfo?.commands) {
-      validedMetaData["commands"] = metadata.PromptInfo.commands;
+      validedMetaData["commands"] =
+        typeof metadata.PromptInfo.commands == "string"
+          ? metadata.PromptInfo.commands.split(",")
+          : metadata.PromptInfo.commands;
     }
 
     logger("getMetadata end");
@@ -599,12 +629,13 @@ export default class TextGenerator extends RequestHandler {
 
   getFrontmatter(path = "") {
     logger("getFrontmatter");
-    const cache = app.metadataCache.getCache(path);
-    if (cache?.hasOwnProperty("frontmatter")) {
-      logger("getFrontmatter end");
-      return cache.frontmatter;
-    }
-    logger("getFrontmatter end");
-    return null;
+
+    const frontMatter =
+      this.contextManager.getFrontmatter(
+        this.contextManager.getMetaData(path)
+      ) || null;
+
+    logger("getFrontmatter end", frontMatter);
+    return frontMatter;
   }
 }

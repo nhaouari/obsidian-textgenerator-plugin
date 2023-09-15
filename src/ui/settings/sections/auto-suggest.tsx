@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useMemo } from "react";
+import React, { useEffect, useId } from "react";
 import useGlobal from "../../context/global";
 import SettingItem from "../components/item";
 import SettingsSection from "../components/section";
@@ -42,7 +42,7 @@ export default function AutoSuggestSetting(props: { register: Register }) {
 
       <SettingItem
         name="Trigger Phrase"
-        description="Trigger Phrase (by default double space)"
+        description="Trigger Phrase (default: *double space*)"
         register={props.register}
         sectionId={sectionId}
       >

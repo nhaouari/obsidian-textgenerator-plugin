@@ -244,6 +244,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
   async onload() {
     logger("loading textGenerator plugin");
+
     addIcon("GENERATE_ICON", GENERATE_ICON);
     addIcon("GENERATE_META_ICON", GENERATE_META_ICON);
 
@@ -314,9 +315,6 @@ export default class TextGeneratorPlugin extends Plugin {
       editorCallback: command.editorCallback?.bind(this),
     }));
 
-    // registers
-    this.addCommands();
-
     this.registerMarkdownCodeBlockProcessor("tg", async (source, el, ctx) =>
       blockTgHandler(source, el, ctx)
     );
@@ -366,6 +364,9 @@ export default class TextGeneratorPlugin extends Plugin {
 		);
 		*/
 
+    // registers
+    await this.addCommands();
+
     await this.packageManager.load();
   }
 
@@ -402,25 +403,16 @@ export default class TextGeneratorPlugin extends Plugin {
     );
   }
 
-  addCommands() {
+  async addCommands() {
     const cmds = this.commands.filter(
       (cmd) =>
         this.settings.options[cmd.id as keyof typeof this.settings.options] ===
         true
     );
-    const promptsPath = this.settings.promptsPath;
-    const paths: string[] = app.metadataCache
-      // @ts-ignore
-      .getCachedFiles()
-      .filter(
-        (path: string) =>
-          path.includes(promptsPath) && !path.includes("/trash/")
-      );
-    const templates = paths.map((s) => ({
-      title: s.substring(promptsPath.length + 1),
-      path: s,
-      ...this.textGenerator.getMetadata(s),
-    }));
+
+    // wait for obsidian to get cached files
+    await new Promise((s) => setTimeout(s, 1000));
+    const templates = await this.textGenerator.getTemplates();
     //
 
     const templatesWithCommands = templates.filter((t) => t?.commands);
@@ -428,7 +420,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
     templatesWithCommands.forEach((template) => {
       //
-      template.commands.forEach((command: string) => {
+      template.commands?.forEach((command) => {
         logger("Tempate commands ", { template, command });
         const cmd: Command = {
           id: `${template.path.split("/").slice(-2, -1)[0]}-${command}-${
