@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 export default function SettingsSection(props: {
   title: string;
@@ -10,8 +10,32 @@ export default function SettingsSection(props: {
   hidden?: boolean;
 }) {
   const [collapsed, setCollapsed] = useState(true);
+  const ref = useRef<HTMLDivElement>(null);
 
   const [childrenHeight, setChildrenHeight] = useState(100);
+
+  useEffect(() => {
+    if (!ref.current) return;
+
+    const onResize = () => {
+      if (!ref.current) return;
+      let extendedHeight = 0;
+      for (let i = 0; i < ref.current.children.length; i++) {
+        // @ts-ignore
+        extendedHeight += ref.current.children[i].offsetHeight + 100;
+      }
+
+      setChildrenHeight(extendedHeight);
+    };
+
+    onResize();
+
+    document.addEventListener("resize", onResize);
+
+    return () => {
+      document.removeEventListener("resize", onResize);
+    };
+  }, [ref.current]);
 
   useEffect(
     () => setCollapsed((props.collapsed ?? true) || false),
@@ -63,16 +87,7 @@ export default function SettingsSection(props: {
       )}
 
       <div
-        ref={(ref) => {
-          if (!ref) return;
-          let extendedHeight = 0;
-          for (let i = 0; i < ref.children.length; i++) {
-            // @ts-ignore
-            extendedHeight += ref.children[i].offsetHeight;
-          }
-
-          setChildrenHeight(extendedHeight);
-        }}
+        ref={ref}
         className={clsx("min-h-max overflow-hidden transition-all")}
         style={{
           maxHeight: collapsed ? 0 : `${childrenHeight}px`,
