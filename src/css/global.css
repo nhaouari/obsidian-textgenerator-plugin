@@ -1,644 +1,633 @@
 @tailwind base;
 @tailwind components;
-
 @tailwind utilities;
 
-
-
-
-
-
 .path {
-  font-size: xx-small;
-  margin-left: 25px;
+	font-size: xx-small;
+	margin-left: 25px;
 }
 
 .desc {
-  font-size: small;
-  margin-left: 25px;
+	font-size: small;
+	margin-left: 25px;
 }
 
 .modelTitle {
-  text-align: center;
-  font-size: x-large;
-  font-weight: bolder;
+	text-align: center;
+	font-size: x-large;
+	font-weight: bolder;
 }
 
 .linkMoreInfo {
-  font-size: xx-small;
+	font-size: xx-small;
 }
 
 .packageManager {
-  width: 800px;
-  
+	width: 800px;
 }
 
 .model {
-  width:auto;
+	width: auto;
 }
 
 .tg-update {
-  background-color: var(--background-modifier-success) !important;
+	background-color: var(--background-modifier-success) !important;
 }
 
 /* --- Basics --- */
 
 .loading {
-  display: inline-block;
-  overflow: hidden;
-  height: 1.3em;
-  margin-top: -0.3em;
-  line-height: 1.5em;
-  vertical-align: text-bottom;
+	display: inline-block;
+	overflow: hidden;
+	height: 1.3em;
+	margin-top: -0.3em;
+	line-height: 1.5em;
+	vertical-align: text-bottom;
 }
 
 .loading::after {
-  display: inline-table;
-  white-space: pre;
-  text-align: left;
+	display: inline-table;
+	white-space: pre;
+	text-align: left;
 }
 
 /* --- Types --- */
 
 /* default loading is ellip */
 .loading::after {
-  content: "\A.\A..\A...";
-  animation: spin4 2s steps(4) infinite;
+	content: "\A.\A..\A...";
+	animation: spin4 2s steps(4) infinite;
 }
 
 .loading.line::after {
-  content: "/\A–\A\\\A|";
-  text-align: center;
-  animation: spin4 1s steps(4) infinite;
+	content: "/\A–\A\\\A|";
+	text-align: center;
+	animation: spin4 1s steps(4) infinite;
 }
 
 .loading.line2::after {
-  content: "╲\A│\A╱\A─";
-  text-align: center;
-  animation: spin4 1s steps(4) infinite;
+	content: "╲\A│\A╱\A─";
+	text-align: center;
+	animation: spin4 1s steps(4) infinite;
 }
 
 .loading.plus::after {
-  content: "┽\A╀\A┾\A╁";
-  animation: spin4 1s steps(4) infinite;
+	content: "┽\A╀\A┾\A╁";
+	animation: spin4 1s steps(4) infinite;
 }
 
 .loading.dots::after {
-  content: "⠋\A⠙\A⠹\A⠸\A⠼\A⠴\A⠦\A⠧\A⠇\A⠏";
-  animation: spin10 1s steps(10) infinite;
+	content: "⠋\A⠙\A⠹\A⠸\A⠼\A⠴\A⠦\A⠧\A⠇\A⠏";
+	animation: spin10 1s steps(10) infinite;
 }
 
 .loading.dots2::after {
-  content: "⠋\A⠙\A⠚\A⠞\A⠖\A⠦\A⠴\A⠲\A⠳";
-  animation: spin9 1s steps(9) infinite;
+	content: "⠋\A⠙\A⠚\A⠞\A⠖\A⠦\A⠴\A⠲\A⠳";
+	animation: spin9 1s steps(9) infinite;
 }
 
 .loading.dots3::after {
-  content: "⋮\A⋰\A⋯\A⋱";
-  text-align: center;
-  animation: spin4 1s steps(4) infinite;
+	content: "⋮\A⋰\A⋯\A⋱";
+	text-align: center;
+	animation: spin4 1s steps(4) infinite;
 }
 
 .loading.lifting::after {
-  content: "꜈꜍\A꜉꜎\A꜊꜏\A꜋꜐\A꜌꜑";
-  animation: spin5 .5s steps(5) infinite alternate;
+	content: "꜈꜍\A꜉꜎\A꜊꜏\A꜋꜐\A꜌꜑";
+	animation: spin5 0.5s steps(5) infinite alternate;
 }
 
 .loading.hamburger::after {
-  content: "☱\A☲\A☴";
-  animation: spin3 .3s steps(3) infinite alternate;
+	content: "☱\A☲\A☴";
+	animation: spin3 0.3s steps(3) infinite alternate;
 }
 
 .loading.bar::after {
-  content: "▏\A▎\A▍\A▌\A▋\A▊\A▉";
-  animation: spin7 1s steps(7) infinite alternate;
+	content: "▏\A▎\A▍\A▌\A▋\A▊\A▉";
+	animation: spin7 1s steps(7) infinite alternate;
 }
 
 .loading.bar2::after {
-  content: "▁\A▂\A▃\A▄\A▅\A▆\A▇\A█";
-  animation: spin8 2s steps(8) infinite alternate;
+	content: "▁\A▂\A▃\A▄\A▅\A▆\A▇\A█";
+	animation: spin8 2s steps(8) infinite alternate;
 }
 
 .loading.circle::after {
-  content: "◴\A◷\A◶\A◵";
-  animation: spin4 1s steps(4) infinite;
+	content: "◴\A◷\A◶\A◵";
+	animation: spin4 1s steps(4) infinite;
 }
 
 .loading.open-circle::after {
-  content: "◜\A◠\A◝\A◞\A◡\A◟";
-  animation: spin6 .6s steps(6) infinite;
+	content: "◜\A◠\A◝\A◞\A◡\A◟";
+	animation: spin6 0.6s steps(6) infinite;
 }
 
 .loading.arrow::after {
-  content: "←\A↖\A↑\A↗\A→\A↘\A↓\A↙";
-  animation: spin8 1s steps(8) infinite;
+	content: "←\A↖\A↑\A↗\A→\A↘\A↓\A↙";
+	animation: spin8 1s steps(8) infinite;
 }
 
 .loading.triangle::after {
-  content: "◢\A◣\A◤\A◥";
-  animation: spin4 1s steps(4) infinite;
+	content: "◢\A◣\A◤\A◥";
+	animation: spin4 1s steps(4) infinite;
 }
 
 .loading.triangles::after {
-  content: "▹▹▹▹▹\A ▸▹▹▹▹\A ▹▸▹▹▹\A ▹▹▸▹▹\A ▹▹▹▸▹\A ▹▹▹▹▸";
-  animation: spin6 1s steps(6) infinite;
+	content: "▹▹▹▹▹\A ▸▹▹▹▹\A ▹▸▹▹▹\A ▹▹▸▹▹\A ▹▹▹▸▹\A ▹▹▹▹▸";
+	animation: spin6 1s steps(6) infinite;
 }
 
 .loading.beam::after {
-  content: "\A=   \A ==  \A === \A ====\A  ===\A   ==\A    =\A";
-  animation: spin9 1.2s steps(9) infinite;
-  font-family: monospace;
+	content: "\A=   \A ==  \A === \A ====\A  ===\A   ==\A    =\A";
+	animation: spin9 1.2s steps(9) infinite;
+	font-family: monospace;
 }
 
 .loading.bullet::after {
-  content: " ●    \A   ●   \A    ●  \A     ● \A      ●\A     ● \A    ●  \A   ●   \A  ●    \A ●     ";
-  animation: spin10 1s steps(10) infinite;
+	content: " ●    \A   ●   \A    ●  \A     ● \A      ●\A     ● \A    ●  \A   ●   \A  ●    \A ●     ";
+	animation: spin10 1s steps(10) infinite;
 }
 
 .loading.bullseye::after {
-  content: "◎◎◎\A◉◎◎\A◎◉◎\A◎◎◉";
-  animation: spin4 1s steps(4) infinite;
+	content: "◎◎◎\A◉◎◎\A◎◉◎\A◎◎◉";
+	animation: spin4 1s steps(4) infinite;
 }
 
 .loading.rhomb::after {
-  content: "◇◇◇\A◈◇◇\A◇◈◇\A◇◇◈";
-  animation: spin4 1s steps(4) infinite;
+	content: "◇◇◇\A◈◇◇\A◇◈◇\A◇◇◈";
+	animation: spin4 1s steps(4) infinite;
 }
 
 .loading.fish::after {
-  content: ">))'>\A  >))'>\A   >))'>\A    >))'>\A     >))'>\A     <'((<\A    <'((<\A   <'((<\A  <'((<\A <'((<\A";
-  animation: spin10 5s steps(10) infinite;
+	content: ">))'>\A  >))'>\A   >))'>\A    >))'>\A     >))'>\A     <'((<\A    <'((<\A   <'((<\A  <'((<\A <'((<\A";
+	animation: spin10 5s steps(10) infinite;
 }
 
 .loading.toggle::after {
-  content: "⊶\A⊷";
-  animation: spin2 1s steps(2) infinite;
+	content: "⊶\A⊷";
+	animation: spin2 1s steps(2) infinite;
 }
 
 .loading.countdown::after {
-  content: "0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9";
-  animation: spin10 10s steps(10) reverse;
+	content: "0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9";
+	animation: spin10 10s steps(10) reverse;
 }
 
 .loading.time::after {
-  content: "🕐\A🕑\A🕒\A🕓\A🕔\A🕕\A🕖\A🕗\A🕘\A🕙\A🕚\A🕛";
-  animation: spin12 3s steps(12) infinite;
-  width: 1.3em;
+	content: "🕐\A🕑\A🕒\A🕓\A🕔\A🕕\A🕖\A🕗\A🕘\A🕙\A🕚\A🕛";
+	animation: spin12 3s steps(12) infinite;
+	width: 1.3em;
 }
 
 .loading.hearts::after {
-  content: "💛\A💙\A💜\A💚";
-  animation: spin4 2s steps(4) infinite;
-  width: 1.3em;
+	content: "💛\A💙\A💜\A💚";
+	animation: spin4 2s steps(4) infinite;
+	width: 1.3em;
 }
 
 .loading.earth::after {
-  content: "🌍\A🌎\A🌏";
-  animation: spin3 1s steps(3) infinite;
-  width: 1.3em;
+	content: "🌍\A🌎\A🌏";
+	animation: spin3 1s steps(3) infinite;
+	width: 1.3em;
 }
 
 .loading.moon::after {
-  content: "🌑\A🌒\A🌓\A🌔\A🌕\A🌖\A🌗\A🌘";
-  animation: spin8 2s steps(8) infinite;
-  width: 1.3em;
+	content: "🌑\A🌒\A🌓\A🌔\A🌕\A🌖\A🌗\A🌘";
+	animation: spin8 2s steps(8) infinite;
+	width: 1.3em;
 }
 
 .loading.monkey::after {
-  content: "🙈\A🙉\A🙊";
-  animation: spin3 1.5s steps(3) infinite;
-  width: 1.3em;
+	content: "🙈\A🙉\A🙊";
+	animation: spin3 1.5s steps(3) infinite;
+	width: 1.3em;
 }
 
 .loading.runner::after {
-  content: "🚶\A🏃";
-  animation: spin2 1s steps(2) infinite;
-  width: 1.3em;
+	content: "🚶\A🏃";
+	animation: spin2 1s steps(2) infinite;
+	width: 1.3em;
 }
 
 .loading.box-bounce::after {
-  content:"▖\A▘\A▝\A▗";
-  animation: spin4 1s steps(4) infinite;
+	content: "▖\A▘\A▝\A▗";
+	animation: spin4 1s steps(4) infinite;
 }
 
 .loading.star::after {
-  content:"✶\A✸\A✹\A✺\A✹\A✷";
-  animation: spin6 1s steps(6) infinite;
+	content: "✶\A✸\A✹\A✺\A✹\A✷";
+	animation: spin6 1s steps(6) infinite;
 }
 
 .loading.matrix::after {
-  content:"░ ░░░░\A░░ ░░░\A░░░ ░░\A░░░░ ░";
-  animation: spin4 .5s steps(4) infinite alternate;
+	content: "░ ░░░░\A░░ ░░░\A░░░ ░░\A░░░░ ░";
+	animation: spin4 0.5s steps(4) infinite alternate;
 }
 
 .loading.square::after {
-  content: "◰\A◳\A◲\A◱";
-  animation: spin4 1s steps(4) infinite;
+	content: "◰\A◳\A◲\A◱";
+	animation: spin4 1s steps(4) infinite;
 }
 
 .loading.words::after {
-  content: "Loading\A Still loading\A Mostly done\A A bit more \A Almost done\A Ready-ish";
-  animation: spin6 12s steps(6) infinite;
+	content: "Loading\A Still loading\A Mostly done\A A bit more \A Almost done\A Ready-ish";
+	animation: spin6 12s steps(6) infinite;
 }
 
 /* --- Animations --- */
 
-@keyframes spin1  { to { transform: translateY( -1.5em); } }
-@keyframes spin2  { to { transform: translateY( -3.0em); } }
-@keyframes spin3  { to { transform: translateY( -4.5em); } }
-@keyframes spin4  { to { transform: translateY( -6.0em); } }
-@keyframes spin5  { to { transform: translateY( -7.5em); } }
-@keyframes spin6  { to { transform: translateY( -9.0em); } }
-@keyframes spin7  { to { transform: translateY(-10.5em); } }
-@keyframes spin8  { to { transform: translateY(-12.0em); } }
-@keyframes spin9  { to { transform: translateY(-13.5em); } }
-@keyframes spin10 { to { transform: translateY(-15.0em); } }
-@keyframes spin11 { to { transform: translateY(-16.5em); } }
-@keyframes spin12 { to { transform: translateY(-18.0em); } }
+@keyframes spin1 {
+	to {
+		transform: translateY(-1.5em);
+	}
+}
+@keyframes spin2 {
+	to {
+		transform: translateY(-3em);
+	}
+}
+@keyframes spin3 {
+	to {
+		transform: translateY(-4.5em);
+	}
+}
+@keyframes spin4 {
+	to {
+		transform: translateY(-6em);
+	}
+}
+@keyframes spin5 {
+	to {
+		transform: translateY(-7.5em);
+	}
+}
+@keyframes spin6 {
+	to {
+		transform: translateY(-9em);
+	}
+}
+@keyframes spin7 {
+	to {
+		transform: translateY(-10.5em);
+	}
+}
+@keyframes spin8 {
+	to {
+		transform: translateY(-12em);
+	}
+}
+@keyframes spin9 {
+	to {
+		transform: translateY(-13.5em);
+	}
+}
+@keyframes spin10 {
+	to {
+		transform: translateY(-15em);
+	}
+}
+@keyframes spin11 {
+	to {
+		transform: translateY(-16.5em);
+	}
+}
+@keyframes spin12 {
+	to {
+		transform: translateY(-18em);
+	}
+}
 
 .block-language-tg {
-  padding: 10px;
+	padding: 10px;
 }
 
 .cm-embed-block:hover > .tgmenu {
-  opacity: 1;
-  }
+	opacity: 1;
+}
 
 .tgmenu {
-  opacity: 0;
-  display: flex;
-  gap:5px;
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  z-index: 100;
+	opacity: 0;
+	display: flex;
+	gap: 5px;
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	z-index: 100;
 }
 
 .callout[data-callout="ai"] {
-  --callout-icon: bot;
+	--callout-icon: bot;
 }
 .callout[data-callout="ai"] > .callout-title {
-margin-left: -1rem;
+	margin-left: -1rem;
 }
 
 .callout[data-callout="ai"] > .callout-content {
-margin-left: 2rem;
+	margin-left: 2rem;
 }
 
 .summary {
-  padding: 10px;
-  font-family: Arial;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--background-primary);
+	padding: 10px;
+	font-family: Arial;
+	display: flex;
+	flex-direction: column;
+	background-color: var(--background-primary);
 }
 
 .summary table {
-  width: 100%;
+	width: 100%;
 }
 
 .summary td {
-  color: var(--text-normal);
+	color: var(--text-normal);
 }
 
 .summary .price {
-  background-color: var(--text-highlight-bg);
-  color: var(--text-normal);
-  font-size: 18px;
+	background-color: var(--text-highlight-bg);
+	color: var(--text-normal);
+	font-size: 18px;
 }
 
 /* ---- other ---- */
 
-
-
-
-
-.small{
+.small {
 	@apply text-sm;
 }
 
 
-
-button {
-  @apply px-2;
+.gapper {
+	@apply flex flex-col gap-4;
 }
 
-.gapper{
-  @apply flex flex-col gap-4;
+.tags {
+	@apply flex items-center gap-4;
+}
+.tag {
+	@apply border-l border-white;
 }
 
-.tags{
-  @apply flex items-center gap-4;
-}
-.tag{
-  @apply border-l border-white;
+::-webkit-scrollbar-track {
+	background-color: transparent;
 }
 
-ul li {
-    list-style-type: circle;
-  }
-
-ol li {
-    list-style-type: decimal;
+::-webkit-scrollbar-thumb {
+	background-color: #ccc;
+	border-radius: 10px;
 }
 
+::-webkit-scrollbar-thumb:hover {
+	background-color: #aaa;
+}
 
-h1 {
-    @apply text-5xl font-bold;
-  }
-  
-  h2 {
-    @apply text-4xl font-bold;
-  }
-  
-  h3 {
-    @apply text-3xl font-bold;
-  }
-  
-  h4 {
-    @apply text-2xl font-bold;
-  }
-  
-  h5 {
-    @apply text-xl font-bold;
-  }
-  
-  * {
-    /* smoth scroll */
-    scroll-behavior: smooth;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background-color: transparent;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background-color: #ccc;
-    border-radius: 10px;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: #aaa;
-  }
-  
-  ::-webkit-scrollbar-track:hover {
-    background-color: #f2f2f2;
-  }
-  
-  ::-webkit-scrollbar-corner {
-    background-color: transparent;
-  }
-  
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  
-  html {
-    background: #202123;
-  }
-  
-  @media (max-width: 720px) {
-    pre {
-      width: calc(100vw - 110px);
-    }
-  }
-  
-  pre:has(div.codeblock) {
-    padding: 0;
-  }
-  
+::-webkit-scrollbar-track:hover {
+	background-color: #f2f2f2;
+}
 
+::-webkit-scrollbar-corner {
+	background-color: transparent;
+}
 
+::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+
+html {
+	background: #202123;
+}
+
+@media (max-width: 720px) {
+	pre {
+		width: calc(100vw - 110px);
+	}
+}
+
+pre:has(div.codeblock) {
+	padding: 0;
+}
 
 /* fallback, until https://github.com/CompuIves/codesandbox-client/issues/174 is resolved */
 @font-face {
-  font-family: "Material Icons";
-  font-style: normal;
-  font-weight: 400;
-  src: url(https://fonts.gstatic.com/s/materialicons/v36/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2)
-    format("woff2");
+	font-family: "Material Icons";
+	font-style: normal;
+	font-weight: 400;
+	src: url(https://fonts.gstatic.com/s/materialicons/v36/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2)
+		format("woff2");
 }
 
 .material-icons {
-  font-family: "Material Icons";
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  -webkit-font-feature-settings: "liga";
-  -webkit-font-smoothing: antialiased;
+	font-family: "Material Icons";
+	font-weight: normal;
+	font-style: normal;
+	font-size: 24px;
+	line-height: 1;
+	letter-spacing: normal;
+	text-transform: none;
+	display: inline-block;
+	white-space: nowrap;
+	word-wrap: normal;
+	direction: ltr;
+	-webkit-font-feature-settings: "liga";
+	-webkit-font-smoothing: antialiased;
 }
-  
+
 .mdl-demo .dropdown-trigger > span:after {
-  font-size: 12px;
-  color: #555;
+	font-size: 12px;
+	color: #555;
 }
 
 .mdl-demo .toggle {
-  font: normal normal normal 18px/1 "Material Icons";
-  color: #555;
-  white-space: pre;
-  margin-right: 4px;
+	font: normal normal normal 18px/1 "Material Icons";
+	color: #555;
+	white-space: pre;
+	margin-right: 4px;
 }
 
 .mdl-demo .toggle.collapsed::after {
-  cursor: pointer;
-  content: "\E5CF";
-  vertical-align: middle;
+	cursor: pointer;
+	content: "\E5CF";
+	vertical-align: middle;
 }
 
 .mdl-demo .toggle.expanded::after {
-  cursor: pointer;
-  content: "\E5CE";
-  vertical-align: middle;
+	cursor: pointer;
+	content: "\E5CE";
+	vertical-align: middle;
 }
 
 /* checkbox styles */
 .mdl-demo .checkbox-item {
-  position: relative;
-  width: 1rem;
-  height: 1rem;
-  margin-right: 0.75rem;
-  cursor: pointer;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  outline: 0;
-  vertical-align: middle;
+	position: relative;
+	width: 1rem;
+	height: 1rem;
+	margin-right: 0.75rem;
+	cursor: pointer;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	outline: 0;
+	vertical-align: middle;
 }
 
 .mdl-demo .checkbox-item:before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  border: 2px solid #aaa;
-  transition: all 0.3s ease-in-out;
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 1;
+	width: 100%;
+	height: 100%;
+	border: 2px solid #aaa;
+	transition: all 0.3s ease-in-out;
 }
 
 .mdl-demo .checkbox-item:checked:before {
-  height: 50%;
-  -webkit-transform: rotate(-45deg);
-  transform: rotate(-45deg);
-  border-top-style: none;
-  border-right-style: none;
-  border-color: #2196f3;
+	height: 50%;
+	-webkit-transform: rotate(-45deg);
+	transform: rotate(-45deg);
+	border-top-style: none;
+	border-right-style: none;
+	border-color: #2196f3;
 }
 
-h1{
-  @apply pb-2;
+h1 {
+	@apply pb-2;
 }
-
 
 .below-the-fold {
-  content-visibility: auto;
-  contain-intrinsic-size: 1000px;
+	content-visibility: auto;
+	contain-intrinsic-size: 1000px;
 }
 
-.block-language-tg{
-  @apply p-2;
+.block-language-tg {
+	@apply p-2;
 }
-
 
 /* -------------------- React json input css ---------------------------- */
-.mantine-1fzet7j{
-  @apply text-black dark:text-white
+.mantine-1fzet7j {
+	@apply text-black dark:text-white;
 }
 
-.mantine-hgcj3k{
-  @apply text-black dark:text-white bg-[var(--background-modifier-form-field)]
+.mantine-hgcj3k {
+	@apply text-black dark:text-white bg-[var(--background-modifier-form-field)];
 }
-
-
-
-
 
 /* -------------------- React confirm css ---------------------------- */
 
 body.react-confirm-alert-body-element {
-  overflow: hidden;
+	overflow: hidden;
 }
 
 .react-confirm-alert-blur {
-  filter: url(#gaussian-blur);
-  filter: blur(2px);
-  -webkit-filter: blur(2px);
+	filter: url(#gaussian-blur);
+	filter: blur(2px);
+	-webkit-filter: blur(2px);
 }
 
 .react-confirm-alert-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 99;
-  background: rgba(0, 0, 0, 0.7);
-  display: -webkit-flex;
-  display: -moz-flex;
-  display: -ms-flex;
-  display: -o-flex;
-  display: flex;
-  justify-content: center;
-  -ms-align-items: center;
-  align-items: center;
-  opacity: 0;
-  -webkit-animation: react-confirm-alert-fadeIn 0.5s 0.2s forwards;
-  -moz-animation: react-confirm-alert-fadeIn 0.5s 0.2s forwards;
-  -o-animation: react-confirm-alert-fadeIn 0.5s 0.2s forwards;
-  animation: react-confirm-alert-fadeIn 0.5s 0.2s forwards;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 99;
+	background: rgba(0, 0, 0, 0.7);
+	display: -webkit-flex;
+	display: -moz-flex;
+	display: -ms-flex;
+	display: -o-flex;
+	display: flex;
+	justify-content: center;
+	-ms-align-items: center;
+	align-items: center;
+	opacity: 0;
+	-webkit-animation: react-confirm-alert-fadeIn 0.5s 0.2s forwards;
+	-moz-animation: react-confirm-alert-fadeIn 0.5s 0.2s forwards;
+	-o-animation: react-confirm-alert-fadeIn 0.5s 0.2s forwards;
+	animation: react-confirm-alert-fadeIn 0.5s 0.2s forwards;
 }
 
 .react-confirm-alert-body {
-  font-family: Arial, Helvetica, sans-serif;
-  width: 400px;
-  padding: 30px;
-  text-align: left;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 20px 75px rgba(0, 0, 0, 0.13);
-  color: #666;
+	font-family: Arial, Helvetica, sans-serif;
+	width: 400px;
+	padding: 30px;
+	text-align: left;
+	background: #fff;
+	border-radius: 10px;
+	box-shadow: 0 20px 75px rgba(0, 0, 0, 0.13);
+	color: #666;
 }
 
 .react-confirm-alert-svg {
-  position: absolute;
-  top: 0;
-  left: 0;
+	position: absolute;
+	top: 0;
+	left: 0;
 }
 
 .react-confirm-alert-body > h1 {
-  margin-top: 0;
+	margin-top: 0;
 }
 
 .react-confirm-alert-body > h3 {
-  margin: 0;
-  font-size: 16px;
+	margin: 0;
+	font-size: 16px;
 }
 
 .react-confirm-alert-button-group {
-  display: -webkit-flex;
-  display: -moz-flex;
-  display: -ms-flex;
-  display: -o-flex;
-  display: flex;
-  justify-content: flex-start;
-  margin-top: 20px;
+	display: -webkit-flex;
+	display: -moz-flex;
+	display: -ms-flex;
+	display: -o-flex;
+	display: flex;
+	justify-content: flex-start;
+	margin-top: 20px;
 }
 
 .react-confirm-alert-button-group > button {
-  outline: none;
-  background: #333;
-  border: none;
-  display: inline-block;
-  padding: 6px 18px;
-  color: #eee;
-  margin-right: 10px;
-  border-radius: 5px;
-  font-size: 12px;
-  cursor: pointer;
+	outline: none;
+	background: #333;
+	border: none;
+	display: inline-block;
+	padding: 6px 18px;
+	color: #eee;
+	margin-right: 10px;
+	border-radius: 5px;
+	font-size: 12px;
+	cursor: pointer;
 }
 
 @-webkit-keyframes react-confirm-alert-fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 
 @-moz-keyframes react-confirm-alert-fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 
 @-o-keyframes react-confirm-alert-fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 
 @keyframes react-confirm-alert-fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
