@@ -13,7 +13,7 @@ import {
   TFile,
 } from "obsidian";
 import { TextGeneratorSettings } from "./types";
-import { numberToKFormat } from "./utils";
+import { containsInvalidCharacter, numberToKFormat } from "./utils";
 import { GENERATE_ICON, GENERATE_META_ICON } from "./constants";
 import TextGeneratorSettingTab from "./ui/settings/settings-page";
 import { SetMaxTokens } from "./ui/settings/components/set-max-tokens";
@@ -374,6 +374,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
   async loadSettings() {
     const loadedSettings = await this.loadData();
+
     this.settings = {
       ...DEFAULT_SETTINGS,
       ...loadedSettings,
@@ -684,11 +685,18 @@ export default class TextGeneratorPlugin extends Plugin {
       // }
       //  --
 
-      if (!safeStorage?.isEncryptionAvailable() || !str.length) {
-        return str;
+      if (
+        !safeStorage?.isEncryptionAvailable() ||
+        !str.length ||
+        !this.settings.encrypt_keys
+      ) {
+        return containsInvalidCharacter(str) ? "**FAILED TO DECRYPT**" : str;
       }
 
-      return safeStorage.decryptString(buff) as string;
+      const decrypted = safeStorage.decryptString(buff) as string;
+      return containsInvalidCharacter(decrypted)
+        ? "**FAILED TO DECRYPT KEYS**"
+        : decrypted;
     } catch (err: any) {
       console.log("error happened", err, keyBuffer);
       return "";
@@ -696,9 +704,10 @@ export default class TextGeneratorPlugin extends Plugin {
   }
 
   getEncryptedKey(apiKey: string) {
-    if (!safeStorage?.isEncryptionAvailable()) {
+    if (!safeStorage?.isEncryptionAvailable() || !this.settings.encrypt_keys) {
       return Buffer.from(apiKey, "utf8");
     }
+
     return safeStorage.encryptString(apiKey) as Buffer;
   }
 

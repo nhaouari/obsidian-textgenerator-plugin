@@ -1,9 +1,12 @@
 import { TextGeneratorSettings } from "./types";
 
+const { safeStorage } = require("electron").remote;
+
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
   endpoint: "https://api.openai.com/v1",
   models: [],
   api_key: "",
+  encrypt_keys: safeStorage?.isEncryptionAvailable(),
   engine: "gpt-3.5-turbo",
   max_tokens: 500,
   temperature: 0.7,
