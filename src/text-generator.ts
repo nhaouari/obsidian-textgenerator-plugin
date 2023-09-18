@@ -1,5 +1,5 @@
 import { TemplateModalUI } from "./ui/template-modal-ui";
-import { App, Notice, Editor, EditorPosition } from "obsidian";
+import { App, Notice, Editor, EditorPosition, TFile } from "obsidian";
 import { TextGeneratorSettings } from "./types";
 import TextGeneratorPlugin from "./main";
 import ReqFormatter from "./api-request-formatter";
@@ -552,19 +552,23 @@ export default class TextGenerator extends RequestHandler {
     logger("tempalteToModal end");
   }
 
-  getTemplates(promptsPath: string = this.plugin.settings.promptsPath) {
-    const files = app.vault.getFiles();
+  getTemplates(
+    _files?: TFile[] | undefined,
+    promptsPath: string = this.plugin.settings.promptsPath
+  ) {
+    const files = _files || app.vault.getFiles();
     const paths: string[] = files
       .filter(
         (f) => f.path.includes(promptsPath) && !f.path.includes("/trash/")
       )
       .map((f) => f.path);
-
-    return paths.map((s) => ({
-      title: s.substring(promptsPath.length + 1),
-      path: s,
-      ...this.getMetadata(s),
-    }));
+    return paths.map((s) => {
+      return {
+        title: s.substring(promptsPath.length + 1),
+        path: s,
+        ...this.getMetadata(s),
+      };
+    });
   }
 
   getMetadata(path: string) {

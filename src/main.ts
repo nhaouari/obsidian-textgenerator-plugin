@@ -10,6 +10,7 @@ import {
   MarkdownPostProcessorContext,
   getIcon,
   Command,
+  TFile,
 } from "obsidian";
 import { TextGeneratorSettings } from "./types";
 import { numberToKFormat } from "./utils";
@@ -365,6 +366,7 @@ export default class TextGeneratorPlugin extends Plugin {
 		*/
 
     // registers
+    console.log("reaching add commands function");
     await this.addCommands();
 
     await this.packageManager.load();
@@ -403,17 +405,42 @@ export default class TextGeneratorPlugin extends Plugin {
     );
   }
 
+  getFilesOnLoad(): Promise<TFile[]> {
+    return new Promise(async (resolve, reject) => {
+      let testFiles = app.vault.getFiles();
+      if (testFiles.length === 0) {
+        let retryTimes = 30;
+        const timer = setInterval(() => {
+          testFiles = app.vault.getFiles();
+          retryTimes--;
+
+          if (retryTimes <= 0) {
+            clearInterval(timer);
+            reject("Couldn't retrive files");
+          }
+
+          if (testFiles.length > 0) {
+            clearInterval(timer);
+            resolve(testFiles);
+          }
+        }, 3 * 1000);
+      }
+      return testFiles;
+    });
+  }
+
   async addCommands() {
+    // call the function before testing for onload document, just to make sure it is getting called event tho the document is already loaded
     const cmds = this.commands.filter(
       (cmd) =>
         this.settings.options[cmd.id as keyof typeof this.settings.options] ===
         true
     );
 
-    // wait for obsidian to get cached files
-    await new Promise((s) => setTimeout(s, 1000));
-    const templates = await this.textGenerator.getTemplates();
-    //
+    const templates = this.textGenerator.getTemplates(
+      // get files, it will be empty onLoad, that's why we are using this function
+      await this.getFilesOnLoad()
+    );
 
     const templatesWithCommands = templates.filter((t) => t?.commands);
     logger("Templates with commands ", { templatesWithCommands });
