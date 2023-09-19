@@ -163,10 +163,17 @@ export default class LangchainProvider
         const params = {
           ...this.cleanConfig(this.plugin.settings),
           ...this.cleanConfig(
-            this.plugin.settings[this.id as keyof typeof this.plugin.settings]
+            this.plugin.settings.LLMProviderOptions[
+              this.id as keyof typeof this.plugin.settings
+            ]
           ),
           ...this.cleanConfig(reqParams.otherOptions),
           ...this.cleanConfig(reqParams),
+          otherOptions: this.cleanConfig(
+            this.plugin.settings.LLMProviderOptions[
+              this.id as keyof typeof this.plugin.settings
+            ]
+          ),
         };
 
         const chat = this.getLLM(params);
