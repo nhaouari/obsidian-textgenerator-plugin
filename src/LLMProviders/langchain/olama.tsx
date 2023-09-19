@@ -15,12 +15,13 @@ import debug from "debug";
 
 const logger = debug("textgenerator:llmProvider:ollama");
 
-const id = "olama";
+const id = "Olama (Langchain)" as const;
 export default class LangchainOlamaProvider
   extends LangchainBase
   implements LLMProviderInterface
 {
   id = id;
+  static id = id;
   streamable = false;
   getConfig(options: LLMConfig): Partial<OllamaInput & BaseLLMParams> {
     console.log(options);

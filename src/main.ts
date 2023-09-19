@@ -425,8 +425,7 @@ export default class TextGeneratorPlugin extends Plugin {
             resolve(testFiles);
           }
         }, 3 * 1000);
-      }
-      return testFiles;
+      } else resolve(testFiles);
     });
   }
 

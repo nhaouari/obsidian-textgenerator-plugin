@@ -16,12 +16,13 @@ import debug from "debug";
 
 const logger = debug("textgenerator:llmProvider:chatanthropic");
 
-const id = "chat-anthropic";
+const id = "Chat Anthropic (Langchain)" as const;
 export default class LangchainChatAnthropicProvider
   extends LangchainBase
   implements LLMProviderInterface
 {
   id = id;
+  static id = id;
   getConfig(
     options: LLMConfig
   ): Partial<AnthropicInput & BaseLanguageModelParams> {

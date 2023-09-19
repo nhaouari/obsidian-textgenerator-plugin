@@ -163,8 +163,6 @@ export default class TextGenerator extends RequestHandler {
       // const cursor = editor.getCursor();
       this.insertGeneratedText(content, editor, cursor, "stream");
 
-      console.log("inserting", content);
-
       cursor.ch += content.length;
       //   cursor.line += content.split("\n").length;
 

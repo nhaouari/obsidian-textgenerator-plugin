@@ -4,8 +4,6 @@ import debug from "debug";
 import React, { useMemo } from "react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import useGlobal from "#/ui/context/global";
-import { useToggle } from "usehooks-ts";
-import { JsonInput } from "@mantine/core";
 import { getHBValues } from "#/utils/barhandles";
 import SettingItem from "#/ui/settings/components/item";
 import Input from "#/ui/settings/components/input";
@@ -13,7 +11,6 @@ import { RequestUrlParam, requestUrl } from "obsidian";
 import get from "lodash.get";
 import Handlebars from "handlebars";
 import clsx from "clsx";
-import safeAwait from "safe-await";
 
 const logger = debug("textgenerator:CustomProvider");
 
@@ -100,13 +97,14 @@ const default_values = {
 
 export type CustomConfig = Record<keyof typeof default_values, string>;
 
+const id = "Default (Custom)" as const;
 export default class CustomProvider
   extends BaseProvider
   implements LLMProviderInterface
 {
   streamable = true;
-  id = "default";
-
+  id = id;
+  static id = id;
   async request(
     params: RequestUrlParam & {
       signal?: AbortSignal;
@@ -127,9 +125,8 @@ export default class CustomProvider
 
     logger({ params, requestOptions });
 
-    const config = (this.plugin.settings.LLMProviderOptions[
-      this.id || "default"
-    ] ??= {});
+    const config = (this.plugin.settings.LLMProviderOptions[this.id || id] ??=
+      {});
 
     const k = (
       config.CORSBypass
@@ -224,7 +221,7 @@ export default class CustomProvider
         let allText = "";
 
         const config = (this.plugin.settings.LLMProviderOptions[
-          this.id || "default"
+          this.id || id
         ] ??= {});
 
         let resultContent = "";
@@ -313,7 +310,7 @@ export default class CustomProvider
         logger("generateMultiple", reqParams);
 
         const config = (this.plugin.settings.LLMProviderOptions[
-          this.id || "default"
+          this.id || id
         ] ??= {});
 
         const handlebarData = {
@@ -417,27 +414,48 @@ export default class CustomProvider
           />
         </SettingItem>
 
-        <JsonInput
-          label="Headers:"
-          placeholder="Textarea will autosize to fit the content"
-          validationError="Invalid JSON"
-          value={
-            config.handlebars_headers_in || default_values.handlebars_headers_in
-          }
-          onChange={async (e) => {
-            config.handlebars_headers_in = e;
-            global.triggerReload();
-            await global.plugin.saveSettings();
-          }}
-          formatOnBlur
-          spellCheck={false}
-          autosize
-          minRows={4}
-        />
+        <div className="flex flex-col gap-1">
+          <div className="font-bold">Headers:</div>
+          <textarea
+            placeholder="Headers"
+            className="resize-none"
+            defaultValue={
+              config.handlebars_headers_in ||
+              default_values.handlebars_headers_in
+            }
+            onChange={async (e) => {
+              config.handlebars_headers_in = e.target.value;
+
+              const compiled = Handlebars.compile(
+                config.handlebars_headers_in ||
+                  default_values.handlebars_headers_in
+              )({
+                ...global.plugin.settings,
+                ...cleanConfig(config),
+                n: 1,
+                messages: testMessages,
+              });
+
+              console.log(compiled);
+              try {
+                console.log(JSON.parse(compiled));
+              } catch (err: any) {
+                console.warn(err);
+              }
+
+              global.triggerReload();
+              await global.plugin.saveSettings();
+            }}
+            spellCheck={false}
+            rows={5}
+          />
+        </div>
+
         <div className="flex flex-col gap-1">
           <div className="font-bold">Body:</div>
           <textarea
             placeholder="Textarea will autosize to fit the content"
+            className="resize-none"
             defaultValue={
               config.handlebars_body_in || default_values.handlebars_body_in
             }

@@ -7,181 +7,157 @@ import { transformStringsToChatFormat } from "./utils";
 import { LLMConfig } from "./LLMProviders/interface";
 const logger = debug("textgenerator:ReqFormatter");
 export default class ReqFormatter {
-	plugin: TextGeneratorPlugin;
-	app: App;
-	contextManager: ContextManager;
-	constructor(
-		app: App,
-		plugin: TextGeneratorPlugin,
-		contextManager: ContextManager
-	) {
-		this.app = app;
-		this.plugin = plugin;
-		this.contextManager = contextManager;
-	}
+  plugin: TextGeneratorPlugin;
+  app: App;
+  contextManager: ContextManager;
+  constructor(
+    app: App,
+    plugin: TextGeneratorPlugin,
+    contextManager: ContextManager
+  ) {
+    this.app = app;
+    this.plugin = plugin;
+    this.contextManager = contextManager;
+  }
 
-	getRequestParameters(
-		params: Partial<TextGeneratorSettings>,
-		insertMetadata: boolean,
-		templatePath = "",
-		additionnalParams: {
-			reqParams?: RequestInit;
-			bodyParams?: any;
-			showSpinner?: boolean;
-		} = {}
-	) {
-		logger("prepareReqParameters", params, insertMetadata, templatePath);
+  getRequestParameters(
+    params: Partial<TextGeneratorSettings>,
+    insertMetadata: boolean,
+    templatePath = "",
+    additionnalParams: {
+      reqParams?: RequestInit;
+      bodyParams?: any;
+      showSpinner?: boolean;
+    } = {}
+  ) {
+    logger("prepareReqParameters", params, insertMetadata, templatePath);
 
-		let bodyParams: Partial<
-			LLMConfig & { messages: Message[]; prompt: string }
-		> = {
-			...(params.engine && { engine: params.engine }),
-			...(params.max_tokens && { max_tokens: params.max_tokens }),
-			...(params.temperature && { temperature: params.temperature }),
-			...(params.frequency_penalty && {
-				frequency_penalty: params.frequency_penalty,
-			}),
-		};
+    let bodyParams: Partial<
+      LLMConfig & { messages: Message[]; prompt: string }
+    > = {
+      ...(params.engine && { engine: params.engine }),
+      ...(params.max_tokens && { max_tokens: params.max_tokens }),
+      ...(params.temperature && { temperature: params.temperature }),
+      ...(params.frequency_penalty && {
+        frequency_penalty: params.frequency_penalty,
+      }),
+    };
 
-		// let reqUrl = new URL(`${params.endpoint?.contains("v1") ? "" : "/v1"}/v1/completions`, params.endpoint).href;
-		let reqExtractResult = "choices[0].text";
+    // let reqUrl = new URL(`${params.endpoint?.contains("v1") ? "" : "/v1"}/v1/completions`, params.endpoint).href;
+    let reqExtractResult = "choices[0].text";
 
-		const chatModels = [
-			"gpt-3.5-turbo",
-			"gpt-3.5-turbo-0301",
-			"gpt-4-0314",
-			"gpt-4",
-			"gpt-4-0613",
-			"gpt-4-32k-0613",
-			"gpt-3.5-turbo-0613",
-			"gpt-3.5-turbo-16k",
-			"gpt-3.5-turbo-16k-0613",
-		];
+    // reqUrl = new URL(`${params.endpoint?.contains("v1") ? "" : "/v1"}/chat/completions`, params.endpoint).href;
+    reqExtractResult = "choices[0].message.content";
+    bodyParams["messages"] = [{ role: "user", content: params.prompt || "" }];
 
-		if (params.engine && chatModels.includes(params.engine)) {
-			// reqUrl = new URL(`${params.endpoint?.contains("v1") ? "" : "/v1"}/chat/completions`, params.endpoint).href;
-			reqExtractResult = "choices[0].message.content";
-			bodyParams["messages"] = [
-				{ role: "user", content: params.prompt || "" },
-			];
-		} else {
-			bodyParams["prompt"] = params.prompt;
-		}
+    bodyParams = { ...bodyParams, ...additionnalParams?.bodyParams };
 
-		bodyParams = { ...bodyParams, ...additionnalParams?.bodyParams };
+    let reqParams: RequestInit & {
+      // url: string,
+      extractResult?: any;
+    } = {
+      // url: reqUrl,
+      method: "POST",
+      body: "",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${params.api_key}`,
+      },
+      extractResult: reqExtractResult,
 
-		let reqParams: RequestInit & {
-			// url: string,
-			extractResult?: any;
-		} = {
-			// url: reqUrl,
-			method: "POST",
-			body: "",
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${params.api_key}`,
-			},
-			extractResult: reqExtractResult,
+      ...additionnalParams?.reqParams,
+    };
 
-			...additionnalParams?.reqParams,
-		};
+    if (insertMetadata) {
+      const activefileFrontmatter =
+        this.contextManager.getMetaData()?.frontmatter;
+      const templateFrontmatter =
+        this.contextManager.getMetaData(templatePath)?.frontmatter;
 
-		if (insertMetadata) {
-			const activefileFrontmatter =
-				this.contextManager.getMetaData()?.frontmatter;
-			const templateFrontmatter =
-				this.contextManager.getMetaData(templatePath)?.frontmatter;
-			const frontmatter = {
-				...templateFrontmatter,
-				...activefileFrontmatter,
-			};
-			//console.log({templateFrontmatter,activefileFrontmatter,frontmatter});
-			if (frontmatter == null) {
-				this.plugin.handelError(
-					"No valid Metadata (YAML front matter) found!"
-				);
-			} else {
-				if (bodyParams["messages"]) {
-					//chat mode
-					const messages: {
-						role: string;
-						content: string;
-					}[] = [];
+      const frontmatter: any = {
+        ...templateFrontmatter,
+        ...activefileFrontmatter,
+      };
 
-					if (frontmatter["config"]?.system) {
-						messages.push({
-							role: "system",
-							content: frontmatter["config"].system,
-						});
-					}
+      //console.log({templateFrontmatter,activefileFrontmatter,frontmatter});
+      if (frontmatter == null) {
+        this.plugin.handelError("No valid Metadata (YAML front matter) found!");
+      } else {
+        if (bodyParams["messages"]) {
+          //chat mode
+          const messages: {
+            role: string;
+            content: string;
+          }[] = [];
 
-					if (frontmatter["config"]?.messages) {
-						messages.push(
-							...transformStringsToChatFormat(
-								frontmatter["config"].messages
-							)
-						);
-					}
+          if (frontmatter["config"]?.system) {
+            messages.push({
+              role: "system",
+              content: frontmatter["config"].system,
+            });
+          }
 
-					bodyParams["messages"] = [
-						...messages,
-						...bodyParams["messages"],
-					];
-				}
+          if (frontmatter["config"]?.messages) {
+            messages.push(
+              ...transformStringsToChatFormat(frontmatter["config"].messages)
+            );
+          }
 
-				if (
-					frontmatter["bodyParams"] &&
-					frontmatter["config"]?.append?.bodyParams == false
-				) {
-					bodyParams = {
-						prompt: params.prompt,
-						...frontmatter["bodyParams"],
-					};
-				} else if (frontmatter["bodyParams"]) {
-					bodyParams = {
-						...bodyParams,
-						...frontmatter["bodyParams"],
-					};
-				}
+          bodyParams["messages"] = [...messages, ...bodyParams["messages"]];
+        }
 
-				if (
-					frontmatter["config"]?.context &&
-					frontmatter["config"]?.context !== "prompt"
-				) {
-					bodyParams[
-						frontmatter["config"]
-							.context as never as keyof typeof bodyParams
-					] = params.prompt;
-					delete bodyParams.prompt;
-				}
+        if (
+          frontmatter["bodyParams"] &&
+          frontmatter["config"]?.append?.bodyParams == false
+        ) {
+          bodyParams = {
+            prompt: params.prompt,
+            ...frontmatter["bodyParams"],
+          };
+        } else if (frontmatter["bodyParams"]) {
+          bodyParams = {
+            ...bodyParams,
+            ...frontmatter["bodyParams"],
+          };
+        }
 
-				reqParams.body = JSON.stringify(bodyParams);
+        if (
+          frontmatter["config"]?.context &&
+          frontmatter["config"]?.context !== "prompt"
+        ) {
+          bodyParams[
+            frontmatter["config"].context as never as keyof typeof bodyParams
+          ] = params.prompt;
+          delete bodyParams.prompt;
+        }
 
-				if (frontmatter["config"]?.output) {
-					reqParams.extractResult = frontmatter["config"]?.output;
-				}
+        reqParams.body = JSON.stringify(bodyParams);
 
-				if (
-					frontmatter["reqParams"] &&
-					frontmatter["config"]?.append?.reqParams == false
-				) {
-					reqParams = frontmatter["reqParams"];
-				} else if (frontmatter["reqParams"]) {
-					reqParams = { ...reqParams, ...frontmatter["reqParams"] };
-				}
-			}
-		} else {
-			reqParams.body = JSON.stringify(bodyParams);
-		}
+        if (frontmatter["config"]?.output) {
+          reqParams.extractResult = frontmatter["config"]?.output;
+        }
 
-		logger("prepareReqParameters", { bodyParams, reqParams });
+        if (
+          frontmatter["reqParams"] &&
+          frontmatter["config"]?.append?.reqParams == false
+        ) {
+          reqParams = frontmatter["reqParams"];
+        } else if (frontmatter["reqParams"]) {
+          reqParams = { ...reqParams, ...frontmatter["reqParams"] };
+        }
+      }
+    } else {
+      reqParams.body = JSON.stringify(bodyParams);
+    }
 
-		return {
-			bodyParams: {
-				...bodyParams,
-				messages: bodyParams.messages || [],
-			},
-			reqParams,
-		};
-	}
+    logger("prepareReqParameters", { bodyParams, reqParams });
+
+    return {
+      bodyParams: {
+        ...bodyParams,
+        messages: bodyParams.messages || [],
+      },
+      reqParams,
+    };
+  }
 }
