@@ -51,9 +51,12 @@ export default class LangchainChatgptProvider
         ...this.getConfig(options),
       },
       {
-        basePath: options.otherOptions.basePath?.length
+        basePath: options.otherOptions?.basePath?.length
           ? options.endpoint
           : undefined,
+        defaultHeaders: {
+          "User-Agent": undefined,
+        },
       }
     );
   }
@@ -291,10 +294,12 @@ function ModelsHandler(props: {
       >
         <div className="flex items-center gap-2">
           <Dropdown
-            value={global.plugin.settings.engine}
+            value={config.engine}
             setValue={async (selectedModel) => {
+              config.engine = selectedModel;
               global.plugin.settings.engine = selectedModel;
               await global.plugin.saveSettings();
+              global.triggerReload();
             }}
             values={[...models].sort()}
           />

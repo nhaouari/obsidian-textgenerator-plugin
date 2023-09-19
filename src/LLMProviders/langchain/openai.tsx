@@ -51,11 +51,57 @@ export default class LangchainOpenAIProvider
         ...this.getConfig(options),
       },
       {
-        basePath: options.otherOptions.basePath?.length
+        basePath: options.otherOptions?.basePath?.length
           ? options.endpoint
           : undefined,
       }
     );
+  }
+
+  async generateMultiple(
+    messages: Message[],
+    reqParams: Partial<LLMConfig>
+  ): Promise<string[]> {
+    return new Promise(async (s, r) => {
+      try {
+        logger("generateMultiple", reqParams);
+
+        const params = {
+          ...this.cleanConfig(this.plugin.settings),
+          ...this.cleanConfig(
+            this.plugin.settings.LLMProviderOptions[
+              this.id as keyof typeof this.plugin.settings
+            ]
+          ),
+          ...this.cleanConfig(reqParams.otherOptions),
+          ...this.cleanConfig(reqParams),
+          otherOptions: this.cleanConfig(
+            this.plugin.settings.LLMProviderOptions[
+              this.id as keyof typeof this.plugin.settings
+            ]
+          ),
+        };
+
+        const llm = this.getLLM(params);
+
+        const requestResults = await (llm as OpenAI).generate(
+          messages.map((m) => m.content),
+          {
+            signal: params.requestParams?.signal || undefined,
+            ...this.getReqOptions(params),
+          }
+        );
+
+        logger("generateMultiple end", {
+          requestResults,
+        });
+
+        s(requestResults.generations[0].map((a: any) => a.text));
+      } catch (errorRequest: any) {
+        logger("generateMultiple error", errorRequest);
+        return r(errorRequest);
+      }
+    });
   }
 
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
@@ -291,10 +337,12 @@ function ModelsHandler(props: {
       >
         <div className="flex items-center gap-2">
           <Dropdown
-            value={global.plugin.settings.engine}
+            value={config.engine}
             setValue={async (selectedModel) => {
+              config.engine = selectedModel;
               global.plugin.settings.engine = selectedModel;
               await global.plugin.saveSettings();
+              global.triggerReload();
             }}
             values={[...models].sort()}
           />

@@ -110,12 +110,13 @@ export class AutoSuggest extends EditorSuggest<Completion> {
     file: TFile
   ): EditorSuggestTriggerInfo | null {
     logger("onTrigger", cursor, editor, file);
-
     if (
       !this.plugin.settings?.autoSuggestOptions?.isEnabled ||
       // @ts-ignore
-      this.app.workspace.activeEditor?.editor?.cm?.state?.vim?.mode !==
-        "insert" ||
+      (this.app.workspace.activeEditor?.editor?.cm?.state?.vim?.mode &&
+        // @ts-ignore
+        this.app.workspace.activeEditor.editor.cm.state.vim.mode !==
+          "insert") ||
       this.isOpen
     ) {
       this.process = false;
@@ -239,7 +240,6 @@ export class AutoSuggest extends EditorSuggest<Completion> {
       const re = await this.plugin.textGenerator.LLMProvider.generateMultiple(
         [{ role: "user", content: prompt }],
         {
-          ...this.plugin.settings,
           stream: false,
           n: parseInt(
             "" + this.plugin.settings.autoSuggestOptions.numberOfSuggestions

@@ -1,10 +1,11 @@
-import React, { useId } from "react";
+import React, { useEffect, useId } from "react";
 import useGlobal from "../../context/global";
 import SettingItem from "../components/item";
 import SettingsSection from "../components/section";
 import Input from "../components/input";
 import type { Register } from ".";
 import { z } from "zod";
+import { useDebounce } from "usehooks-ts";
 
 const MaxTokensSchema = z.number().min(0);
 const TemperatureSchema = z.number().min(0).max(1);
@@ -14,6 +15,16 @@ const TimeoutSchema = z.number().min(0);
 export default function DMPSetting(props: { register: Register }) {
   const global = useGlobal();
   const sectionId = useId();
+
+  const debouncedMaxTokens = useDebounce(
+    global.plugin.settings.max_tokens,
+    400
+  );
+
+  useEffect(() => {
+    console.log("updating statusbar");
+    global.plugin.updateStatusBar("");
+  }, [debouncedMaxTokens]);
 
   return (
     <SettingsSection
