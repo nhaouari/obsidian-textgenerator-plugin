@@ -8,6 +8,7 @@ export default function SettingsSection(props: {
   children?: any;
   className?: any;
   hidden?: boolean;
+  triggerResize?: boolean;
 }) {
   const [collapsed, setCollapsed] = useState(true);
   const ref = useRef<HTMLDivElement>(null);
@@ -35,7 +36,7 @@ export default function SettingsSection(props: {
     return () => {
       document.removeEventListener("resize", onResize);
     };
-  }, [ref.current]);
+  }, [ref.current, props.triggerResize]);
 
   useEffect(
     () => setCollapsed((props.collapsed ?? true) || false),

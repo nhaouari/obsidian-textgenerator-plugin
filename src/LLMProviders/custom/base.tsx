@@ -4,7 +4,6 @@ import debug from "debug";
 import React, { useMemo } from "react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import useGlobal from "#/ui/context/global";
-import { JsonInput } from "@mantine/core";
 import { getHBValues } from "#/utils/barhandles";
 import SettingItem from "#/ui/settings/components/item";
 import Input from "#/ui/settings/components/input";
@@ -415,27 +414,48 @@ export default class CustomProvider
           />
         </SettingItem>
 
-        <JsonInput
-          label="Headers:"
-          placeholder="Textarea will autosize to fit the content"
-          validationError="Invalid JSON"
-          value={
-            config.handlebars_headers_in || default_values.handlebars_headers_in
-          }
-          onChange={async (e) => {
-            config.handlebars_headers_in = e;
-            global.triggerReload();
-            await global.plugin.saveSettings();
-          }}
-          formatOnBlur
-          spellCheck={false}
-          autosize
-          minRows={4}
-        />
+        <div className="flex flex-col gap-1">
+          <div className="font-bold">Headers:</div>
+          <textarea
+            placeholder="Headers"
+            className="resize-none"
+            defaultValue={
+              config.handlebars_headers_in ||
+              default_values.handlebars_headers_in
+            }
+            onChange={async (e) => {
+              config.handlebars_headers_in = e.target.value;
+
+              const compiled = Handlebars.compile(
+                config.handlebars_headers_in ||
+                  default_values.handlebars_headers_in
+              )({
+                ...global.plugin.settings,
+                ...cleanConfig(config),
+                n: 1,
+                messages: testMessages,
+              });
+
+              console.log(compiled);
+              try {
+                console.log(JSON.parse(compiled));
+              } catch (err: any) {
+                console.warn(err);
+              }
+
+              global.triggerReload();
+              await global.plugin.saveSettings();
+            }}
+            spellCheck={false}
+            rows={5}
+          />
+        </div>
+
         <div className="flex flex-col gap-1">
           <div className="font-bold">Body:</div>
           <textarea
             placeholder="Textarea will autosize to fit the content"
+            className="resize-none"
             defaultValue={
               config.handlebars_body_in || default_values.handlebars_body_in
             }

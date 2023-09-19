@@ -7,6 +7,7 @@ import SettingItem from "../components/item";
 import SettingsSection from "../components/section";
 import OtherProviders from "./otherProviders";
 import type { Register } from ".";
+import { useToggle } from "usehooks-ts";
 
 export default function ProviderSetting(props: { register: Register }) {
   const llmList = LLMProviderRegistery.getList();
@@ -15,6 +16,8 @@ export default function ProviderSetting(props: { register: Register }) {
   const [selectedLLM, setSelectedLLM] = useState<
     LLMProviderInterface | undefined
   >();
+
+  const [resized, triggerResize] = useToggle();
 
   const [selectedLLMName, setSelectedLLMName] = useState<string | undefined>(
     global.plugin.settings.selectedProvider || llmList[0]
@@ -46,6 +49,7 @@ export default function ProviderSetting(props: { register: Register }) {
         className="flex w-full flex-col"
         collapsed={!props.register.searchTerm.length}
         hidden={!props.register.activeSections[sectionId]}
+        triggerResize={resized}
       >
         <SettingItem
           name="LLM Provider"
@@ -59,6 +63,7 @@ export default function ProviderSetting(props: { register: Register }) {
               updateLLm(selectedLLMName);
               global.plugin.saveSettings();
               global.triggerReload();
+              triggerResize();
             }}
             values={llmList}
           />
