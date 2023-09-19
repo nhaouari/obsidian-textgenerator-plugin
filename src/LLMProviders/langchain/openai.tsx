@@ -342,6 +342,7 @@ function ModelsHandler(props: {
               config.engine = selectedModel;
               global.plugin.settings.engine = selectedModel;
               await global.plugin.saveSettings();
+              global.triggerReload();
             }}
             values={[...models].sort()}
           />
