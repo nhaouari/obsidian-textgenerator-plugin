@@ -90,7 +90,7 @@ esbuild.build({
 		...builtins
 	],
 	format: 'cjs',
-	watch: prod ? false : {
+	watch: prod ? false:{
 		onRebuild(error, result) {
 			if (error) console.error('watch build failed:', error)
 			else {
