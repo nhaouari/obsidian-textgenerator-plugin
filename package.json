@@ -1,11 +1,11 @@
 {
 	"name": "obsidian-textgenerator-plugin",
-	"version": "0.4.4",
+	"version": "0.4.5",
 	"description": "Text generator is a handy plugin that helps you generate text content using GPT-3 (OpenAI).",
 	"main": "main.js",
 	"scripts": {
 		"dev": "npm run build:css && node esbuild.config.mjs",
-		"build": "npm run build:css && node esbuild.config.mjs production",
+		"build": "eslint  --fix ./src/**/*.{js,jsx,ts,tsx,json} && npm run build:css && node esbuild.config.mjs production",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"eslint": "eslint  --fix ./src/**/*.{js,jsx,ts,tsx,json}",
 		"build:css": "postcss ./src/css/global.css -o styles.css",
@@ -31,7 +31,6 @@
 		"daisyui": "^3.2.1",
 		"esbuild": "0.13.12",
 		"esbuild-plugin-wasm": "^1.1.0",
-		"eslint": "^8.49.0",
 		"eslint-plugin-tailwindcss": "^3.13.0",
 		"obsidian": "^1.2.8",
 		"prettier": "^2.8.8",
