@@ -17,15 +17,17 @@ jobs:
               with:
                   node-version: "16.x" # You might need to adjust this value to your own version
 
-            - uses: oven-sh/setup-bun@v1
+            - uses: pnpm/action-setup@v2
+              name: Install pnpm
               with:
-                  version: 1.0.0 # or "canary"
+                  version: 6
+                  run_install: false
 
             # Build the plugin
             - name: Build
               run: |
-                  bun i
-                  bun run build
+                  pnpm i
+                  pnpm run build
 
             # Get the version number and put it in a variable
             - name: Get version info
