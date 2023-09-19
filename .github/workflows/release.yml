@@ -20,8 +20,8 @@ jobs:
             # Build the plugin
             - name: Build
               run: |
-                  yarn
-                  yarn run build
+                  npm
+                  npm run build
 
             # Get the version number and put it in a variable
             - name: Get version info
