@@ -12,12 +12,13 @@ import debug from "debug";
 
 const logger = debug("textgenerator:llmProvider:hf");
 
-const id = "hf";
+const id = "Huggingface (Langchain)" as const;
 export default class LangchainHFProvider
   extends LangchainBase
   implements LLMProviderInterface
 {
   id = id;
+  static id = id;
   streamable = false;
   getConfig(options: LLMConfig): Partial<HFInput & BaseLLMParams> {
     console.log(options);

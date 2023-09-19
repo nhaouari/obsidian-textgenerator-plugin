@@ -19,12 +19,14 @@ import debug from "debug";
 
 const logger = debug("textgenerator:llmProvider:azurechatgpt");
 
-const id = "azure-chatgpt";
+const id = "Azure Chatgpt (Langchain)"  as const;
 export default class LangchainAzureChatgptProvider
   extends LangchainBase
   implements LLMProviderInterface
 {
   id = id;
+  static id = id;
+
   getConfig(
     options: LLMConfig
   ): Partial<OpenAIChatInput & AzureOpenAIInput & BaseChatModelParams> {

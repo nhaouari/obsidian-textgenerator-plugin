@@ -21,12 +21,14 @@ const default_values = {
   basePath: "https://api.openai.com/v1",
 };
 
-const id = "chatgpt";
+const id = "Chatgpt (Langchain)" as const;
 export default class LangchainChatgptProvider
   extends LangchainBase
   implements LLMProviderInterface
 {
   id = id;
+  static id = id;
+
   getConfig(options: LLMConfig) {
     return this.cleanConfig({
       openAIApiKey: options.api_key,
@@ -225,12 +227,17 @@ function ModelsHandler(props: {
   const [models, setModels] = useState<Set<string>>(new Set<string>());
   const [loadingUpdate, setLoadingUpdate] = useState(false);
 
+  const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
+    ...default_values,
+  });
+
   const updateModels = async () => {
     setLoadingUpdate(true);
     try {
       if (global.plugin.settings.api_key.length > 0) {
+        console.log(`${config.basePath}/models`);
         const reqParams = {
-          url: `${global.plugin.settings.endpoint}/v1/models`,
+          url: `${config.basePath}/models`,
           method: "GET",
           body: "",
           headers: {
@@ -261,26 +268,14 @@ function ModelsHandler(props: {
     }
     setLoadingUpdate(false);
   };
+
   useEffect(() => {
     if (global.plugin.settings.models?.length > 0) {
       setModels(new Set(global.plugin.settings.models));
     } else {
-      [
-        "gpt-3.5-turbo",
-        "gpt-4",
-        "gpt-3.5-turbo-16k",
-        "gpt-3.5-turbo-16k-0613",
-        "gpt-3.5-turbo-0613",
-        "gpt-4-0314",
-        "gpt-4-0613",
-        "gpt-4-32k-0613",
-        "text-davinci-003",
-        "text-davinci-002",
-        "text-davinci-001",
-        "text-curie-001",
-        "text-babbage-001",
-        "text-ada-001",
-      ].forEach((e) => models.add(e));
+      Object.entries(OPENAI_MODELS).forEach(
+        ([e, o]) => o.llm.contains(id) && models.add(e)
+      );
       global.plugin.settings.models = models;
       global.plugin.saveSettings();
       setModels(new Set(models));

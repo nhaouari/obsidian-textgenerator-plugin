@@ -4,7 +4,6 @@ import debug from "debug";
 import React, { useMemo } from "react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import useGlobal from "#/ui/context/global";
-import { useToggle } from "usehooks-ts";
 import { JsonInput } from "@mantine/core";
 import { getHBValues } from "#/utils/barhandles";
 import SettingItem from "#/ui/settings/components/item";
@@ -13,7 +12,6 @@ import { RequestUrlParam, requestUrl } from "obsidian";
 import get from "lodash.get";
 import Handlebars from "handlebars";
 import clsx from "clsx";
-import safeAwait from "safe-await";
 
 const logger = debug("textgenerator:CustomProvider");
 
@@ -100,13 +98,14 @@ const default_values = {
 
 export type CustomConfig = Record<keyof typeof default_values, string>;
 
+const id = "Default (Custom)" as const;
 export default class CustomProvider
   extends BaseProvider
   implements LLMProviderInterface
 {
   streamable = true;
-  id = "default";
-
+  id = id;
+  static id = id;
   async request(
     params: RequestUrlParam & {
       signal?: AbortSignal;
@@ -127,9 +126,8 @@ export default class CustomProvider
 
     logger({ params, requestOptions });
 
-    const config = (this.plugin.settings.LLMProviderOptions[
-      this.id || "default"
-    ] ??= {});
+    const config = (this.plugin.settings.LLMProviderOptions[this.id || id] ??=
+      {});
 
     const k = (
       config.CORSBypass
@@ -224,7 +222,7 @@ export default class CustomProvider
         let allText = "";
 
         const config = (this.plugin.settings.LLMProviderOptions[
-          this.id || "default"
+          this.id || id
         ] ??= {});
 
         let resultContent = "";
@@ -313,7 +311,7 @@ export default class CustomProvider
         logger("generateMultiple", reqParams);
 
         const config = (this.plugin.settings.LLMProviderOptions[
-          this.id || "default"
+          this.id || id
         ] ??= {});
 
         const handlebarData = {

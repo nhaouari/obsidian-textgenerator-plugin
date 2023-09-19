@@ -12,12 +12,13 @@ import debug from "debug";
 
 const logger = debug("textgenerator:llmProvider:replicated");
 
-const id = "replicated";
+const id = "Replica (Langchain)" as const;
 export default class LangchainReplicaProvider
   extends LangchainBase
   implements LLMProviderInterface
 {
   id = id;
+  static id = id;
   streamable = false;
   getConfig(options: LLMConfig): Partial<ReplicateInput & BaseLLMParams> {
     console.log(options);

@@ -15,13 +15,14 @@ import debug from "debug";
 
 const logger = debug("textgenerator:llmProvider:palm");
 
-const id = "palm";
+const id = "Google Palm (Langchain)" as const;
 export default class LangchainPalmProvider
   extends LangchainBase
   implements LLMProviderInterface
 {
   streamable = false;
   id = id;
+  static id = id;
   getConfig(options: LLMConfig): Partial<GooglePaLMChatInput> {
     return this.cleanConfig({
       apiKey: options.api_key,
