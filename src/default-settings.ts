@@ -1,6 +1,8 @@
 import { TextGeneratorSettings } from "./types";
 
+
 const { safeStorage } = require("electron").remote;
+
 
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
   endpoint: "https://api.openai.com/v1",
@@ -49,6 +51,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
     "modal-suggest": false,
     "text-extractor-tool": true,
     "stop-stream": true,
+
   },
   autoSuggestOptions: {
     isEnabled: false,
