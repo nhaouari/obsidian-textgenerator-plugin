@@ -1,0 +1,52 @@
+name: Release Obsidian Plugin
+on:
+    push:
+        # Sequence of patterns matched against refs/tags
+        tags:
+            - "*"
+permissions:
+    contents: write
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: "16.x" # You might need to adjust this value to your own version
+
+            # Build the plugin
+            - name: Build
+              run: |
+                  yarn
+                  yarn run build
+
+            # Get the version number and put it in a variable
+            - name: Get version info
+              id: version
+              run: |
+                  echo "name=$(git describe --abbrev=0 --tags)" >> $GITHUB_OUTPUT
+
+            # Package the required files into a zip
+            - name: Package plugin archive
+              run: |
+                  mkdir ${{ github.event.repository.name }}
+                  cp main.js styles.css manifest.json README.md ${{ github.event.repository.name }}
+                  zip -r ${{ github.event.repository.name }}-${{ steps.version.outputs.name }}.zip ${{ github.event.repository.name }}
+
+            # Create the release on GitHub
+            - name: Create release
+              uses: softprops/action-gh-release@v1
+              with:
+                  draft: true
+                  files: |
+                      ${{ github.event.repository.name }}-${{ steps.version.outputs.name }}.zip
+                      styles.css
+                      main.js
+                      manifest.json
+                  name: ${{ steps.version.outputs.name }}
+                  prerelease: ${{ endsWith(github.ref, '-beta') }}
+                  tag_name: ${{ github.ref }}
+                  token: ${{ secrets.GITHUB_TOKEN }}
