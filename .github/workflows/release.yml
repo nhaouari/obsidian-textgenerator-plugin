@@ -17,11 +17,17 @@ jobs:
               with:
                   node-version: "16.x" # You might need to adjust this value to your own version
 
+            - uses: pnpm/action-setup@v2
+              name: Install pnpm
+              with:
+                  version: 6
+                  run_install: false
+
             # Build the plugin
             - name: Build
               run: |
-                  npm
-                  npm run build
+                  pnpm i
+                  pnpm run build
 
             # Get the version number and put it in a variable
             - name: Get version info
