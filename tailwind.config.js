@@ -1,6 +1,9 @@
 module.exports = {
+	// prefix: "plug-tg-",
 	content: ["./src/**/*.{ts,jsx,tsx,vue,css}"],
-
+	corePlugins: {
+		preflight: false,
+	},
 	darkMode: ["class", '[class*="theme-dark"]'], // or 'media' or 'class'
 	plugins: [require("daisyui")],
 

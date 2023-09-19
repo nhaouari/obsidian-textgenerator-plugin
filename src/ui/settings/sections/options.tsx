@@ -68,6 +68,23 @@ export default function OptionsSetting(props: { register: Register }) {
         collapsed={!props.register.searchTerm.length}
         hidden={!props.register.activeSections[sectionId]}
       >
+        <SettingItem
+          name="Keys encryption"
+          description="Enable encrypting keys, this could cause incompatibility with mobile devices"
+          register={props.register}
+          sectionId={sectionId}
+        >
+          <Input
+            type="checkbox"
+            value={"" + global.plugin.settings.encrypt_keys}
+            setValue={async (val) => {
+              global.plugin.settings.encrypt_keys = val == "true";
+              await global.plugin.loadApikeys();
+              await global.plugin.saveSettings();
+              global.triggerReload();
+            }}
+          />
+        </SettingItem>
         {ops.map((key) => {
           const moreData = extendedInfo[key];
 
