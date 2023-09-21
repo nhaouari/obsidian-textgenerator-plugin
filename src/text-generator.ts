@@ -4,7 +4,7 @@ import { TextGeneratorSettings } from "./types";
 import TextGeneratorPlugin from "./main";
 import ReqFormatter from "./api-request-formatter";
 import { SetPath } from "./ui/settings/components/set-path";
-import ContextManager from "./context-manager";
+import ContextManager, { InputContext } from "./context-manager";
 import { makeid, createFileWithInput, openFile } from "./utils";
 import safeAwait from "safe-await";
 import debug from "debug";
@@ -31,99 +31,110 @@ export default class TextGenerator extends RequestHandler {
     this.reqFormatter = new ReqFormatter(app, plugin, this.contextManager);
   }
 
-  getCursor(editor: Editor) {
+  getCursor(editor: Editor, mode: "insert" | "replace" | string = "insert") {
     logger("getCursor");
-    const cursor = editor.getCursor();
-    let selectedText = editor.getSelection();
-    if (selectedText.length === 0) {
-      const lineNumber = editor.getCursor().line;
-      selectedText = editor.getLine(lineNumber);
-      if (selectedText.length !== 0) {
-        cursor.ch = selectedText.length;
-        if (selectedText[selectedText.length - 1] === " ") {
-          cursor.ch = selectedText.length - 1;
-        }
-      }
-    }
+    const cursor = editor.getCursor(mode == "replace" ? "from" : "to");
+
+    // let selectedText = editor.getSelection();
+    // if (selectedText.length === 0) {
+    //   const lineNumber = editor.getCursor().line;
+    //   selectedText = editor.getLine(lineNumber);
+    //   if (selectedText.length !== 0) {
+    //     // cursor.ch = selectedText.length;
+    //     if (selectedText[selectedText.length - 1] === " ") {
+    //       cursor.ch = selectedText.length - 1;
+    //     }
+    //   }
+    // }
     logger("getCursor end");
     return cursor;
   }
 
   async generateFromTemplate(
-    params: TextGeneratorSettings,
+    params: Partial<TextGeneratorSettings>,
     templatePath: string,
     insertMetadata = true,
     editor: Editor,
-    activeFile = true
+    activeFile = true,
+    additionalProps: any = {},
+    insertMode = false
   ) {
-    logger("generateFromTemplate");
-    const cursor = this.getCursor(editor);
-
     const [errorContext, context] = await safeAwait(
-      this.contextManager.getContext(editor, insertMetadata, templatePath)
-    );
-
-    if (!context) {
-      return Promise.reject("context doesn't exist");
-    }
-
-    const text = await this.generate(
-      context,
-      insertMetadata,
-      params,
-      templatePath
+      this.contextManager.getContext(
+        editor,
+        insertMetadata,
+        templatePath,
+        additionalProps
+      )
     );
 
     if (errorContext) {
+      logger("tempalteToModal error", errorContext);
       return Promise.reject(errorContext);
     }
 
     if (activeFile === false) {
-      const title = app.workspace.activeLeaf?.getDisplayText();
-      const suggestedPath =
-        "textgenerator/generations/" + title + "-" + makeid(3) + ".md";
-
-      new SetPath(app, suggestedPath, async (path: string) => {
-        const [errorFile, file] = await safeAwait(
-          createFileWithInput(path, context.context + text, app)
-        );
-        if (errorFile) {
-          return Promise.reject(errorFile);
-        }
-
-        openFile(app, file);
-      }).open();
+      await this.createToFile(params, templatePath, context, insertMode);
     } else {
-      const mode = this.getMode(context);
-      this.insertGeneratedText(text, editor, cursor, mode);
+      await this.generateInEditor({}, false, editor, context, {
+        showSpinner: true,
+        insertMode,
+      });
     }
     logger("generateFromTemplate end");
   }
 
   getMode(context: any) {
-    return context?.options?.frontmatter?.config?.mode || "insert";
+    return (
+      context?.options?.frontmatter?.mode ||
+      context?.options?.frontmatter?.config?.mode ||
+      context?.options?.config?.mode ||
+      "insert"
+    );
   }
 
   async generateStreamInEditor(
     params: Partial<TextGeneratorSettings>,
     insertMetadata = false,
-    editor: Editor
+    editor: Editor,
+    customContext?: InputContext
   ) {
     logger("generateStreamInEditor");
 
-    const startingCursor = this.getCursor(editor);
+    const context =
+      customContext ||
+      (await this.contextManager.getContext(editor, insertMetadata));
+
+    const mode = this.getMode(context);
+
+    const startingCursor = this.getCursor(editor, mode);
 
     const cursor: typeof startingCursor = {
       ch: startingCursor.ch,
       line: startingCursor.line,
     };
 
-    const context = await this.contextManager.getContext(
-      editor,
-      insertMetadata
+    // --- show selected --
+    const selectedRange = this.contextManager.getSelectionRange(editor);
+    const currentSelections = editor.listSelections();
+    editor.setSelections(
+      currentSelections.length > 1
+        ? currentSelections
+        : [
+            {
+              anchor: selectedRange.from,
+              head: selectedRange.to,
+            },
+          ]
     );
+    // --
 
-    const strm = await this.streamGenerate(context, insertMetadata, params);
+    const strm = await this.streamGenerate(
+      context,
+      insertMetadata,
+      params,
+      context.templatePath
+    );
 
     // last letter before starting, (used to detirmin if we should add space at the begining)
     const txt = editor.getRange(
@@ -134,71 +145,73 @@ export default class TextGenerator extends RequestHandler {
       startingCursor
     );
 
-    const allText = await strm(async (cntnt, first) => {
-      let content = cntnt.length ? cntnt : " ";
-      //   console.log({ content, first });
+    const allText =
+      (await strm(async (cntnt, first) => {
+        if (mode !== "insert") return;
 
-      if (first) {
-        const alreadyDidnewLine = this.plugin.settings.prefix?.contains(`
-`);
+        let content = cntnt;
+        //   console.log({ content, first });
 
-        // here you can do some addition magic
+        if (first) {
+          const alreadyDidnewLine = this.plugin.settings.prefix?.contains(`
+			`);
 
-        // check if its starting by space, and space doens't exist in note (used to detirmin if we should add space at the begining).
-        if (txt != " " && content != " ") {
-          content = " " + content;
-        }
+          // here you can do some addition magic
+          // check if its starting by space, and space doens't exist in note (used to detirmin if we should add space at the begining).
+          if (txt.length && txt != " " && content != " ") {
+            content = " " + content;
+          }
 
-        if (!alreadyDidnewLine && txt == ":" && cntnt != "\n") {
-          content = "\n" + content;
-        }
+          if (!alreadyDidnewLine && txt == ":" && cntnt != "\n") {
+            content = "\n" + content;
+          }
 
-        // adding prefix here
-        if (this.plugin.settings.prefix?.length) {
-          console.log(content);
-          content = this.plugin.settings.prefix + content;
-        }
-      }
+          // adding prefix here
+          if (this.plugin.settings.prefix?.length) {
+            console.log(content);
+            content = this.plugin.settings.prefix + content;
+          }
+          this.insertGeneratedText(content, editor, cursor, mode);
+        } else this.insertGeneratedText(content, editor, cursor, "stream");
 
-      // const cursor = editor.getCursor();
-      this.insertGeneratedText(content, editor, cursor, "stream");
+        // const cursor = editor.getCursor();
 
-      cursor.ch += content.length;
-      //   cursor.line += content.split("\n").length;
+        cursor.ch += content.length;
 
-      if (!this.plugin.settings.freeCursorOnStreaming) editor.setCursor(cursor);
+        if (!this.plugin.settings.freeCursorOnStreaming)
+          editor.setCursor(cursor);
 
-      this.plugin.updateSpinnerPos();
+        this.plugin.updateSpinnerPos();
 
-      logger("generateStreamInEditor message", { content });
-      return content;
-    });
+        logger("generateStreamInEditor message", { content });
+        return content;
+      })) || "";
 
     editor.replaceRange(
-      "",
-      {
-        ch: startingCursor.ch + 1,
-        line: startingCursor.line,
-      },
+      mode == "replace" ? allText : "",
+      startingCursor,
       cursor
     );
 
-    const mode = this.getMode(context);
-
-    this.insertGeneratedText(allText, editor, startingCursor, mode);
+    if (mode !== "replace")
+      this.insertGeneratedText(allText, editor, startingCursor, mode);
 
     const nc = {
-      ch: cursor.ch,
-      line: this.plugin.settings.outputToBlockQuote
-        ? cursor.line + 1
-        : cursor.line,
+      ch: startingCursor.ch + allText.length,
+      line: startingCursor.line,
     };
 
+    console.log({
+      nc,
+      cursor,
+      startingCursor,
+      selected: editor.getRange(startingCursor, nc),
+    });
     editor.replaceRange("", startingCursor, nc);
 
-    const mode2 = this.getMode(context);
+    await new Promise((s) => setTimeout(s, 500));
 
-    this.insertGeneratedText(allText, editor, startingCursor, mode2);
+    this.insertGeneratedText(allText, editor, startingCursor, mode);
 
     // here we can do some selecting magic
     // editor.setSelection(startingCursor, cursor)
@@ -209,24 +222,42 @@ export default class TextGenerator extends RequestHandler {
   async generateInEditor(
     params: Partial<TextGeneratorSettings>,
     insertMetadata = false,
-    editor: Editor
+    editor: Editor,
+    customContext?: InputContext,
+    additionnalParams = {
+      showSpinner: true,
+      insertMode: false,
+    }
   ) {
+    const frontmatter = this.reqFormatter.getFrontmatter("", insertMetadata);
+    console.log(frontmatter);
     if (
       this.plugin.settings.stream &&
-      this.plugin.textGenerator.LLMProvider.streamable
+      this.plugin.textGenerator.LLMProvider.streamable &&
+      frontmatter.stream !== false
     ) {
-      return this.generateStreamInEditor(params, insertMetadata, editor);
+      return this.generateStreamInEditor(
+        params,
+        insertMetadata,
+        editor,
+        customContext
+      );
     }
 
     logger("generateInEditor");
     const cursor = this.getCursor(editor);
-    const context = await this.contextManager.getContext(
-      editor,
-      insertMetadata
-    );
+    const context =
+      customContext ||
+      (await this.contextManager.getContext(editor, insertMetadata));
 
     const [errorGeneration, text] = await safeAwait(
-      this.generate(context, insertMetadata, params)
+      this.generate(
+        context,
+        insertMetadata,
+        params,
+        context.templatePath,
+        additionnalParams
+      )
     );
 
     if (errorGeneration) {
@@ -247,7 +278,7 @@ export default class TextGenerator extends RequestHandler {
   }
 
   async generateToClipboard(
-    params: TextGeneratorSettings,
+    params: Partial<TextGeneratorSettings>,
     templatePath: string,
     insertMetadata = false,
     editor: Editor
@@ -287,7 +318,7 @@ export default class TextGenerator extends RequestHandler {
     promptText: string,
     insertMetadata = false,
     editor: Editor,
-    outputTemplate: any
+    outputTemplate: HandlebarsTemplateDelegate<any>
   ) {
     logger("generatePrompt");
     const cursor = this.getCursor(editor);
@@ -304,48 +335,38 @@ export default class TextGenerator extends RequestHandler {
   }
 
   async createToFile(
-    params: TextGeneratorSettings,
+    params: Partial<TextGeneratorSettings>,
     templatePath: string,
-    insertMetadata = false,
-    editor: Editor,
-    activeFile = true
+    context: InputContext,
+    insertMode = false
   ) {
     logger("createToFile");
-    const [errorContext, context] = await safeAwait(
-      this.contextManager.getContext(editor, insertMetadata, templatePath)
+    const [errortext, text] = await safeAwait(
+      this.generate(context, true, params, templatePath, {
+        showSpinner: false,
+        insertMode,
+      })
     );
 
-    if (errorContext) {
-      return Promise.reject(errorContext);
+    if (errortext) {
+      logger("tempalteToModal error", errortext);
+      return Promise.reject(errortext);
     }
 
-    const contextAsString = context.context;
+    const title = app.workspace.activeLeaf?.getDisplayText();
+    const suggestedPath =
+      "textgenerator/generations/" + title + "-" + makeid(3) + ".md";
+    new SetPath(app, suggestedPath, async (path: string) => {
+      const [errorFile, file] = await safeAwait(
+        createFileWithInput(path, context.context + text, app)
+      );
+      if (errorFile) {
+        logger("tempalteToModal error", errorFile);
+        return Promise.reject(errorFile);
+      }
 
-    if (!contextAsString) {
-      return Promise.reject("contextAsString is undefined");
-    }
-
-    if (activeFile === false) {
-      const title = app.workspace.activeLeaf?.getDisplayText();
-      const suggestedPath =
-        "textgenerator/generations/" + title + "-" + makeid(3) + ".md";
-
-      new SetPath(app, suggestedPath, async (path: string) => {
-        const [errorFile, file] = await safeAwait(
-          createFileWithInput(path, contextAsString, app)
-        );
-
-        if (errorFile) {
-          logger("createToFile error", errorFile);
-          return Promise.reject(errorFile);
-        }
-
-        openFile(app, file);
-      }).open();
-    } else {
-      const mode = this.getMode(context);
-      this.insertGeneratedText(contextAsString, editor, undefined, mode);
-    }
+      openFile(app, file);
+    }).open();
     logger("createToFile end");
   }
 
@@ -359,14 +380,13 @@ export default class TextGenerator extends RequestHandler {
 
   async createTemplate(content: string, title = "") {
     logger("createTemplate");
-    const promptInfo = `PromptInfo:
- promptId: ${title}
- name: 🗞️${title} 
- description: ${title}
- required_values: 
- author: 
- tags: 
- version: 0.0.1`;
+    const promptInfo = `promptId: ${title}
+name: 🗞️${title} 
+description: ${title}
+required_values: 
+author: 
+tags: 
+version: 0.0.1`;
 
     let templateContent = content;
     const metadata = this.contextManager.getMetaData();
@@ -421,7 +441,7 @@ export default class TextGenerator extends RequestHandler {
     heavyLogger("insertGeneratedText");
 
     let text = completion;
-    let cursor = cur ? cur : this.getCursor(editor);
+    let cursor = cur && mode == "insert" ? cur : this.getCursor(editor);
 
     // if (mode !== "stream") {
     // 	 text = this.plugin.settings.prefix.replace(/\\n/g, "\n") + text;
@@ -469,7 +489,7 @@ export default class TextGenerator extends RequestHandler {
   }
 
   async tempalteToModal(
-    params: any = this.plugin.settings,
+    params: Partial<TextGeneratorSettings> = {},
     templatePath = "",
     editor: Editor,
     activeFile = true
@@ -495,6 +515,11 @@ export default class TextGenerator extends RequestHandler {
       .extractVariablesFromTemplate(inputContent)
       .filter((variable) => !variable.includes("."));
 
+    console.log(
+      { variables },
+      this.contextManager.extractVariablesFromTemplate(inputContent)
+    );
+
     const metadata = this.getMetadata(templatePath);
     const tempateContext = await this.contextManager.getTemplateContext(
       editor,
@@ -507,44 +532,14 @@ export default class TextGenerator extends RequestHandler {
       metadata,
       tempateContext,
       async (results: any) => {
-        const cursor = this.getCursor(editor);
-
-        const [errorContext, context] = await safeAwait(
-          this.contextManager.getContext(editor, true, templatePath, results)
+        await this.generateFromTemplate(
+          params,
+          templatePath,
+          true,
+          editor,
+          activeFile,
+          results
         );
-
-        if (errorContext) {
-          logger("tempalteToModal error", errorContext);
-          return Promise.reject(errorContext);
-        }
-
-        const [errortext, text] = await safeAwait(
-          this.generate(context, true, params, templatePath)
-        );
-        if (errortext) {
-          logger("tempalteToModal error", errortext);
-          return Promise.reject(errortext);
-        }
-
-        if (activeFile === false) {
-          const title = app.workspace.activeLeaf?.getDisplayText();
-          const suggestedPath =
-            "textgenerator/generations/" + title + "-" + makeid(3) + ".md";
-          new SetPath(app, suggestedPath, async (path: string) => {
-            const [errorFile, file] = await safeAwait(
-              createFileWithInput(path, context.context + text, app)
-            );
-            if (errorFile) {
-              logger("tempalteToModal error", errorFile);
-              return Promise.reject(errorFile);
-            }
-
-            openFile(app, file);
-          }).open();
-        } else {
-          const mode = context?.options?.config?.mode || "insert";
-          this.insertGeneratedText(text, editor, cursor, mode);
-        }
       }
     ).open();
     logger("tempalteToModal end");

@@ -28,6 +28,7 @@ export interface ContextTemplate {
 
 export interface InputContext {
   template?: ContextTemplate;
+  templatePath?: string;
   options?: any;
   context?: string;
 }
@@ -70,6 +71,7 @@ export default class ContextManager {
         context,
         options,
         template: { inputTemplate, outputTemplate },
+        templatePath,
       } as InputContext;
     } else {
       /* Without template */
@@ -264,7 +266,9 @@ export default class ContextManager {
       outputContent = splitContent[1];
 
       inputTemplate = Handlebars.compile(inputContent);
-      outputTemplate = Handlebars.compile(outputContent);
+      outputTemplate = Handlebars.compile(outputContent, {
+        noEscape: true,
+      });
     } else {
       const template = Handlebars.compile(templateContent);
       inputContent = templateContent;
@@ -301,24 +305,50 @@ export default class ContextManager {
     return selections;
   }
 
-  getSelection(editor: Editor) {
+  getSelectionRange(editor: Editor) {
     logger("getSelection", editor);
-    let selectedText = editor.getSelection().trimStart();
+
+    const fromTo = {
+      from: editor.getCursor("from"),
+      to: editor.getCursor("to"),
+    };
+
+    const selectedText = editor.getSelection().trimStart();
+
     if (selectedText.length === 0) {
       const lineNumber = editor.getCursor().line;
-      selectedText = editor.getLine(lineNumber).trimStart();
+      const line = editor.getLine(lineNumber).trimStart();
 
-      if (selectedText.length === 0) {
-        selectedText = editor.getValue();
-        const frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document
-        if (
-          typeof frontmatter !== "undefined" &&
-          Object.keys(frontmatter).length !== 0
-        ) {
-          /* Text Generate with metadata */
-          selectedText = removeYAML(selectedText);
-        }
+      if (line.length === 0) {
+        fromTo.from = {
+          ch: 0,
+          line: 0,
+        };
+        fromTo.to = editor.getCursor("from");
+      } else {
+        fromTo.from = {
+          ch: 0,
+          line: lineNumber,
+        };
+        fromTo.to = editor.getCursor("to");
       }
+    }
+    logger("getSelection", { selectedText });
+    return fromTo;
+  }
+
+  getSelection(editor: Editor) {
+    logger("getSelection", editor);
+    const range = this.getSelectionRange(editor);
+    let selectedText = editor.getRange(range.from, range.to);
+
+    const frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document
+    if (
+      typeof frontmatter !== "undefined" &&
+      Object.keys(frontmatter).length !== 0
+    ) {
+      /* Text Generate with metadata */
+      selectedText = removeYAML(selectedText).trim();
     }
     logger("getSelection", { selectedText });
     return selectedText;
@@ -532,6 +562,22 @@ export default class ContextManager {
     const cache = app.metadataCache.getCache(activeFile.path);
     this.app.metadataCache.getCache(activeFile.path);
 
+    const bodyParams: Record<string, any> = {};
+
+    if (cache?.frontmatter?.max_tokens)
+      bodyParams.max_tokens = cache?.frontmatter?.max_tokens;
+
+    Object.entries(cache?.frontmatter || {}).map(([key, data]) => {
+      if (key.startsWith("body.")) bodyParams[key.slice("body.".length)] = data;
+    });
+
+    const reqParams: Record<string, any> = {};
+
+    Object.entries(cache?.frontmatter || {}).map(([key, data]) => {
+      if (key.startsWith("reqParams."))
+        reqParams[key.slice("reqParams.".length)] = data;
+    });
+
     return {
       ...cache,
 
@@ -540,6 +586,29 @@ export default class ContextManager {
         PromptInfo: {
           ...cache?.frontmatter,
           ...(cache?.frontmatter?.PromptInfo || {}),
+        },
+        config: {
+          ...cache?.frontmatter,
+          ...(cache?.frontmatter?.config || {}),
+          handlebars_body_in:
+            cache?.frontmatter?.body || cache?.frontmatter?.handlebars_body_in,
+          headers:
+            cache?.frontmatter?.headers ||
+            cache?.frontmatter?.handlebars_headers_in,
+          path_to_choices:
+            cache?.frontmatter?.choices || cache?.frontmatter?.path_to_choices,
+          path_to_message_content:
+            cache?.frontmatter?.pathToContent ||
+            cache?.frontmatter?.path_to_message_content,
+        },
+        bodyParams: {
+          ...(cache?.frontmatter?.bodyParams || {}),
+          ...bodyParams,
+        },
+
+        reqParams: {
+          ...(cache?.frontmatter?.reqParams || {}),
+          ...reqParams,
         },
       },
 
@@ -550,7 +619,12 @@ export default class ContextManager {
   getMetaDataAsStr(frontmatter: any) {
     let cleanFrontMatter = "";
     for (const [key, value] of Object.entries(frontmatter)) {
-      if (IGNORE_IN_YAML.findIndex((e) => e === key) != -1) continue;
+      if (
+        key.startsWith("body") ||
+        key.startsWith("header") ||
+        IGNORE_IN_YAML.findIndex((e) => e === key) != -1
+      )
+        continue;
       if (Array.isArray(value)) {
         cleanFrontMatter += `${key} : `;
         value.forEach((v) => {

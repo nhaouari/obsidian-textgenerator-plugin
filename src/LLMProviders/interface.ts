@@ -10,12 +10,14 @@ export default interface LLMProviderInterface {
     onToken?: (
       token: string,
       first: boolean
-    ) => Promise<string | void | null | undefined>
+    ) => Promise<string | void | null | undefined>,
+    customConfig?: any
   ): Promise<string>;
 
   generateMultiple(
     messages: Message[],
-    reqParams: Partial<LLMConfig>
+    reqParams: Partial<LLMConfig>,
+    customConfig?: any
   ): Promise<string[]>;
 
   RenderSettings(props: {

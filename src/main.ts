@@ -366,7 +366,6 @@ export default class TextGeneratorPlugin extends Plugin {
 		*/
 
     // registers
-    console.log("reaching add commands function");
     await this.addCommands();
 
     await this.packageManager.load();
@@ -459,7 +458,7 @@ export default class TextGeneratorPlugin extends Plugin {
               switch (command) {
                 case "generate":
                   await this.textGenerator.generateFromTemplate(
-                    this.settings,
+                    {},
                     template.path,
                     true,
                     editor,
@@ -467,17 +466,19 @@ export default class TextGeneratorPlugin extends Plugin {
                   );
                   break;
                 case "insert":
-                  await this.textGenerator.createToFile(
-                    this.settings,
+                  await this.textGenerator.generateFromTemplate(
+                    {},
                     template.path,
                     true,
                     editor,
+                    true,
+                    {},
                     true
                   );
                   break;
                 case "generate&create":
                   await this.textGenerator.generateFromTemplate(
-                    this.settings,
+                    {},
                     template.path,
                     true,
                     editor,
@@ -485,24 +486,26 @@ export default class TextGeneratorPlugin extends Plugin {
                   );
                   break;
                 case "insert&create":
-                  await this.textGenerator.createToFile(
-                    this.settings,
+                  await this.textGenerator.generateFromTemplate(
+                    {},
                     template.path,
                     true,
                     editor,
-                    false
+                    false,
+                    {},
+                    true
                   );
                   break;
                 case "modal":
                   await this.textGenerator.tempalteToModal(
-                    this.settings,
+                    {},
                     template.path,
                     editor
                   );
                   break;
                 case "clipboard":
                   await this.textGenerator.generateToClipboard(
-                    this.settings,
+                    {},
                     template.path,
                     true,
                     editor

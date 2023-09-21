@@ -47,12 +47,10 @@ export async function createFileWithInput(
   let dirName = "";
   if (dirMatch) dirName = dirMatch[1];
 
-  if (await app.vault.adapter.exists(dirName)) {
-    return await app.vault.create(filePath, fileContent);
-  } else {
+  if (!(await app.vault.adapter.exists(dirName)))
     await createFolder(dirName, app);
-    return await this.vault.create(filePath, fileContent);
-  }
+
+  return await app.vault.create(filePath, fileContent);
 }
 
 /*

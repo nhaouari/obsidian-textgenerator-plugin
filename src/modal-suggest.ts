@@ -1,4 +1,4 @@
-import { PromptTemplate } from "src/types";
+import { PromptTemplate } from "./types";
 import {
   App,
   Editor,
@@ -72,11 +72,7 @@ export class ModelSuggest extends EditorSuggest<PromptTemplate> {
     const editor: Editor = activeView.editor;
 
     editor.replaceRange("", value.context.start, value.context.end);
-    await this.plugin.textGenerator.tempalteToModal(
-      this.plugin.settings,
-      value.path,
-      editor
-    );
+    await this.plugin.textGenerator.tempalteToModal({}, value.path, editor);
 
     this.close();
   }

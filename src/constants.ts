@@ -8,6 +8,13 @@ export const IGNORE_IN_YAML = [
   "position",
   "bodyParams",
   "reqParams",
+  "provider",
+  "output",
+  "body",
+  "endpoint",
+  "stream",
+  "messages",
+  "max_tokens",
 ];
 
 export const OPENAI_MODELS: Record<

@@ -340,7 +340,7 @@ function ModelsHandler(props: {
             value={config.engine}
             setValue={async (selectedModel) => {
               config.engine = selectedModel;
-              global.plugin.settings.engine = selectedModel;
+              //   global.plugin.settings.engine = selectedModel;
               await global.plugin.saveSettings();
               global.triggerReload();
             }}

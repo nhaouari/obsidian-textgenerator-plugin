@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import React, { useEffect, useRef, useState } from "react";
-
+import { useToggle } from "usehooks-ts";
 export default function SettingsSection(props: {
   title: string;
   collapsed?: boolean;
@@ -10,33 +10,9 @@ export default function SettingsSection(props: {
   hidden?: boolean;
   triggerResize?: boolean;
 }) {
+  const [_, triggerResize2] = useToggle();
   const [collapsed, setCollapsed] = useState(true);
   const ref = useRef<HTMLDivElement>(null);
-
-  const [childrenHeight, setChildrenHeight] = useState(100);
-
-  useEffect(() => {
-    if (!ref.current) return;
-
-    const onResize = () => {
-      if (!ref.current) return;
-      let extendedHeight = 0;
-      for (let i = 0; i < ref.current.children.length; i++) {
-        // @ts-ignore
-        extendedHeight += ref.current.children[i].offsetHeight + 100;
-      }
-
-      setChildrenHeight(extendedHeight);
-    };
-
-    onResize();
-
-    document.addEventListener("resize", onResize);
-
-    return () => {
-      document.removeEventListener("resize", onResize);
-    };
-  }, [ref.current, props.triggerResize]);
 
   useEffect(
     () => setCollapsed((props.collapsed ?? true) || false),
@@ -45,19 +21,16 @@ export default function SettingsSection(props: {
 
   return (
     <div
-      className={clsx(
-        "border-l border-gray-100/10 p-2 dark:border-white/10",
-        props.className,
-        {
-          "opacity-50": collapsed,
-          hidden: props.hidden,
-        }
-      )}
+      className={clsx("dz-collapse", props.className, {
+        "opacity-50 max-h-16": collapsed,
+        "dz-collapse-open": !collapsed,
+        hidden: props.hidden,
+      })}
     >
       {!props.hideTitle && (
-        <div className="cursor-pointer">
+        <div className="dz-collapse-title cursor-pointer">
           <div
-            className="flex w-full items-center justify-between text-left font-medium "
+            className="flex w-full flex-wrap items-center justify-between text-left font-medium "
             data-accordion-target="#accordion-flush-body-1"
             aria-expanded="true"
             aria-controls="accordion-flush-body-1"
@@ -87,13 +60,7 @@ export default function SettingsSection(props: {
         </div>
       )}
 
-      <div
-        ref={ref}
-        className={clsx("min-h-max overflow-hidden transition-all")}
-        style={{
-          maxHeight: collapsed ? 0 : `${childrenHeight}px`,
-        }}
-      >
+      <div className={clsx("dz-collapse-content h-full w-full")}>
         {props.children}
       </div>
     </div>

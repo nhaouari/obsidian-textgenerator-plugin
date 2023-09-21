@@ -20,144 +20,150 @@ export default class ReqFormatter {
     this.contextManager = contextManager;
   }
 
+  getFrontmatter(templatePath: string, insertMetadata?: boolean) {
+    const activefileFrontmatter: any = insertMetadata
+      ? this.contextManager.getMetaData()?.frontmatter
+      : {};
+
+    const templateFrontmatter = templatePath?.length
+      ? this.contextManager.getMetaData(templatePath)?.frontmatter
+      : {};
+
+    return {
+      ...templateFrontmatter,
+      ...activefileFrontmatter,
+    };
+  }
+
   getRequestParameters(
-    params: Partial<TextGeneratorSettings>,
+    _params: Partial<TextGeneratorSettings>,
     insertMetadata: boolean,
     templatePath = "",
     additionnalParams: {
       reqParams?: RequestInit;
       bodyParams?: any;
-      showSpinner?: boolean;
     } = {}
   ) {
-    logger("prepareReqParameters", params, insertMetadata, templatePath);
+    logger("prepareReqParameters", _params, insertMetadata, templatePath);
 
-    let bodyParams: Partial<
-      LLMConfig & { messages: Message[]; prompt: string }
-    > = {
+    const frontmatter: any = this.getFrontmatter(templatePath, insertMetadata);
+
+    const params = {
+      ...this.plugin.settings,
+      ...this.plugin.settings.LLMProviderOptions[
+        frontmatter?.config?.provider ||
+          (this.plugin.settings.selectedProvider as any)
+      ],
+      ..._params,
+    };
+
+    let bodyParams: Partial<LLMConfig & { prompt: string }> & {
+      messages: Message[];
+    } = {
       ...(params.engine && { engine: params.engine }),
       ...(params.max_tokens && { max_tokens: params.max_tokens }),
       ...(params.temperature && { temperature: params.temperature }),
       ...(params.frequency_penalty && {
         frequency_penalty: params.frequency_penalty,
       }),
+      messages: [{ role: "user", content: params.prompt || "" }],
     };
 
-    // let reqUrl = new URL(`${params.endpoint?.contains("v1") ? "" : "/v1"}/v1/completions`, params.endpoint).href;
-    let reqExtractResult = "choices[0].text";
-
-    // reqUrl = new URL(`${params.endpoint?.contains("v1") ? "" : "/v1"}/chat/completions`, params.endpoint).href;
-    reqExtractResult = "choices[0].message.content";
-    bodyParams["messages"] = [{ role: "user", content: params.prompt || "" }];
-
-    bodyParams = { ...bodyParams, ...additionnalParams?.bodyParams };
+    const provider: {
+      selectedProvider?: string;
+      providerOptions?: any;
+    } = {};
 
     let reqParams: RequestInit & {
       // url: string,
       extractResult?: any;
     } = {
-      // url: reqUrl,
-      method: "POST",
-      body: "",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${params.api_key}`,
-      },
-      extractResult: reqExtractResult,
-
       ...additionnalParams?.reqParams,
     };
 
-    if (insertMetadata) {
-      const activefileFrontmatter =
-        this.contextManager.getMetaData()?.frontmatter;
-      const templateFrontmatter =
-        this.contextManager.getMetaData(templatePath)?.frontmatter;
+    // if (!insertMetadata) {
+    //   reqParams.body = JSON.stringify(bodyParams);
 
-      const frontmatter: any = {
-        ...templateFrontmatter,
-        ...activefileFrontmatter,
-      };
+    //   logger("prepareReqParameters", { bodyParams, reqParams });
+    //   return {
+    //     bodyParams: {
+    //       ...bodyParams,
+    //       messages: bodyParams.messages || [],
+    //     },
+    //     reqParams,
+    //     provider,
+    //   };
+    // }
 
-      //console.log({templateFrontmatter,activefileFrontmatter,frontmatter});
-      if (frontmatter == null) {
-        this.plugin.handelError("No valid Metadata (YAML front matter) found!");
-      } else {
-        if (bodyParams["messages"]) {
-          //chat mode
-          const messages: {
-            role: string;
-            content: string;
-          }[] = [];
+    // on insertMetadata
+    if (frontmatter) {
+      // -- provider options
+      provider.selectedProvider = frontmatter.config?.provider;
+      provider.providerOptions = frontmatter.config || {};
+      // --
 
-          if (frontmatter["config"]?.system) {
-            messages.push({
-              role: "system",
-              content: frontmatter["config"].system,
-            });
-          }
-
-          if (frontmatter["config"]?.messages) {
-            messages.push(
-              ...transformStringsToChatFormat(frontmatter["config"].messages)
-            );
-          }
-
-          bodyParams["messages"] = [...messages, ...bodyParams["messages"]];
+      if (bodyParams.messages) {
+        if (frontmatter.config?.messages) {
+          // unshift adds item at the start of the array
+          bodyParams.messages.unshift(
+            ...transformStringsToChatFormat(frontmatter.config.messages)
+          );
         }
 
-        if (
-          frontmatter["bodyParams"] &&
-          frontmatter["config"]?.append?.bodyParams == false
-        ) {
-          bodyParams = {
-            prompt: params.prompt,
-            ...frontmatter["bodyParams"],
-          };
-        } else if (frontmatter["bodyParams"]) {
-          bodyParams = {
-            ...bodyParams,
-            ...frontmatter["bodyParams"],
-          };
-        }
-
-        if (
-          frontmatter["config"]?.context &&
-          frontmatter["config"]?.context !== "prompt"
-        ) {
-          bodyParams[
-            frontmatter["config"].context as never as keyof typeof bodyParams
-          ] = params.prompt;
-          delete bodyParams.prompt;
-        }
-
-        reqParams.body = JSON.stringify(bodyParams);
-
-        if (frontmatter["config"]?.output) {
-          reqParams.extractResult = frontmatter["config"]?.output;
-        }
-
-        if (
-          frontmatter["reqParams"] &&
-          frontmatter["config"]?.append?.reqParams == false
-        ) {
-          reqParams = frontmatter["reqParams"];
-        } else if (frontmatter["reqParams"]) {
-          reqParams = { ...reqParams, ...frontmatter["reqParams"] };
+        if (frontmatter.config?.system) {
+          bodyParams.messages.unshift({
+            role: "system",
+            content: frontmatter.config.system,
+          });
         }
       }
-    } else {
+
+      if (
+        frontmatter.bodyParams &&
+        frontmatter.config?.append?.bodyParams == false
+      ) {
+        bodyParams = {
+          prompt: params.prompt,
+          ...frontmatter.bodyParams,
+        };
+      } else if (Object.keys(frontmatter.bodyParams || {}).length) {
+        bodyParams = {
+          ...bodyParams,
+          ...frontmatter.bodyParams,
+        };
+      }
+
+      if (
+        frontmatter.config?.context &&
+        frontmatter.config?.context !== "prompt"
+      ) {
+        bodyParams[
+          frontmatter.config.context as never as keyof typeof bodyParams
+        ] = params.prompt;
+        delete bodyParams.prompt;
+      }
+
       reqParams.body = JSON.stringify(bodyParams);
+
+      if (
+        frontmatter["reqParams"] &&
+        frontmatter.config?.append?.reqParams == false
+      ) {
+        reqParams = frontmatter["reqParams"];
+      } else if (frontmatter["reqParams"]) {
+        reqParams = { ...reqParams, ...frontmatter["reqParams"] };
+      }
+    } else {
+      this.plugin.handelError("No valid Metadata (YAML front matter) found!");
     }
 
     logger("prepareReqParameters", { bodyParams, reqParams });
 
     return {
-      bodyParams: {
-        ...bodyParams,
-        messages: bodyParams.messages || [],
-      },
+      bodyParams,
       reqParams,
+      provider,
+      allParams: params,
     };
   }
 }

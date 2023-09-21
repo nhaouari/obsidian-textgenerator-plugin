@@ -113,23 +113,23 @@ export default class CustomProvider
       path_to_choices?: string;
       path_to_error_message?: string;
       sanatization_streaming: string;
+      CORSBypass?: boolean;
     }
   ) {
     const requestOptions: RequestInit = {
-      method: "POST",
+      method: params.method || "POST",
       headers: params.headers,
-      body: params.body,
+      body: ["GET", "HEAD"].contains(params.method?.toUpperCase() || "_")
+        ? undefined
+        : params.body,
       redirect: "follow",
       signal: params.signal,
     };
 
     logger({ params, requestOptions });
 
-    const config = (this.plugin.settings.LLMProviderOptions[this.id || id] ??=
-      {});
-
     const k = (
-      config.CORSBypass
+      params.CORSBypass
         ? await requestUrl({
             url: params.url,
             body:
@@ -147,7 +147,7 @@ export default class CustomProvider
         : await fetch(params.url, requestOptions)
     ) as AsyncReturnType<typeof fetch>;
 
-    if (!config.CORSBypass && params.stream) {
+    if (!params.CORSBypass && params.stream) {
       if (!k.body) return;
       const reader = k.body.getReader();
       const decoder = new TextDecoder();
@@ -187,23 +187,28 @@ export default class CustomProvider
 
       return text as string;
     } else {
-      const resJson = config.CORSBypass ? k.json : await k.json();
+      try {
+        const resJson = params.CORSBypass ? k.json : await k.json();
 
-      if (k.status >= 300) {
-        try {
-          throw get(
+        if (k.status >= 300) {
+          console.log(resJson);
+          const err = get(
             resJson,
             params.path_to_error_message || default_values.path_to_error_message
           );
-        } catch {
-          throw JSON.stringify(resJson);
+          console.error(err);
+          throw err || JSON.stringify(resJson);
         }
-      }
 
-      return get(
-        resJson,
-        params.path_to_choices || default_values.path_to_choices
-      ) as object[];
+        return (
+          (get(
+            resJson,
+            params.path_to_choices || default_values.path_to_choices
+          ) as object[]) || resJson
+        );
+      } catch {
+        return params.CORSBypass ? k.text : await k.text();
+      }
     }
   }
 
@@ -234,24 +239,31 @@ export default class CustomProvider
           ...customConfig,
           // if the model is streamable
           stream:
-            reqParams.stream &&
-            this.streamable &&
-            config.streamable &&
-            !config.CORSBypass,
+            (reqParams.stream &&
+              this.streamable &&
+              config.streamable &&
+              !config.CORSBypass) ||
+            false,
           n: 1,
           messages,
         };
-
-        const res = await this.request({
-          url: Handlebars.compile(config.endpoint || default_values.endpoint)(
+        console.log(
+          "url",
+          Handlebars.compile(handlebarData.endpoint || default_values.endpoint)(
             handlebarData
-          ),
+          )
+        );
+        const res = await this.request({
+          method: handlebarData.method,
+          url: Handlebars.compile(
+            handlebarData.endpoint || default_values.endpoint
+          )(handlebarData),
           signal: handlebarData.requestParams?.signal || undefined,
           stream: handlebarData.stream,
           headers: JSON.parse(
             "" +
               Handlebars.compile(
-                config.handlebars_headers_in ||
+                handlebarData.handlebars_headers_in ||
                   default_values.handlebars_headers_in
               )(handlebarData)
           ) as any,
@@ -260,17 +272,18 @@ export default class CustomProvider
             JSON.parse(
               "" +
                 Handlebars.compile(
-                  config.handlebars_body_in || default_values.handlebars_body_in
+                  handlebarData.handlebars_body_in ||
+                    default_values.handlebars_body_in
                 )(handlebarData)
             )
           ) as any,
 
           path_to_choices:
-            config.path_to_choices || default_values.path_to_choices,
+            handlebarData.path_to_choices || default_values.path_to_choices,
           sanatization_streaming:
-            config.sanatization_streaming ||
+            handlebarData.sanatization_streaming ||
             default_values.sanatization_streaming,
-
+          CORSBypass: handlebarData.CORSBypass,
           async onToken(token: string) {
             onToken?.(token, first);
             allText += token;
@@ -280,12 +293,13 @@ export default class CustomProvider
 
         if (handlebarData.stream) resultContent = res as string;
         else {
-          const choices = res as object[];
-          resultContent = get(
-            choices[0],
-            config.path_to_message_content ||
-              default_values.path_to_message_content
-          ) as string;
+          const choices = res as any;
+          resultContent =
+            (get(
+              choices?.[0] || choices,
+              handlebarData.path_to_message_content ||
+                default_values.path_to_message_content
+            ) as string) || choices;
         }
 
         logger("generate end", {
@@ -320,11 +334,12 @@ export default class CustomProvider
           ...cleanConfig(reqParams),
           ...customConfig,
           // if the model is streamable
-          stream: reqParams.stream && this.streamable && config.streamable,
+          stream: false,
           messages,
         };
 
         const res = await this.request({
+          method: handlebarData.method,
           url: Handlebars.compile(config.endpoint || default_values.endpoint)(
             handlebarData
           ),
@@ -332,7 +347,7 @@ export default class CustomProvider
           stream: handlebarData.stream,
           headers: JSON.parse(
             Handlebars.compile(
-              config.handlebars_headers_in ||
+              handlebarData.handlebars_headers_in ||
                 default_values.handlebars_headers_in
             )(handlebarData)
           ) as any,
@@ -341,26 +356,33 @@ export default class CustomProvider
             this.cleanConfig(
               JSON.parse(
                 Handlebars.compile(
-                  config.handlebars_body_in || default_values.handlebars_body_in
+                  handlebarData.handlebars_body_in ||
+                    default_values.handlebars_body_in
                 )(handlebarData)
               )
             )
           ) as any,
 
           path_to_choices:
-            config.path_to_choices || default_values.path_to_choices,
+            handlebarData.path_to_choices || default_values.path_to_choices,
           sanatization_streaming:
-            config.sanatization_streaming ||
+            handlebarData.sanatization_streaming ||
             default_values.sanatization_streaming,
         });
 
-        const choices = (res as object[])?.map((o) =>
-          get(
-            o,
-            config.path_to_message_content ||
-              default_values.path_to_message_content
-          )
-        );
+        const choices = res
+          ? (res as object[])?.map((o) =>
+              get(
+                o,
+                handlebarData.path_to_message_content ||
+                  default_values.path_to_message_content
+              )
+            )
+          : get(
+              res,
+              handlebarData.path_to_message_content ||
+                default_values.path_to_message_content
+            );
 
         logger("generateMultiple end", {
           choices,
