@@ -1,6 +1,7 @@
-import LangchainBase from "./base";
-import { ChatOpenAI, OpenAIChatInput } from "langchain/chat_models/openai";
 import React, { useEffect, useState } from "react";
+import LangchainBase from "./base";
+import type { OpenAIChatInput } from "langchain/chat_models/openai";
+
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import SettingItem from "#/ui/settings/components/item";
 import Dropdown from "#/ui/settings/components/dropdown";
@@ -8,7 +9,6 @@ import useGlobal from "#/ui/context/global";
 import { IconExternalLink, IconReload } from "@tabler/icons-react";
 import { request } from "obsidian";
 import clsx from "clsx";
-import { useToggle } from "usehooks-ts";
 import { BaseChatModelParams } from "langchain/dist/chat_models/base";
 import Input from "#/ui/settings/components/input";
 import { OPENAI_MODELS } from "#/constants";
@@ -45,21 +45,16 @@ export default class LangchainChatgptProvider
     } as Partial<OpenAIChatInput & BaseChatModelParams>);
   }
 
-  getLLM(options: LLMConfig) {
-    return new ChatOpenAI(
-      {
-        ...this.getConfig(options),
-      },
-      {
-        basePath: options.otherOptions?.basePath?.length
-          ? options.endpoint
-          : undefined,
-        defaultHeaders: {
-          "User-Agent": undefined,
-        },
-      }
-    );
+  async load() {
+    const { ChatOpenAI } = await import("langchain/chat_models/openai");
+    this.llmClass = ChatOpenAI;
   }
+
+  //   getLLM(options: LLMConfig) {
+  //     return new ChatOpenAI({
+  //       ...this.getConfig(options),
+  //     });
+  //   }
 
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();

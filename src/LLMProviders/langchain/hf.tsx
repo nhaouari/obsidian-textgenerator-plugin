@@ -7,7 +7,7 @@ import { IconExternalLink } from "@tabler/icons-react";
 import { useToggle } from "usehooks-ts";
 import Input from "#/ui/settings/components/input";
 import { BaseLLMParams } from "langchain/llms/base";
-import { HuggingFaceInference, HFInput } from "langchain/llms/hf";
+import type { HFInput } from "langchain/llms/hf";
 import debug from "debug";
 
 const logger = debug("textgenerator:llmProvider:hf");
@@ -37,11 +37,16 @@ export default class LangchainHFProvider
     });
   }
 
-  getLLM(options: LLMConfig) {
-    return new HuggingFaceInference({
-      ...this.getConfig(options),
-    } as any);
+  async load() {
+    const { HuggingFaceInference } = await import("langchain/llms/hf");
+    this.llmClass = HuggingFaceInference;
   }
+
+  //   getLLM(options: LLMConfig) {
+  //     return new HuggingFaceInference({
+  //       ...this.getConfig(options),
+  //     } as any);
+  //   }
 
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();

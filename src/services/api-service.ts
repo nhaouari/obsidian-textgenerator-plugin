@@ -8,6 +8,7 @@ import LLMProviderInterface from "src/LLMProviders/interface";
 import { LLMProviderRegistery } from "src/LLMProviders";
 import { TextGeneratorSettings } from "../types";
 import Handlebars from "handlebars";
+import { Platform } from "obsidian";
 const logger = debug("textgenerator:TextGenerator");
 
 export default class RequestHandler {
@@ -26,22 +27,28 @@ export default class RequestHandler {
     this.setup();
   }
 
-  setup() {
-    this.loadllm();
+  async setup() {
+    await this.loadllm();
   }
 
   async loadllm(name: string = this.plugin.settings.selectedProvider || "") {
-    console.log("loading llm", name);
     const llmList = LLMProviderRegistery.getList();
 
     const llm =
       LLMProviderRegistery.get(name) || LLMProviderRegistery.get(llmList[0]);
 
-    if (llm)
+    if (llm && llm.id !== this.LLMProvider?.id) {
+      console.log("loading llm", name);
+      if (Platform.isMobile && llm.mobileSupport == false)
+        throw `Mobile is not supported for the "${llm?.id}" LLM provider`;
+
       // @ts-ignore
       this.LLMProvider = new llm({
         plugin: this.plugin,
       });
+
+      await this.LLMProvider.load();
+    }
   }
 
   async gen(
@@ -65,11 +72,6 @@ export default class RequestHandler {
 
     if (provider.selectedProvider !== this.LLMProvider.id)
       await this.loadllm(provider.selectedProvider);
-
-    if (!this.LLMProvider.streamable) {
-      logger("streamGenerate error", "LLM not streamable");
-      throw "LLM not streamable";
-    }
 
     try {
       const result = await this.LLMProvider.generate(
@@ -253,11 +255,6 @@ export default class RequestHandler {
 
       if (provider.selectedProvider !== this.LLMProvider.id)
         await this.loadllm(provider.selectedProvider);
-
-      if (!this.LLMProvider.streamable) {
-        logger("streamGenerate error", "LLM not streamable");
-        throw "LLM not streamable";
-      }
 
       let result = await this.LLMProvider.generate(
         bodyParams.messages,

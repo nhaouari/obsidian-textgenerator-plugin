@@ -228,3 +228,5 @@ export const OPENAI_MODELS: Record<
     llm: ["OpenAI (Langchain)"],
   },
 };
+
+export const DecryptKeyPrefix = "__@#key_prefix#@__";

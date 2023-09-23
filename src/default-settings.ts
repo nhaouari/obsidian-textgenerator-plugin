@@ -1,7 +1,12 @@
+import { Platform } from "obsidian";
 import { TextGeneratorSettings } from "./types";
 
 
-const { safeStorage } = require("electron").remote;
+let safeStorage: any;
+
+if (Platform.isDesktop) {
+  safeStorage = require("electron")?.remote?.safeStorage;
+}
 
 
 const DEFAULT_SETTINGS: TextGeneratorSettings = {

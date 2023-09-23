@@ -1,5 +1,5 @@
 import LangchainBase from "./base";
-import { OpenAI, OpenAIInput } from "langchain/llms/openai";
+import type { OpenAI, OpenAIInput } from "langchain/llms/openai";
 import React, { useEffect, useState } from "react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import SettingItem from "#/ui/settings/components/item";
@@ -8,8 +8,6 @@ import useGlobal from "#/ui/context/global";
 import { IconExternalLink, IconReload } from "@tabler/icons-react";
 import { request } from "obsidian";
 import clsx from "clsx";
-import { useToggle } from "usehooks-ts";
-import { BaseChatModelParams } from "langchain/dist/chat_models/base";
 import Input from "#/ui/settings/components/input";
 import { OPENAI_MODELS } from "#/constants";
 import { Message } from "#/types";
@@ -45,8 +43,13 @@ export default class LangchainOpenAIProvider
     } as Partial<OpenAIInput>);
   }
 
+  async load() {
+    const { OpenAI } = await import("langchain/llms/openai");
+    this.llmClass = OpenAI;
+  }
+
   getLLM(options: LLMConfig) {
-    return new OpenAI(
+    return new this.llmClass(
       {
         ...this.getConfig(options),
       },

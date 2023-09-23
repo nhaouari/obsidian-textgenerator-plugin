@@ -17,6 +17,7 @@ export default class LangchainProvider
 {
   streamable = true;
   id = "default";
+  llmClass: any;
   getConfig(
     options: LLMConfig
   ): Partial<OpenAIChatInput & BaseChatModelParams> {
@@ -35,10 +36,24 @@ export default class LangchainProvider
     });
   }
 
+  async load() {
+    this.llmClass = ChatOpenAI;
+  }
+
   getLLM(options: LLMConfig) {
-    return new ChatOpenAI({
-      ...this.getConfig(options),
-    }) as any;
+    return new this.llmClass(
+      {
+        ...this.getConfig(options),
+      },
+      {
+        basePath: options.otherOptions?.basePath?.length
+          ? options.endpoint
+          : undefined,
+        defaultHeaders: {
+          "User-Agent": undefined,
+        },
+      }
+    ) as any;
   }
 
   getReqOptions(options: LLMConfig) {

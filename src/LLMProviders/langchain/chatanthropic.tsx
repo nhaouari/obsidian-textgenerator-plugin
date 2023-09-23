@@ -1,6 +1,6 @@
 import LangchainBase from "./base";
 
-import { AnthropicInput, ChatAnthropic } from "langchain/chat_models/anthropic";
+import type { AnthropicInput } from "langchain/chat_models/anthropic";
 import React, { useEffect, useState } from "react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import SettingItem from "#/ui/settings/components/item";
@@ -43,11 +43,16 @@ export default class LangchainChatAnthropicProvider
     });
   }
 
-  getLLM(options: LLMConfig) {
-    return new ChatAnthropic({
-      ...this.getConfig(options),
-    });
+  async load() {
+    const { ChatAnthropic } = await import("langchain/chat_models/anthropic");
+    this.llmClass = ChatAnthropic;
   }
+
+  //   getLLM(options: LLMConfig) {
+  //     return new ChatAnthropic({
+  //       ...this.getConfig(options),
+  //     });
+  //   }
 
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();

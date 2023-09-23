@@ -13,7 +13,7 @@ type Context = {
 type TextGeneratorSettings = {
   endpoint: string;
   api_key: string;
-  api_key_encrypted?: Buffer;
+  api_key_encrypted?: Buffer | string;
   encrypt_keys?: boolean;
   engine: string;
   max_tokens: number;
@@ -71,7 +71,7 @@ type TextGeneratorSettings = {
   // TODO: FUTURE IMPLEMENTATION
   // reason: it will clean code, and also help with custom llm providers later on
   LLMProviderOptions: Record<string, Record<string, any>>;
-  LLMProviderOptionsKeysHashed: Record<string, Buffer>;
+  LLMProviderOptionsKeysHashed: Record<string, Buffer | string>;
 };
 
 type TextGeneratorConfiguration = {

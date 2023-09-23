@@ -11,16 +11,20 @@ import {
   getIcon,
   Command,
   TFile,
+  Platform,
 } from "obsidian";
 import { TextGeneratorSettings } from "./types";
 import { containsInvalidCharacter, numberToKFormat } from "./utils";
-import { GENERATE_ICON, GENERATE_META_ICON } from "./constants";
+import {
+  DecryptKeyPrefix,
+  GENERATE_ICON,
+  GENERATE_META_ICON,
+} from "./constants";
 import TextGeneratorSettingTab from "./ui/settings/settings-page";
 import { SetMaxTokens } from "./ui/settings/components/set-max-tokens";
 import TextGenerator from "./text-generator";
 import PackageManager from "./ui/package-manager/package-manager";
 import { PackageManagerUI } from "./ui/package-manager/package-manager-ui";
-import { EditorView } from "@codemirror/view";
 import { spinnersPlugin, SpinnersPlugin } from "./cm/plugin";
 import PrettyError from "pretty-error";
 import ansiToHtml from "ansi-to-html";
@@ -37,7 +41,14 @@ import "./LLMProviders";
 import get from "lodash.get";
 import set from "lodash.set";
 
-const { safeStorage } = require("electron").remote;
+let safeStorage: any;
+
+if (Platform.isDesktop) {
+  safeStorage = require("electron")?.remote?.safeStorage;
+}
+
+console.log("passed safestorage and all imports", safeStorage);
+
 const logger = debug("textgenerator:main");
 
 export default class TextGeneratorPlugin extends Plugin {
@@ -124,7 +135,7 @@ export default class TextGeneratorPlugin extends Plugin {
     if (!activeView) return;
     const editor = activeView.editor;
     // @ts-expect-error, not typed
-    const editorView = activeView.editor.cm as EditorView;
+    const editorView = activeView.editor.cm;
 
     const pos = editor.getCursor("to");
 
@@ -139,7 +150,7 @@ export default class TextGeneratorPlugin extends Plugin {
     const activeView = this.getActiveView();
     if (!activeView || !showSpinner) return;
     // @ts-expect-error, not typed
-    const editorView = activeView.editor.cm as EditorView;
+    const editorView = activeView.editor.cm;
     this.spinner = editorView.plugin(spinnersPlugin) || undefined;
 
     this.updateSpinnerPos();
@@ -152,7 +163,7 @@ export default class TextGeneratorPlugin extends Plugin {
     if (activeView && showSpinner && this.spinner) {
       const editor = activeView.editor;
       // @ts-expect-error, not typed
-      const editorView = activeView.editor.cm as EditorView;
+      const editorView = activeView.editor.cm;
 
       this.spinner?.remove(
         editor.posToOffset(editor.getCursor("to")),
@@ -244,119 +255,122 @@ export default class TextGeneratorPlugin extends Plugin {
   }
 
   async onload() {
-    logger("loading textGenerator plugin");
+    try {
+      logger("loading textGenerator plugin");
 
-    addIcon("GENERATE_ICON", GENERATE_ICON);
-    addIcon("GENERATE_META_ICON", GENERATE_META_ICON);
+      addIcon("GENERATE_ICON", GENERATE_ICON);
+      addIcon("GENERATE_META_ICON", GENERATE_META_ICON);
 
-    this.defaultSettings = DEFAULT_SETTINGS;
-    await this.loadSettings();
+      this.defaultSettings = DEFAULT_SETTINGS;
+      await this.loadSettings();
 
-    // This adds a settings tab so the user can configure various aspects of the plugin
-    const settingTab = new TextGeneratorSettingTab(this.app, this);
-    this.addSettingTab(settingTab);
-    this.textGenerator = new TextGenerator(this.app, this);
-    this.packageManager = new PackageManager(this.app, this);
+      // This adds a settings tab so the user can configure various aspects of the plugin
+      const settingTab = new TextGeneratorSettingTab(this.app, this);
+      this.addSettingTab(settingTab);
 
-    this.tokensScope = new TokensScope(this);
-    await this.tokensScope.setup();
+      this.packageManager = new PackageManager(this.app, this);
 
-    this.registerEditorExtension(spinnersPlugin);
-    this.app.workspace.updateOptions();
+      this.textGenerator = new TextGenerator(this.app, this);
+      await this.textGenerator.setup();
 
-    this.textGeneratorIconItem = this.addStatusBarItem();
-    this.statusBarTokens = this.addStatusBarItem();
-    this.autoSuggestItem = this.addStatusBarItem();
-    this.statusBarItemEl = this.addStatusBarItem();
+      this.tokensScope = new TokensScope(this);
+      await this.tokensScope.setup();
 
-    this.updateStatusBar(``);
-    if (this.settings.autoSuggestOptions.showStatus) {
-      this.AddAutoSuggestStatusBar();
-    }
+      this.registerEditorExtension(spinnersPlugin);
+      this.app.workspace.updateOptions();
 
-    const blockTgHandler = async (
-      source: string,
-      container: HTMLElement,
-      { sourcePath: path }: MarkdownPostProcessorContext
-    ) => {
-      setTimeout(async () => {
-        try {
-          const { inputTemplate, outputTemplate, inputContent } =
-            this.textGenerator.contextManager.splitTemplate(source);
+      this.textGeneratorIconItem = this.addStatusBarItem();
+      this.statusBarTokens = this.addStatusBarItem();
+      this.autoSuggestItem = this.addStatusBarItem();
+      this.statusBarItemEl = this.addStatusBarItem();
 
-          const activeView = this.getActiveView();
-          const context = {
-            ...(activeView
-              ? await this.textGenerator.contextManager.getTemplateContext(
-                  activeView.editor,
-                  "",
-                  inputContent
-                )
-              : {}),
-          };
+      this.updateStatusBar(``);
+      if (this.settings.autoSuggestOptions.showStatus) {
+        this.AddAutoSuggestStatusBar();
+      }
 
-          const markdown = inputTemplate(context);
-
-          await MarkdownRenderer.renderMarkdown(
-            markdown,
-            container,
-            path,
-            // @ts-ignore
-            undefined
-          );
-          this.addTGMenu(container, markdown, source, outputTemplate);
-        } catch (e) {
-          console.warn(e);
-        }
-      }, 100);
-    };
-
-    this.commands = commands.map((command) => ({
-      ...command,
-      editorCallback: command.editorCallback?.bind(this),
-    }));
-
-    this.registerMarkdownCodeBlockProcessor("tg", async (source, el, ctx) =>
-      blockTgHandler(source, el, ctx)
-    );
-    this.registerEditorSuggest(new AutoSuggest(this.app, this));
-    if (this.settings.options["modal-suggest"]) {
-      this.registerEditorSuggest(new ModelSuggest(this.app, this) as any);
-    }
-
-    // This creates an icon in the left ribbon.
-    this.addRibbonIcon(
-      "GENERATE_ICON",
-      "Generate Text!",
-      async (evt: MouseEvent) => {
-        // Called when the user clicks the icon.
-        const activeFile = this.app.workspace.getActiveFile();
-        const activeView = this.getActiveView();
-        if (activeView !== null) {
-          const editor = activeView.editor;
+      const blockTgHandler = async (
+        source: string,
+        container: HTMLElement,
+        { sourcePath: path }: MarkdownPostProcessorContext
+      ) => {
+        setTimeout(async () => {
           try {
-            await this.textGenerator.generateInEditor({}, false, editor);
-          } catch (error) {
-            this.handelError(error);
+            const { inputTemplate, outputTemplate, inputContent } =
+              this.textGenerator.contextManager.splitTemplate(source);
+
+            const activeView = this.getActiveView();
+            const context = {
+              ...(activeView
+                ? await this.textGenerator.contextManager.getTemplateContext(
+                    activeView.editor,
+                    "",
+                    inputContent
+                  )
+                : {}),
+            };
+
+            const markdown = inputTemplate(context);
+
+            await MarkdownRenderer.renderMarkdown(
+              markdown,
+              container,
+              path,
+              // @ts-ignore
+              undefined
+            );
+            this.addTGMenu(container, markdown, source, outputTemplate);
+          } catch (e) {
+            console.warn(e);
+          }
+        }, 100);
+      };
+
+      this.commands = commands.map((command) => ({
+        ...command,
+        editorCallback: command.editorCallback?.bind(this),
+      }));
+
+      this.registerMarkdownCodeBlockProcessor("tg", async (source, el, ctx) =>
+        blockTgHandler(source, el, ctx)
+      );
+      this.registerEditorSuggest(new AutoSuggest(this.app, this));
+      if (this.settings.options["modal-suggest"]) {
+        this.registerEditorSuggest(new ModelSuggest(this.app, this) as any);
+      }
+
+      // This creates an icon in the left ribbon.
+      this.addRibbonIcon(
+        "GENERATE_ICON",
+        "Generate Text!",
+        async (evt: MouseEvent) => {
+          // Called when the user clicks the icon.
+          const activeFile = this.app.workspace.getActiveFile();
+          const activeView = this.getActiveView();
+          if (activeView !== null) {
+            const editor = activeView.editor;
+            try {
+              await this.textGenerator.generateInEditor({}, false, editor);
+            } catch (error) {
+              this.handelError(error);
+            }
           }
         }
-      }
-    );
+      );
 
+      this.addRibbonIcon(
+        "boxes",
+        "Text Generator: Templates Packages Manager",
+        async (evt: MouseEvent) => {
+          new PackageManagerUI(
+            this.app,
+            this,
+            async (result: string) => {}
+          ).open();
+        }
+      );
 
-    this.addRibbonIcon(
-      "boxes",
-      "Text Generator: Templates Packages Manager",
-      async (evt: MouseEvent) => {
-        new PackageManagerUI(
-          this.app,
-          this,
-          async (result: string) => {}
-        ).open();
-      }
-    );
-
-    /*const ribbonIconEl3 = this.addRibbonIcon(
+      /*const ribbonIconEl3 = this.addRibbonIcon(
 			"square",
 			"Download webpage as markdown",
 			async (evt: MouseEvent) => {
@@ -365,10 +379,13 @@ export default class TextGeneratorPlugin extends Plugin {
 		);
 		*/
 
-    // registers
-    await this.addCommands();
+      // registers
+      await this.addCommands();
 
-    await this.packageManager.load();
+      await this.packageManager.load();
+    } catch (err: any) {
+      this.handelError(err);
+    }
   }
 
   async loadSettings() {
@@ -385,8 +402,7 @@ export default class TextGeneratorPlugin extends Plugin {
     this.loadApikeys();
   }
 
-  async onunload() {
-  }
+  async onunload() {}
 
   async activateView(id: string) {
     this.app.workspace.detachLeavesOfType(id);
@@ -606,6 +622,7 @@ export default class TextGeneratorPlugin extends Plugin {
       this.settings.api_key_encrypted,
       this.settings.api_key
     );
+
     Object.entries(this.settings?.LLMProviderOptionsKeysHashed).forEach(
       ([pth, hashed]) => {
         set(
@@ -675,39 +692,36 @@ export default class TextGeneratorPlugin extends Plugin {
     };
   }
 
-  getDecryptedKey(keyBuffer: Buffer | undefined, oldVal: string) {
-    // @ts-ignore
-    const buff = Buffer.from(keyBuffer?.data || []);
-    const str = (buff || Buffer.from("", "utf8")).toString("utf8");
-
+  getDecryptedKey(keyBuffer: any, oldVal: string) {
     try {
-      //  -- incase of old version < 0.3.20, first run.
-      // if (safeStorage?.isEncryptionAvailable() && !str.length && oldVal.length) {
-      // 	return this.setApiKey(oldVal)
-      // }
-      //  --
-
       if (
+        (keyBuffer as string)?.startsWith(DecryptKeyPrefix) ||
         !safeStorage?.isEncryptionAvailable() ||
-        !str.length ||
         !this.settings.encrypt_keys
       ) {
-        return containsInvalidCharacter(str) ? "**FAILED TO DECRYPT**" : str;
+        this.settings.encrypt_keys = false;
+        throw "disabled decryption";
       }
+
+      // @ts-ignore
+      const buff = Buffer.from(keyBuffer?.data || []);
 
       const decrypted = safeStorage.decryptString(buff) as string;
       return containsInvalidCharacter(decrypted)
         ? "**FAILED TO DECRYPT KEYS**"
         : decrypted;
     } catch (err: any) {
-      console.log("error happened", err, keyBuffer);
-      return "";
+      const [inCaseDecryptionFails, key] =
+        keyBuffer?.split?.("__&^$&key&") || [];
+      return inCaseDecryptionFails?.length || containsInvalidCharacter(key)
+        ? "**FAILED TO DECRYPT**"
+        : key;
     }
   }
 
   getEncryptedKey(apiKey: string) {
     if (!safeStorage?.isEncryptionAvailable() || !this.settings.encrypt_keys) {
-      return Buffer.from(apiKey, "utf8");
+      return `${DecryptKeyPrefix}${apiKey}`;
     }
 
     return safeStorage.encryptString(apiKey) as Buffer;

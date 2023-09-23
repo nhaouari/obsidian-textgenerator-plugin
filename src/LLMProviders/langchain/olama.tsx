@@ -7,7 +7,7 @@ import { IconExternalLink } from "@tabler/icons-react";
 import { useToggle } from "usehooks-ts";
 import Input from "#/ui/settings/components/input";
 import { BaseLLMParams } from "langchain/llms/base";
-import { Ollama } from "langchain/llms/ollama";
+import type { Ollama } from "langchain/llms/ollama";
 
 import type { OllamaInput } from "langchain/dist/util/ollama.d.ts";
 
@@ -40,11 +40,16 @@ export default class LangchainOlamaProvider
     });
   }
 
-  getLLM(options: LLMConfig) {
-    return new Ollama({
-      ...this.getConfig(options),
-    } as any);
+  async load() {
+    const { Ollama } = await import("langchain/llms/ollama");
+    this.llmClass = Ollama;
   }
+
+  //   getLLM(options: LLMConfig) {
+  //     return new Ollama({
+  //       ...this.getConfig(options),
+  //     } as any);
+  //   }
 
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();

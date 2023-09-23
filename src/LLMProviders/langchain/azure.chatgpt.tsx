@@ -1,7 +1,6 @@
 import LangchainBase from "./base";
-import {
+import type {
   AzureOpenAIInput,
-  ChatOpenAI,
   OpenAIChatInput,
 } from "langchain/chat_models/openai";
 import React, { useEffect, useState } from "react";
@@ -19,7 +18,7 @@ import debug from "debug";
 
 const logger = debug("textgenerator:llmProvider:azurechatgpt");
 
-const id = "Azure Chatgpt (Langchain)"  as const;
+const id = "Azure Chatgpt (Langchain)" as const;
 export default class LangchainAzureChatgptProvider
   extends LangchainBase
   implements LLMProviderInterface
@@ -51,11 +50,16 @@ export default class LangchainAzureChatgptProvider
     });
   }
 
-  getLLM(options: LLMConfig) {
-    return new ChatOpenAI({
-      ...this.getConfig(options),
-    });
+  async load() {
+    const { ChatOpenAI } = await import("langchain/chat_models/openai");
+    this.llmClass = ChatOpenAI;
   }
+
+  //   getLLM(options: LLMConfig) {
+  //     return new ChatOpenAI({
+  //       ...this.getConfig(options),
+  //     });
+  //   }
 
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();

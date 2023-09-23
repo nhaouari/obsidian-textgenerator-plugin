@@ -3,7 +3,11 @@ import { Message } from "src/types";
 
 export default interface LLMProviderInterface {
   streamable?: boolean;
+  mobileSupport?: boolean;
   id: string;
+
+  load(): Promise<any>;
+
   generate(
     messages: Message[],
     reqParams: Partial<Omit<LLMConfig, "n">>,

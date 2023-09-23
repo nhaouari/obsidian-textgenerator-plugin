@@ -1,15 +1,11 @@
 import LangchainBase from "./base";
 
-import {
-  ChatGooglePaLM,
-  GooglePaLMChatInput,
-} from "langchain/chat_models/googlepalm";
+import { GooglePaLMChatInput } from "langchain/chat_models/googlepalm";
 import React from "react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import SettingItem from "#/ui/settings/components/item";
 import useGlobal from "#/ui/context/global";
 import { IconExternalLink } from "@tabler/icons-react";
-import { useToggle } from "usehooks-ts";
 import Input from "#/ui/settings/components/input";
 import debug from "debug";
 
@@ -20,6 +16,7 @@ export default class LangchainPalmProvider
   extends LangchainBase
   implements LLMProviderInterface
 {
+  mobileSupport = false;
   streamable = false;
   id = id;
   static id = id;
@@ -39,11 +36,16 @@ export default class LangchainPalmProvider
     });
   }
 
-  getLLM(options: LLMConfig) {
-    return new ChatGooglePaLM({
-      ...this.getConfig(options),
-    });
+  async load() {
+    const { ChatGooglePaLM } = await import("langchain/chat_models/googlepalm");
+    this.llmClass = ChatGooglePaLM;
   }
+
+  //   async getLLM(options: LLMConfig) {
+  //     return new ChatGooglePaLM({
+  //       ...this.getConfig(options),
+  //     });
+  //   }
 
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
