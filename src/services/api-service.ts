@@ -28,7 +28,11 @@ export default class RequestHandler {
   }
 
   async setup() {
-    await this.loadllm();
+    try {
+      await this.loadllm();
+    } catch (err: any) {
+      this.plugin.handelError(err);
+    }
   }
 
   async loadllm(name: string = this.plugin.settings.selectedProvider || "") {
@@ -43,11 +47,13 @@ export default class RequestHandler {
         throw `Mobile is not supported for the "${llm?.id}" LLM provider`;
 
       // @ts-ignore
-      this.LLMProvider = new llm({
+      const instance = new llm({
         plugin: this.plugin,
       });
 
-      await this.LLMProvider.load();
+      await instance.load();
+
+      this.LLMProvider = instance;
     }
   }
 
@@ -70,7 +76,7 @@ export default class RequestHandler {
         ""
       );
 
-    if (provider.selectedProvider !== this.LLMProvider.id)
+    if (!this.LLMProvider || provider.selectedProvider !== this.LLMProvider.id)
       await this.loadllm(provider.selectedProvider);
 
     try {
@@ -128,8 +134,6 @@ export default class RequestHandler {
 
       const { options, template } = context;
 
-      this.startLoading(additionnalParams.showSpinner);
-
       const { reqParams, bodyParams, provider, allParams } =
         this.reqFormatter.getRequestParameters(
           {
@@ -144,10 +148,15 @@ export default class RequestHandler {
           additionnalParams
         );
 
-      if (provider.selectedProvider !== this.LLMProvider.id)
+      if (
+        !this.LLMProvider ||
+        provider.selectedProvider !== this.LLMProvider.id
+      )
         await this.loadllm(provider.selectedProvider);
 
-      if (!this.LLMProvider.streamable) {
+      this.startLoading(additionnalParams.showSpinner);
+
+      if (!this.LLMProvider?.streamable) {
         logger("streamGenerate error", "LLM not streamable");
         throw "LLM not streamable";
       }
@@ -233,13 +242,6 @@ export default class RequestHandler {
         return Promise.reject(new Error("There is another generation process"));
       }
 
-      this.startLoading(additionnalParams?.showSpinner);
-      console.log(
-        typeof template != "undefined"
-          ? template.inputTemplate(options)
-          : context.context
-      );
-
       const { reqParams, bodyParams, provider, allParams } =
         this.reqFormatter.getRequestParameters(
           {
@@ -253,8 +255,13 @@ export default class RequestHandler {
           templatePath
         );
 
-      if (provider.selectedProvider !== this.LLMProvider.id)
+      if (
+        !this.LLMProvider ||
+        provider.selectedProvider !== this.LLMProvider.id
+      )
         await this.loadllm(provider.selectedProvider);
+
+      this.startLoading(additionnalParams?.showSpinner);
 
       let result = await this.LLMProvider.generate(
         bodyParams.messages,

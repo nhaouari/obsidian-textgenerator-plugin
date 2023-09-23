@@ -25,7 +25,7 @@ export default class LangchainPalmProvider
       apiKey: options.api_key,
 
       // ------------Necessary stuff--------------
-      modelName: options.engine,
+      //   modelName: options.engine,
       maxTokens: options.max_tokens,
       temperature: options.temperature,
       frequencyPenalty: options.frequency_penalty,

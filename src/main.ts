@@ -25,6 +25,7 @@ import { SetMaxTokens } from "./ui/settings/components/set-max-tokens";
 import TextGenerator from "./text-generator";
 import PackageManager from "./ui/package-manager/package-manager";
 import { PackageManagerUI } from "./ui/package-manager/package-manager-ui";
+import { EditorView } from "@codemirror/view";
 import { spinnersPlugin, SpinnersPlugin } from "./cm/plugin";
 import PrettyError from "pretty-error";
 import ansiToHtml from "ansi-to-html";
@@ -135,7 +136,7 @@ export default class TextGeneratorPlugin extends Plugin {
     if (!activeView) return;
     const editor = activeView.editor;
     // @ts-expect-error, not typed
-    const editorView = activeView.editor.cm;
+    const editorView = activeView.editor.cm as EditorView;
 
     const pos = editor.getCursor("to");
 
@@ -150,7 +151,7 @@ export default class TextGeneratorPlugin extends Plugin {
     const activeView = this.getActiveView();
     if (!activeView || !showSpinner) return;
     // @ts-expect-error, not typed
-    const editorView = activeView.editor.cm;
+    const editorView = activeView.editor.cm as EditorView;
     this.spinner = editorView.plugin(spinnersPlugin) || undefined;
 
     this.updateSpinnerPos();
@@ -163,7 +164,7 @@ export default class TextGeneratorPlugin extends Plugin {
     if (activeView && showSpinner && this.spinner) {
       const editor = activeView.editor;
       // @ts-expect-error, not typed
-      const editorView = activeView.editor.cm;
+      const editorView = activeView.editor.cm as EditorView;
 
       this.spinner?.remove(
         editor.posToOffset(editor.getCursor("to")),
@@ -187,8 +188,8 @@ export default class TextGeneratorPlugin extends Plugin {
   }
 
   async handelError(error: any) {
-    if (error.message) {
-      new Notice("🔴 " + error.message);
+    if (error?.length || error?.message) {
+      new Notice("🔴 " + (typeof error == "string" ? error : error.message));
     } else {
       new Notice(
         "🔴 Error: Text Generator Plugin: An error has occurred. Please check the console by pressing CTRL+SHIFT+I or turn on display errors in the editor within the settings for more information."
@@ -358,6 +359,7 @@ export default class TextGeneratorPlugin extends Plugin {
         }
       );
 
+
       this.addRibbonIcon(
         "boxes",
         "Text Generator: Templates Packages Manager",
@@ -402,7 +404,8 @@ export default class TextGeneratorPlugin extends Plugin {
     this.loadApikeys();
   }
 
-  async onunload() {}
+  async onunload() {
+  }
 
   async activateView(id: string) {
     this.app.workspace.detachLeavesOfType(id);

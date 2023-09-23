@@ -233,7 +233,7 @@ export default class TextGenerator extends RequestHandler {
     console.log(frontmatter);
     if (
       this.plugin.settings.stream &&
-      this.plugin.textGenerator.LLMProvider.streamable &&
+      this.plugin.textGenerator.LLMProvider?.streamable &&
       frontmatter.stream !== false
     ) {
       return this.generateStreamInEditor(
