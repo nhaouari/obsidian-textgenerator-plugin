@@ -78,10 +78,14 @@ export default function OptionsSetting(props: { register: Register }) {
             type="checkbox"
             value={"" + global.plugin.settings.encrypt_keys}
             setValue={async (val) => {
-              global.plugin.settings.encrypt_keys = val == "true";
-              await global.plugin.loadApikeys();
-              await global.plugin.saveSettings();
-              global.triggerReload();
+              try {
+                global.plugin.settings.encrypt_keys = val == "true";
+                await global.plugin.loadApikeys();
+                await global.plugin.saveSettings();
+                global.triggerReload();
+              } catch (err: any) {
+                global.plugin.handelError(err);
+              }
             }}
           />
         </SettingItem>

@@ -359,7 +359,6 @@ export default class TextGeneratorPlugin extends Plugin {
         }
       );
 
-
       this.addRibbonIcon(
         "boxes",
         "Text Generator: Templates Packages Manager",
@@ -404,8 +403,7 @@ export default class TextGeneratorPlugin extends Plugin {
     this.loadApikeys();
   }
 
-  async onunload() {
-  }
+  async onunload() {}
 
   async activateView(id: string) {
     this.app.workspace.detachLeavesOfType(id);
@@ -702,7 +700,6 @@ export default class TextGeneratorPlugin extends Plugin {
         !safeStorage?.isEncryptionAvailable() ||
         !this.settings.encrypt_keys
       ) {
-        this.settings.encrypt_keys = false;
         throw "disabled decryption";
       }
 
