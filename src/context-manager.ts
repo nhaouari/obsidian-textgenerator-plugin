@@ -562,22 +562,6 @@ export default class ContextManager {
     const cache = app.metadataCache.getCache(activeFile.path);
     this.app.metadataCache.getCache(activeFile.path);
 
-    const bodyParams: Record<string, any> = {};
-
-    if (cache?.frontmatter?.max_tokens)
-      bodyParams.max_tokens = cache?.frontmatter?.max_tokens;
-
-    Object.entries(cache?.frontmatter || {}).map(([key, data]) => {
-      if (key.startsWith("body.")) bodyParams[key.slice("body.".length)] = data;
-    });
-
-    const reqParams: Record<string, any> = {};
-
-    Object.entries(cache?.frontmatter || {}).map(([key, data]) => {
-      if (key.startsWith("reqParams."))
-        reqParams[key.slice("reqParams.".length)] = data;
-    });
-
     return {
       ...cache,
 
@@ -602,13 +586,25 @@ export default class ContextManager {
             cache?.frontmatter?.path_to_message_content,
         },
         bodyParams: {
-          ...(cache?.frontmatter?.bodyParams || {}),
-          ...bodyParams,
+          ...cache?.frontmatter?.bodyParams,
+          ...(cache?.frontmatter?.max_tokens
+            ? { max_tokens: cache?.frontmatter?.max_tokens }
+            : {}),
+          ...getOptionsUnder("body.", cache?.frontmatter),
         },
 
         reqParams: {
-          ...(cache?.frontmatter?.reqParams || {}),
-          ...reqParams,
+          ...cache?.frontmatter?.reqParams,
+          ...getOptionsUnder("reqParams.", cache?.frontmatter),
+        },
+
+        splitter: {
+          ...cache?.frontmatter?.chain,
+          ...getOptionsUnder("splitter.", cache?.frontmatter),
+        },
+        chain: {
+          ...cache?.frontmatter?.chain,
+          ...getOptionsUnder("chain.", cache?.frontmatter),
         },
       },
 
@@ -696,4 +692,17 @@ export default class ContextManager {
     );
     return parsedTemplateMD;
   }
+}
+
+export function getOptionsUnder(
+  prefix: string,
+  obj: Record<string, any> | undefined
+) {
+  const options: Record<string, any> = {};
+
+  Object.entries(obj || {}).map(([key, data]) => {
+    if (key.startsWith(prefix)) options[key.slice(prefix.length)] = data;
+  });
+
+  return options;
 }
