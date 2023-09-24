@@ -2,18 +2,12 @@ import { Platform } from "obsidian";
 import { TextGeneratorSettings } from "./types";
 
 
-let safeStorage: any;
-
-if (Platform.isDesktop) {
-  safeStorage = require("electron")?.remote?.safeStorage;
-}
-
 
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
   endpoint: "https://api.openai.com/v1",
   models: [],
   api_key: "",
-  encrypt_keys: safeStorage?.isEncryptionAvailable(),
+  encrypt_keys: false,
   engine: "gpt-3.5-turbo",
   max_tokens: 500,
   temperature: 0.7,
