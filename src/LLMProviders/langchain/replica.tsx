@@ -20,6 +20,8 @@ export default class LangchainReplicaProvider
   id = id;
   static id = id;
   streamable = false;
+  provider = "Langchain";
+  static provider = "Langchain";
   getConfig(options: LLMConfig): Partial<ReplicateInput & BaseLLMParams> {
     console.log(options);
     return this.cleanConfig({

@@ -6,6 +6,7 @@ import ContextManager, { InputContext } from "../context-manager";
 import debug from "debug";
 import LLMProviderInterface from "src/LLMProviders/interface";
 import { LLMProviderRegistery } from "src/LLMProviders";
+import providerOptionsValidator from "src/LLMProviders/providerOptionsValidator";
 import { TextGeneratorSettings } from "../types";
 import Handlebars from "handlebars";
 import { Platform } from "obsidian";
@@ -78,6 +79,11 @@ export default class RequestHandler {
 
     if (!this.LLMProvider || provider.selectedProvider !== this.LLMProvider.id)
       await this.loadllm(provider.selectedProvider);
+
+    await providerOptionsValidator(
+      this.LLMProvider.provider,
+      provider.providerOptions
+    );
 
     try {
       const result = await this.LLMProvider.generate(
@@ -153,6 +159,11 @@ export default class RequestHandler {
         provider.selectedProvider !== this.LLMProvider.id
       )
         await this.loadllm(provider.selectedProvider);
+
+      await providerOptionsValidator(
+        this.LLMProvider.provider,
+        provider.providerOptions
+      );
 
       this.startLoading(additionnalParams.showSpinner);
 
@@ -258,6 +269,11 @@ export default class RequestHandler {
         provider.selectedProvider !== this.LLMProvider.id
       )
         await this.loadllm(provider.selectedProvider);
+
+      await providerOptionsValidator(
+        this.LLMProvider.provider,
+        provider.providerOptions
+      );
 
       this.startLoading(additionnalParams?.showSpinner);
 

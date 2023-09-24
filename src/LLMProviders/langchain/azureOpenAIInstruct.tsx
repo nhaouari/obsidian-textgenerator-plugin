@@ -19,7 +19,8 @@ export default class LangchainAzureOpenAIInstructProvider
 {
   id = id;
   static id = id;
-
+  provider = "Langchain";
+  static provider = "Langchain";
   getConfig(
     options: LLMConfig
   ): Partial<OpenAIInput & AzureOpenAIInput & BaseChatModelParams> {

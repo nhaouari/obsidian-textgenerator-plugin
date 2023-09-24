@@ -36,7 +36,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.06,
     },
     maxTokens: 8192,
-    llm: ["Chatgpt (Langchain)", "Azure Chatgpt (Langchain)"],
+    llm: ["OpenAI Chat (Langchain)"],
   },
   "gpt-4-0314": {
     encoding: "cl100k_base",
@@ -45,7 +45,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.06,
     },
     maxTokens: 8192,
-    llm: ["Chatgpt (Langchain)", "Azure Chatgpt (Langchain)"],
+    llm: ["OpenAI Chat (Langchain)"],
   },
   "gpt-4-0613": {
     encoding: "cl100k_base",
@@ -54,7 +54,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.06,
     },
     maxTokens: 8192,
-    llm: ["Chatgpt (Langchain)", "Azure Chatgpt (Langchain)"],
+    llm: ["OpenAI Chat (Langchain)"],
   },
   "gpt-4-32k": {
     encoding: "cl100k_base",
@@ -63,7 +63,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.12,
     },
     maxTokens: 32768,
-    llm: ["Chatgpt (Langchain)", "Azure Chatgpt (Langchain)"],
+    llm: ["OpenAI Chat (Langchain)"],
   },
   "gpt-4-32k-0613": {
     encoding: "cl100k_base",
@@ -72,7 +72,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.12,
     },
     maxTokens: 32768,
-    llm: ["Chatgpt (Langchain)", "Azure Chatgpt (Langchain)"],
+    llm: ["OpenAI Chat (Langchain)"],
   },
   "gpt-4-32k-0314": {
     encoding: "cl100k_base",
@@ -81,7 +81,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.12,
     },
     maxTokens: 32768,
-    llm: ["Chatgpt (Langchain)", "Azure Chatgpt (Langchain)"],
+    llm: ["OpenAI Chat (Langchain)"],
   },
   "gpt-3.5-turbo": {
     encoding: "cl100k_base",
@@ -90,7 +90,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.002,
     },
     maxTokens: 4097,
-    llm: ["Chatgpt (Langchain)", "Azure Chatgpt (Langchain)"],
+    llm: ["OpenAI Chat (Langchain)"],
   },
   "gpt-3.5-turbo-16k": {
     encoding: "cl100k_base",
@@ -99,7 +99,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.004,
     },
     maxTokens: 16385,
-    llm: ["Chatgpt (Langchain)", "Azure Chatgpt (Langchain)"],
+    llm: ["OpenAI Chat (Langchain)"],
   },
   "gpt-3.5-turbo-16k-0613": {
     encoding: "cl100k_base",
@@ -108,7 +108,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.004,
     },
     maxTokens: 16385,
-    llm: ["Chatgpt (Langchain)", "Azure Chatgpt (Langchain)"],
+    llm: ["OpenAI Chat (Langchain)"],
   },
   "gpt-3.5-turbo-0301": {
     encoding: "cl100k_base",
@@ -117,7 +117,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.002,
     },
     maxTokens: 4097,
-    llm: ["Chatgpt (Langchain)", "Azure Chatgpt (Langchain)"],
+    llm: ["OpenAI Chat (Langchain)"],
   },
   "gpt-3.5-turbo-0613": {
     encoding: "cl100k_base",
@@ -126,7 +126,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.002,
     },
     maxTokens: 4097,
-    llm: ["Chatgpt (Langchain)", "Azure Chatgpt (Langchain)"],
+    llm: ["OpenAI Chat (Langchain)"],
   },
   "gpt-3.5-turbo-instruct": {
     encoding: "cl100k_base",
@@ -135,7 +135,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.002,
     },
     maxTokens: 4097,
-    llm: ["OpenAI (Langchain)"],
+    llm: ["OpenAI Instruct (Langchain)"],
   },
   "text-davinci-003": {
     encoding: "p50k_base",
@@ -144,7 +144,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.02,
     },
     maxTokens: 4097,
-    llm: ["OpenAI (Langchain)"],
+    llm: ["OpenAI Instruct (Langchain)"],
   },
   "text-davinci-002": {
     encoding: "p50k_base",
@@ -153,7 +153,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.02,
     },
     maxTokens: 4097,
-    llm: ["OpenAI (Langchain)"],
+    llm: ["OpenAI Instruct (Langchain)"],
   },
   "text-davinci-001": {
     encoding: "r50k_base",
@@ -162,7 +162,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.02,
     },
     maxTokens: 2049,
-    llm: ["OpenAI (Langchain)"],
+    llm: ["OpenAI Instruct (Langchain)"],
   },
   "text-curie-001": {
     encoding: "r50k_base",
@@ -171,7 +171,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.002,
     },
     maxTokens: 2049,
-    llm: ["OpenAI (Langchain)"],
+    llm: ["OpenAI Instruct (Langchain)"],
   },
   "text-babbage-001": {
     encoding: "r50k_base",
@@ -180,7 +180,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.0005,
     },
     maxTokens: 2049,
-    llm: ["OpenAI (Langchain)"],
+    llm: ["OpenAI Instruct (Langchain)"],
   },
   "text-ada-001": {
     encoding: "r50k_base",
@@ -189,7 +189,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.0004,
     },
     maxTokens: 2049,
-    llm: ["OpenAI (Langchain)"],
+    llm: ["OpenAI Instruct (Langchain)"],
   },
   davinci: {
     encoding: "r50k_base",
@@ -198,7 +198,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.02,
     },
     maxTokens: 2049,
-    llm: ["OpenAI (Langchain)"],
+    llm: ["OpenAI Instruct (Langchain)"],
   },
   curie: {
     encoding: "r50k_base",
@@ -207,7 +207,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.002,
     },
     maxTokens: 2049,
-    llm: ["OpenAI (Langchain)"],
+    llm: ["OpenAI Instruct (Langchain)"],
   },
   babbage: {
     encoding: "r50k_base",
@@ -216,7 +216,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.0005,
     },
     maxTokens: 2049,
-    llm: ["OpenAI (Langchain)"],
+    llm: ["OpenAI Instruct (Langchain)"],
   },
   ada: {
     encoding: "r50k_base",
@@ -225,7 +225,7 @@ export const OPENAI_MODELS: Record<
       completion: 0.0004,
     },
     maxTokens: 2049,
-    llm: ["OpenAI (Langchain)"],
+    llm: ["OpenAI Instruct (Langchain)"],
   },
 };
 

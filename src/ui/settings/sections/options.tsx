@@ -98,7 +98,7 @@ export default function OptionsSetting(props: { register: Register }) {
               name={moreData?.name || key}
               description={
                 moreData?.description ||
-                global.plugin.commands?.find(
+                global.plugin.commands?.commands.find(
                   (c) =>
                     c.id == `obsidian-textgenerator-plugin:${key}` ||
                     c.id === key

@@ -18,6 +18,8 @@ export default class LangchainOllamaProvider
   implements LLMProviderInterface
 {
   id = id;
+  provider = "Langchain";
+  static provider = "Langchain";
   static id = id;
   streamable = false;
   getConfig(options: LLMConfig): Partial<OllamaInput & BaseLLMParams> {

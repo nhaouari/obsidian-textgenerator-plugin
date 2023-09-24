@@ -25,6 +25,8 @@ export default class LangchainOpenAIInstructProvider
   implements LLMProviderInterface
 {
   id = id;
+  provider = "Langchain";
+  static provider = "Langchain";
   static id = id;
 
   getConfig(options: LLMConfig) {

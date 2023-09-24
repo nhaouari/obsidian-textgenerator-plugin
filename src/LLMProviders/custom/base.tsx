@@ -104,7 +104,9 @@ export default class CustomProvider
 {
   streamable = true;
   id = id;
-  static id = id;
+  static id = id;  
+  provider = "Custom";
+  static provider = "Custom";
   async request(
     params: RequestUrlParam & {
       signal?: AbortSignal;

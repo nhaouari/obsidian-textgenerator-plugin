@@ -23,6 +23,8 @@ export default class LangchainChatAnthropicProvider
 {
   id = id;
   static id = id;
+  provider = "Langchain";
+  static provider = "Langchain";
   getConfig(
     options: LLMConfig
   ): Partial<AnthropicInput & BaseLanguageModelParams> {

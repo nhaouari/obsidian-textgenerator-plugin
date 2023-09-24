@@ -23,6 +23,8 @@ export default class LangchainProvider
   streamable = true;
   id = "default";
   llmClass: any;
+  provider = "Langchain";
+  static provider = "Langchain";
   getConfig(
     options: LLMConfig
   ): Partial<OpenAIChatInput & BaseChatModelParams> {

@@ -20,6 +20,8 @@ export default class LangchainHFProvider
   id = id;
   static id = id;
   streamable = false;
+  provider = "Langchain";
+  static provider = "Langchain";
   getConfig(options: LLMConfig): Partial<HFInput & BaseLLMParams> {
     console.log(options);
     return this.cleanConfig({

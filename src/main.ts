@@ -35,7 +35,7 @@ import { ModelSuggest } from "./modal-suggest";
 import debug from "debug";
 
 import DEFAULT_SETTINGS from "./default-settings";
-import commands from "./commands";
+import Commands from "./scope/commands";
 
 import TokensScope from "./scope/tokens";
 
@@ -64,7 +64,7 @@ export default class TextGeneratorPlugin extends Plugin {
   autoSuggestItem: HTMLElement;
   statusBarTokens: HTMLElement;
   notice: Notice;
-  commands: typeof commands;
+  commands: Commands;
   statusBarItemEl: HTMLElement;
   spinner?: SpinnersPlugin;
 
@@ -328,11 +328,6 @@ export default class TextGeneratorPlugin extends Plugin {
         }, 100);
       };
 
-      this.commands = commands.map((command) => ({
-        ...command,
-        editorCallback: command.editorCallback?.bind(this),
-      }));
-
       this.registerMarkdownCodeBlockProcessor("tg", async (source, el, ctx) =>
         blockTgHandler(source, el, ctx)
       );
@@ -383,8 +378,9 @@ export default class TextGeneratorPlugin extends Plugin {
 		*/
 
       // registers
-      await this.addCommands();
+      this.commands = new Commands(this);
 
+      await this.commands.addCommands();
       await this.packageManager.load();
     } catch (err: any) {
       this.handelError(err);
@@ -445,121 +441,6 @@ export default class TextGeneratorPlugin extends Plugin {
           }
         }, 3 * 1000);
       } else resolve(testFiles);
-    });
-  }
-
-  async addCommands() {
-    // call the function before testing for onload document, just to make sure it is getting called event tho the document is already loaded
-    const cmds = this.commands.filter(
-      (cmd) =>
-        this.settings.options[cmd.id as keyof typeof this.settings.options] ===
-        true
-    );
-
-    const templates = this.textGenerator.getTemplates(
-      // get files, it will be empty onLoad, that's why we are using this function
-      await this.getFilesOnLoad()
-    );
-
-    const templatesWithCommands = templates.filter((t) => t?.commands);
-    logger("Templates with commands ", { templatesWithCommands });
-
-    templatesWithCommands.forEach((template) => {
-      //
-      template.commands?.forEach((command) => {
-        logger("Tempate commands ", { template, command });
-        const cmd: Command = {
-          id: `${template.path.split("/").slice(-2, -1)[0]}-${command}-${
-            template.id
-          }`,
-          name: `${template.id || template.name}: ${command.toUpperCase()}`,
-          editorCallback: async (editor: Editor) => {
-            try {
-              switch (command) {
-                case "generate":
-                  await this.textGenerator.generateFromTemplate(
-                    {},
-                    template.path,
-                    true,
-                    editor,
-                    true
-                  );
-                  break;
-                case "insert":
-                  await this.textGenerator.generateFromTemplate(
-                    {},
-                    template.path,
-                    true,
-                    editor,
-                    true,
-                    {},
-                    true
-                  );
-                  break;
-                case "generate&create":
-                  await this.textGenerator.generateFromTemplate(
-                    {},
-                    template.path,
-                    true,
-                    editor,
-                    false
-                  );
-                  break;
-                case "insert&create":
-                  await this.textGenerator.generateFromTemplate(
-                    {},
-                    template.path,
-                    true,
-                    editor,
-                    false,
-                    {},
-                    true
-                  );
-                  break;
-                case "modal":
-                  await this.textGenerator.tempalteToModal(
-                    {},
-                    template.path,
-                    editor
-                  );
-                  break;
-                case "clipboard":
-                  await this.textGenerator.generateToClipboard(
-                    {},
-                    template.path,
-                    true,
-                    editor
-                  );
-                  break;
-                case "estimate":
-                  {
-                    const context =
-                      await this.textGenerator.contextManager.getContext(
-                        editor,
-                        true,
-                        template.path
-                      );
-                    this.tokensScope.showTokens(
-                      await this.tokensScope.estimate(context)
-                    );
-                  }
-                  break;
-                default:
-                  console.error("command name not found");
-                  break;
-              }
-            } catch (error) {
-              this.handelError(error);
-            }
-          },
-        };
-        logger("command ", { cmd, template });
-        cmds.push(cmd);
-      });
-    });
-
-    cmds.forEach((command) => {
-      this.addCommand(command);
     });
   }
 

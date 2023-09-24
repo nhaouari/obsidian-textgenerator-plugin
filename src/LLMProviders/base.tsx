@@ -5,6 +5,7 @@ import LLMProviderInterface, { LLMConfig } from "./interface";
 
 export default class ProviderBase implements LLMProviderInterface {
   id = "default";
+  provider = "default";
   plugin: TextGeneratorPlugin;
   constructor(props: { plugin: TextGeneratorPlugin }) {
     this.plugin = props.plugin;
