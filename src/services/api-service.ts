@@ -163,8 +163,9 @@ export default class RequestHandler {
 
       //const stream = await this.streamRequest(reqParams);
       const stream = async (
-        onToken: Parameters<typeof this.LLMProvider.generate>[2]
-      ) => {
+        onToken: Parameters<typeof this.LLMProvider.generate>[2],
+        onError: (error: any) => void
+      ): Promise<string> => {
         try {
           const k = await this.LLMProvider.generate(
             bodyParams.messages,
@@ -197,10 +198,8 @@ export default class RequestHandler {
               : template?.outputTemplate)?.({ ...options, output: k }) || k
           );
         } catch (err: any) {
-          this.plugin.handelError(err.message);
-          this.endLoading(additionnalParams?.showSpinner);
-        } finally {
-          this.endLoading(additionnalParams?.showSpinner);
+          onError(err);
+          return err.message;
         }
       };
 
@@ -210,7 +209,6 @@ export default class RequestHandler {
 
       return stream;
     } catch (error) {
-      this.endLoading(additionnalParams.showSpinner);
       logger("streamGenerate error", error);
       return Promise.reject(error);
     }
