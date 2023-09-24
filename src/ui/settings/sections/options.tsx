@@ -80,7 +80,7 @@ export default function OptionsSetting(props: { register: Register }) {
             setValue={async (val) => {
               try {
                 global.plugin.settings.encrypt_keys = val == "true";
-                await global.plugin.loadApikeys();
+                await global.plugin.encryptAllKeys();
                 await global.plugin.saveSettings();
                 global.triggerReload();
               } catch (err: any) {
