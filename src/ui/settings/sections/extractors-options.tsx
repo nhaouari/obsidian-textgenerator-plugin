@@ -4,6 +4,7 @@ import SettingItem from "../components/item";
 import SettingsSection from "../components/section";
 import Input from "../components/input";
 import { useMemo } from "react";
+import { useToggle } from "usehooks-ts";
 import type { Register } from ".";
 
 const contextNotForTemplate = ["includeTitle", "starredBlocks"];
