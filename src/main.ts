@@ -12,6 +12,7 @@ import {
   Command,
   TFile,
   Platform,
+  EditorPosition,
 } from "obsidian";
 import { TextGeneratorSettings } from "./types";
 import { containsInvalidCharacter, numberToKFormat } from "./utils";
@@ -130,7 +131,7 @@ export default class TextGeneratorPlugin extends Plugin {
     }
   }
 
-  updateSpinnerPos() {
+  updateSpinnerPos(cur?: EditorPosition) {
     if (!this.spinner) return;
     const activeView = this.getActiveView();
     if (!activeView) return;
@@ -138,7 +139,7 @@ export default class TextGeneratorPlugin extends Plugin {
     // @ts-expect-error, not typed
     const editorView = activeView.editor.cm as EditorView;
 
-    const pos = editor.getCursor("to");
+    const pos = cur || editor.getCursor("to");
 
     this.spinner.updatePos(editor.posToOffset(pos), editorView);
 
@@ -359,6 +360,7 @@ export default class TextGeneratorPlugin extends Plugin {
         }
       );
 
+
       this.addRibbonIcon(
         "boxes",
         "Text Generator: Templates Packages Manager",
@@ -403,7 +405,8 @@ export default class TextGeneratorPlugin extends Plugin {
     this.loadApikeys();
   }
 
-  async onunload() {}
+  async onunload() {
+  }
 
   async activateView(id: string) {
     this.app.workspace.detachLeavesOfType(id);
@@ -696,23 +699,25 @@ export default class TextGeneratorPlugin extends Plugin {
   getDecryptedKey(keyBuffer: any, oldVal: string) {
     try {
       if (
-        (keyBuffer as string)?.startsWith(DecryptKeyPrefix) ||
+        (keyBuffer as string)?.startsWith?.(DecryptKeyPrefix) ||
         !safeStorage?.isEncryptionAvailable() ||
         !this.settings.encrypt_keys
       ) {
         throw "disabled decryption";
       }
 
-      // @ts-ignore
       const buff = Buffer.from(keyBuffer?.data || []);
 
       const decrypted = safeStorage.decryptString(buff) as string;
+
       return containsInvalidCharacter(decrypted)
         ? "**FAILED TO DECRYPT KEYS**"
         : decrypted;
     } catch (err: any) {
+      console.log(err);
       const [inCaseDecryptionFails, key] =
-        keyBuffer?.split?.("__&^$&key&") || [];
+        keyBuffer?.split?.(DecryptKeyPrefix) || [];
+      console.log(inCaseDecryptionFails, key);
       return inCaseDecryptionFails?.length || containsInvalidCharacter(key)
         ? "**FAILED TO DECRYPT**"
         : key;
@@ -720,6 +725,7 @@ export default class TextGeneratorPlugin extends Plugin {
   }
 
   getEncryptedKey(apiKey: string) {
+    console.log(apiKey);
     if (!safeStorage?.isEncryptionAvailable() || !this.settings.encrypt_keys) {
       return `${DecryptKeyPrefix}${apiKey}`;
     }
