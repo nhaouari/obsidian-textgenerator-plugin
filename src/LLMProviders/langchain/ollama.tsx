@@ -4,19 +4,16 @@ import LLMProviderInterface, { LLMConfig } from "../interface";
 import SettingItem from "#/ui/settings/components/item";
 import useGlobal from "#/ui/context/global";
 import { IconExternalLink } from "@tabler/icons-react";
-import { useToggle } from "usehooks-ts";
 import Input from "#/ui/settings/components/input";
 import { BaseLLMParams } from "langchain/llms/base";
-import type { Ollama } from "langchain/llms/ollama";
-
 import type { OllamaInput } from "langchain/dist/util/ollama.d.ts";
 
 import debug from "debug";
 
 const logger = debug("textgenerator:llmProvider:ollama");
 
-const id = "Olama (Langchain)" as const;
-export default class LangchainOlamaProvider
+const id = "Ollama (Langchain)" as const;
+export default class LangchainOllamaProvider
   extends LangchainBase
   implements LLMProviderInterface
 {

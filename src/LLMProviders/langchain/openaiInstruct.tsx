@@ -13,14 +13,14 @@ import { OPENAI_MODELS } from "#/constants";
 import { Message } from "#/types";
 import debug from "debug";
 
-const logger = debug("textgenerator:llmProvider:chatgpt");
+const logger = debug("textgenerator:llmProvider:openaiInstruct");
 
 const default_values = {
   basePath: "https://api.openai.com/v1",
 };
 
-const id = "OpenAI (Langchain)" as const;
-export default class LangchainOpenAIProvider
+const id = "OpenAI Instruct (Langchain)" as const;
+export default class LangchainOpenAIInstructProvider
   extends LangchainBase
   implements LLMProviderInterface
 {
@@ -123,7 +123,7 @@ export default class LangchainOpenAIProvider
         >
           <Input
             type="password"
-            value={config.api_key}
+            value={config.api_key || ""}
             setValue={async (value) => {
               global.plugin.settings.api_key = value;
               config.api_key = value;

@@ -61,7 +61,7 @@ export default class LangchainPalmProvider
         >
           <Input
             type="password"
-            value={config.api_key}
+            value={config.api_key || ""}
             setValue={async (value) => {
               config.api_key = value;
               global.plugin.encryptAllKeys();

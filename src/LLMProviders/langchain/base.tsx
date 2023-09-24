@@ -1,12 +1,17 @@
-import BaseProvider from "../base";
-import { Message } from "../../types";
-import { ChatOpenAI, OpenAIChatInput } from "langchain/chat_models/openai";
-import { HuggingFaceInference } from "langchain/llms/hf";
-import { mapMessagesToLangchainMessages } from "../../utils";
 import debug from "debug";
 import React from "react";
+
+import { ChatOpenAI, OpenAIChatInput } from "langchain/chat_models/openai";
+import { HuggingFaceInference } from "langchain/llms/hf";
+import { loadSummarizationChain } from "langchain/chains";
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
+import type { BaseChatModelParams } from "langchain/dist/chat_models/base";
+
+import BaseProvider from "../base";
+import { Message } from "../../types";
+import { mapMessagesToLangchainMessages } from "../../utils";
 import LLMProviderInterface, { LLMConfig } from "../interface";
-import { BaseChatModelParams } from "langchain/dist/chat_models/base";
+
 import { OPENAI_MODELS } from "#/constants";
 
 const logger = debug("textgenerator:LangchainProvider");
@@ -66,7 +71,8 @@ export default class LangchainProvider
     onToken?: (
       token: string,
       first: boolean
-    ) => Promise<string | void | null | undefined>
+    ) => Promise<string | void | null | undefined>,
+    customConfig?: any
   ): Promise<string> {
     return new Promise(async (s, r) => {
       let alreadyBegainGenerating = false;
@@ -122,30 +128,64 @@ export default class LangchainProvider
           },
         ];
 
-        result = reqParams.llmPredict
-          ? await (chat as any as ChatOpenAI).predict(
-              messages.length > 1
-                ? // user: test1
-                  // assistant: test2
-                  // ...
-                  messages.map((msg) => `${msg.role}:${msg.content}`).join("\n")
-                : // test1
-                  messages[0].content,
-              {
-                signal: params.requestParams?.signal || undefined,
-                ...this.getReqOptions(params),
-              },
-              llmFuncs
-            )
-          : (
-              await chat.predictMessages(
-                mapMessagesToLangchainMessages(messages),
+        if (customConfig?.chain?.type) {
+          const textSplitter = new RecursiveCharacterTextSplitter({
+            chunkSize: 5000,
+            ...customConfig?.splitter,
+          });
+
+          const docs = await textSplitter.createDocuments([
+            messages.length > 1
+              ? // user: test1
+                // assistant: test2
+                // ...
+                messages.map((msg) => `${msg.role}:${msg.content}`).join("\n")
+              : // test1
+                messages[0].content,
+          ]);
+
+          // This convenience function creates a document chain prompted to summarize a set of documents.
+          const chain = loadSummarizationChain(chat, {
+            ...customConfig?.chain,
+          });
+
+          const res = await chain.call(
+            {
+              input_documents: docs,
+            },
+            {
+              callbacks: llmFuncs,
+            }
+          );
+
+          result = res.text;
+        } else
+          result = reqParams.llmPredict
+            ? await (chat as any as ChatOpenAI).predict(
+                messages.length > 1
+                  ? // user: test1
+                    // assistant: test2
+                    // ...
+                    messages
+                      .map((msg) => `${msg.role}:${msg.content}`)
+                      .join("\n")
+                  : // test1
+                    messages[0].content,
                 {
                   signal: params.requestParams?.signal || undefined,
+                  ...this.getReqOptions(params),
                 },
                 llmFuncs
               )
-            ).content;
+            : (
+                await chat.predictMessages(
+                  mapMessagesToLangchainMessages(messages),
+                  {
+                    signal: params.requestParams?.signal || undefined,
+                  },
+                  llmFuncs
+                )
+              ).content;
 
         // console.log("used Tokens: ", { allTokens });
         logger("generate end", {

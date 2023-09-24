@@ -1,25 +1,45 @@
 import ProviderBase from "./base";
+
 import CustomProvider from "./custom/base";
 
-import ChatgptLangchainProvider from "./langchain/chatgpt";
-import LangchainOpenAIProvider from "./langchain/openai";
-// import LangchainReplicaProvider from "./langchain/replica"
+import LangchainOpenAIChatProvider from "./langchain/openaiChat";
+import LangchainOpenAIInstructProvider from "./langchain/openaiInstruct";
 import LangchainHFProvider from "./langchain/hf";
 import ChatanthropicLangchainProvider from "./langchain/chatanthropic";
-import OlamaLangchainProvider from "./langchain/olama";
-import LLMProviderRegistry from "./registery";
-import LangchainAzureChatgptProvider from "./langchain/azure.chatgpt";
+import OllamaLangchainProvider from "./langchain/ollama";
+import LangchainAzureOpenAIChatProvider from "./langchain/azureOpenAIChat";
+import LangchainAzureOpenAIInstructProvider from "./langchain/azureOpenAIInstruct";
 import LangchainPalmProvider from "./langchain/palm";
+// import LangchainReplicaProvider from "./langchain/replica"
+
+import LLMProviderRegistry from "./registery";
 
 const DefaultProviders = {
-  [ChatgptLangchainProvider.id]: ChatgptLangchainProvider,
-  [LangchainOpenAIProvider.id]: LangchainOpenAIProvider,
-  [LangchainAzureChatgptProvider.id]: LangchainAzureChatgptProvider,
+  // openai
+  [LangchainOpenAIChatProvider.id]: LangchainOpenAIChatProvider,
+  [LangchainOpenAIInstructProvider.id]: LangchainOpenAIInstructProvider,
+
+  // azure
+  [LangchainAzureOpenAIChatProvider.id]: LangchainAzureOpenAIChatProvider,
+  [LangchainAzureOpenAIInstructProvider.id]:
+    LangchainAzureOpenAIInstructProvider,
+
+  // palm
   [LangchainPalmProvider.id]: LangchainPalmProvider,
+
+  // anthropic
   [ChatanthropicLangchainProvider.id]: ChatanthropicLangchainProvider,
-  [OlamaLangchainProvider.id]: OlamaLangchainProvider,
+
+  // ollama
+  [OllamaLangchainProvider.id]: OllamaLangchainProvider,
+
+  // replica (disabled because it doesn't work)
   // "Replica (Langchain)": LangchainReplicaProvider,
+
+  // huggingface
   [LangchainHFProvider.id]: LangchainHFProvider,
+
+  // custom
   [CustomProvider.id]: CustomProvider,
 } as const;
 
