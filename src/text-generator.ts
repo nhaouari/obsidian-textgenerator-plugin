@@ -129,94 +129,105 @@ export default class TextGenerator extends RequestHandler {
     );
     // --
 
-    const strm = await this.streamGenerate(
-      context,
-      insertMetadata,
-      params,
-      context.templatePath
-    );
+    try {
+      const strm = await this.streamGenerate(
+        context,
+        insertMetadata,
+        params,
+        context.templatePath
+      );
 
-    // last letter before starting, (used to detirmin if we should add space at the begining)
-    const txt = editor.getRange(
-      {
-        ch: startingCursor.ch - 1,
-        line: startingCursor.line,
-      },
-      startingCursor
-    );
+      // last letter before starting, (used to detirmin if we should add space at the begining)
+      const txt = editor.getRange(
+        {
+          ch: startingCursor.ch - 1,
+          line: startingCursor.line,
+        },
+        startingCursor
+      );
 
-    const allText =
-      (await strm(async (cntnt, first) => {
-        if (mode !== "insert") return;
+      const allText =
+        (await strm(
+          async (cntnt, first) => {
+            if (mode !== "insert") return;
 
-        let content = cntnt;
-        //   console.log({ content, first });
+            let content = cntnt;
+            //   console.log({ content, first });
 
-        if (first) {
-          const alreadyDidnewLine = this.plugin.settings.prefix?.contains(`
+            if (first) {
+              const alreadyDidnewLine = this.plugin.settings.prefix?.contains(`
 			`);
 
-          // here you can do some addition magic
-          // check if its starting by space, and space doens't exist in note (used to detirmin if we should add space at the begining).
-          if (txt.length && txt != " " && content != " ") {
-            content = " " + content;
+              // here you can do some addition magic
+              // check if its starting by space, and space doens't exist in note (used to detirmin if we should add space at the begining).
+              if (txt.length && txt != " " && content != " ") {
+                content = " " + content;
+              }
+
+              if (!alreadyDidnewLine && txt == ":" && cntnt != "\n") {
+                content = "\n" + content;
+              }
+
+              // adding prefix here
+              if (this.plugin.settings.prefix?.length) {
+                console.log(content);
+                content = this.plugin.settings.prefix + content;
+              }
+
+              this.insertGeneratedText(content, editor, cursor, mode);
+            } else this.insertGeneratedText(content, editor, cursor, "stream");
+
+            // const cursor = editor.getCursor();
+
+            cursor.ch += content.length;
+
+            if (!this.plugin.settings.freeCursorOnStreaming)
+              editor.setCursor(cursor);
+
+            this.plugin.updateSpinnerPos(cursor);
+
+            logger("generateStreamInEditor message", { content });
+            return content;
+          },
+          (err) => {
+            this.endLoading(false);
+            throw err;
           }
+        )) || "";
 
-          if (!alreadyDidnewLine && txt == ":" && cntnt != "\n") {
-            content = "\n" + content;
-          }
+      editor.replaceRange(
+        mode == "replace" ? allText : "",
+        startingCursor,
+        cursor
+      );
 
-          // adding prefix here
-          if (this.plugin.settings.prefix?.length) {
-            console.log(content);
-            content = this.plugin.settings.prefix + content;
-          }
-          this.insertGeneratedText(content, editor, cursor, mode);
-        } else this.insertGeneratedText(content, editor, cursor, "stream");
+      if (mode !== "replace")
+        this.insertGeneratedText(allText, editor, startingCursor, mode);
 
-        // const cursor = editor.getCursor();
+      const nc = {
+        ch: startingCursor.ch + allText.length,
+        line: startingCursor.line,
+      };
 
-        cursor.ch += content.length;
+      editor.replaceRange("", startingCursor, nc);
 
-        if (!this.plugin.settings.freeCursorOnStreaming)
-          editor.setCursor(cursor);
+      await new Promise((s) => setTimeout(s, 500));
 
-        this.plugin.updateSpinnerPos();
+      this.endLoading(true);
 
-        logger("generateStreamInEditor message", { content });
-        return content;
-      })) || "";
-
-    editor.replaceRange(
-      mode == "replace" ? allText : "",
-      startingCursor,
-      cursor
-    );
-
-    if (mode !== "replace")
       this.insertGeneratedText(allText, editor, startingCursor, mode);
 
-    const nc = {
-      ch: startingCursor.ch + allText.length,
-      line: startingCursor.line,
-    };
+      // here we can do some selecting magic
+      // editor.setSelection(startingCursor, cursor)
 
-    console.log({
-      nc,
-      cursor,
-      startingCursor,
-      selected: editor.getRange(startingCursor, nc),
-    });
-    editor.replaceRange("", startingCursor, nc);
-
-    await new Promise((s) => setTimeout(s, 500));
-
-    this.insertGeneratedText(allText, editor, startingCursor, mode);
-
-    // here we can do some selecting magic
-    // editor.setSelection(startingCursor, cursor)
-
-    editor.setCursor(nc);
+      editor.setCursor(nc);
+    } catch (err: any) {
+      this.plugin.handelError(err);
+      // if catched error during or before streaming, it should return to its previews location
+      editor.setCursor(cursor);
+      this.endLoading(true);
+      return Promise.reject(err);
+    }
   }
 
   async generateInEditor(
@@ -230,7 +241,7 @@ export default class TextGenerator extends RequestHandler {
     }
   ) {
     const frontmatter = this.reqFormatter.getFrontmatter("", insertMetadata);
-    console.log(frontmatter);
+    console.log({ frontmatter });
     if (
       this.plugin.settings.stream &&
       this.plugin.textGenerator.LLMProvider?.streamable &&
@@ -441,7 +452,7 @@ version: 0.0.1`;
     heavyLogger("insertGeneratedText");
 
     let text = completion;
-    let cursor = cur && mode == "insert" ? cur : this.getCursor(editor);
+    let cursor = cur || this.getCursor(editor);
 
     // if (mode !== "stream") {
     // 	 text = this.plugin.settings.prefix.replace(/\\n/g, "\n") + text;
