@@ -8,7 +8,7 @@ import LLMProviderInterface from "src/LLMProviders/interface";
 import { LLMProviderRegistery } from "src/LLMProviders";
 import providerOptionsValidator from "src/LLMProviders/providerOptionsValidator";
 import { TextGeneratorSettings } from "../types";
-import Handlebars from "handlebars";
+import { Handlebars } from "../helpers/handlebars-helpers";
 import { Platform } from "obsidian";
 const logger = debug("textgenerator:TextGenerator");
 
@@ -145,8 +145,8 @@ export default class RequestHandler {
           {
             ...params,
             prompt:
-              typeof template != "undefined"
-                ? template.inputTemplate(options)
+              typeof template != "undefined" && !context.context
+                ? await template.inputTemplate(options)
                 : context.context,
           },
           insertMetadata,
@@ -175,32 +175,38 @@ export default class RequestHandler {
       //const stream = await this.streamRequest(reqParams);
       const stream = async (
         onToken: Parameters<typeof this.LLMProvider.generate>[2],
-        onError: (error: any) => void
+        onError?: (error: any) => void
       ): Promise<string> => {
         try {
-          const k = await this.LLMProvider.generate(
-            bodyParams.messages,
-            {
-              ...allParams,
-              ...bodyParams,
-              requestParams: {
-                // body: JSON.stringify(bodyParams),
-                ...reqParams,
-                signal: this.signalController?.signal,
-              },
-              otherOptions:
-                this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
-              streaming: true,
-              llmPredict: bodyParams.messages?.length == 1,
-            } as any,
-            onToken,
-            provider.providerOptions
-          );
+          const k =
+            provider.providerOptions.estimatingMode ||
+            provider.providerOptions.noGenMode
+              ? ""
+              : await this.LLMProvider.generate(
+                  bodyParams.messages,
+                  {
+                    ...allParams,
+                    ...bodyParams,
+                    requestParams: {
+                      // body: JSON.stringify(bodyParams),
+                      ...reqParams,
+                      signal: this.signalController?.signal,
+                    },
+                    otherOptions:
+                      this.plugin.settings.LLMProviderOptions[
+                        this.LLMProvider.id
+                      ],
+                    streaming: true,
+                    llmPredict: bodyParams.messages?.length == 1,
+                  } as any,
+                  onToken,
+                  provider.providerOptions
+                );
 
           // output template, template used AFTER the generation happens
           return (
             (provider.providerOptions.output?.length
-              ? Handlebars.compile(
+              ? await Handlebars.compile(
                   provider.providerOptions.output.replaceAll("\\n", "\n"),
                   {
                     noEscape: true,
@@ -209,7 +215,7 @@ export default class RequestHandler {
               : template?.outputTemplate)?.({ ...options, output: k }) || k
           );
         } catch (err: any) {
-          onError(err);
+          onError?.(err);
           return err.message;
         }
       };
@@ -225,10 +231,71 @@ export default class RequestHandler {
     }
   }
 
+  async batchGenerate(
+    context: InputContext[],
+    insertMetadata = false,
+    params: Partial<typeof this.plugin.settings> = this.plugin.settings,
+    templatePath = "",
+    additionnalParams = {
+      showSpinner: true,
+      insertMode: false,
+    },
+    onOneFinishs?: (content: string, index: number) => void
+  ) {
+    try {
+      logger("chain", {
+        context,
+        insertMetadata,
+        params,
+        templatePath,
+        additionnalParams,
+      });
+
+      if (this.plugin.processing) {
+        logger("generate error", "There is another generation process");
+        return Promise.reject(new Error("There is another generation process"));
+      }
+
+      this.startLoading();
+
+      const batches = await Promise.all(
+        context.map(async (ctxt) => {
+          return this.reqFormatter.getRequestParameters(
+            {
+              ...params,
+              prompt:
+                typeof ctxt.template != "undefined" && !ctxt.context
+                  ? await ctxt.template.inputTemplate(ctxt.options)
+                  : ctxt.context,
+            },
+            insertMetadata,
+            templatePath
+          );
+        })
+      );
+
+      return await this.LLMProvider.generateBatch(
+        batches.map((batch) => batch.bodyParams.messages),
+        {
+          ...params,
+          stream: false,
+        },
+        context[0].options,
+        onOneFinishs
+      );
+    } catch (err: any) {
+      this.endLoading();
+      this.plugin.handelError(err);
+    } finally {
+      this.endLoading();
+    }
+  }
+
   async generate(
     context: InputContext,
     insertMetadata = false,
-    params: Partial<typeof this.plugin.settings> = this.plugin.settings,
+    params: Partial<typeof this.plugin.settings & { noGenMode: boolean }> = this
+      .plugin.settings,
     templatePath = "",
     additionnalParams = {
       showSpinner: true,
@@ -256,8 +323,8 @@ export default class RequestHandler {
           {
             ...params,
             prompt:
-              typeof template != "undefined"
-                ? template.inputTemplate(options)
+              typeof template != "undefined" && !context.context
+                ? await template.inputTemplate(options)
                 : context.context,
           },
           insertMetadata,
@@ -277,33 +344,37 @@ export default class RequestHandler {
 
       this.startLoading(additionnalParams?.showSpinner);
 
-      let result = await this.LLMProvider.generate(
-        bodyParams.messages,
-        {
-          ...allParams,
-          ...bodyParams,
-          requestParams: {
-            // body: JSON.stringify(bodyParams),
-            ...reqParams,
-            signal: this.signalController?.signal,
-          },
-          otherOptions:
-            this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
-          stream: false,
-          llmPredict: bodyParams.messages?.length == 1,
-        },
-        undefined,
-        provider.providerOptions
-      );
+      let result =
+        provider.providerOptions.estimatingMode ||
+        provider.providerOptions.noGenMode
+          ? ""
+          : await this.LLMProvider.generate(
+              bodyParams.messages,
+              {
+                ...allParams,
+                ...bodyParams,
+                requestParams: {
+                  // body: JSON.stringify(bodyParams),
+                  ...reqParams,
+                  signal: this.signalController?.signal,
+                },
+                otherOptions:
+                  this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
+                stream: false,
+                llmPredict: bodyParams.messages?.length == 1,
+              },
+              undefined,
+              provider.providerOptions
+            );
 
       // Remove leading/trailing newlines
       //   result = result.trim();
 
       // output template, template used AFTER the generation happens
-      console.log({ result });
+
       result =
         (provider.providerOptions.output?.length
-          ? Handlebars.compile(
+          ? await Handlebars.compile(
               provider.providerOptions.output.replaceAll("\\n", "\n"),
               {
                 noEscape: true,
@@ -311,11 +382,6 @@ export default class RequestHandler {
             )
           : template?.outputTemplate)?.({ ...options, output: result }) ||
         result;
-
-      console.log("output", provider.providerOptions.output, {
-        result,
-        options,
-      });
 
       logger("generate end", {
         result,

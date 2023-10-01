@@ -26,6 +26,7 @@ export default class LangchainOpenAIInstructProvider
 {
   id = id;
   provider = "Langchain";
+  llmPredict = true;
   static provider = "Langchain";
   static id = id;
 

@@ -2,16 +2,20 @@ import { App, Notice, Editor, Component, TFile } from "obsidian";
 import { Context } from "./types";
 import TextGeneratorPlugin from "./main";
 import { IGNORE_IN_YAML } from "./constants";
-import Handlebars from "handlebars";
+
 import { escapeRegExp, getContextAsString, removeYAML } from "./utils";
 import debug from "debug";
 const logger = debug("textgenerator:ContextManager");
-import Helpers from "./helpers/handlebars-helpers";
+import Helpers, { Handlebars } from "./helpers/handlebars-helpers";
 import {
   ContentExtractor,
+  ExtractorSlug,
+  Extractors,
   getExtractorMethods,
 } from "./extractors/content-extractor";
 import { getAPI as getDataviewApi } from "obsidian-dataview";
+import set from "lodash.set";
+import merge from "lodash.merge";
 
 interface CodeBlock {
   type: string;
@@ -36,6 +40,10 @@ export interface InputContext {
 export default class ContextManager {
   plugin: TextGeneratorPlugin;
   app: App;
+
+  /** record of template paths, from id */
+  templatePaths: Record<string, string>;
+
   constructor(app: App, plugin: TextGeneratorPlugin) {
     logger("ContextManager constructor");
     this.app = app;
@@ -46,23 +54,138 @@ export default class ContextManager {
         Helpers[key as keyof typeof Helpers].bind(this)
       );
     });
+
+    const self = this;
+
+    Handlebars.registerHelper("run", async function (...vars: any[]) {
+      const options: { data: { root: any }; fn: any } = vars.pop();
+
+      const p = options.data.root.templatePath?.split("/");
+      const parentPackageId = p[p.length - 2];
+
+      const firstVar = vars.shift();
+      const id: string = firstVar?.contains("/")
+        ? firstVar
+        : `${parentPackageId}/${firstVar}`;
+
+      const otherVariables = vars;
+
+      const TemplateMetadata = self.getFrontmatter(
+        self.getMetaData(self.templatePaths[id])
+      );
+
+      const innerTxt = otherVariables[0]
+        ? `{"selection":"${Helpers.escp(otherVariables[0])}"}`
+        : (await await options.fn?.({
+            ...this,
+            ...TemplateMetadata,
+          })) || "{}";
+
+      let innerResult = {};
+      try {
+        innerResult = JSON.parse(innerTxt);
+      } catch (err: any) {
+        innerResult = {
+          selection: innerTxt,
+        };
+        console.warn(
+          "couldn't parse data passed to ",
+          id,
+          {
+            content: innerTxt,
+          },
+          err
+        );
+      }
+
+      options.data.root[id] = await self.plugin.textGenerator.templateGen(id, {
+        additionalProps: {
+          ...options.data.root,
+          ...TemplateMetadata,
+          noGenMode: false,
+          ...innerResult,
+        },
+      });
+
+      return "";
+    });
+
+    Handlebars.registerHelper("extract", async function (...vars: any[]) {
+      const options: { data: { root: any }; fn: any } = vars.pop();
+
+      const p = options.data.root.templatePath?.split("/");
+      const parentPackageId = p[p.length - 2];
+
+      const firstVar = vars.shift();
+      const id: string = firstVar?.contains("/")
+        ? firstVar
+        : `${parentPackageId}/${firstVar}`;
+
+      const otherVariables = vars;
+
+      const TemplateMetadata = self.getFrontmatter(
+        self.getMetaData(self.templatePaths[id])
+      );
+
+      if (!(firstVar in ExtractorSlug))
+        throw new Error(`Extractor ${firstVar} Not found`);
+
+      const cntn =
+        otherVariables[0] ||
+        (await await options.fn?.({
+          ...this,
+          ...TemplateMetadata,
+        }));
+
+      const ce = new ContentExtractor(self.app, self.plugin);
+      ce.setExtractor(
+        ExtractorSlug[
+          firstVar as keyof typeof ExtractorSlug
+        ] as keyof typeof Extractors
+      );
+      const res = await ce.convert(cntn);
+
+      const ress = JSON.stringify(res);
+      return Helpers.escp(ress.substring(1, ress.length - 1));
+    });
+
+    Handlebars.registerHelper(
+      "get",
+      async (
+        templateId: string,
+        additionalOptions: { data: { root: any } }
+      ) => {
+        const p = additionalOptions.data.root.templatePath?.split("/");
+        const parentPackageId = p[p.length - 2];
+
+        const id: string = templateId?.contains("/")
+          ? templateId
+          : `${parentPackageId}/${templateId}`;
+        console.log("get", additionalOptions.data.root[id]);
+        return additionalOptions.data.root[id];
+      }
+    );
   }
 
   async getContext(
-    editor: Editor,
+    editor?: Editor,
     insertMetadata = false,
     templatePath = "",
     addtionalOpts: any = {}
   ) {
     logger("getContext", insertMetadata, templatePath, addtionalOpts);
     /* Template */
-    if (templatePath.length > 0) {
-      const options = {
-        ...(await this.getTemplateContext(editor, templatePath)),
-        ...addtionalOpts,
-      };
+    if (templatePath.length) {
+      const options = merge(
+        {},
+        await this.getTemplateContext(editor, templatePath),
+        addtionalOpts
+      );
+
+      console.log({ options, addtionalOpts });
+
       const { context, inputTemplate, outputTemplate } =
-        await this.templateFromPath(templatePath, options);
+        await this.templateFromPath(templatePath, options, editor);
 
       const ctx = await this.executeTemplateDataviewQueries(context);
       logger("Context Template", { context: ctx, options });
@@ -76,9 +199,12 @@ export default class ContextManager {
     } else {
       /* Without template */
       const options = await this.getDefaultContext(editor);
+
       let context = getContextAsString(options);
+
       if (insertMetadata) {
         const frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document
+
         if (
           typeof frontmatter !== "undefined" &&
           Object.keys(frontmatter).length !== 0
@@ -93,6 +219,79 @@ export default class ContextManager {
       logger("Context without template", { context, options });
       return { context, options } as InputContext;
     }
+  }
+
+  async getContextFromFiles(
+    files: TFile[],
+    insertMetadata = false,
+    templatePath = "",
+    addtionalOpts: any = {}
+  ) {
+    const contexts: (InputContext | undefined)[] = [];
+
+    for (const file of files) {
+      const fileMeta = this.getMetaData(file.path); // active document
+
+      const options = merge(
+        {},
+        this.getFrontmatter(this.getMetaData(templatePath)),
+        this.getFrontmatter(fileMeta),
+        addtionalOpts,
+        {
+          selection: removeYAML(await this.plugin.app.vault.cachedRead(file)),
+        }
+      );
+
+      const { context, inputTemplate, outputTemplate } =
+        await this.templateFromPath(templatePath, options);
+
+      const ctx = await this.executeTemplateDataviewQueries(context);
+      logger("Context Template", { context: ctx, options });
+
+      contexts.push({
+        context,
+        options,
+        template: { inputTemplate, outputTemplate },
+        templatePath,
+      } as InputContext);
+
+      //   app.workspace.openLinkText("", filePath, true);
+      //   contexts.push(
+      //     app.workspace.activeEditor?.editor
+      //       ? await this.getContext(
+      //           app.workspace.activeEditor?.editor,
+      //           insertMetadata,
+      //           templatePath,
+      //           {
+      //             ...addtionalOpts,
+      //             selection: app.workspace.activeEditor.editor.getValue(),
+      //           }
+      //         )
+      //       : undefined
+      //   );
+
+      //   console.log({ contexts });
+      //   app.workspace.getLeaf().detach();
+    }
+
+    console.log({ contexts });
+    return contexts;
+  }
+
+  async getTemplate(id: string) {
+    if (!this.templatePaths[id])
+      throw new Error(`template with id:${id} wasn't found.`);
+
+    const { context, inputTemplate, outputTemplate } =
+      await this.templateFromPath(this.templatePaths[id], {
+        ...this.getFrontmatter(this.getMetaData(this.templatePaths[id])),
+      });
+
+    return {
+      context,
+      inputTemplate,
+      outputTemplate,
+    };
   }
 
   extractVariablesFromTemplate(templateContent: string): string[] {
@@ -143,17 +342,20 @@ export default class ContextManager {
     return handlebarsVariables;
   }
 
-  async getTemplateContext(editor: Editor, templatePath = "", content = "") {
+  async getTemplateContext(editor?: Editor, templatePath = "", content = "") {
     logger("getTemplateContext", editor, templatePath);
     const contextOptions: Context = this.plugin.settings.context;
     const title = this.getActiveFileTitle();
-    const selection = this.getSelection(editor);
-    const selections = this.getSelections(editor);
+
+    const contextObj = await this.getDefaultContext(editor);
+
+    const selection = contextObj.selection;
+    const selections = contextObj.selections;
+    const context = getContextAsString(contextObj);
+
     const activeLeaf = this.app.workspace.getMostRecentLeaf();
-    const context = getContextAsString(await this.getDefaultContext(editor));
 
     const activeDocCache = this.getMetaData(""); // active document
-
     const blocks: any = {};
     blocks["frontmatter"] = {};
     blocks["headings"] = {};
@@ -171,13 +373,18 @@ export default class ContextManager {
     logger("getTemplateContext Variables ", { variables });
 
     if (contextOptions.includeFrontmatter)
-      blocks["frontmatter"] = {
-        ...this.getFrontmatter(this.getMetaData(templatePath)),
-        ...this.getFrontmatter(activeDocCache),
-      };
+      blocks["frontmatter"] = merge(
+        {},
+        this.getFrontmatter(this.getMetaData(templatePath)),
+        this.getFrontmatter(activeDocCache)
+      );
 
     if (contextOptions.includeClipboard)
-      blocks["clipboard"] = await this.getClipboard();
+      try {
+        blocks["clipboard"] = await this.getClipboard();
+      } catch {
+        // empty
+      }
 
     if (contextOptions.includeHeadings)
       blocks["headings"] = await this.getHeadingContent(activeDocCache);
@@ -190,7 +397,7 @@ export default class ContextManager {
       blocks["children"] = await this.getChildrenContent(activeDocCache);
 
     if (contextOptions.includeHighlights)
-      blocks["highlights"] = await this.getHighlights(editor);
+      blocks["highlights"] = editor ? await this.getHighlights(editor) : [];
 
     if (
       contextOptions.includeMentions &&
@@ -223,7 +430,7 @@ export default class ContextManager {
     return variables.some((variable) => variable.includes(searchVariable));
   }
 
-  async getDefaultContext(editor: Editor) {
+  async getDefaultContext(editor?: Editor) {
     logger("getDefaultContext", editor);
     const contextOptions: Context = this.plugin.settings.context;
     const context: {
@@ -235,8 +442,8 @@ export default class ContextManager {
     } = {};
 
     const title = this.getActiveFileTitle();
-    const selection = this.getSelection(editor);
-    const selections = this.getSelections(editor);
+    const selection = editor ? this.getSelection(editor) : "";
+    const selections = editor ? this.getSelections(editor) : [];
     if (contextOptions.includeTitle) {
       context["title"] = title;
     }
@@ -255,7 +462,8 @@ export default class ContextManager {
     return context;
   }
 
-  splitTemplate(templateContent: string) {
+  /** Editor variable is for passing it to the next templates that are being called from the handlebars */
+  splitTemplate(templateContent: string, editor?: Editor) {
     logger("splitTemplate", templateContent);
     templateContent = removeYAML(templateContent);
 
@@ -265,7 +473,12 @@ export default class ContextManager {
       inputContent = splitContent[0];
       outputContent = splitContent[1];
 
-      inputTemplate = Handlebars.compile(inputContent);
+      console.log("registered helper", Handlebars);
+
+      inputTemplate = Handlebars.compile(inputContent, {
+        noEscape: true,
+      });
+
       outputTemplate = Handlebars.compile(outputContent, {
         noEscape: true,
       });
@@ -278,18 +491,23 @@ export default class ContextManager {
     }
     return { inputContent, outputContent, inputTemplate, outputTemplate };
   }
-  async templateFromPath(templatePath: string, options: any) {
+
+  async templateFromPath(templatePath: string, options: any, editor?: Editor) {
     logger("templateFromPath", templatePath, options);
     const templateFile = await this.app.vault.getAbstractFileByPath(
       templatePath
     );
-    // @ts-ignore
-    const templateContent = await this.app.vault.read(templateFile);
 
-    const { inputTemplate, outputTemplate } =
-      this.splitTemplate(templateContent);
+    if (!templateFile) throw `Template ${templatePath} couldn't be found`;
 
-    const input = inputTemplate(options);
+    const templateContent = await this.app.vault.read(templateFile as TFile);
+
+    const { inputTemplate, outputTemplate } = this.splitTemplate(
+      templateContent,
+      editor
+    );
+
+    const input = await inputTemplate(options);
 
     logger("templateFromPath", { input });
     return { context: input, inputTemplate, outputTemplate };
@@ -312,6 +530,8 @@ export default class ContextManager {
       from: editor.getCursor("from"),
       to: editor.getCursor("to"),
     };
+
+    console.log(editor.getCursor("to"));
 
     const selectedText = editor.getSelection().trimStart();
 
@@ -440,6 +660,7 @@ export default class ContextManager {
   async getClipboard() {
     return await navigator.clipboard.readText();
   }
+
   async getMentions(title: string) {
     const linked: any = [];
     const unlinked: any = [];
@@ -551,16 +772,14 @@ export default class ContextManager {
     return `${this.app.workspace.getActiveFile()?.basename}`;
   }
 
-  getMetaData(path = "") {
-    const activeFile =
-      path === ""
-        ? this.plugin.textGenerator.embeddingsScope.getActiveNote()
-        : { path };
+  getMetaData(path?: string) {
+    const activeFile = !path
+      ? this.plugin.textGenerator.embeddingsScope.getActiveNote()
+      : { path };
 
     if (!activeFile?.path) return null;
 
-    const cache = app.metadataCache.getCache(activeFile.path);
-    this.app.metadataCache.getCache(activeFile.path);
+    const cache = this.plugin.app.metadataCache.getCache(activeFile.path);
 
     return {
       ...cache,
@@ -606,6 +825,7 @@ export default class ContextManager {
           ...cache?.frontmatter?.chain,
           ...getOptionsUnder("chain.", cache?.frontmatter),
         },
+        ...(path ? { templatePath: path } : {}),
       },
 
       path: activeFile.path,
@@ -633,6 +853,7 @@ export default class ContextManager {
     }
     return cleanFrontMatter;
   }
+
   async processCodeBlocks(
     input: string,
     processor: CodeBlockProcessor
@@ -651,6 +872,7 @@ export default class ContextManager {
     }
     return output;
   }
+
   async executeTemplateDataviewQueries(templateMD: string): Promise<string> {
     const parsedTemplateMD: string = await this.processCodeBlocks(
       templateMD,
@@ -698,11 +920,13 @@ export function getOptionsUnder(
   prefix: string,
   obj: Record<string, any> | undefined
 ) {
-  const options: Record<string, any> = {};
+  let options: Record<string, any> = {};
 
   Object.entries(obj || {}).map(([key, data]) => {
-    if (key.startsWith(prefix)) options[key.slice(prefix.length)] = data;
+    if (key.startsWith(prefix)) {
+      options = set(options, key, data);
+    }
   });
 
-  return options;
+  return options[prefix.substring(0, prefix.length - 1)];
 }

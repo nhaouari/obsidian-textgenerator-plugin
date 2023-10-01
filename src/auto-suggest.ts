@@ -59,7 +59,7 @@ export class AutoSuggest extends EditorSuggest<Completion> {
     }[];
   };
   isOpen: boolean;
-  constructor(private app: App, plugin: TextGeneratorPlugin) {
+  constructor(app: App, plugin: TextGeneratorPlugin) {
     logger("AutoSuggest", app, plugin);
     super(app);
     this.plugin = plugin;

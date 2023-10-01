@@ -42,14 +42,13 @@ import TokensScope from "./scope/tokens";
 import "./LLMProviders";
 import get from "lodash.get";
 import set from "lodash.set";
+import { ExampleModal } from "./models/model";
 
 let safeStorage: any;
 
 if (Platform.isDesktop) {
   safeStorage = require("electron")?.remote?.safeStorage;
 }
-
-console.log("passed safestorage and all imports", safeStorage);
 
 const logger = debug("textgenerator:main");
 
@@ -86,7 +85,7 @@ export default class TextGeneratorPlugin extends Plugin {
         this.textGeneratorIconItem.append(span);
         this.textGeneratorIconItem.title = "Generating Text...";
         if (this.notice) this.notice.hide();
-        this.notice = new Notice(`Processing...`, 100000);
+        this.notice = new Notice(`Processing...\n${text}`, 100000);
       } else {
         const icon = getIcon("bot");
         if (icon) this.textGeneratorIconItem.append(icon);
@@ -291,6 +290,40 @@ export default class TextGeneratorPlugin extends Plugin {
         this.AddAutoSuggestStatusBar();
       }
 
+      this.registerEvent(
+        this.app.workspace.on(
+          "files-menu",
+          async (menu, files, source, leaf) => {
+            menu.addItem((item) => {
+              item.setIcon("GENERATE_META_ICON");
+              item.setTitle("Generate");
+              item.onClick(() => {
+                try {
+                  new ExampleModal(
+                    this.app,
+                    this,
+                    async (result) => {
+                      await this.textGenerator.generateBatchFromTemplate(
+                        files.filter(
+                          // @ts-ignore
+                          (f) => !f.children && f.path.endsWith(".md")
+                        ) as TFile[],
+                        {},
+                        result.path,
+                        true
+                      );
+                    },
+                    "Generate and Create a New Note From Template"
+                  ).open();
+                } catch (error) {
+                  this.handelError(error);
+                }
+              });
+            });
+          }
+        )
+      );
+
       const blockTgHandler = async (
         source: string,
         container: HTMLElement,
@@ -312,9 +345,10 @@ export default class TextGeneratorPlugin extends Plugin {
                 : {}),
             };
 
-            const markdown = inputTemplate(context);
+            const markdown = await inputTemplate(context);
 
-            await MarkdownRenderer.renderMarkdown(
+            await MarkdownRenderer.render(
+              this.app,
               markdown,
               container,
               path,
@@ -598,7 +632,6 @@ export default class TextGeneratorPlugin extends Plugin {
       console.log(err);
       const [inCaseDecryptionFails, key] =
         keyBuffer?.split?.(DecryptKeyPrefix) || [];
-      console.log(inCaseDecryptionFails, key);
       return inCaseDecryptionFails?.length || containsInvalidCharacter(key)
         ? "**FAILED TO DECRYPT**"
         : key;
@@ -606,7 +639,6 @@ export default class TextGeneratorPlugin extends Plugin {
   }
 
   getEncryptedKey(apiKey: string) {
-    console.log(apiKey);
     if (!safeStorage?.isEncryptionAvailable() || !this.settings.encrypt_keys) {
       return `${DecryptKeyPrefix}${apiKey}`;
     }

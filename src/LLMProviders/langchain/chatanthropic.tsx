@@ -9,7 +9,6 @@ import useGlobal from "#/ui/context/global";
 import { IconExternalLink, IconReload } from "@tabler/icons-react";
 import { request } from "obsidian";
 import clsx from "clsx";
-import { useToggle } from "usehooks-ts";
 import { BaseLanguageModelParams } from "langchain/dist/base_language";
 import Input from "#/ui/settings/components/input";
 import debug from "debug";

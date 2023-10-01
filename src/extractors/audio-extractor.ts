@@ -6,14 +6,18 @@ import debug from "debug";
 const logger = debug("textgenerator:Extractor:AudioExtractor");
 
 import { WhisperProviderName } from "../ui/settings/sections/otherProviders/whisper";
-export default class AudioExtractor extends Extractor<TAbstractFile> {
+export default class AudioExtractor extends Extractor {
   constructor(app: App, plugin: TextGeneratorPlugin) {
     super(app, plugin);
   }
 
-  async convert(doc: TAbstractFile) {
-    logger("convert", { doc });
-    const audioBuffer = await this.app.vault.adapter.readBinary(doc.path);
+  async convert(docPath: string) {
+    logger("convert", { docPath });
+
+    const xt = docPath.split(".");
+    const extension = xt[xt.length - 1];
+
+    const audioBuffer = await this.app.vault.adapter.readBinary(docPath);
     const fileSizeInMB = audioBuffer.byteLength / (1024 * 1024);
 
     if (fileSizeInMB > 24) {
@@ -21,12 +25,7 @@ export default class AudioExtractor extends Extractor<TAbstractFile> {
       return "";
     }
 
-    const transcript = await this.generateTranscript(
-      audioBuffer,
-      // TODO: Why is this not in the types
-      // @ts-ignore
-      doc.extension
-    );
+    const transcript = await this.generateTranscript(audioBuffer, extension);
     logger("convert end", { transcript });
     return transcript;
   }
@@ -49,13 +48,13 @@ export default class AudioExtractor extends Extractor<TAbstractFile> {
     if (!embeds) {
       return [];
     }
-    return embeds.map(
-      (embed) =>
-        this.app.metadataCache.getFirstLinkpathDest(
-          embed.link,
-          filePath
-        ) as TAbstractFile
-    );
+    return embeds
+      .map(
+        (embed) =>
+          this.app.metadataCache.getFirstLinkpathDest(embed.link, filePath)
+            ?.path
+      )
+      .filter(Boolean) as string[];
   }
 
   async generateTranscript(audioBuffer: ArrayBuffer, filetype: string) {

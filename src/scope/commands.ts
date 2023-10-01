@@ -45,7 +45,7 @@ export default class Commands {
 
     {
       id: "insert-generated-text-From-template",
-      name: "Templates: Generate & Insert ",
+      name: "Templates: Generate & Insert",
       icon: "circle",
       //hotkeys: [{ modifiers: ["Mod"], key: "q"}],
       async editorCallback(editor: Editor) {
@@ -69,6 +69,7 @@ export default class Commands {
         }
       },
     },
+
     {
       id: "generated-text-to-clipboard-From-template",
       name: "Templates: Generate & Copy To Clipboard ",
@@ -101,12 +102,13 @@ export default class Commands {
       icon: "plus-circle",
       //hotkeys: [{ modifiers: ["Mod","Shift"], key: "q"}],
       async editorCallback(editor: Editor) {
+        const self: Commands = this;
         try {
           new ExampleModal(
-            this.plugin.app,
-            this.plugin,
+            self.plugin.app,
+            self.plugin,
             async (result) => {
-              await this.plugin.textGenerator.generateFromTemplate(
+              await self.plugin.textGenerator.generateFromTemplate(
                 {},
                 result.path,
                 true,
@@ -117,7 +119,43 @@ export default class Commands {
             "Generate and Create a New Note From Template"
           ).open();
         } catch (error) {
-          this.plugin.handelError(error);
+          self.plugin.handelError(error);
+        }
+      },
+    },
+
+    {
+      id: "search-results-batch-generate-from-template",
+      name: "Templates (Batch): From Search Results",
+      icon: "plus-circle",
+      //hotkeys: [{ modifiers: ["Mod","Shift"], key: "q"}],
+      async callback() {
+        const self: Commands = this;
+        try {
+          new ExampleModal(
+            self.plugin.app,
+            self.plugin,
+            async (result) => {
+              const files =
+                await self.plugin.textGenerator.embeddingsScope.getSearchResults();
+
+              if ((await files).length) {
+                return self.plugin.handelError(
+                  "You need at least one search result"
+                );
+              }
+
+              await self.plugin.textGenerator.generateBatchFromTemplate(
+                files,
+                {},
+                result.path,
+                true
+              );
+            },
+            "Generate and create multiple notes from template"
+          ).open();
+        } catch (error) {
+          self.plugin.handelError(error);
         }
       },
     },
@@ -317,6 +355,7 @@ export default class Commands {
         }
       },
     },
+
     {
       id: "auto-suggest",
       name: "Turn on or off the auto suggestion",
@@ -335,6 +374,7 @@ export default class Commands {
         }
       },
     },
+
     {
       id: "calculate-tokens",
       name: "Estimate tokens for the current document",
@@ -344,13 +384,17 @@ export default class Commands {
         const context =
           await this.plugin.textGenerator.contextManager.getContext(
             editor,
-            true
+            true,
+            {
+              estimatingMode: true,
+            }
           );
         this.plugin.tokensScope.showTokens(
           await this.plugin.tokensScope.estimate(context)
         );
       },
     },
+
     {
       id: "calculate-tokens-for-template",
       name: "Estimate tokens for a Template",
@@ -366,7 +410,10 @@ export default class Commands {
                 await this.plugin.textGenerator.contextManager.getContext(
                   editor,
                   true,
-                  result.path
+                  result.path,
+                  {
+                    estimatingMode: true,
+                  }
                 );
               this.plugin.tokensScope.showTokens(
                 await this.plugin.tokensScope.estimate(context)
@@ -379,6 +426,7 @@ export default class Commands {
         }
       },
     },
+
     {
       id: "text-extractor-tool",
       name: "Text Extractor Tool",
@@ -391,6 +439,7 @@ export default class Commands {
         }
       },
     },
+
     {
       id: "stop-stream",
       name: "Stop Stream",
@@ -426,6 +475,16 @@ export default class Commands {
       // get files, it will be empty onLoad, that's why we are using this function
       await this.plugin.getFilesOnLoad()
     );
+
+    this.plugin.textGenerator.contextManager.templatePaths = {};
+    templates.forEach((template) => {
+      if (template.id) {
+        const ss = template.path.split("/");
+        this.plugin.textGenerator.contextManager.templatePaths[
+          ss[ss.length - 2] + "/" + template.id
+        ] = template.path;
+      }
+    });
 
     const templatesWithCommands = templates.filter((t) => t?.commands);
     logger("Templates with commands ", { templatesWithCommands });
@@ -503,7 +562,10 @@ export default class Commands {
                       await this.plugin.textGenerator.contextManager.getContext(
                         editor,
                         true,
-                        template.path
+                        template.path,
+                        {
+                          estimatingMode: true,
+                        }
                       );
                     this.plugin.tokensScope.showTokens(
                       await this.plugin.tokensScope.estimate(context)
@@ -528,6 +590,7 @@ export default class Commands {
       this.plugin.addCommand({
         ...command,
         editorCallback: command.editorCallback?.bind(this),
+        callback: command.callback?.bind(this),
       });
     });
   }

@@ -84,7 +84,7 @@ export default class LangchainAzureOpenAIChatProvider
           />
         </SettingItem>
         <SettingItem
-          name="Endpoint"
+          name="Endpoint (optional)"
           register={props.register}
           sectionId={props.sectionId}
         >

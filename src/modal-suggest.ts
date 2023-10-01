@@ -11,7 +11,7 @@ import TextGeneratorPlugin from "./main";
 import { ExampleModal } from "./models/model";
 
 export class ModelSuggest extends EditorSuggest<PromptTemplate> {
-  private app: App;
+  app: App;
   private plugin: TextGeneratorPlugin;
   scope: Scope;
   constructor(app: App, plugin: TextGeneratorPlugin) {

@@ -13,6 +13,7 @@ const logger = debug("textgenerator:TextGenerator");
 const heavyLogger = debug("textgenerator:TextGenerator:heavy");
 
 import EmbeddingScope from "./scope/embeddings";
+import { getHBValues } from "./utils/barhandles";
 
 export default class TextGenerator extends RequestHandler {
   plugin: TextGeneratorPlugin;
@@ -84,6 +85,47 @@ export default class TextGenerator extends RequestHandler {
     logger("generateFromTemplate end");
   }
 
+  async generateBatchFromTemplate(
+    files: TFile[],
+    params: Partial<TextGeneratorSettings>,
+    templatePath: string,
+    insertMetadata = true,
+    additionalProps: any = {},
+    insertMode = false
+  ) {
+    // get files context
+    const contexts = (await this.contextManager.getContextFromFiles(
+      files,
+      insertMetadata,
+      templatePath,
+      additionalProps
+    )) as InputContext[];
+
+    // make sure that failed context extractions are not included
+    contexts.forEach((c, i) => {
+      if (!c) {
+        files.splice(i, 1);
+        contexts.splice(i, 1);
+      }
+    });
+
+    if (!files.length) throw new Error("You need to select files");
+
+    // start generation
+    await this.createToFiles(
+      {
+        ...params,
+        ...contexts[0]?.options,
+      },
+      contexts,
+      files,
+      templatePath,
+      insertMode
+    );
+
+    logger("generateFromTemplate end");
+  }
+
   getMode(context: any) {
     return (
       context?.options?.frontmatter?.mode ||
@@ -147,7 +189,7 @@ export default class TextGenerator extends RequestHandler {
       );
 
       const allText =
-        (await strm(
+        (await strm?.(
           async (cntnt, first) => {
             if (mode !== "insert") return;
 
@@ -170,7 +212,6 @@ export default class TextGenerator extends RequestHandler {
 
               // adding prefix here
               if (this.plugin.settings.prefix?.length) {
-                console.log(content);
                 content = this.plugin.settings.prefix + content;
               }
 
@@ -257,6 +298,7 @@ export default class TextGenerator extends RequestHandler {
 
     logger("generateInEditor");
     const cursor = this.getCursor(editor);
+
     const context =
       customContext ||
       (await this.contextManager.getContext(editor, insertMetadata));
@@ -274,6 +316,7 @@ export default class TextGenerator extends RequestHandler {
     if (errorGeneration) {
       return Promise.reject(errorGeneration);
     }
+
     const mode = this.getMode(context);
 
     const prefix = this.plugin.settings.prefix;
@@ -364,20 +407,106 @@ export default class TextGenerator extends RequestHandler {
       return Promise.reject(errortext);
     }
 
-    const title = app.workspace.activeLeaf?.getDisplayText();
+    const title = this.plugin.app.workspace.activeLeaf?.getDisplayText();
     const suggestedPath =
       "textgenerator/generations/" + title + "-" + makeid(3) + ".md";
-    new SetPath(app, suggestedPath, async (path: string) => {
-      const [errorFile, file] = await safeAwait(
-        createFileWithInput(path, context.context + text, app)
-      );
-      if (errorFile) {
-        logger("tempalteToModal error", errorFile);
-        return Promise.reject(errorFile);
-      }
+    new SetPath(
+      this.plugin.app,
+      suggestedPath,
+      async (path: string) => {
+        const [errorFile, file] = await safeAwait(
+          createFileWithInput(path, context.context + text, this.plugin.app)
+        );
+        if (errorFile) {
+          logger("tempalteToModal error", errorFile);
+          return Promise.reject(errorFile);
+        }
 
-      openFile(app, file);
-    }).open();
+        openFile(this.plugin.app, file);
+      },
+      {
+        content: context.context + text,
+        title,
+      }
+    ).open();
+    logger("createToFile end");
+  }
+
+  async createToFiles(
+    params: Partial<TextGeneratorSettings>,
+    contexts: InputContext[],
+    files: TFile[],
+    templatePath: string,
+    insertMode = false
+  ) {
+    logger("createToFile");
+
+    const suggestedPath = `textgenerator/generations/${makeid(4)}`;
+
+    new SetPath(
+      this.plugin.app,
+      suggestedPath,
+      async (path: string) => {
+        const [errortext, results] = await safeAwait(
+          this.batchGenerate(
+            contexts,
+            true,
+            params,
+            templatePath,
+            {
+              showSpinner: false,
+              insertMode,
+            },
+            async (text, i) => {
+              const msg = text?.startsWith("FAILED:")
+                ? `FAILED with File ${files[i]?.path}: ${text}`
+                : `Finished file ${files[i]?.path}`;
+
+              this.plugin.updateStatusBar(msg, true);
+
+              const context = contexts[i];
+
+              if (!context)
+                return console.error("generation failed on", { i, text });
+
+              const [errorFile, file] = await safeAwait(
+                createFileWithInput(
+                  path +
+                    `/${text?.startsWith("FAILED:") ? "FAILED-" : ""}` +
+                    files[i].path,
+                  text,
+                  this.plugin.app
+                )
+              );
+
+              if (errorFile) {
+                logger("tempalteToModal error", errorFile);
+                return Promise.reject(errorFile);
+              }
+            }
+          )
+        );
+
+        console.log({ results });
+        const failed = results?.filter((r) => r?.startsWith("FAILED:"));
+
+        if (failed?.length) {
+          logger(`${failed.length} generations failed`, failed);
+          console.warn(`${failed.length} generations failed`, failed);
+          this.plugin.handelError(
+            `${failed.length} generations failed, check console(CTRL+SHIFT+i) for more info`
+          );
+        }
+
+        if (errortext || results == undefined) {
+          logger("tempalteToModal error", errortext);
+          return Promise.reject(errortext);
+        }
+      },
+      {
+        title: `${files.length} files`,
+      }
+    ).open();
     logger("createToFile end");
   }
 
@@ -412,15 +541,15 @@ version: 0.0.1`;
       }
     }
     const suggestedPath = `${this.plugin.settings.promptsPath}/local/${title}.md`;
-    new SetPath(app, suggestedPath, async (path: string) => {
+    new SetPath(this.plugin.app, suggestedPath, async (path: string) => {
       const [errorFile, file] = await safeAwait(
-        createFileWithInput(path, templateContent, app)
+        createFileWithInput(path, templateContent, this.plugin.app)
       );
       if (errorFile) {
         logger("createTemplate error", errorFile);
         return Promise.reject(errorFile);
       }
-      openFile(app, file);
+      openFile(this.plugin.app, file);
     }).open();
     logger("createTemplate end");
   }
@@ -481,14 +610,17 @@ version: 0.0.1`;
       const sanitizedTitle = text
         .replace(/[*\\"/<>:|?\.]/g, "")
         .replace(/^\n*/g, "");
-      const activeFile = app.workspace.getActiveFile();
+      const activeFile = this.plugin.app.workspace.getActiveFile();
 
       if (activeFile) {
         const renamedFilePath = activeFile.path.replace(
           activeFile.name,
           `${sanitizedTitle}.md`
         );
-        await app.fileManager.renameFile(activeFile, renamedFilePath);
+        await this.plugin.app.fileManager.renameFile(
+          activeFile,
+          renamedFilePath
+        );
       } else {
         logger("Couldn't find active file");
       }
@@ -506,10 +638,12 @@ version: 0.0.1`;
     activeFile = true
   ) {
     logger("tempalteToModal");
-    const templateFile = app.vault.getAbstractFileByPath(templatePath);
+    const templateFile =
+      this.plugin.app.vault.getAbstractFileByPath(templatePath);
+
     const [errortemplateContent, templateContent] = await safeAwait(
       //@ts-ignore
-      app.vault.adapter.read(templateFile?.path)
+      this.plugin.app.vault.adapter.read(templateFile?.path)
     );
 
     if (!templateContent) {
@@ -522,9 +656,11 @@ version: 0.0.1`;
 
     const { inputContent } = this.contextManager.splitTemplate(templateContent);
 
-    const variables = this.contextManager
-      .extractVariablesFromTemplate(inputContent)
-      .filter((variable) => !variable.includes("."));
+    // const variables = this.contextManager
+    //   .extractVariablesFromTemplate(inputContent)
+    //   .filter((variable) => !variable.includes("."));
+
+    const variables = await getHBValues(inputContent);
 
     console.log(
       { variables },
@@ -536,21 +672,27 @@ version: 0.0.1`;
       editor,
       templatePath
     );
+
     new TemplateModalUI(
-      app,
+      this.plugin.app,
       this.plugin,
       variables,
       metadata,
       tempateContext,
       async (results: any) => {
-        await this.generateFromTemplate(
-          params,
-          templatePath,
-          true,
-          editor,
-          activeFile,
-          results
-        );
+        try {
+          await this.generateFromTemplate(
+            params,
+            templatePath,
+            true,
+            editor,
+            activeFile,
+            results
+          );
+        } catch (err: any) {
+          this.plugin.handelError(err);
+          this.endLoading(true);
+        }
       }
     ).open();
     logger("tempalteToModal end");
@@ -560,7 +702,7 @@ version: 0.0.1`;
     _files?: TFile[] | undefined,
     promptsPath: string = this.plugin.settings.promptsPath
   ) {
-    const files = _files || app.vault.getFiles();
+    const files = _files || this.plugin.app.vault.getFiles();
     const paths: string[] = files
       .filter(
         (f) => f.path.includes(promptsPath) && !f.path.includes("/trash/")
@@ -645,5 +787,44 @@ version: 0.0.1`;
 
     logger("getFrontmatter end", frontMatter);
     return frontMatter;
+  }
+
+  async templateGen(
+    id: string,
+    options: {
+      editor?: Editor;
+      insertMetadata?: boolean;
+      additionalProps?: any;
+    }
+  ): Promise<string> {
+    const [errorContext, context] = await safeAwait(
+      this.contextManager.getContext(
+        options.editor,
+        options.insertMetadata,
+        this.contextManager.templatePaths[id],
+        options.additionalProps
+      )
+    );
+
+    if (errorContext || !context) {
+      throw errorContext;
+    }
+    console.log("going with context", { context });
+
+    const [errorGeneration, text] = await safeAwait(
+      this.generate(
+        context,
+        options.insertMetadata,
+        {},
+        this.contextManager.templatePaths[id],
+        options.additionalProps
+      )
+    );
+
+    if (errorGeneration) {
+      throw errorGeneration;
+    }
+
+    return text || "";
   }
 }

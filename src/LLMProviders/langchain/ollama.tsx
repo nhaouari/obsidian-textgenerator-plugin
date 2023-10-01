@@ -19,6 +19,7 @@ export default class LangchainOllamaProvider
 {
   id = id;
   provider = "Langchain";
+  llmPredict = true;
   static provider = "Langchain";
   static id = id;
   streamable = false;

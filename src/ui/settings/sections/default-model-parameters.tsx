@@ -8,8 +8,8 @@ import { z } from "zod";
 import { useDebounce } from "usehooks-ts";
 
 const MaxTokensSchema = z.number().min(0);
-const TemperatureSchema = z.number().min(0).max(1);
-const FrequencySchema = z.number().min(-20).max(20);
+const TemperatureSchema = z.number().min(0).max(2);
+const FrequencySchema = z.number().min(-2).max(2);
 const TimeoutSchema = z.number().min(0);
 
 export default function DMPSetting(props: { register: Register }) {

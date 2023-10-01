@@ -1,7 +1,6 @@
 import React from "react";
 import LangchainBase from "./base";
 import type { AzureOpenAIInput, OpenAIInput } from "langchain/llms/openai";
-import { BaseChatModelParams } from "langchain/dist/chat_models/base";
 import { IconExternalLink } from "@tabler/icons-react";
 
 import LLMProviderInterface, { LLMConfig } from "../interface";
@@ -20,10 +19,9 @@ export default class LangchainAzureOpenAIInstructProvider
   id = id;
   static id = id;
   provider = "Langchain";
+  llmPredict = true;
   static provider = "Langchain";
-  getConfig(
-    options: LLMConfig
-  ): Partial<OpenAIInput & AzureOpenAIInput & BaseChatModelParams> {
+  getConfig(options: LLMConfig): Partial<OpenAIInput & AzureOpenAIInput> {
     return this.cleanConfig({
       azureOpenAIApiKey: options.api_key,
       azureOpenAIBasePath: options.otherOptions?.azureOpenAIBasePath,
@@ -46,8 +44,8 @@ export default class LangchainAzureOpenAIInstructProvider
   }
 
   async load() {
-    const { ChatOpenAI } = await import("langchain/chat_models/openai");
-    this.llmClass = ChatOpenAI;
+    const { OpenAI } = await import("langchain/llms/openai");
+    this.llmClass = OpenAI;
   }
 
   //   getLLM(options: LLMConfig) {
@@ -81,7 +79,7 @@ export default class LangchainAzureOpenAIInstructProvider
           />
         </SettingItem>
         <SettingItem
-          name="Endpoint"
+          name="Endpoint (optional)"
           register={props.register}
           sectionId={props.sectionId}
         >

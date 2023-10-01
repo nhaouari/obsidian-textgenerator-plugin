@@ -36,6 +36,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
     "generate-text-with-metadata": true,
     "insert-generated-text-From-template": true,
     "create-generated-text-From-template": false,
+    "search-results-batch-generate-from-template": true,
     "insert-text-From-template": false,
     "create-text-From-template": false,
     "show-modal-From-template": true,

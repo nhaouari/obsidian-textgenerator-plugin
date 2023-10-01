@@ -1,5 +1,9 @@
-import { App, normalizePath } from "obsidian";
-import Handlebars from "handlebars";
+import { App, Notice, normalizePath } from "obsidian";
+import handlebars from "handlebars";
+// @ts-ignore
+import asyncHelpers from "handlebars-async-helpers";
+
+export const Handlebars = asyncHelpers(handlebars) as typeof handlebars;
 
 const Helpers = {
   length: function (str: string) {
@@ -81,9 +85,46 @@ const Helpers = {
     const output = `filename: ${fileName}\n content: ${content}`;
     return output;
   },
+
   eq: function (value1: any, value2: any) {
     return value1 === value2;
   },
+
+  stringify: function (context: any) {
+    return JSON.stringify(context);
+  },
+
+  parse: function (context: any) {
+    return JSON.parse(context);
+  },
+
+  escp: function (context: any) {
+    let t = "" + context;
+    while (t?.contains("\n") || t?.contains("\\")) {
+      t = t?.replaceAll("\n", " ")?.replaceAll("\\", " ");
+    }
+
+    return t;
+  },
+
+  error: async function (context: any) {
+    throw new Error(context);
+  },
+
+  notice: function (context: any, duration: any) {
+    new Notice(context, typeof duration == "object" ? undefined : +duration);
+  },
+
+  log: function (...vars: any[]) {
+    vars[vars.length - 1] = vars[vars.length - 1].fn?.(this) || "";
+    console.log(...vars);
+  },
+
+  //   run: async (templateId: string) => {
+  //     const self: ContextManager = this as any;
+  //     console.log({ self });
+  //     return self.plugin.textGenerator.templateGen(templateId, {});
+  //   },
 };
 
 export default Helpers;

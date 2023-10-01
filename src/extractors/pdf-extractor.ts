@@ -4,51 +4,52 @@ import TextGeneratorPlugin from "src/main";
 import debug from "debug";
 const logger = debug("textgenerator:Extractor:PdfExtractor");
 
-export default class PDFExtractor extends Extractor<TAbstractFile> {
-	constructor(app: App, plugin: TextGeneratorPlugin) {
-		super(app, plugin);
-	}
-	async convert(doc: TAbstractFile) {
-		logger("convert", { doc });
-		const pdfBuffer = await this.app.vault.adapter.readBinary(doc.path);
-		const pdfjs = await loadPdfJs();
-		const pdf = await pdfjs.getDocument(pdfBuffer).promise;
+export default class PDFExtractor extends Extractor {
+  constructor(app: App, plugin: TextGeneratorPlugin) {
+    super(app, plugin);
+  }
 
-		const contents = await Promise.all(
-			Array.from({ length: pdf.numPages }, (_, i) =>
-				pdf.getPage(i + 1).then((page: any) => page.getTextContent())
-			)
-		);
+  async convert(docPath: string) {
+    logger("convert", { docPath });
+    const pdfBuffer = await this.app.vault.adapter.readBinary(docPath);
+    const pdfjs = await loadPdfJs();
+    const pdf = await pdfjs.getDocument(pdfBuffer).promise;
 
-		const pageContents = contents.map(
-			(content, i) =>
-				`Page ${i + 1}: ` +
-				content.items
-					.map((item: any) => item.str)
-					.join(" ")
-					.replace(/\s+/g, " ")
-		);
+    const contents = await Promise.all(
+      Array.from({ length: pdf.numPages }, (_, i) =>
+        pdf.getPage(i + 1).then((page: any) => page.getTextContent())
+      )
+    );
 
-		const text = pageContents.join("\n");
-		logger("convert end", { text });
-		return text;
-	}
+    const pageContents = contents.map(
+      (content, i) =>
+        `Page ${i + 1}: ` +
+        content.items
+          .map((item: any) => item.str)
+          .join(" ")
+          .replace(/\s+/g, " ")
+    );
 
-	async extract(filePath: string) {
-		const embeds = this.app.metadataCache
-			.getCache(filePath)
-			?.embeds?.filter((embed) => embed.link.endsWith(".pdf"));
+    const text = pageContents.join("\n");
+    logger("convert end", { text });
+    return text;
+  }
 
-		if (!embeds) {
-			return [];
-		}
+  async extract(filePath: string) {
+    const embeds = this.app.metadataCache
+      .getCache(filePath)
+      ?.embeds?.filter((embed) => embed.link.endsWith(".pdf"));
 
-		return embeds.map(
-			(embed) =>
-				this.app.metadataCache.getFirstLinkpathDest(
-					embed.link,
-					filePath
-				) as TAbstractFile
-		);
-	}
+    if (!embeds) {
+      return [];
+    }
+
+    return embeds
+      .map(
+        (embed) =>
+          this.app.metadataCache.getFirstLinkpathDest(embed.link, filePath)
+            ?.path
+      )
+      .filter(Boolean) as string[];
+  }
 }

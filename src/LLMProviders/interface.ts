@@ -1,5 +1,7 @@
+import { ContextTemplate } from "#/context-manager";
 import type { Register } from "#/ui/settings/sections";
-import { Message } from "src/types";
+import type { LLMChain } from "langchain/chains";
+import type { Message } from "src/types";
 
 export default interface LLMProviderInterface {
   streamable?: boolean;
@@ -24,6 +26,19 @@ export default interface LLMProviderInterface {
     reqParams: Partial<LLMConfig>,
     customConfig?: any
   ): Promise<string[]>;
+
+  generateBatch(
+    messages: Message[][],
+    reqParams: Partial<LLMConfig>,
+    customConfig?: any,
+    onOneFinishs?: (content: string, index: number) => void
+  ): Promise<string[]>;
+
+  convertToChain(
+    templates: ContextTemplate,
+    reqParams: Partial<LLMConfig>,
+    customConfig?: any
+  ): Promise<LLMChain<string, any>>;
 
   RenderSettings(props: {
     sectionId: string;

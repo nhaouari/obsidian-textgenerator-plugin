@@ -1,4 +1,5 @@
-import BaseProvider, { cleanConfig } from "../base";
+import BaseProvider from "../base";
+import { cleanConfig } from "../../utils";
 import { AsyncReturnType, Message } from "../../types";
 import debug from "debug";
 import React, { useMemo } from "react";
@@ -9,18 +10,10 @@ import SettingItem from "#/ui/settings/components/item";
 import Input from "#/ui/settings/components/input";
 import { RequestUrlParam, requestUrl } from "obsidian";
 import get from "lodash.get";
-import Handlebars from "handlebars";
+import { Handlebars } from "../../helpers/handlebars-helpers";
 import clsx from "clsx";
 
 const logger = debug("textgenerator:CustomProvider");
-
-Handlebars.registerHelper("stringify", function (context) {
-  return '"' + JSON.stringify(context) + '"';
-});
-
-Handlebars.registerHelper("escp", function (context) {
-  return ("" + context).replaceAll("\n", "\\n").replaceAll("\n", "\\n");
-});
 
 const globalVars: Record<string, boolean> = {
   n: true,
@@ -104,7 +97,7 @@ export default class CustomProvider
 {
   streamable = true;
   id = id;
-  static id = id;  
+  static id = id;
   provider = "Custom";
   static provider = "Custom";
   async request(
@@ -257,26 +250,26 @@ export default class CustomProvider
         );
         const res = await this.request({
           method: handlebarData.method,
-          url: Handlebars.compile(
+          url: await Handlebars.compile(
             handlebarData.endpoint || default_values.endpoint
           )(handlebarData),
           signal: handlebarData.requestParams?.signal || undefined,
           stream: handlebarData.stream,
           headers: JSON.parse(
             "" +
-              Handlebars.compile(
+              (await Handlebars.compile(
                 handlebarData.handlebars_headers_in ||
                   default_values.handlebars_headers_in
-              )(handlebarData)
+              )(handlebarData))
           ) as any,
 
           body: JSON.stringify(
             JSON.parse(
               "" +
-                Handlebars.compile(
+                (await Handlebars.compile(
                   handlebarData.handlebars_body_in ||
                     default_values.handlebars_body_in
-                )(handlebarData)
+                )(handlebarData))
             )
           ) as any,
 
@@ -342,13 +335,13 @@ export default class CustomProvider
 
         const res = await this.request({
           method: handlebarData.method,
-          url: Handlebars.compile(config.endpoint || default_values.endpoint)(
-            handlebarData
-          ),
+          url: await Handlebars.compile(
+            config.endpoint || default_values.endpoint
+          )(handlebarData),
           signal: handlebarData.requestParams?.signal || undefined,
           stream: handlebarData.stream,
           headers: JSON.parse(
-            Handlebars.compile(
+            await Handlebars.compile(
               handlebarData.handlebars_headers_in ||
                 default_values.handlebars_headers_in
             )(handlebarData)
@@ -357,7 +350,7 @@ export default class CustomProvider
           body: JSON.stringify(
             this.cleanConfig(
               JSON.parse(
-                Handlebars.compile(
+                await Handlebars.compile(
                   handlebarData.handlebars_body_in ||
                     default_values.handlebars_body_in
                 )(handlebarData)
@@ -450,7 +443,7 @@ export default class CustomProvider
             onChange={async (e) => {
               config.handlebars_headers_in = e.target.value;
 
-              const compiled = Handlebars.compile(
+              const compiled = await Handlebars.compile(
                 config.handlebars_headers_in ||
                   default_values.handlebars_headers_in
               )({
@@ -486,7 +479,7 @@ export default class CustomProvider
             onChange={async (e) => {
               config.handlebars_body_in = e.target.value;
 
-              const compiled = Handlebars.compile(
+              const compiled = await Handlebars.compile(
                 config.handlebars_body_in || default_values.handlebars_body_in
               )({
                 ...global.plugin.settings,

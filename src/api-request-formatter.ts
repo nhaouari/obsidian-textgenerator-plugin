@@ -47,6 +47,7 @@ export default class ReqFormatter {
     logger("prepareReqParameters", _params, insertMetadata, templatePath);
 
     const frontmatter: any = this.getFrontmatter(templatePath, insertMetadata);
+    console.log({ frontmatter, templatePath, insertMetadata });
 
     const params = {
       ...this.plugin.settings,
@@ -99,7 +100,7 @@ export default class ReqFormatter {
     if (frontmatter) {
       // -- provider options
       provider.selectedProvider = frontmatter.config?.provider;
-      provider.providerOptions = frontmatter.config || {};
+      provider.providerOptions = frontmatter || {};
       // --
 
       if (bodyParams.messages) {

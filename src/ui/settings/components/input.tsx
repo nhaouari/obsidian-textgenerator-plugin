@@ -12,6 +12,7 @@ export default function Input(props: {
   className?: string;
   validator?: ZodSchema;
 }) {
+  const [value, setValue] = useState<any>(props.value);
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
 
@@ -22,6 +23,7 @@ export default function Input(props: {
     if (props.validator) {
       try {
         props.validator?.parse(valueDebounced);
+        props.setValue(value);
       } catch (err: any) {
         setError(JSON.parse(err?.message)?.[0]?.message);
       }
@@ -61,7 +63,7 @@ export default function Input(props: {
           },
           props.className
         )}
-        value={props.value}
+        value={value}
         defaultChecked={
           props.type == "checkbox" ? props.value == "true" : undefined
         }
@@ -69,6 +71,7 @@ export default function Input(props: {
           props.type != "checkbox"
             ? (e) => {
                 props.setValue(e.target.value);
+                setValue(e.target.value);
               }
             : undefined
         }

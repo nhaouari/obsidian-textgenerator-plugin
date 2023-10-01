@@ -14,6 +14,7 @@ if you want to view the source, please visit the github repository of this plugi
 */
 `;
 
+
 const wasmPlugin = (config) => {
 	return {
 		name: "wasm",
@@ -53,6 +54,8 @@ const wasmPlugin = (config) => {
 };
 
 const prod = (process.argv[2] === 'production');
+
+console.log({prod})
 
 esbuild.build({
 	banner: {
@@ -102,7 +105,7 @@ esbuild.build({
 	},
 	target: 'es2020',
 	logLevel: "info",
-	sourcemap: prod ? false : 'inline',
+	sourcemap: prod ? false : 'both',
 	treeShaking: true,
 	outfile: 'main.js',
 }).catch(() => process.exit(1));

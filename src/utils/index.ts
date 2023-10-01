@@ -1,6 +1,11 @@
 /* eslint-disable no-control-regex */
 import { App, ViewState, WorkspaceLeaf, TFile } from "obsidian";
-import { FileViewMode, Message, NewTabDirection } from "../types";
+import {
+  AsyncReturnType,
+  FileViewMode,
+  Message,
+  NewTabDirection,
+} from "../types";
 import debug from "debug";
 const logger = debug("textgenerator:setModel");
 
@@ -183,4 +188,45 @@ export function mapMessagesToLangchainMessages(
 export function containsInvalidCharacter(inputString: string) {
   const invalidCharRegex = /[^\x00-\x7F]+/g;
   return invalidCharRegex.test(inputString);
+}
+
+export function cleanConfig<T>(options: T): T {
+  const cleanedOptions: any = {}; // Create a new object to store the cleaned properties
+
+  for (const key in options) {
+    if (Object.prototype.hasOwnProperty.call(options, key)) {
+      const value = options[key];
+
+      // Check if the value is not an empty string
+      if (typeof value !== "string" || value !== "") {
+        cleanedOptions[key] = value; // Copy non-empty properties to the cleaned object
+      }
+    }
+  }
+
+  return cleanedOptions;
+}
+
+export async function processPromisesSetteledBatch<
+  T extends () => Promise<any>
+>(
+  items: Array<AsyncReturnType<T>>,
+  limit: number
+): Promise<PromiseSettledResult<any>[]> {
+  let results: PromiseSettledResult<Awaited<AsyncReturnType<T>>>[] = [];
+  for (let batchNum = 0; batchNum < items.length; batchNum += limit) {
+    const end =
+      batchNum + limit > items.length ? items.length : batchNum + limit;
+
+    const slicedResults = await Promise.allSettled(items.slice(batchNum, end));
+
+    results = [...results, ...slicedResults];
+  }
+
+  return results;
+}
+
+export function promiseForceFullfil(item: any) {
+  // return the failed reson
+  return item.status == "fulfilled" ? item.value : `FAILED: ${item?.reason}`;
 }

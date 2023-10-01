@@ -13,7 +13,7 @@ if (!Platform.isMobile) {
 }
 
 const logger = debug("textgenerator:Extractor:WebPageExtractor");
-export default class WebPageExtractor extends Extractor<string> {
+export default class WebPageExtractor extends Extractor {
   constructor(app: App, plugin: TextGeneratorPlugin) {
     super(app, plugin);
   }
