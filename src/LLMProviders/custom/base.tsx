@@ -182,28 +182,30 @@ export default class CustomProvider
 
       return text as string;
     } else {
+      const resText = params.CORSBypass ? k.text : await k.text();
+      let resJson = {};
+
       try {
-        const resJson = params.CORSBypass ? k.json : await k.json();
-
-        if (k.status >= 300) {
-          console.log(resJson);
-          const err = get(
-            resJson,
-            params.path_to_error_message || default_values.path_to_error_message
-          );
-          console.error(err);
-          throw err || JSON.stringify(resJson);
-        }
-
-        return (
-          (get(
-            resJson,
-            params.path_to_choices || default_values.path_to_choices
-          ) as object[]) || resJson
-        );
-      } catch {
-        return params.CORSBypass ? k.text : await k.text();
+        resJson = JSON.parse(resText as any);
+      } catch (err: any) {
+        resJson = resText;
       }
+
+      if (k.status >= 300) {
+        const err = get(
+          resJson,
+          params.path_to_error_message || default_values.path_to_error_message
+        );
+        console.error(err);
+        throw err || JSON.stringify(resJson);
+      }
+
+      return (
+        (get(
+          resJson,
+          params.path_to_choices || default_values.path_to_choices
+        ) as object[]) || resJson
+      );
     }
   }
 
@@ -244,9 +246,14 @@ export default class CustomProvider
         };
         console.log(
           "url",
-          Handlebars.compile(handlebarData.endpoint || default_values.endpoint)(
-            handlebarData
-          )
+          handlebarData,
+          await Handlebars.compile(
+            handlebarData.handlebars_body_in ||
+              default_values.handlebars_body_in
+          )(handlebarData),
+          await Handlebars.compile(
+            handlebarData.endpoint || default_values.endpoint
+          )(handlebarData)
         );
         const res = await this.request({
           method: handlebarData.method,

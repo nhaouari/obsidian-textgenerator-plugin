@@ -797,6 +797,8 @@ version: 0.0.1`;
       additionalProps?: any;
     }
   ): Promise<string> {
+    this.plugin.endProcessing(true);
+
     const [errorContext, context] = await safeAwait(
       this.contextManager.getContext(
         options.editor,
@@ -815,9 +817,8 @@ version: 0.0.1`;
       this.generate(
         context,
         options.insertMetadata,
-        {},
-        this.contextManager.templatePaths[id],
-        options.additionalProps
+        options.additionalProps,
+        this.contextManager.templatePaths[id]
       )
     );
 

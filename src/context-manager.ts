@@ -70,6 +70,11 @@ export default class ContextManager {
 
       const otherVariables = vars;
 
+      if (!self.templatePaths[id])
+        throw new Error(
+          `template with packageId/promptId ${id} was not found.`
+        );
+
       const TemplateMetadata = self.getFrontmatter(
         self.getMetaData(self.templatePaths[id])
       );
@@ -97,6 +102,22 @@ export default class ContextManager {
           err
         );
       }
+
+      console.log({
+        id,
+        firstVar,
+        TemplateMetadata,
+        options,
+        innerResult,
+        paths: self.templatePaths,
+        templatePath: self.templatePaths[id],
+        additionalProps: {
+          ...options.data.root,
+          ...TemplateMetadata,
+          noGenMode: false,
+          ...innerResult,
+        },
+      });
 
       options.data.root[id] = await self.plugin.textGenerator.templateGen(id, {
         additionalProps: {
@@ -793,17 +814,19 @@ export default class ContextManager {
         config: {
           ...cache?.frontmatter,
           ...(cache?.frontmatter?.config || {}),
-          handlebars_body_in:
-            cache?.frontmatter?.body || cache?.frontmatter?.handlebars_body_in,
-          headers:
-            cache?.frontmatter?.headers ||
-            cache?.frontmatter?.handlebars_headers_in,
           path_to_choices:
             cache?.frontmatter?.choices || cache?.frontmatter?.path_to_choices,
           path_to_message_content:
             cache?.frontmatter?.pathToContent ||
             cache?.frontmatter?.path_to_message_content,
         },
+
+        handlebars_body_in:
+          cache?.frontmatter?.body || cache?.frontmatter?.handlebars_body_in,
+        handlebars_headers_in:
+          cache?.frontmatter?.headers ||
+          cache?.frontmatter?.handlebars_headers_in,
+
         bodyParams: {
           ...cache?.frontmatter?.bodyParams,
           ...(cache?.frontmatter?.max_tokens
@@ -815,6 +838,9 @@ export default class ContextManager {
         reqParams: {
           ...cache?.frontmatter?.reqParams,
           ...getOptionsUnder("reqParams.", cache?.frontmatter),
+          ...(cache?.frontmatter?.body
+            ? { body: cache?.frontmatter?.body }
+            : {}),
         },
 
         splitter: {

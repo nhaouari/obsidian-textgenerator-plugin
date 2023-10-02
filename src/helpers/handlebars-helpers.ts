@@ -1,5 +1,5 @@
 import { App, Notice, normalizePath } from "obsidian";
-import handlebars from "handlebars";
+import handlebars, { helpers } from "handlebars";
 // @ts-ignore
 import asyncHelpers from "handlebars-async-helpers";
 
@@ -9,18 +9,22 @@ const Helpers = {
   length: function (str: string) {
     return str.length;
   },
+
   substring: function (string: string, start: number, end: number) {
     const subString = string.substring(start, end);
     return new Handlebars.SafeString(subString);
   },
+
   replace: function (string: string, search: string, replace: string) {
     const replacedString = string.replace(new RegExp(search, "g"), replace);
     return new Handlebars.SafeString(replacedString);
   },
+
   date: function () {
     const currentDate = new Date().toLocaleString();
     return new Handlebars.SafeString(currentDate);
   },
+
   truncate: function (string: string, length: number) {
     if (string.length > length) {
       return new Handlebars.SafeString(string.substring(0, length) + "...");
@@ -28,6 +32,7 @@ const Helpers = {
       return new Handlebars.SafeString(string);
     }
   },
+
   tail: function (string: string, length: number) {
     if (string.length > length) {
       return new Handlebars.SafeString(
@@ -37,22 +42,27 @@ const Helpers = {
       return new Handlebars.SafeString(string);
     }
   },
+
   split: function (string: string, separator: string) {
     const splitArray = string.split(separator);
     return splitArray;
   },
+
   join: function (array: Array<string>, separator: string) {
     const joinedString = array.join(separator);
     return new Handlebars.SafeString(joinedString);
   },
+
   unique: function (array: Array<string>) {
     const uniqueArray = [...new Set(array)];
     return new Handlebars.SafeString(JSON.stringify(uniqueArray));
   },
+
   trim: function (string: string) {
     const trimmedString = string.trim();
     return new Handlebars.SafeString(trimmedString);
   },
+
   getRandomFile: function getRandomFile(
     str = "",
     minLength = 100,
@@ -98,13 +108,20 @@ const Helpers = {
     return JSON.parse(context);
   },
 
-  escp: function (context: any) {
-    let t = "" + context;
+  escp: async function (context: any) {
+    let t = context?.fn ? await context?.fn(context.data.root) : "" + context;
+    console.log({ t });
     while (t?.contains("\n") || t?.contains("\\")) {
       t = t?.replaceAll("\n", " ")?.replaceAll("\\", " ");
     }
 
     return t;
+  },
+
+  escp2: async function (context: any) {
+    const t = await Helpers.escp(context);
+
+    return await Helpers.trim(t);
   },
 
   error: async function (context: any) {
@@ -115,8 +132,8 @@ const Helpers = {
     new Notice(context, typeof duration == "object" ? undefined : +duration);
   },
 
-  log: function (...vars: any[]) {
-    vars[vars.length - 1] = vars[vars.length - 1].fn?.(this) || "";
+  log: async function (...vars: any[]) {
+    vars[vars.length - 1] = (await vars[vars.length - 1].fn?.(this)) || "";
     console.log(...vars);
   },
 

@@ -471,10 +471,12 @@ export default class Commands {
         ] === true
     );
 
+    const files = await this.plugin.getFilesOnLoad();
     const templates = this.plugin.textGenerator.getTemplates(
       // get files, it will be empty onLoad, that's why we are using this function
-      await this.plugin.getFilesOnLoad()
+      files
     );
+    console.log({ files, templates });
 
     this.plugin.textGenerator.contextManager.templatePaths = {};
     templates.forEach((template) => {
@@ -484,6 +486,10 @@ export default class Commands {
           ss[ss.length - 2] + "/" + template.id
         ] = template.path;
       }
+    });
+
+    console.log({
+      templatePaths: this.plugin.textGenerator.contextManager.templatePaths,
     });
 
     const templatesWithCommands = templates.filter((t) => t?.commands);
