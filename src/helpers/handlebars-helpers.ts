@@ -1,9 +1,9 @@
-import { App, Notice, normalizePath } from "obsidian";
-import handlebars, { helpers } from "handlebars";
-// @ts-ignore
-import asyncHelpers from "handlebars-async-helpers";
+import { Notice, normalizePath } from "obsidian";
+import handlebars from "handlebars";
 
-export const Handlebars = asyncHelpers(handlebars) as typeof handlebars;
+import asyncHelpers from "../lib/async-handlebars-helper";
+
+export const Handlebars = asyncHelpers(handlebars);
 
 const Helpers = {
   length: function (str: string) {
