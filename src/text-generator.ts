@@ -1,4 +1,4 @@
-import { TemplateModalUI } from "./ui/template-modal-ui";
+import TemplateInputModalUI from "./ui/template-input-modal";
 import { App, Notice, Editor, EditorPosition, TFile } from "obsidian";
 import { TextGeneratorSettings } from "./types";
 import TextGeneratorPlugin from "./main";
@@ -14,6 +14,7 @@ const heavyLogger = debug("textgenerator:TextGenerator:heavy");
 
 import EmbeddingScope from "./scope/embeddings";
 import { getHBValues } from "./utils/barhandles";
+import { VIEW_TOOL_ID } from "./ui/tool";
 
 export default class TextGenerator extends RequestHandler {
   plugin: TextGeneratorPlugin;
@@ -51,22 +52,29 @@ export default class TextGenerator extends RequestHandler {
     return cursor;
   }
 
-  async generateFromTemplate(
-    params: Partial<TextGeneratorSettings>,
-    templatePath: string,
-    insertMetadata = true,
-    editor: Editor,
-    activeFile = true,
-    additionalProps: any = {},
-    insertMode = false
-  ) {
+  async generateFromTemplate(props: {
+    params: Partial<TextGeneratorSettings>;
+    templatePath: string;
+    /** defaults to true */
+    insertMetadata?: boolean;
+    editor?: Editor;
+    filePath?: string;
+    /** defaults to true */
+    activeFile?: boolean;
+    additionalProps?: any;
+    insertMode?: any;
+  }) {
+    const insertMetadata = props.insertMetadata ?? true;
+    const activeFile = props.activeFile ?? true;
+
     const [errorContext, context] = await safeAwait(
-      this.contextManager.getContext(
-        editor,
+      this.contextManager.getContext({
+        filePath: props.filePath,
+        editor: props.editor,
         insertMetadata,
-        templatePath,
-        additionalProps
-      )
+        templatePath: props.templatePath,
+        addtionalOpts: props.additionalProps,
+      })
     );
 
     if (errorContext) {
@@ -74,14 +82,25 @@ export default class TextGenerator extends RequestHandler {
       return Promise.reject(errorContext);
     }
 
-    if (activeFile === false) {
-      await this.createToFile(params, templatePath, context, insertMode);
-    } else {
-      await this.generateInEditor({}, false, editor, context, {
-        showSpinner: true,
-        insertMode,
-      });
+    switch (true) {
+      case activeFile === false:
+        await this.createToFile(
+          props.params,
+          props.templatePath,
+          context,
+          props.insertMode
+        );
+        break;
+
+      default:
+        if (!props.editor) throw new Error("TG: Editor was not selected");
+        await this.generateInEditor({}, false, props.editor, context, {
+          showSpinner: true,
+          insertMode: props.insertMode,
+        });
+        break;
     }
+
     logger("generateFromTemplate end");
   }
 
@@ -145,7 +164,7 @@ export default class TextGenerator extends RequestHandler {
 
     const context =
       customContext ||
-      (await this.contextManager.getContext(editor, insertMetadata));
+      (await this.contextManager.getContext({ editor, insertMetadata }));
 
     const mode = this.getMode(context);
 
@@ -301,7 +320,7 @@ export default class TextGenerator extends RequestHandler {
 
     const context =
       customContext ||
-      (await this.contextManager.getContext(editor, insertMetadata));
+      (await this.contextManager.getContext({ editor, insertMetadata }));
 
     const [errorGeneration, text] = await safeAwait(
       this.generate(
@@ -339,7 +358,7 @@ export default class TextGenerator extends RequestHandler {
   ) {
     logger("generateToClipboard");
     const [errorContext, context] = await safeAwait(
-      this.contextManager.getContext(editor, insertMetadata, templatePath)
+      this.contextManager.getContext({ editor, insertMetadata, templatePath })
     );
 
     if (!context) {
@@ -512,7 +531,7 @@ export default class TextGenerator extends RequestHandler {
 
   async createTemplateFromEditor(editor: Editor) {
     logger("createTemplateFromEditor");
-    const title = app.workspace.activeLeaf?.getDisplayText();
+    const title = this.plugin.app.workspace.activeLeaf?.getDisplayText();
     const content = editor.getValue();
     await this.createTemplate(content, title);
     logger("createTemplateFromEditor end");
@@ -631,15 +650,21 @@ version: 0.0.1`;
     heavyLogger("insertGeneratedText end");
   }
 
-  async tempalteToModal(
-    params: Partial<TextGeneratorSettings> = {},
-    templatePath = "",
-    editor: Editor,
-    activeFile = true
-  ) {
+  async tempalteToModal(props: {
+    params: Partial<TextGeneratorSettings>;
+    /** Template path */
+    templatePath?: string;
+    /** Editor */
+    editor: Editor;
+    /** filePath */
+    filePath?: string;
+    /** defaults to true */
+    activeFile?: boolean;
+  }) {
     logger("tempalteToModal");
-    const templateFile =
-      this.plugin.app.vault.getAbstractFileByPath(templatePath);
+    const templateFile = this.plugin.app.vault.getAbstractFileByPath(
+      props.templatePath || ""
+    );
 
     const [errortemplateContent, templateContent] = await safeAwait(
       //@ts-ignore
@@ -654,26 +679,30 @@ version: 0.0.1`;
       return Promise.reject(errortemplateContent);
     }
 
-    const { inputContent } = this.contextManager.splitTemplate(templateContent);
+    const { inputContent, outputContent, preRunnerContent } =
+      this.contextManager.splitTemplate(templateContent);
 
     // const variables = this.contextManager
     //   .extractVariablesFromTemplate(inputContent)
     //   .filter((variable) => !variable.includes("."));
 
-    const variables = await getHBValues(inputContent);
+    const variables = Array.from(
+      new Set([
+        ...(await getHBValues(inputContent)),
+        ...(await getHBValues(outputContent)),
+        ...(await getHBValues(preRunnerContent || "")),
+      ]).values()
+    );
 
     console.log(
       { variables },
       this.contextManager.extractVariablesFromTemplate(inputContent)
     );
 
-    const metadata = this.getMetadata(templatePath);
-    const tempateContext = await this.contextManager.getTemplateContext(
-      editor,
-      templatePath
-    );
+    const metadata = this.getMetadata(props.templatePath || "");
+    const tempateContext = await this.contextManager.getTemplateContext(props);
 
-    new TemplateModalUI(
+    new TemplateInputModalUI(
       this.plugin.app,
       this.plugin,
       variables,
@@ -681,14 +710,15 @@ version: 0.0.1`;
       tempateContext,
       async (results: any) => {
         try {
-          await this.generateFromTemplate(
-            params,
-            templatePath,
-            true,
-            editor,
-            activeFile,
-            results
-          );
+          await this.generateFromTemplate({
+            params: props.params,
+            templatePath: props.templatePath || "",
+            insertMetadata: true,
+            filePath: props.filePath,
+            editor: props.editor,
+            activeFile: props.activeFile,
+            additionalProps: results,
+          });
         } catch (err: any) {
           this.plugin.handelError(err);
           this.endLoading(true);
@@ -793,6 +823,7 @@ version: 0.0.1`;
     id: string,
     options: {
       editor?: Editor;
+      filePath?: string;
       insertMetadata?: boolean;
       additionalProps?: any;
     }
@@ -800,17 +831,19 @@ version: 0.0.1`;
     this.plugin.endProcessing(true);
 
     const [errorContext, context] = await safeAwait(
-      this.contextManager.getContext(
-        options.editor,
-        options.insertMetadata,
-        this.contextManager.templatePaths[id],
-        options.additionalProps
-      )
+      this.contextManager.getContext({
+        editor: options.editor,
+        filePath: options.filePath,
+        insertMetadata: options.insertMetadata,
+        templatePath: this.contextManager.templatePaths[id],
+        addtionalOpts: options.additionalProps,
+      })
     );
 
     if (errorContext || !context) {
       throw errorContext;
     }
+
     console.log("going with context", { context });
 
     const [errorGeneration, text] = await safeAwait(

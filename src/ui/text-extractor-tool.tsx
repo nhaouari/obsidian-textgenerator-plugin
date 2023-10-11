@@ -12,6 +12,7 @@ import {
 import { App, Modal, TFile } from "obsidian";
 import TextGeneratorPlugin from "../main";
 import { createRoot } from "react-dom/client";
+import CopyButton from "./components/copyButton";
 
 const ContentExtractorComponent = ({
   p,
@@ -78,7 +79,9 @@ const ContentExtractorComponent = ({
   ) => {
     const contentExtractor = new ContentExtractor(app, plugin);
     contentExtractor.setExtractor(extractorMethod);
-    const convertedText = await contentExtractor.convert(file);
+    const convertedText = await contentExtractor.convert(
+      (file.path || file) as string
+    );
     setConvertedResults((convertedResults) => ({
       ...convertedResults,
       [(file.path || file) as string]: convertedText,
@@ -192,33 +195,6 @@ export class TextExtractorTool extends Modal {
     this.root.unmount();
   }
 }
-
-const CopyButton = (props: { textToCopy: string }) => {
-  const [copyStatus, setCopyStatus] = useState("Copy");
-
-  const handleCopyClick = () => {
-    navigator.clipboard.writeText(props.textToCopy).then(
-      () => {
-        setCopyStatus("Copied!");
-        setTimeout(() => setCopyStatus("Copy"), 1500);
-      },
-      (err) => {
-        console.error("Could not copy text: ", err);
-        setCopyStatus("Error");
-      }
-    );
-  };
-
-  return (
-    <button
-      onClick={handleCopyClick}
-      title={copyStatus}
-      className="text-gray absolute bottom-[calc(-30px)] right-0 mb-1 mr-1 rounded-none bg-gray-300 px-2 py-1 text-xs font-semibold hover:bg-blue-600 focus:outline-none focus:ring-0"
-    >
-      {copyStatus}
-    </button>
-  );
-};
 
 const RemoveButton = (props: {
   handleRemoveClick: MouseEventHandler<HTMLButtonElement> | undefined;

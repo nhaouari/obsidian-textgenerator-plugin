@@ -42,7 +42,7 @@ export default class EmbeddingScope {
     //     return app.workspace.getActiveFile() || null;
     // } catch { }
 
-    const activeLeaf = app.workspace.getLeaf();
+    const activeLeaf = app.workspace.getMostRecentLeaf();
 
     if (activeLeaf) {
       // Check if current active view is MarkdownView

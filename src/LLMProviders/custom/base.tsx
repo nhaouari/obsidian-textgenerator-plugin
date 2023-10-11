@@ -244,17 +244,7 @@ export default class CustomProvider
           n: 1,
           messages,
         };
-        console.log(
-          "url",
-          handlebarData,
-          await Handlebars.compile(
-            handlebarData.handlebars_body_in ||
-              default_values.handlebars_body_in
-          )(handlebarData),
-          await Handlebars.compile(
-            handlebarData.endpoint || default_values.endpoint
-          )(handlebarData)
-        );
+
         const res = await this.request({
           method: handlebarData.method,
           url: await Handlebars.compile(

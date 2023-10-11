@@ -116,7 +116,7 @@ export function numberToKFormat(number: number) {
 
 export function transformStringsToChatFormat(arr: string[]) {
   const roles = ["user", "assistant"]; // define the roles
-  const result = []; // initialize the result array
+  const result: { role: string; content: string }[] = []; // initialize the result array
   for (let i = 0; i < arr.length; i++) {
     result.push({
       role: roles[i % 2], // alternate between the two roles
@@ -229,4 +229,60 @@ export async function processPromisesSetteledBatch<
 export function promiseForceFullfil(item: any) {
   // return the failed reson
   return item.status == "fulfilled" ? item.value : `FAILED: ${item?.reason}`;
+}
+
+import { SystemMessagePromptTemplate } from "langchain/prompts";
+import get from "lodash.get";
+
+export function compilePrompt(prompt: string, vars: string[]) {
+  let newPrompt = prompt;
+
+  for (const v of vars) {
+    newPrompt = newPrompt.replaceAll(`{${v}}`, `{{${v}}}`);
+  }
+
+  return newPrompt;
+}
+
+export function compileLangMessages(
+  msgs: {
+    prompt: {
+      inputVariables: string[];
+      template: string;
+    };
+  }[]
+) {
+  const messages: string[] = [];
+  let system = "";
+  msgs.forEach((msg) => {
+    console.log(msg);
+    if (msg instanceof SystemMessagePromptTemplate) {
+      system += compilePrompt(msg.prompt.template, msg.prompt.inputVariables);
+    } else {
+      messages.push(
+        compilePrompt(msg.prompt.template, msg.prompt.inputVariables)
+      );
+    }
+  });
+
+  return {
+    messages,
+    system,
+  };
+}
+
+export function trimBy<T>(objects: T[], propertyName: string): T[] {
+  const uniqueValues = new Set();
+  const result: T[] = [];
+
+  for (const obj of objects) {
+    const value = get(obj, propertyName);
+
+    if (!uniqueValues.has(value)) {
+      uniqueValues.add(value);
+      result.push(obj);
+    }
+  }
+
+  return result;
 }

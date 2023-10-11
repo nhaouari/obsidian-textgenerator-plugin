@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 
-export const TemplateModalView = (props: {
+export default function TemplateInputModalView(props: {
   p: any;
   labels: string[];
   templateContext: any;
   onSubmit: any;
   metadata: any;
-}) => {
+}) {
   const [formValues, setFormValues] = useState(() => {
     const initialValues = props.labels.map(
       (label) => props.templateContext[label] || ""
@@ -48,11 +48,11 @@ export const TemplateModalView = (props: {
       <p className="mb-6 text-gray-600">{meta.description}</p>
       {props.labels.map((label, index) => (
         <div key={label} className="mb-6">
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-1">
             <label className="mb-2 font-bold text-gray-700">{label}</label>
             <textarea
               ref={index === 0 ? firstTextareaRef : null}
-              className="mt-1 h-24 w-full resize-none rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none"
+              className="h-24 w-full resize-none rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none"
               onChange={handleChange(index)}
               value={formValues[index]}
             />
@@ -67,4 +67,4 @@ export const TemplateModalView = (props: {
       </button>
     </form>
   );
-};
+}

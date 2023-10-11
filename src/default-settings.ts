@@ -1,4 +1,3 @@
-import { Platform } from "obsidian";
 import { TextGeneratorSettings } from "./types";
 
 
@@ -40,6 +39,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
     "insert-text-From-template": false,
     "create-text-From-template": false,
     "show-modal-From-template": true,
+    "open-template-as-tool": true,
     set_max_tokens: true,
     "set-llm": true,
     packageManager: true,

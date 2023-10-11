@@ -45,11 +45,19 @@ export default function OptionsSetting(props: { register: Register }) {
     setDidChangeAnything(false);
 
     // @ts-ignore
-    await app.plugins.disablePlugin("obsidian-textgenerator-plugin");
+    await global.plugin.app.plugins.disablePlugin(
+      "obsidian-textgenerator-plugin"
+    );
+
     // @ts-ignore
-    await app.plugins.enablePlugin("obsidian-textgenerator-plugin");
+    await global.plugin.app.plugins.enablePlugin(
+      "obsidian-textgenerator-plugin"
+    );
+
     // @ts-ignore
-    app.setting.openTabById("obsidian-textgenerator-plugin").display();
+    global.plugin.app.setting
+      .openTabById("obsidian-textgenerator-plugin")
+      .display();
   };
 
   return (

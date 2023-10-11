@@ -30,27 +30,29 @@ type TextGeneratorSettings = {
   requestTimeout: number;
   prefix: string;
   stream: boolean;
-  options: {
-    "generate-text": boolean;
-    "generate-text-with-metadata": boolean;
-    "insert-generated-text-From-template": boolean;
-    "create-generated-text-From-template": boolean;
-    "insert-text-From-template": boolean;
-    "create-text-From-template": boolean;
-    "search-results-batch-generate-from-template": boolean;
-    "show-modal-From-template": boolean;
-    set_max_tokens: boolean;
-    "set-llm": boolean;
-    packageManager: boolean;
-    "create-template": boolean;
-    "get-title": boolean;
-    "generated-text-to-clipboard-From-template": boolean;
-    "calculate-tokens": boolean;
-    "calculate-tokens-for-template": boolean;
-    "modal-suggest": boolean;
-    "text-extractor-tool": boolean;
-    "stop-stream": boolean;
-  };
+  options: Record<
+    | "generate-text"
+    | "generate-text-with-metadata"
+    | "insert-generated-text-From-template"
+    | "create-generated-text-From-template"
+    | "insert-text-From-template"
+    | "create-text-From-template"
+    | "search-results-batch-generate-from-template"
+    | "show-modal-From-template"
+    | "open-template-as-tool"
+    | "set_max_tokens"
+    | "set-llm"
+    | "packageManager"
+    | "create-template"
+    | "get-title"
+    | "generated-text-to-clipboard-From-template"
+    | "calculate-tokens"
+    | "calculate-tokens-for-template"
+    | "modal-suggest"
+    | "text-extractor-tool"
+    | "stop-stream",
+    boolean
+  >;
   autoSuggestOptions: {
     isEnabled: boolean;
     delay: number;

@@ -72,7 +72,12 @@ export class ModelSuggest extends EditorSuggest<PromptTemplate> {
     const editor: Editor = activeView.editor;
 
     editor.replaceRange("", value.context.start, value.context.end);
-    await this.plugin.textGenerator.tempalteToModal({}, value.path, editor);
+    await this.plugin.textGenerator.tempalteToModal({
+      params: {},
+      templatePath: value.path,
+      editor,
+      filePath: activeView.file?.path,
+    });
 
     this.close();
   }

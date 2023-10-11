@@ -180,7 +180,7 @@ export default class RequestHandler {
         try {
           const k =
             provider.providerOptions.estimatingMode ||
-            provider.providerOptions.noGenMode
+            provider.providerOptions.disableProvider
               ? ""
               : await this.LLMProvider.generate(
                   bodyParams.messages,
@@ -294,8 +294,9 @@ export default class RequestHandler {
   async generate(
     context: InputContext,
     insertMetadata = false,
-    params: Partial<typeof this.plugin.settings & { noGenMode: boolean }> = this
-      .plugin.settings,
+    params: Partial<
+      typeof this.plugin.settings & { disableProvider: boolean }
+    > = this.plugin.settings,
     templatePath = "",
     additionnalParams = {
       showSpinner: true,
@@ -323,7 +324,7 @@ export default class RequestHandler {
           {
             ...params,
             prompt:
-              typeof template != "undefined" && !context.context
+              typeof template != "undefined" && !context.context?.trim()
                 ? await template.inputTemplate(options)
                 : context.context,
           },
@@ -346,7 +347,7 @@ export default class RequestHandler {
 
       let result =
         provider.providerOptions.estimatingMode ||
-        provider.providerOptions.noGenMode
+        provider.providerOptions.disableProvider
           ? ""
           : await this.LLMProvider.generate(
               bodyParams.messages,

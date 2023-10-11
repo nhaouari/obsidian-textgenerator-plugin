@@ -23,6 +23,11 @@ export const getHBValues = (text: string) => {
   };
 
   for (const tag of tags) {
+    if (tag.startsWith("/")) {
+      // context = stack.pop();
+      continue;
+    }
+
     if (tag.startsWith("! ")) {
       continue;
     }
@@ -31,9 +36,38 @@ export const getHBValues = (text: string) => {
       continue;
     }
 
-    if ("#^".includes(tag[0]) && !tag.includes(" ")) {
-      setVar(tag.substr(1), true);
+    if (tag.startsWith("get ") || tag.startsWith("#get ")) {
+      //   context = stack.pop();
+      continue;
+    }
+
+    if (tag.startsWith("log ") || tag.startsWith("#log")) {
+      //   context = stack.pop();
+      continue;
+    }
+
+    if (tag.startsWith("error ") || tag.startsWith("#error")) {
+      //   context = stack.pop();
+      continue;
+    }
+
+    if (tag.startsWith("notice ") || tag.startsWith("#notice")) {
+      //   context = stack.pop();
+      continue;
+    }
+
+    if (tag.startsWith("escp ") || tag.startsWith("escp2 ")) {
+      const vars = tag.split(" ").slice(1);
+      for (const v of vars) {
+        setVar(v, true);
+      }
       stack.push(context);
+      continue;
+    }
+
+    if ("#^".includes(tag[0])) {
+      //   setVar(tag.substr(1), true);
+      //   stack.push(context);
       continue;
     }
 
@@ -43,11 +77,6 @@ export const getHBValues = (text: string) => {
         setVar(v, true);
       }
       stack.push(context);
-      continue;
-    }
-
-    if (tag.startsWith("/if")) {
-      context = stack.pop();
       continue;
     }
 
@@ -67,16 +96,6 @@ export const getHBValues = (text: string) => {
         stack.push(context);
         context = newContext;
       }
-      //   context = stack.pop();
-      continue;
-    }
-
-    if (tag.startsWith("get ") || tag.startsWith("#get ")) {
-      //   context = stack.pop();
-      continue;
-    }
-
-    if (tag.startsWith("log ") || tag.startsWith("#log ")) {
       //   context = stack.pop();
       continue;
     }

@@ -55,8 +55,11 @@ export default class ReqFormatter {
         frontmatter?.config?.provider ||
           (this.plugin.settings.selectedProvider as any)
       ],
+      ...this.getFrontmatter(templatePath, insertMetadata),
       ..._params,
     };
+
+    console.log({ params, _params });
 
     let bodyParams: Partial<LLMConfig & { prompt: string }> & {
       messages: Message[];
@@ -67,8 +70,15 @@ export default class ReqFormatter {
       ...(params.frequency_penalty && {
         frequency_penalty: params.frequency_penalty,
       }),
-      messages: [{ role: "user", content: params.prompt || "" }],
+      messages: [],
     };
+
+    if (
+      !params.messages?.length &&
+      params.prompt?.replaceAll("\n", "").trim().length
+    ) {
+      bodyParams.messages.push({ role: "user", content: params.prompt || "" });
+    }
 
     const provider: {
       selectedProvider?: string;
@@ -104,17 +114,19 @@ export default class ReqFormatter {
       // --
 
       if (bodyParams.messages) {
-        if (frontmatter.config?.messages) {
+        if (params.messages || params.config?.messages) {
           // unshift adds item at the start of the array
           bodyParams.messages.unshift(
-            ...transformStringsToChatFormat(frontmatter.config.messages)
+            ...transformStringsToChatFormat(
+              params.messages || params.config.messages
+            )
           );
         }
 
-        if (frontmatter.config?.system) {
+        if (params.system || params.config?.system) {
           bodyParams.messages.unshift({
             role: "system",
-            content: frontmatter.config.system,
+            content: params.system || params.config.system,
           });
         }
       }
@@ -132,6 +144,12 @@ export default class ReqFormatter {
           ...bodyParams,
           ...frontmatter.bodyParams,
         };
+      }
+
+      if (frontmatter.context && frontmatter.context !== "prompt") {
+        bodyParams[frontmatter.context as never as keyof typeof bodyParams] =
+          params.prompt;
+        delete bodyParams.prompt;
       }
 
       if (

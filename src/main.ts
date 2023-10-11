@@ -43,6 +43,8 @@ import "./LLMProviders";
 import get from "lodash.get";
 import set from "lodash.set";
 import { ExampleModal } from "./models/model";
+import { ToolView, VIEW_TOOL_ID } from "./ui/tool";
+import { randomUUID } from "crypto";
 
 let safeStorage: any;
 
@@ -66,6 +68,7 @@ export default class TextGeneratorPlugin extends Plugin {
   commands: Commands;
   statusBarItemEl: HTMLElement;
   spinner?: SpinnersPlugin;
+  temp: Record<string, any> = {};
 
   updateStatusBar(text: string, processing = false) {
     let text2 = "";
@@ -132,7 +135,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
   updateSpinnerPos(cur?: EditorPosition) {
     if (!this.spinner) return;
-    const activeView = this.getActiveView();
+    const activeView = this.getActiveView(false);
     if (!activeView) return;
     const editor = activeView.editor;
     // @ts-expect-error, not typed
@@ -148,8 +151,12 @@ export default class TextGeneratorPlugin extends Plugin {
   startProcessing(showSpinner = true) {
     this.updateStatusBar(``, true);
     this.processing = true;
-    const activeView = this.getActiveView();
-    if (!activeView || !showSpinner) return;
+
+    if (!showSpinner) return;
+
+    const activeView = this.getActiveView(false);
+    if (!activeView) return;
+
     // @ts-expect-error, not typed
     const editorView = activeView.editor.cm as EditorView;
     this.spinner = editorView.plugin(spinnersPlugin) || undefined;
@@ -160,17 +167,19 @@ export default class TextGeneratorPlugin extends Plugin {
   endProcessing(showSpinner = true) {
     this.updateStatusBar(``);
     this.processing = false;
-    const activeView = this.getActiveView();
-    if (activeView && showSpinner && this.spinner) {
-      const editor = activeView.editor;
-      // @ts-expect-error, not typed
-      const editorView = activeView.editor.cm as EditorView;
 
-      this.spinner?.remove(
-        editor.posToOffset(editor.getCursor("to")),
-        editorView
-      );
-    }
+    if (!showSpinner || !this.spinner) return;
+    const activeView = this.getActiveView(false);
+    if (!activeView) return;
+
+    const editor = activeView.editor;
+    // @ts-expect-error, not typed
+    const editorView = activeView.editor.cm as EditorView;
+
+    this.spinner?.remove(
+      editor.posToOffset(editor.getCursor("to")),
+      editorView
+    );
   }
 
   formatError(error: any) {
@@ -199,10 +208,12 @@ export default class TextGeneratorPlugin extends Plugin {
     console.error(error);
     try {
       //this.updateStatusBar(`Error check console`);
-      const activeView = this.getActiveView();
-      if (activeView && this.settings.displayErrorInEditor) {
-        // @ts-ignore
-        activeView.editor.cm.contentDOM.appendChild(this.formatError(error));
+      if (this.settings.displayErrorInEditor) {
+        const activeView = this.getActiveView(false);
+        if (activeView) {
+          // @ts-ignore
+          activeView.editor.cm.contentDOM.appendChild(this.formatError(error));
+        }
       }
     } catch (err2: any) {
       // if it can't add error to activeView, then it doesn't matter, it shouldn't show a second error
@@ -212,15 +223,15 @@ export default class TextGeneratorPlugin extends Plugin {
     setTimeout(() => this.updateStatusBar(``), 5000);
   }
 
-  getActiveView() {
+  getActiveView(makeNotice = true) {
     const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 
-    if (!activeView) {
-      new Notice("The file type should be Markdown!");
-      return null;
-    }
+    if (activeView) return activeView;
 
-    return activeView;
+    if (makeNotice && !this.app.workspace.getActiveViewOfType(ToolView))
+      new Notice("The file type should be Markdown!");
+
+    return null;
   }
 
   AutoSuggestStatusBar() {
@@ -337,11 +348,11 @@ export default class TextGeneratorPlugin extends Plugin {
             const activeView = this.getActiveView();
             const context = {
               ...(activeView
-                ? await this.textGenerator.contextManager.getTemplateContext(
-                    activeView.editor,
-                    "",
-                    inputContent
-                  )
+                ? await this.textGenerator.contextManager.getTemplateContext({
+                    editor: activeView.editor,
+                    filePath: activeView?.file?.path,
+                    content: inputContent,
+                  })
                 : {}),
             };
 
@@ -362,6 +373,7 @@ export default class TextGeneratorPlugin extends Plugin {
         }, 100);
       };
 
+      this.registerView(VIEW_TOOL_ID, (leaf) => new ToolView(leaf, this));
       this.registerMarkdownCodeBlockProcessor("tg", async (source, el, ctx) =>
         blockTgHandler(source, el, ctx)
       );
@@ -438,15 +450,37 @@ export default class TextGeneratorPlugin extends Plugin {
   async onunload() {
   }
 
-  async activateView(id: string) {
+  async activateView(id: string, state?: any) {
+    if (state.openInPopout) {
+      const leaf = this.app.workspace.getRightLeaf(true);
+
+      await leaf.setViewState({
+        type: id,
+        active: true,
+        state: { ...state, id: randomUUID() },
+      });
+
+      await new Promise((s) => setTimeout(s, 500));
+
+      this.app.workspace.setActiveLeaf(leaf);
+      this.app.workspace.moveLeafToPopout(leaf);
+
+      return;
+    }
+
     this.app.workspace.detachLeavesOfType(id);
 
-    await this.app.workspace.getRightLeaf(false).setViewState({
+    const leaf = await this.app.workspace.getRightLeaf(false);
+
+    await leaf.setViewState({
       type: id,
       active: true,
+      state: { ...state, id: randomUUID() },
     });
 
-    this.app.workspace.revealLeaf(this.app.workspace.getLeavesOfType(id)[0]);
+    await new Promise((s) => setTimeout(s, 500));
+
+    this.app.workspace.revealLeaf(leaf);
   }
 
   async saveSettings() {
