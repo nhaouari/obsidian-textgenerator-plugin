@@ -118,8 +118,15 @@ export default class RequestHandler {
     insertMetadata = false,
     params: Partial<TextGeneratorSettings> = {},
     templatePath = "",
-    additionnalParams: any = {
+    additionnalParams: {
+      showSpinner?: boolean;
+      /** when using custom signal, it will not use textgenerator processing, loading or throw an error when 2 generations */
+      signal?: AbortSignal;
+      reqParams?: RequestInit | undefined;
+      bodyParams?: any;
+    } = {
       showSpinner: true,
+      signal: undefined,
     }
   ) {
     try {
@@ -133,7 +140,7 @@ export default class RequestHandler {
 
       console.log("generating with stream");
 
-      if (this.plugin.processing) {
+      if (this.plugin.processing && !additionnalParams.signal) {
         logger("streamGenerate error", "There is another generation process");
         throw "There is another generation process";
       }
@@ -165,7 +172,8 @@ export default class RequestHandler {
         provider.providerOptions
       );
 
-      this.startLoading(additionnalParams.showSpinner);
+      if (!additionnalParams.signal)
+        this.startLoading(additionnalParams.showSpinner);
 
       if (!this.LLMProvider?.streamable) {
         logger("streamGenerate error", "LLM not streamable");
@@ -190,7 +198,9 @@ export default class RequestHandler {
                     requestParams: {
                       // body: JSON.stringify(bodyParams),
                       ...reqParams,
-                      signal: this.signalController?.signal,
+                      signal:
+                        additionnalParams.signal ||
+                        this.signalController?.signal,
                     },
                     otherOptions:
                       this.plugin.settings.LLMProviderOptions[

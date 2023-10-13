@@ -37,6 +37,8 @@ export default function ChatComp(props: {
 
   const [loading, setLoading] = useState(false);
 
+  const [abortController, setAbortController] = useState(new AbortController());
+
   const firstTextareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   const [meta, setMeta] = useStateView<{ name?: string; description?: string }>(
@@ -76,6 +78,14 @@ export default function ChatComp(props: {
           }
           case "popout":
             props.view.app.workspace.moveLeafToPopout(props.view.leaf);
+            break;
+
+          case "source":
+            props.view.app.workspace.openLinkText(
+              "",
+              config.templatePath,
+              true
+            );
             break;
           default:
             throw new Error(
@@ -171,6 +181,7 @@ export default function ChatComp(props: {
         context.templatePath,
         {
           showSpinner: false,
+          signal: abortController.signal,
         }
       );
 
@@ -184,14 +195,11 @@ export default function ChatComp(props: {
             return content;
           },
           (err) => {
-            props.plugin.textGenerator.endLoading(false);
             throw err;
           }
         )) || "";
 
       setAnswer(allText);
-
-      props.plugin.textGenerator.endLoading();
     } catch (err: any) {
       console.error(err);
       setAnswer(
@@ -214,8 +222,8 @@ export default function ChatComp(props: {
 
   const stopLoading = (e: any) => {
     e.preventDefault();
-    props.plugin.textGenerator.endLoading(false);
-    props.plugin.endProcessing(false);
+    abortController.abort();
+    setAbortController(new AbortController());
     setLoading(false);
   };
 
@@ -231,6 +239,7 @@ export default function ChatComp(props: {
               <div key={label} className="">
                 <div className="flex flex-col">
                   <textarea
+                    dir="auto"
                     ref={index === 0 ? firstTextareaRef : null}
                     rows={2}
                     placeholder={label}
@@ -271,6 +280,7 @@ export default function ChatComp(props: {
         <div
           onClick={(e) => e.preventDefault()}
           className="relative h-full w-full overflow-x-hidden overflow-y-scroll break-all bg-[var(--background-primary)] p-2"
+          dir="auto"
         >
           {answer ? (
             <MarkDownViewer className="h-full w-full select-text">

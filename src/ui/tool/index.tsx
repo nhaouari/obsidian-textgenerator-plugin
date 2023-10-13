@@ -82,6 +82,14 @@ export class ToolView extends ItemView {
           .onClick(() => {
             this.onEvent("popout");
           })
+      )
+      .addItem((item) =>
+        item
+          .setTitle("Source Template")
+          .setIcon("file")
+          .onClick(() => {
+            this.onEvent("source");
+          })
       );
   }
 
