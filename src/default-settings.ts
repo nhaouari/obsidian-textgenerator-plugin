@@ -1,8 +1,9 @@
+import pkg from "../package.json";
 import { TextGeneratorSettings } from "./types";
 
 
-
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
+  version: pkg.version as any,
   endpoint: "https://api.openai.com/v1",
   models: [],
   api_key: "",

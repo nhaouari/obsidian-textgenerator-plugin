@@ -45,6 +45,7 @@ import set from "lodash.set";
 import { ExampleModal } from "./models/model";
 import { ToolView, VIEW_TOOL_ID } from "./ui/tool";
 import { randomUUID } from "crypto";
+import VersionManager from "./scope/versionManager";
 
 let safeStorage: any;
 
@@ -59,6 +60,7 @@ export default class TextGeneratorPlugin extends Plugin {
   textGenerator: TextGenerator;
   tokensScope: TokensScope;
   packageManager: PackageManager;
+  versionManager: VersionManager;
   processing: boolean;
   defaultSettings: TextGeneratorSettings;
   textGeneratorIconItem: HTMLElement;
@@ -69,6 +71,233 @@ export default class TextGeneratorPlugin extends Plugin {
   statusBarItemEl: HTMLElement;
   spinner?: SpinnersPlugin;
   temp: Record<string, any> = {};
+
+  async onload() {
+    try {
+      logger("loading textGenerator plugin");
+
+      addIcon("GENERATE_ICON", GENERATE_ICON);
+      addIcon("GENERATE_META_ICON", GENERATE_META_ICON);
+
+      this.defaultSettings = DEFAULT_SETTINGS;
+      await this.loadSettings();
+
+      this.versionManager = new VersionManager(this);
+      await this.versionManager.load();
+
+      // This adds a settings tab so the user can configure various aspects of the plugin
+      const settingTab = new TextGeneratorSettingTab(this.app, this);
+      this.addSettingTab(settingTab);
+
+      this.packageManager = new PackageManager(this.app, this);
+
+      this.textGenerator = new TextGenerator(this.app, this);
+      await this.textGenerator.setup();
+
+      this.tokensScope = new TokensScope(this);
+      await this.tokensScope.setup();
+
+      this.registerEditorExtension(spinnersPlugin);
+      this.app.workspace.updateOptions();
+
+      this.textGeneratorIconItem = this.addStatusBarItem();
+      this.statusBarTokens = this.addStatusBarItem();
+      this.autoSuggestItem = this.addStatusBarItem();
+      this.statusBarItemEl = this.addStatusBarItem();
+
+      this.updateStatusBar(``);
+      if (this.settings.autoSuggestOptions.showStatus) {
+        this.AddAutoSuggestStatusBar();
+      }
+
+      this.registerEvent(
+        this.app.workspace.on(
+          "files-menu",
+          async (menu, files, source, leaf) => {
+            menu.addItem((item) => {
+              item.setIcon("GENERATE_META_ICON");
+              item.setTitle("Generate");
+              item.onClick(() => {
+                try {
+                  new ExampleModal(
+                    this.app,
+                    this,
+                    async (result) => {
+                      await this.textGenerator.generateBatchFromTemplate(
+                        files.filter(
+                          // @ts-ignore
+                          (f) => !f.children && f.path.endsWith(".md")
+                        ) as TFile[],
+                        {},
+                        result.path,
+                        true
+                      );
+                    },
+                    "Generate and Create a New Note From Template"
+                  ).open();
+                } catch (error) {
+                  this.handelError(error);
+                }
+              });
+            });
+          }
+        )
+      );
+
+      const blockTgHandler = async (
+        source: string,
+        container: HTMLElement,
+        { sourcePath: path }: MarkdownPostProcessorContext
+      ) => {
+        setTimeout(async () => {
+          try {
+            const { inputTemplate, outputTemplate, inputContent } =
+              this.textGenerator.contextManager.splitTemplate(source);
+
+            const activeView = this.getActiveView();
+            const context = {
+              ...(activeView
+                ? await this.textGenerator.contextManager.getTemplateContext({
+                    editor: activeView.editor,
+                    filePath: activeView?.file?.path,
+                    content: inputContent,
+                  })
+                : {}),
+            };
+
+            const markdown = await inputTemplate(context);
+
+            await MarkdownRenderer.render(
+              this.app,
+              markdown,
+              container,
+              path,
+              // @ts-ignore
+              undefined
+            );
+            this.addTGMenu(container, markdown, source, outputTemplate);
+          } catch (e) {
+            console.warn(e);
+          }
+        }, 100);
+      };
+
+      this.registerView(VIEW_TOOL_ID, (leaf) => new ToolView(leaf, this));
+      this.registerMarkdownCodeBlockProcessor("tg", async (source, el, ctx) =>
+        blockTgHandler(source, el, ctx)
+      );
+      this.registerEditorSuggest(new AutoSuggest(this.app, this));
+      if (this.settings.options["modal-suggest"]) {
+        this.registerEditorSuggest(new ModelSuggest(this.app, this) as any);
+      }
+
+      // This creates an icon in the left ribbon.
+      this.addRibbonIcon(
+        "GENERATE_ICON",
+        "Generate Text!",
+        async (evt: MouseEvent) => {
+          // Called when the user clicks the icon.
+          const activeFile = this.app.workspace.getActiveFile();
+          const activeView = this.getActiveView();
+          if (activeView !== null) {
+            const editor = activeView.editor;
+            try {
+              await this.textGenerator.generateInEditor({}, false, editor);
+            } catch (error) {
+              this.handelError(error);
+            }
+          }
+        }
+      );
+
+
+      this.addRibbonIcon(
+        "boxes",
+        "Text Generator: Templates Packages Manager",
+        async (evt: MouseEvent) => {
+          new PackageManagerUI(
+            this.app,
+            this,
+            async (result: string) => {}
+          ).open();
+        }
+      );
+
+      /*const ribbonIconEl3 = this.addRibbonIcon(
+			"square",
+			"Download webpage as markdown",
+			async (evt: MouseEvent) => {
+				console.log(await navigator.clipboard.readText());
+			}
+		);
+		*/
+
+      // registers
+      this.commands = new Commands(this);
+
+      await this.commands.addCommands();
+      await this.packageManager.load();
+    } catch (err: any) {
+      this.handelError(err);
+    }
+  }
+
+  async onunload() {
+    this.app.workspace.detachLeavesOfType(VIEW_TOOL_ID);
+  }
+
+  async loadSettings() {
+    const loadedSettings = await this.loadData();
+
+    this.settings = {
+      ...DEFAULT_SETTINGS,
+      ...loadedSettings,
+    };
+
+    this.settings.LLMProviderOptions ??= {};
+    this.settings.LLMProviderOptionsKeysHashed ??= {};
+
+    this.loadApikeys();
+  }
+
+  async saveSettings() {
+    await this.saveData(
+      this.removeApikeys(this.settings as typeof this.settings)
+    );
+  }
+
+  async activateView(id: string, state?: any) {
+    if (state.openInPopout) {
+      const leaf = this.app.workspace.getRightLeaf(true);
+
+      await leaf.setViewState({
+        type: id,
+        active: true,
+        state: { ...state, id: randomUUID() },
+      });
+
+      await new Promise((s) => setTimeout(s, 500));
+
+      this.app.workspace.setActiveLeaf(leaf);
+      this.app.workspace.moveLeafToPopout(leaf);
+
+      return;
+    }
+
+    this.app.workspace.detachLeavesOfType(id);
+
+    const leaf = await this.app.workspace.getRightLeaf(false);
+
+    await leaf.setViewState({
+      type: id,
+      active: true,
+      state: { ...state, id: randomUUID() },
+    });
+
+    await new Promise((s) => setTimeout(s, 500));
+
+    this.app.workspace.revealLeaf(leaf);
+  }
 
   updateStatusBar(text: string, processing = false) {
     let text2 = "";
@@ -266,229 +495,6 @@ export default class TextGeneratorPlugin extends Plugin {
     });
   }
 
-  async onload() {
-    try {
-      logger("loading textGenerator plugin");
-
-      addIcon("GENERATE_ICON", GENERATE_ICON);
-      addIcon("GENERATE_META_ICON", GENERATE_META_ICON);
-
-      this.defaultSettings = DEFAULT_SETTINGS;
-      await this.loadSettings();
-
-      // This adds a settings tab so the user can configure various aspects of the plugin
-      const settingTab = new TextGeneratorSettingTab(this.app, this);
-      this.addSettingTab(settingTab);
-
-      this.packageManager = new PackageManager(this.app, this);
-
-      this.textGenerator = new TextGenerator(this.app, this);
-      await this.textGenerator.setup();
-
-      this.tokensScope = new TokensScope(this);
-      await this.tokensScope.setup();
-
-      this.registerEditorExtension(spinnersPlugin);
-      this.app.workspace.updateOptions();
-
-      this.textGeneratorIconItem = this.addStatusBarItem();
-      this.statusBarTokens = this.addStatusBarItem();
-      this.autoSuggestItem = this.addStatusBarItem();
-      this.statusBarItemEl = this.addStatusBarItem();
-
-      this.updateStatusBar(``);
-      if (this.settings.autoSuggestOptions.showStatus) {
-        this.AddAutoSuggestStatusBar();
-      }
-
-      this.registerEvent(
-        this.app.workspace.on(
-          "files-menu",
-          async (menu, files, source, leaf) => {
-            menu.addItem((item) => {
-              item.setIcon("GENERATE_META_ICON");
-              item.setTitle("Generate");
-              item.onClick(() => {
-                try {
-                  new ExampleModal(
-                    this.app,
-                    this,
-                    async (result) => {
-                      await this.textGenerator.generateBatchFromTemplate(
-                        files.filter(
-                          // @ts-ignore
-                          (f) => !f.children && f.path.endsWith(".md")
-                        ) as TFile[],
-                        {},
-                        result.path,
-                        true
-                      );
-                    },
-                    "Generate and Create a New Note From Template"
-                  ).open();
-                } catch (error) {
-                  this.handelError(error);
-                }
-              });
-            });
-          }
-        )
-      );
-
-      const blockTgHandler = async (
-        source: string,
-        container: HTMLElement,
-        { sourcePath: path }: MarkdownPostProcessorContext
-      ) => {
-        setTimeout(async () => {
-          try {
-            const { inputTemplate, outputTemplate, inputContent } =
-              this.textGenerator.contextManager.splitTemplate(source);
-
-            const activeView = this.getActiveView();
-            const context = {
-              ...(activeView
-                ? await this.textGenerator.contextManager.getTemplateContext({
-                    editor: activeView.editor,
-                    filePath: activeView?.file?.path,
-                    content: inputContent,
-                  })
-                : {}),
-            };
-
-            const markdown = await inputTemplate(context);
-
-            await MarkdownRenderer.render(
-              this.app,
-              markdown,
-              container,
-              path,
-              // @ts-ignore
-              undefined
-            );
-            this.addTGMenu(container, markdown, source, outputTemplate);
-          } catch (e) {
-            console.warn(e);
-          }
-        }, 100);
-      };
-
-      this.registerView(VIEW_TOOL_ID, (leaf) => new ToolView(leaf, this));
-      this.registerMarkdownCodeBlockProcessor("tg", async (source, el, ctx) =>
-        blockTgHandler(source, el, ctx)
-      );
-      this.registerEditorSuggest(new AutoSuggest(this.app, this));
-      if (this.settings.options["modal-suggest"]) {
-        this.registerEditorSuggest(new ModelSuggest(this.app, this) as any);
-      }
-
-      // This creates an icon in the left ribbon.
-      this.addRibbonIcon(
-        "GENERATE_ICON",
-        "Generate Text!",
-        async (evt: MouseEvent) => {
-          // Called when the user clicks the icon.
-          const activeFile = this.app.workspace.getActiveFile();
-          const activeView = this.getActiveView();
-          if (activeView !== null) {
-            const editor = activeView.editor;
-            try {
-              await this.textGenerator.generateInEditor({}, false, editor);
-            } catch (error) {
-              this.handelError(error);
-            }
-          }
-        }
-      );
-
-
-      this.addRibbonIcon(
-        "boxes",
-        "Text Generator: Templates Packages Manager",
-        async (evt: MouseEvent) => {
-          new PackageManagerUI(
-            this.app,
-            this,
-            async (result: string) => {}
-          ).open();
-        }
-      );
-
-      /*const ribbonIconEl3 = this.addRibbonIcon(
-			"square",
-			"Download webpage as markdown",
-			async (evt: MouseEvent) => {
-				console.log(await navigator.clipboard.readText());
-			}
-		);
-		*/
-
-      // registers
-      this.commands = new Commands(this);
-
-      await this.commands.addCommands();
-      await this.packageManager.load();
-    } catch (err: any) {
-      this.handelError(err);
-    }
-  }
-
-  async loadSettings() {
-    const loadedSettings = await this.loadData();
-
-    this.settings = {
-      ...DEFAULT_SETTINGS,
-      ...loadedSettings,
-    };
-
-    this.settings.LLMProviderOptions ??= {};
-    this.settings.LLMProviderOptionsKeysHashed ??= {};
-
-    this.loadApikeys();
-  }
-
-  async onunload() {
-  }
-
-  async activateView(id: string, state?: any) {
-    if (state.openInPopout) {
-      const leaf = this.app.workspace.getRightLeaf(true);
-
-      await leaf.setViewState({
-        type: id,
-        active: true,
-        state: { ...state, id: randomUUID() },
-      });
-
-      await new Promise((s) => setTimeout(s, 500));
-
-      this.app.workspace.setActiveLeaf(leaf);
-      this.app.workspace.moveLeafToPopout(leaf);
-
-      return;
-    }
-
-    this.app.workspace.detachLeavesOfType(id);
-
-    const leaf = await this.app.workspace.getRightLeaf(false);
-
-    await leaf.setViewState({
-      type: id,
-      active: true,
-      state: { ...state, id: randomUUID() },
-    });
-
-    await new Promise((s) => setTimeout(s, 500));
-
-    this.app.workspace.revealLeaf(leaf);
-  }
-
-  async saveSettings() {
-    await this.saveData(
-      this.removeApikeys(this.settings as typeof this.settings)
-    );
-  }
-
   getFilesOnLoad(): Promise<TFile[]> {
     return new Promise(async (resolve, reject) => {
       let testFiles = app.vault.getFiles();
@@ -571,10 +577,11 @@ export default class TextGeneratorPlugin extends Plugin {
     // check if user have LLMProviderOptionsKeysHashed object (upgrading from older version)
     this.settings.LLMProviderOptionsKeysHashed ??= {};
 
-    this.settings.api_key = this.getDecryptedKey(
-      this.settings.api_key_encrypted,
-      this.settings.api_key
-    );
+    if (this.settings.api_key_encrypted)
+      this.settings.api_key = this.getDecryptedKey(
+        this.settings.api_key_encrypted,
+        this.settings.api_key
+      );
 
     Object.entries(this.settings?.LLMProviderOptionsKeysHashed).forEach(
       ([pth, hashed]) => {

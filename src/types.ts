@@ -10,7 +10,10 @@ type Context = {
   includeClipboard: boolean;
 };
 
+export type Version = `${number}.${number}.${number}${"" | "-beta"}`;
+
 type TextGeneratorSettings = {
+  version: Version;
   endpoint: string;
   api_key: string;
   api_key_encrypted?: Buffer | string;
