@@ -7,8 +7,8 @@ import LangchainOpenAIInstructProvider from "./langchain/openaiInstruct";
 import LangchainHFProvider from "./langchain/hf";
 import ChatanthropicLangchainProvider from "./langchain/chatanthropic";
 import OllamaLangchainProvider from "./langchain/ollama";
-import LangchainAzureOpenAIChatProvider from "./langchain/azureOpenAIChat";
-import LangchainAzureOpenAIInstructProvider from "./langchain/azureOpenAIInstruct";
+import LangchainAzureOpenAIChatProvider from "./langchain/azureOpenaiChat";
+import LangchainAzureOpenAIInstructProvider from "./langchain/azureOpenaiInstruct";
 import LangchainPalmProvider from "./langchain/palm";
 // import LangchainReplicaProvider from "./langchain/replica"
 
