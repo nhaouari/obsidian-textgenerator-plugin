@@ -266,6 +266,7 @@ export default class Commands {
                 templatePath: result.path,
                 title: result.name,
                 editor: self.plugin.app.workspace.activeEditor?.editor,
+                openInPopout: true,
               });
             },
             "Choose a template"
