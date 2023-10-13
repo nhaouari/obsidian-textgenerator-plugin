@@ -51,6 +51,7 @@ export default function TemplateInputModalView(props: {
           <div className="flex flex-col gap-1">
             <label className="mb-2 font-bold text-gray-700">{label}</label>
             <textarea
+              dir="auto"
               ref={index === 0 ? firstTextareaRef : null}
               className="h-24 w-full resize-none rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none"
               onChange={handleChange(index)}
