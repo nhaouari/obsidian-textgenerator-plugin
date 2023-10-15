@@ -306,7 +306,7 @@ export default class ContextManager {
         // empty
       }
 
-    if (contextOptions.includeHeadings)
+    if (contextOptions.includeHeadings && activeDocCache)
       blocks["headings"] = await this.getHeadingContent(activeDocCache);
 
     if (
@@ -365,11 +365,12 @@ export default class ContextManager {
       content?: string;
     } = {};
 
-    const title = filePath
-      ? this.app.vault.getAbstractFileByPath(filePath)?.name
-      : this.getActiveFileTitle();
+    const title =
+      (filePath
+        ? this.app.vault.getAbstractFileByPath(filePath)?.name
+        : this.getActiveFileTitle()) || "";
 
-    context["content"] = editor?.getValue();
+    context["content"] = editor?.getValue() || "";
 
     const selection = editor ? this.getSelection(editor) : "";
     const selections = editor ? this.getSelections(editor) : [];
@@ -378,13 +379,14 @@ export default class ContextManager {
     }
 
     if (contextOptions.includeStaredBlocks) {
-      context["starredBlocks"] = await this.getStarredBlocks(filePath || "");
+      context["starredBlocks"] =
+        (await this.getStarredBlocks(filePath || "")) || "";
     }
 
     if (selections.length > 1) {
-      context["selections"] = selections;
+      context["selections"] = selections || [];
     } else {
-      context["selection"] = selection;
+      context["selection"] = selection || "";
     }
 
     logger("getDefaultContext", { context });
@@ -403,14 +405,6 @@ export default class ContextManager {
       outputContent = splitContent[splitContent.length == 3 ? 2 : 1];
 
       preRunnerContent = splitContent[splitContent.length - 3];
-
-      console.log({
-        templateContent,
-        splitContent,
-        inputContent,
-        outputContent,
-        preRunnerContent,
-      });
 
       console.log("registered helper", Handlebars);
     } else {

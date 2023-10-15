@@ -47,6 +47,15 @@ export default function ChatComp(props: {
     props.view
   );
 
+  const openSource = () => {
+    console.log("trying to open", {
+      selectedTemplatePath,
+      meta,
+      config,
+    });
+    props.view.app.workspace.openLinkText("", selectedTemplatePath, true);
+  };
+
   useEffect(() => {
     (async () => {
       // make sure that tempPath is accesible, it takes a random amount of time
@@ -81,17 +90,13 @@ export default function ChatComp(props: {
             break;
 
           case "source":
-            props.view.app.workspace.openLinkText(
-              "",
-              config.templatePath,
-              true
-            );
+            openSource();
             break;
+
           default:
             throw new Error(
               `event ${name}, not implemented in the tool react component.`
             );
-            break;
         }
     });
 
@@ -228,11 +233,8 @@ export default function ChatComp(props: {
   };
 
   return (
-    <form
-      className="flex h-full w-full flex-col gap-2 pb-5"
-      onSubmit={handleSubmit}
-    >
-      <div className="flex h-3/4 w-full resize-y  flex-col justify-end gap-6 overflow-y-scroll">
+    <form className="flex h-full w-full flex-col gap-2" onSubmit={handleSubmit}>
+      <div className="min-h-16 flex w-full resize-y flex-col justify-end gap-6 overflow-y-scroll pb-2">
         <div className="flex h-full flex-col gap-2">
           <div className="flex h-full flex-col gap-4">
             {vars.map((label, index) => (
@@ -276,20 +278,14 @@ export default function ChatComp(props: {
         )}
         {answer && <CopyButton textToCopy={answer} justAButton />}
       </div>
-      <div className="h-3/5 w-full pr-3">
-        <div
-          onClick={(e) => e.preventDefault()}
-          className="relative h-full w-full overflow-x-hidden overflow-y-scroll break-all bg-[var(--background-primary)] p-2"
-          dir="auto"
-        >
-          {answer ? (
-            <MarkDownViewer className="h-full w-full select-text">
-              {answer}
-            </MarkDownViewer>
-          ) : (
-            <div className="h-full text-sm opacity-50">(empty)</div>
-          )}
-        </div>
+      <div className="min-h-16 w-full">
+        {answer ? (
+          <MarkDownViewer className="h-full w-full select-text overflow-y-auto">
+            {answer}
+          </MarkDownViewer>
+        ) : (
+          <div className="h-full text-sm opacity-50">(empty)</div>
+        )}
       </div>
     </form>
   );

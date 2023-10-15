@@ -47,7 +47,6 @@ export default class ReqFormatter {
     logger("prepareReqParameters", _params, insertMetadata, templatePath);
 
     const frontmatter: any = this.getFrontmatter(templatePath, insertMetadata);
-    console.log({ frontmatter, templatePath, insertMetadata });
 
     const params = {
       ...this.plugin.settings,
@@ -58,8 +57,6 @@ export default class ReqFormatter {
       ...this.getFrontmatter(templatePath, insertMetadata),
       ..._params,
     };
-
-    console.log({ params, _params });
 
     let bodyParams: Partial<LLMConfig & { prompt: string }> & {
       messages: Message[];

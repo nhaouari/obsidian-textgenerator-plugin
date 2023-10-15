@@ -43,7 +43,6 @@ export default class RequestHandler {
       LLMProviderRegistery.get(name) || LLMProviderRegistery.get(llmList[0]);
 
     if (llm && llm.id !== this.LLMProvider?.id) {
-      console.log("loading llm", name);
       if (Platform.isMobile && llm.mobileSupport == false)
         throw `Mobile is not supported for the "${llm?.id}" LLM provider`;
 

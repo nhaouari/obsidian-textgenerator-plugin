@@ -1,5 +1,7 @@
 import set from "lodash.set";
 
+const ignoredVariables = ["output"];
+
 export const getHBValues = (text: string) => {
   const re = /{{[{]?(.*?)[}]?}}/g;
   const tags: any = [];
@@ -148,5 +150,7 @@ export const getHBValues = (text: string) => {
     setVar(tag, "");
   }
 
-  return Object.keys(root) as string[];
+  return Object.keys(root).filter(
+    (v) => !ignoredVariables.includes(v)
+  ) as string[];
 };

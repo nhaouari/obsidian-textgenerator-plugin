@@ -22,7 +22,6 @@ export default function DMPSetting(props: { register: Register }) {
   );
 
   useEffect(() => {
-    console.log("updating statusbar");
     global.plugin.updateStatusBar("");
   }, [debouncedMaxTokens]);
 
@@ -48,6 +47,7 @@ export default function DMPSetting(props: { register: Register }) {
         sectionId={sectionId}
       >
         <Input
+          type="number"
           value={global.plugin.settings.max_tokens}
           placeholder="max_tokens"
           validator={MaxTokensSchema}
@@ -67,6 +67,7 @@ export default function DMPSetting(props: { register: Register }) {
         sectionId={sectionId}
       >
         <Input
+          type="number"
           value={global.plugin.settings.temperature}
           placeholder="temperature"
           validator={TemperatureSchema}
@@ -86,6 +87,7 @@ export default function DMPSetting(props: { register: Register }) {
         sectionId={sectionId}
       >
         <Input
+          type="number"
           value={global.plugin.settings.frequency_penalty}
           placeholder="frequency_penalty"
           validator={FrequencySchema}
@@ -105,6 +107,7 @@ export default function DMPSetting(props: { register: Register }) {
         sectionId={sectionId}
       >
         <Input
+          type="number"
           placeholder="Timeout"
           value={global.plugin.settings.requestTimeout}
           validator={TimeoutSchema}

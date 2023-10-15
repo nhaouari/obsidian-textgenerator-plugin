@@ -25,10 +25,16 @@ export class ToolView extends ItemView {
   }
 
   async onOpen() {
-    this.root = createRoot(this.containerEl.children[1]);
+    const viewContainer: HTMLElement = this.containerEl.children[1] as any;
+
+    this.root = createRoot(viewContainer);
+
+    if (viewContainer.style) viewContainer.style.overflowY = "hidden";
+
     const self = this;
     this.root.render(
       <React.StrictMode>
+        {false && <div className="h-full p-2" />}
         <Contexts plugin={this.plugin}>
           <Tool
             plugin={this.plugin}

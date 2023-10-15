@@ -207,6 +207,28 @@ export default class TextGenerator extends RequestHandler {
         startingCursor
       );
 
+      let postingContent = "";
+      let stillPlaying = true;
+      let firstTime = true;
+
+      const writerTimer: any = setInterval(() => {
+        if (!stillPlaying) return clearInterval(writerTimer);
+        const posting = postingContent;
+        if (!posting) return;
+
+        if (firstTime) this.insertGeneratedText(posting, editor, cursor, mode);
+        else this.insertGeneratedText(posting, editor, cursor, "stream");
+        postingContent = postingContent.substring(posting.length);
+        firstTime = false;
+
+        cursor.ch += posting.length;
+
+        if (!this.plugin.settings.freeCursorOnStreaming)
+          editor.setCursor(cursor);
+
+        this.plugin.updateSpinnerPos(cursor);
+      }, 100);
+
       const allText =
         (await strm?.(
           async (cntnt, first) => {
@@ -234,18 +256,8 @@ export default class TextGenerator extends RequestHandler {
                 content = this.plugin.settings.prefix + content;
               }
 
-              this.insertGeneratedText(content, editor, cursor, mode);
-            } else this.insertGeneratedText(content, editor, cursor, "stream");
-
-            // const cursor = editor.getCursor();
-
-            cursor.ch += content.length;
-
-            if (!this.plugin.settings.freeCursorOnStreaming)
-              editor.setCursor(cursor);
-
-            this.plugin.updateSpinnerPos(cursor);
-
+              postingContent = content;
+            } else postingContent += content;
             logger("generateStreamInEditor message", { content });
             return content;
           },
@@ -254,6 +266,8 @@ export default class TextGenerator extends RequestHandler {
             throw err;
           }
         )) || "";
+
+      stillPlaying = false;
 
       editor.replaceRange(
         mode == "replace" ? allText : "",

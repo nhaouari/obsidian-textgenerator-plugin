@@ -101,7 +101,7 @@ export async function openFile(
 
 export function removeYAML(content: string) {
   logger("removeYAML", content);
-  const newContent = content.replace(/---(.|\n)*---/, "");
+  const newContent = content.replace(/^---([\s\S]*?)---/gm, "");
   logger("removeYAML", newContent);
   return newContent;
 }
@@ -138,6 +138,7 @@ export function getContextAsString(
 ) {
   let contextString = "";
   for (const key in context) {
+    if (!context[key]) continue;
     if (withKey.includes(key)) {
       contextString += `${key}:`;
     }

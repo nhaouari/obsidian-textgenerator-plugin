@@ -47,6 +47,8 @@ import { ToolView, VIEW_TOOL_ID } from "./ui/tool";
 import { randomUUID } from "crypto";
 import VersionManager from "./scope/versionManager";
 
+import { registerAPI } from "@vanakat/plugin-api";
+
 let safeStorage: any;
 
 if (Platform.isDesktop) {
@@ -197,7 +199,7 @@ export default class TextGeneratorPlugin extends Plugin {
         "Generate Text!",
         async (evt: MouseEvent) => {
           // Called when the user clicks the icon.
-          const activeFile = this.app.workspace.getActiveFile();
+          // const activeFile = this.app.workspace.getActiveFile();
           const activeView = this.getActiveView();
           if (activeView !== null) {
             const editor = activeView.editor;
@@ -237,6 +239,8 @@ export default class TextGeneratorPlugin extends Plugin {
 
       await this.commands.addCommands();
       await this.packageManager.load();
+
+      registerAPI("tg", this.textGenerator, this as any);
     } catch (err: any) {
       this.handelError(err);
     }
@@ -267,7 +271,7 @@ export default class TextGeneratorPlugin extends Plugin {
   }
 
   async activateView(id: string, state?: any) {
-    if (state.openInPopout) {
+    if (state?.openInPopout) {
       const leaf = this.app.workspace.getRightLeaf(true);
 
       await leaf.setViewState({

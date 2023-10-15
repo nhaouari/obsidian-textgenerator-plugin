@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { IconEyeClosed, IconEye } from "@tabler/icons-react";
 import clsx from "clsx";
 import { ZodSchema } from "zod";
-import { useDebounce } from "usehooks-ts";
 
 export default function Input(props: {
   type?: string;
@@ -15,20 +14,6 @@ export default function Input(props: {
   const [value, setValue] = useState<any>(props.value);
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
-
-  const valueDebounced = useDebounce(props.value, 100);
-
-  useEffect(() => {
-    setError("");
-    if (props.validator) {
-      try {
-        props.validator?.parse(valueDebounced);
-        props.setValue(value);
-      } catch (err: any) {
-        setError(JSON.parse(err?.message)?.[0]?.message);
-      }
-    }
-  }, [valueDebounced]);
 
   return (
     <div
@@ -70,8 +55,20 @@ export default function Input(props: {
         onChange={
           props.type != "checkbox"
             ? (e) => {
-                props.setValue(e.target.value);
-                setValue(e.target.value);
+                try {
+                  setValue(e.target.value);
+
+                  const v =
+                    props.type == "number"
+                      ? e.target.valueAsNumber || 0
+                      : e.target.value;
+
+                  setError("");
+                  props.validator?.parse(v);
+                  props.setValue("" + v);
+                } catch (err: any) {
+                  setError(JSON.parse(err?.message)?.[0]?.message);
+                }
               }
             : undefined
         }
