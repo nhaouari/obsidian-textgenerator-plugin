@@ -48,12 +48,11 @@ export default function ChatComp(props: {
   );
 
   const openSource = () => {
-    console.log("trying to open", {
-      selectedTemplatePath,
-      meta,
-      config,
-    });
-    props.view.app.workspace.openLinkText("", selectedTemplatePath, true);
+    props.view.app.workspace.openLinkText(
+      "",
+      props.view.getState().templatePath,
+      true
+    );
   };
 
   useEffect(() => {
