@@ -87,9 +87,9 @@ type TextGeneratorConfiguration = {
 
 type InstalledPackage = {
   packageId: string;
-  version: string;
-  prompts: PromptTemplate[];
-  installedPrompts: installedPrompts[];
+  version?: string;
+  prompts?: PromptTemplate[];
+  installedPrompts?: installedPrompts[];
 };
 
 type installedPrompts = {
@@ -99,28 +99,28 @@ type installedPrompts = {
 
 type PackageTemplate = {
   packageId: string;
-  name: string;
-  version: string;
-  minTextGeneratorVersion: string;
-  description: string;
-  tags: string;
-  author: string;
-  authorUrl: string;
-  repo: string;
-  published_at: Date;
-  downloads: number;
+  name?: string;
+  version?: string;
+  minTextGeneratorVersion?: string;
+  description?: string;
+  tags?: string;
+  author?: string;
+  authorUrl?: string;
+  repo?: string;
+  published_at?: Date;
+  downloads?: number;
 };
 
 type PromptTemplate = {
   promptId: string;
-  name: string;
-  path: string;
-  description: string;
-  required_values: string;
-  author: string;
-  tags: string;
-  version: string;
-  context: any;
+  name?: string;
+  path?: string;
+  description?: string;
+  required_values?: string;
+  author?: string;
+  tags?: string;
+  version?: string;
+  context?: any;
 };
 
 type FileViewMode = "source" | "preview" | "default";

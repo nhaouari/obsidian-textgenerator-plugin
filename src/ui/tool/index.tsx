@@ -34,7 +34,6 @@ export class ToolView extends ItemView {
     const self = this;
     this.root.render(
       <React.StrictMode>
-        {false && <div className="h-full p-2" />}
         <Contexts plugin={this.plugin}>
           <Tool
             plugin={this.plugin}

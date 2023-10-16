@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from "react";
 import TemplateItem from "./components/template-item";
 import TemplateDetails from "./components/template-details";
+import { PackageTemplate } from "#/types";
+import useGlobal from "../context/global";
+import type { PackageManagerUI } from "./package-manager-ui";
 
-export const PackageManagerView = (p) => {
-  const [items, setItems] = useState([]);
-  const [parent, setParent] = useState(p.parent);
+export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
+  const global = useGlobal();
+  const [items, setItems] = useState<PackageTemplate[]>([]);
+  const parent = p.parent;
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [justInstalled, setJustInstalled] = useState(false);
   const [searchInput, setSearchInput] = useState("");
-  const [packagesIdsToUpdate, setPackagesIdsTOUpdate] = useState([]);
+  const [packagesIdsToUpdate, setPackagesIdsTOUpdate] = useState<string[]>([]);
 
   function toggleJustInstalled() {
     setJustInstalled(!justInstalled);
@@ -35,22 +39,22 @@ export const PackageManagerView = (p) => {
   }
 
   async function getAllPackages(update = true) {
-    if (update) await p.parent.plugin.packageManager.updatePackagesList();
-    await p.parent.plugin.packageManager.updatePackagesStats();
-    let packages = p.parent.plugin.packageManager.getPackagesList();
+    if (update) await global.plugin.packageManager.updatePackagesList();
+    await global.plugin.packageManager.updatePackagesStats();
+    let packages = global.plugin.packageManager.getPackagesList();
     if (justInstalled) packages = packages.filter((p) => p.installed === true);
     return packages.map((p, index) => ({ ...p, index, selected: false }));
   }
 
-  function handleChange(value) {
+  function handleChange(value: string) {
     setSearchInput(value);
   }
 
-  function handleClose(event) {
+  function handleClose(event: any) {
     parent.close();
   }
 
-  function select(index) {
+  function select(index: number) {
     setSelectedIndex(index);
     setItems(
       items.map((p, i) =>
@@ -60,7 +64,7 @@ export const PackageManagerView = (p) => {
   }
 
   async function checkForUpdates() {
-    setPackagesIdsTOUpdate(await p.parent.plugin.packageManager.checkUpdates());
+    setPackagesIdsTOUpdate(await global.plugin.packageManager.checkUpdates());
   }
 
   useEffect(() => {
@@ -142,7 +146,7 @@ export const PackageManagerView = (p) => {
                       }`}
                       onClick={() => toggleJustInstalled()}
                     >
-                      <input type="checkbox" tabIndex="0" />
+                      <input type="checkbox" tabIndex={0} />
                     </div>
                   </div>
                 </div>
@@ -169,7 +173,7 @@ export const PackageManagerView = (p) => {
             {selectedIndex !== -1 && items[selectedIndex] && (
               <TemplateDetails
                 packageId={items[selectedIndex].packageId}
-                packageManager={p.parent.plugin.packageManager}
+                packageManager={global.plugin.packageManager}
                 setSelectedIndex={setSelectedIndex}
                 checkForUpdates={checkForUpdates}
                 updateView={updateView}

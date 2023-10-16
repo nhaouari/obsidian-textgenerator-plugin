@@ -125,6 +125,8 @@ export default class TextGeneratorPlugin extends Plugin {
                     this.app,
                     this,
                     async (result) => {
+                      if (!result.path)
+                        return this.handelError("couldn't find path");
                       await this.textGenerator.generateBatchFromTemplate(
                         files.filter(
                           // @ts-ignore
@@ -211,7 +213,6 @@ export default class TextGeneratorPlugin extends Plugin {
           }
         }
       );
-
 
       this.addRibbonIcon(
         "boxes",

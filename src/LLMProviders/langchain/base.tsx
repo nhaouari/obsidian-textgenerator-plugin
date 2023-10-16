@@ -422,7 +422,7 @@ export default class LangchainProvider
   }
 }
 
-function chatToString(messages: Message[]) {
+function chatToString(messages: Message[] = []) {
   return messages.length > 1
     ? // user: test1
       // assistant: test2
