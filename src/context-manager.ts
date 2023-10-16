@@ -108,7 +108,9 @@ export default class ContextManager {
       /* Without template */
       const options = await this.getDefaultContext(props.editor);
 
-      let context = getContextAsString(options);
+      // take selection instead of entire context
+      let context =
+        (options.selection || "") + (options.selections?.join("\n") || "");
 
       if (props.insertMetadata) {
         const frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document
@@ -124,6 +126,7 @@ export default class ContextManager {
           new Notice("No valid Metadata (YAML front matter) found!");
         }
       }
+      console.log({ context, options });
       logger("Context without template", { context, options });
       return { context, options } as InputContext;
     }
