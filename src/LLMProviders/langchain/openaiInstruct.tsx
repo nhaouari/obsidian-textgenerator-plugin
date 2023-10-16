@@ -52,19 +52,6 @@ export default class LangchainOpenAIInstructProvider
     this.llmClass = OpenAI;
   }
 
-  getLLM(options: LLMConfig) {
-    return new this.llmClass(
-      {
-        ...this.getConfig(options),
-      },
-      {
-        basePath: options.otherOptions?.basePath?.length
-          ? options.endpoint
-          : undefined,
-      }
-    );
-  }
-
   async generateMultiple(
     messages: Message[],
     reqParams: Partial<LLMConfig>
