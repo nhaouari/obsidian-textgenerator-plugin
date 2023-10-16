@@ -19,6 +19,7 @@ export default class LangchainHFProvider
 {
   id = id;
   static id = id;
+  static slug = "hf";
   streamable = false;
   provider = "Langchain";
   static provider = "Langchain";

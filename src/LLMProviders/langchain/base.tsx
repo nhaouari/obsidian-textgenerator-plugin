@@ -27,6 +27,7 @@ export default class LangchainProvider
 {
   streamable = true;
   id = "default";
+  static slug = "default";
   llmClass: any;
   llmPredict = false;
   provider = "Langchain";

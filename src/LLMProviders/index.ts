@@ -14,36 +14,48 @@ import LangchainPalmProvider from "./langchain/palm";
 
 import LLMProviderRegistry from "./registery";
 
-const DefaultProviders = {
+const providers = [
   // openai
-  [LangchainOpenAIChatProvider.id]: LangchainOpenAIChatProvider,
-  [LangchainOpenAIInstructProvider.id]: LangchainOpenAIInstructProvider,
+  LangchainOpenAIChatProvider,
+  LangchainOpenAIInstructProvider,
 
   // azure
-  [LangchainAzureOpenAIChatProvider.id]: LangchainAzureOpenAIChatProvider,
-  [LangchainAzureOpenAIInstructProvider.id]:
-    LangchainAzureOpenAIInstructProvider,
+  LangchainAzureOpenAIChatProvider,
+  LangchainAzureOpenAIInstructProvider,
 
   // palm
-  [LangchainPalmProvider.id]: LangchainPalmProvider,
+  LangchainPalmProvider,
 
   // anthropic
-  [ChatanthropicLangchainProvider.id]: ChatanthropicLangchainProvider,
+  ChatanthropicLangchainProvider,
 
   // ollama
-  [OllamaLangchainProvider.id]: OllamaLangchainProvider,
+  OllamaLangchainProvider,
 
   // replica (disabled because it doesn't work)
   // "Replica (Langchain)": LangchainReplicaProvider,
 
   // huggingface
-  [LangchainHFProvider.id]: LangchainHFProvider,
+  LangchainHFProvider,
 
   // custom
-  [CustomProvider.id]: CustomProvider,
-} as const;
+  CustomProvider,
+];
+
+export type llmType = (typeof providers)[number]["id"];
+export type llmSlugType = (typeof providers)[number]["slug"];
+
+const DefaultProviders: Record<llmType, (typeof providers)[number]> = {} as any;
+const ProviderSlugs: Record<llmSlugType, llmType> = {};
+
+for (const pvrd of providers) {
+  DefaultProviders[pvrd.id] = pvrd;
+  if (pvrd.slug) ProviderSlugs[pvrd.slug] = pvrd.id;
+}
 
 export type LLMProviderType = keyof typeof DefaultProviders;
+
 export const LLMProviderRegistery = new LLMProviderRegistry<ProviderBase>(
-  DefaultProviders as any
+  DefaultProviders as any,
+  ProviderSlugs
 );

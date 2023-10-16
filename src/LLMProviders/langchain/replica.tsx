@@ -23,6 +23,8 @@ export default class LangchainReplicaProvider
   llmPredict = true;
   provider = "Langchain";
   static provider = "Langchain";
+  static slug = "replica";
+
   getConfig(options: LLMConfig): Partial<ReplicateInput & BaseLLMParams> {
     console.log(options);
     return this.cleanConfig({

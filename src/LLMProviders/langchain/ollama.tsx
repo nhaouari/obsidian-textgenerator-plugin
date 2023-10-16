@@ -18,6 +18,7 @@ export default class LangchainOllamaProvider
   implements LLMProviderInterface
 {
   id = id;
+  static slug = "ollama";
   provider = "Langchain";
   llmPredict = true;
   static provider = "Langchain";

@@ -1,14 +1,14 @@
 import React from "react";
-import TextGeneratorPlugin from "src/main";
-import { Message } from "src/types";
-import LLMProviderInterface, { LLMConfig } from "./interface";
-import { ContextTemplate } from "#/context-manager";
-import { LLMChain } from "langchain/chains";
-import { processPromisesSetteledBatch, promiseForceFullfil } from "#/utils";
 import safeAwait from "safe-await";
+import { Message } from "src/types";
+import TextGeneratorPlugin from "src/main";
+import { ContextTemplate } from "#/context-manager";
+import LLMProviderInterface, { LLMConfig } from "./interface";
+import { processPromisesSetteledBatch, promiseForceFullfil } from "#/utils";
 
 export default class ProviderBase implements LLMProviderInterface {
   id = "default";
+  static slug = "default";
   provider = "default";
   plugin: TextGeneratorPlugin;
   constructor(props: { plugin: TextGeneratorPlugin }) {
@@ -103,12 +103,14 @@ export default class ProviderBase implements LLMProviderInterface {
       any
     >;
   }
+
   calcTokens(
     messages: Message[],
     reqParams: Partial<LLMConfig>
   ): ReturnType<LLMProviderInterface["calcTokens"]> {
     throw new Error("calcTokens Method not implemented." + this.id);
   }
+
   calcPrice(tokens: number, reqParams: Partial<LLMConfig>): Promise<number> {
     throw new Error("calcPrice Method not implemented." + this.id);
   }

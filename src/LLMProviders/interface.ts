@@ -7,6 +7,7 @@ export default interface LLMProviderInterface {
   streamable?: boolean;
   mobileSupport?: boolean;
   id: string;
+  slug?: string;
   provider: string;
 
   load(): Promise<any>;

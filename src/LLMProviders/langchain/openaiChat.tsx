@@ -30,6 +30,7 @@ export default class LangchainOpenAIChatProvider
   provider = "Langchain";
   static provider = "Langchain";
   static id = id;
+  static slug = "openAIChat";
 
   getConfig(options: LLMConfig) {
     return this.cleanConfig({

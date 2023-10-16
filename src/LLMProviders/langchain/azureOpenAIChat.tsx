@@ -22,6 +22,7 @@ export default class LangchainAzureOpenAIChatProvider
 {
   id = id;
   static id = id;
+  static slug = "azureOpenaiChat";
   provider = "Langchain";
   static provider = "Langchain";
   getConfig(

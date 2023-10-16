@@ -22,6 +22,7 @@ export default class LangchainChatAnthropicProvider
 {
   id = id;
   static id = id;
+  static slug = "chatAnthropic";
   provider = "Langchain";
   static provider = "Langchain";
   getConfig(

@@ -97,6 +97,7 @@ export default class CustomProvider
 {
   streamable = true;
   id = id;
+  static slug = "custom";
   static id = id;
   provider = "Custom";
   static provider = "Custom";
