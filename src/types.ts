@@ -53,7 +53,8 @@ type TextGeneratorSettings = {
     | "calculate-tokens-for-template"
     | "modal-suggest"
     | "text-extractor-tool"
-    | "stop-stream",
+    | "stop-stream"
+    | "reload",
     boolean
   >;
   autoSuggestOptions: {

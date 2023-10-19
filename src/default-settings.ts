@@ -1,7 +1,6 @@
 import pkg from "../package.json";
 import { TextGeneratorSettings } from "./types";
 
-
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
   version: pkg.version as any,
   endpoint: "https://api.openai.com/v1",
@@ -52,7 +51,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
     "modal-suggest": false,
     "text-extractor-tool": true,
     "stop-stream": true,
-
+    reload: true,
   },
   autoSuggestOptions: {
     isEnabled: false,

@@ -17,6 +17,7 @@ const logger = debug("textgenerator:llmProvider:openaiInstruct");
 
 const default_values = {
   basePath: "https://api.openai.com/v1",
+  engine: "gpt-3.5-turbo-instruct",
 };
 
 const id = "OpenAI Instruct (Langchain)" as const;

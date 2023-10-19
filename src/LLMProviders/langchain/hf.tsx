@@ -28,7 +28,6 @@ export default class LangchainHFProvider
     console.log(options);
     return this.cleanConfig({
       apiKey: options.otherOptions.api_key,
-
       // ------------Necessary stuff--------------
       model: options.otherOptions.engine as any,
       maxTokens: options.max_tokens,

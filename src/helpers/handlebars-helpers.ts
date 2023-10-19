@@ -184,13 +184,13 @@ export default function Helpersfn(self: ContextManager) {
 
       const otherVariables = vars;
 
-      if (!self.templatePaths[id])
+      if (!self.plugin.textGenerator.templatePaths[id])
         throw new Error(
           `template with packageId/promptId ${id} was not found.`
         );
 
       const TemplateMetadata = self.getFrontmatter(
-        self.getMetaData(self.templatePaths[id])
+        self.getMetaData(self.plugin.textGenerator.templatePaths[id])
       );
 
       const innerTxt = !options.fn
@@ -264,7 +264,7 @@ export default function Helpersfn(self: ContextManager) {
       const otherVariables = vars;
 
       const TemplateMetadata = self.getFrontmatter(
-        self.getMetaData(self.templatePaths[id])
+        self.getMetaData(self.plugin.textGenerator.templatePaths[id])
       );
 
       if (!(firstVar in ExtractorSlug))

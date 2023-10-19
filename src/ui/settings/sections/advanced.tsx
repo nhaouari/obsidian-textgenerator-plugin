@@ -10,14 +10,7 @@ export default function AdvancedSetting(props: { register: Register }) {
 
   const sectionId = useId();
 
-  const reloadPlugin = async () => {
-    // @ts-ignore
-    await app.plugins.disablePlugin("obsidian-textgenerator-plugin");
-    // @ts-ignore
-    await app.plugins.enablePlugin("obsidian-textgenerator-plugin");
-    // @ts-ignore
-    app.setting.openTabById("obsidian-textgenerator-plugin").display();
-  };
+  const reloadPlugin = () => global.plugin.reload();
 
   const resetSettings = async () => {
     if (
@@ -30,6 +23,7 @@ export default function AdvancedSetting(props: { register: Register }) {
     await global.plugin.resetSettingsToDefault();
     await reloadPlugin();
   };
+
   return (
     <SettingsSection
       title="Advanced Settings"

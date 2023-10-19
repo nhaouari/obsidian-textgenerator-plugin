@@ -849,7 +849,7 @@ version: 0.0.1`;
         editor: options.editor,
         filePath: options.filePath,
         insertMetadata: options.insertMetadata,
-        templatePath: this.contextManager.templatePaths[id],
+        templatePath: this.templatePaths[id],
         addtionalOpts: options.additionalProps,
       })
     );
@@ -865,7 +865,7 @@ version: 0.0.1`;
         context,
         options.insertMetadata,
         options.additionalProps,
-        this.contextManager.templatePaths[id]
+        this.templatePaths[id]
       )
     );
 
@@ -874,5 +874,48 @@ version: 0.0.1`;
     }
 
     return text || "";
+  }
+
+  /** record of template paths, from id */
+  templatePaths: Record<string, string>;
+
+  async getTemplate(id: string) {
+    if (!this.plugin.textGenerator.templatePaths[id])
+      throw new Error(`template with id:${id} wasn't found.`);
+
+    const { context, inputTemplate, outputTemplate } =
+      await this.contextManager.templateFromPath(
+        this.plugin.textGenerator.templatePaths[id],
+        {
+          ...this.contextManager.getFrontmatter(
+            this.contextManager.getMetaData(
+              this.plugin.textGenerator.templatePaths[id]
+            )
+          ),
+        }
+      );
+
+    return {
+      context,
+      inputTemplate,
+      outputTemplate,
+    };
+  }
+  async updateTemplatesCache() {
+    const files = await this.plugin.getFilesOnLoad();
+    const templates = this.plugin.textGenerator.getTemplates(
+      // get files, it will be empty onLoad, that's why we are using this function
+      files
+    );
+
+    this.templatePaths = {};
+    templates.forEach((template) => {
+      if (template.id) {
+        const ss = template.path.split("/");
+        this.templatePaths[ss[ss.length - 2] + "/" + template.id] =
+          template.path;
+      }
+    });
+    return templates;
   }
 }

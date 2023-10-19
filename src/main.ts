@@ -696,4 +696,14 @@ export default class TextGeneratorPlugin extends Plugin {
     this.settings = DEFAULT_SETTINGS;
     this.saveSettings();
   }
+
+  /** Reloads the plugin */
+  async reload() {
+    // @ts-ignore
+    await this.app.plugins.disablePlugin("obsidian-textgenerator-plugin");
+    // @ts-ignore
+    await this.app.plugins.enablePlugin("obsidian-textgenerator-plugin");
+    // @ts-ignore
+    this.app.setting.openTabById("obsidian-textgenerator-plugin").display();
+  }
 }

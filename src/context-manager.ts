@@ -39,9 +39,6 @@ export default class ContextManager {
   plugin: TextGeneratorPlugin;
   app: App;
 
-  /** record of template paths, from id */
-  templatePaths: Record<string, string>;
-
   constructor(app: App, plugin: TextGeneratorPlugin) {
     logger("ContextManager constructor");
     this.app = app;
@@ -187,22 +184,6 @@ export default class ContextManager {
 
     console.log({ contexts });
     return contexts;
-  }
-
-  async getTemplate(id: string) {
-    if (!this.templatePaths[id])
-      throw new Error(`template with id:${id} wasn't found.`);
-
-    const { context, inputTemplate, outputTemplate } =
-      await this.templateFromPath(this.templatePaths[id], {
-        ...this.getFrontmatter(this.getMetaData(this.templatePaths[id])),
-      });
-
-    return {
-      context,
-      inputTemplate,
-      outputTemplate,
-    };
   }
 
   extractVariablesFromTemplate(templateContent: string): string[] {

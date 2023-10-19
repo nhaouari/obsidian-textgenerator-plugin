@@ -56,6 +56,8 @@ export default class Commands {
             self.plugin.app,
             self.plugin,
             async (result) => {
+              if (!result.path) throw "Nothing was selected";
+
               await self.plugin.textGenerator.generateFromTemplate({
                 params: {},
                 templatePath: result.path,
@@ -111,6 +113,7 @@ export default class Commands {
             self.plugin.app,
             self.plugin,
             async (result) => {
+              if (!result.path) throw "Nothing was selected";
               await self.plugin.textGenerator.generateFromTemplate({
                 params: {},
                 templatePath: result.path,
@@ -140,6 +143,7 @@ export default class Commands {
             self.plugin.app,
             self.plugin,
             async (result) => {
+              if (!result.path) throw "Nothing was selected";
               const files =
                 await self.plugin.textGenerator.embeddingsScope.getSearchResults();
 
@@ -176,6 +180,7 @@ export default class Commands {
             self.plugin.app,
             self.plugin,
             async (result) => {
+              if (!result.path) throw "Nothing was selected";
               await self.plugin.textGenerator.generateFromTemplate({
                 params: {},
                 templatePath: result.path,
@@ -205,6 +210,7 @@ export default class Commands {
             self.plugin.app,
             self.plugin,
             async (result) => {
+              if (!result.path) throw "Nothing was selected";
               await self.plugin.textGenerator.generateFromTemplate({
                 params: {},
                 templatePath: result.path,
@@ -489,12 +495,22 @@ export default class Commands {
         }
       },
     },
+    {
+      id: "reload",
+      name: "reload Plugin",
+      icon: "layout",
+      async callback() {
+        const self: TextGeneratorPlugin = this;
 
+        self.reload();
+      },
+    },
   ];
 
   commands: Command[] = Commands.commands.map((cmd) => ({
     ...cmd,
     editorCallback: cmd.editorCallback?.bind(this),
+    callback: cmd.callback?.bind(this),
   }));
 
   constructor(plugin: TextGeneratorPlugin) {
@@ -510,21 +526,7 @@ export default class Commands {
         ] === true
     );
 
-    const files = await this.plugin.getFilesOnLoad();
-    const templates = this.plugin.textGenerator.getTemplates(
-      // get files, it will be empty onLoad, that's why we are using this function
-      files
-    );
-
-    this.plugin.textGenerator.contextManager.templatePaths = {};
-    templates.forEach((template) => {
-      if (template.id) {
-        const ss = template.path.split("/");
-        this.plugin.textGenerator.contextManager.templatePaths[
-          ss[ss.length - 2] + "/" + template.id
-        ] = template.path;
-      }
-    });
+    const templates = await this.plugin.textGenerator.updateTemplatesCache();
 
     const templatesWithCommands = templates.filter((t) => t?.commands);
     logger("Templates with commands ", { templatesWithCommands });
