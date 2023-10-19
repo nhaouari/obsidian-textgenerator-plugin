@@ -63,8 +63,8 @@ export default function ExtractorsOptionsSetting(props: {
     <SettingsSection
       title="Extractors Options"
       className="flex w-full flex-col"
-      collapsed={!props.register.searchTerm.length}
-      hidden={!props.register.activeSections[sectionId]}
+      register={props.register}
+      id={sectionId}
     >
       {listOfOptions
         .filter((d) => !contextNotForTemplate.contains(d))

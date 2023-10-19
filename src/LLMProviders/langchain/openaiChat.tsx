@@ -236,14 +236,16 @@ function ModelsHandler(props: {
     setLoadingUpdate(true);
     try {
       if (global.plugin.settings.api_key.length > 0) {
-        console.log(`${config.basePath}/models`);
+        console.log(`${config.basePath || default_values.basePath}/models`);
         const reqParams = {
-          url: `${config.basePath}/models`,
+          url: `${config.basePath || default_values.basePath}/models`,
           method: "GET",
           body: "",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${global.plugin.settings.api_key}`,
+            Authorization: `Bearer ${
+              config.api_key || global.plugin.settings.api_key
+            }`,
           },
         };
 
@@ -258,9 +260,6 @@ function ModelsHandler(props: {
         });
 
         setModels(new Set(models));
-
-        global.plugin.settings.models = models;
-        await global.plugin.saveSettings();
       } else {
         throw "Please provide a valid api key.";
       }
@@ -271,16 +270,10 @@ function ModelsHandler(props: {
   };
 
   useEffect(() => {
-    if (global.plugin.settings.models?.length > 0) {
-      setModels(new Set(global.plugin.settings.models));
-    } else {
-      Object.entries(OPENAI_MODELS).forEach(
-        ([e, o]) => o.llm.contains(id) && models.add(e)
-      );
-      global.plugin.settings.models = models;
-      global.plugin.saveSettings();
-      setModels(new Set(models));
-    }
+    Object.entries(OPENAI_MODELS).forEach(
+      ([e, o]) => o.llm.contains(id) && models.add(e)
+    );
+    setModels(new Set(models));
   }, []);
 
   return (

@@ -1,22 +1,27 @@
 import clsx from "clsx";
-import React, { useEffect, useRef, useState } from "react";
-import { useToggle } from "usehooks-ts";
+import React, { useEffect, useState } from "react";
+import { Register } from "../sections";
 export default function SettingsSection(props: {
   title: string;
+  alwaysOpen?: boolean;
   collapsed?: boolean;
   hideTitle?: boolean;
   children?: any;
   className?: any;
   hidden?: boolean;
   triggerResize?: boolean;
+  register: Register;
+  id: string;
 }) {
-  const [_, triggerResize2] = useToggle();
   const [collapsed, setCollapsed] = useState(true);
-  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    props.register.register(props.id, props.title, "");
+  }, [props.id]);
 
   useEffect(
-    () => setCollapsed((props.collapsed ?? true) || false),
-    [props.collapsed]
+    () => setCollapsed(!props.alwaysOpen && !props.register.searchTerm.length),
+    [props.register.searchTerm.length]
   );
 
   return (
@@ -24,7 +29,7 @@ export default function SettingsSection(props: {
       className={clsx("dz-collapse", props.className, {
         "opacity-50 max-h-16": collapsed,
         "dz-collapse-open": !collapsed,
-        hidden: props.hidden,
+        hidden: props.hidden || !props.register.activeSections[props.id],
       })}
     >
       {!props.hideTitle && (

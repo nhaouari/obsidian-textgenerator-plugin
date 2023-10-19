@@ -19,8 +19,8 @@ export default function AutoSuggestSetting(props: { register: Register }) {
     <SettingsSection
       title="Auto-Suggest Options"
       className="flex w-full flex-col"
-      collapsed={!props.register.searchTerm.length}
-      hidden={!props.register.activeSections[sectionId]}
+      register={props.register}
+      id={sectionId}
     >
       <SettingItem
         name="Enable/Disable"

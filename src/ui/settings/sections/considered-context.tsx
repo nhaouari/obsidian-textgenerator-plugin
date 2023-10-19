@@ -69,8 +69,8 @@ export default function ConsideredContextSetting(props: {
       <SettingsSection
         title="Considered Context"
         className="flex w-full flex-col"
-        collapsed={!props.register.searchTerm.length}
-        hidden={!props.register.activeSections[sectionId]}
+        register={props.register}
+        id={sectionId}
       >
         {listOfContexts
           .filter((d) => contextNotForTemplate.contains(d))
@@ -110,8 +110,8 @@ export default function ConsideredContextSetting(props: {
       <SettingsSection
         title="Considered Context For Templates"
         className="flex w-full flex-col"
-        collapsed={!props.register.searchTerm.length}
-        hidden={!props.register.activeSections[sectionId]}
+        register={props.register}
+        id={sectionId}
       >
         {listOfContexts
           .filter((d) => !contextNotForTemplate.contains(d))

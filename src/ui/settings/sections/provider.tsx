@@ -47,9 +47,10 @@ export default function ProviderSetting(props: { register: Register }) {
       <SettingsSection
         title="LLM Settings"
         className="flex w-full flex-col"
-        collapsed={!props.register.searchTerm.length}
-        hidden={!props.register.activeSections[sectionId]}
+        register={props.register}
+        id={sectionId}
         triggerResize={resized}
+        alwaysOpen
       >
         <SettingItem
           name="LLM Provider"

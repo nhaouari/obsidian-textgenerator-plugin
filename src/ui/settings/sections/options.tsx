@@ -73,8 +73,8 @@ export default function OptionsSetting(props: { register: Register }) {
       <SettingsSection
         title="Activate options section"
         className="flex w-full flex-col"
-        collapsed={!props.register.searchTerm.length}
-        hidden={!props.register.activeSections[sectionId]}
+        register={props.register}
+        id={sectionId}
       >
         <SettingItem
           name="Keys encryption"

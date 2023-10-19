@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 // ---------- sections ----------
-import GeneralSetting from "./general";
+import AdvancedSetting from "./advanced";
 import ProviderSetting from "./provider";
 import DMPSetting from "./default-model-parameters";
 import ConsideredContextSetting from "./considered-context";
@@ -36,7 +36,7 @@ export default function SectionsMain() {
       !searchTerm.length
         ? Object.entries(items)
         : Object.entries(items).filter(([key, val]) =>
-            `${val.term}`.includes(searchTerm)
+            `${val.term} ${items[val.sectionId]?.term}`.includes(searchTerm)
           ),
     [items, searchTerm]
   );
@@ -89,8 +89,8 @@ export default function SectionsMain() {
           placeholder="Search For Option"
         />
       </div>
-      <GeneralSetting register={register} />
       <ProviderSetting register={register} />
+      <AdvancedSetting register={register} />
       <DMPSetting register={register} />
       <ConsideredContextSetting register={register} />
       <ExtractorOptionsSetting register={register} />

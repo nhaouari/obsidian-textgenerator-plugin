@@ -5,7 +5,7 @@ import SettingsSection from "../components/section";
 import Input from "../components/input";
 import type { Register } from ".";
 import Confirm from "#/ui/package-manager/components/confirm";
-export default function GeneralSetting(props: { register: Register }) {
+export default function AdvancedSetting(props: { register: Register }) {
   const global = useGlobal();
 
   const sectionId = useId();
@@ -32,10 +32,10 @@ export default function GeneralSetting(props: { register: Register }) {
   };
   return (
     <SettingsSection
-      title="General Settings"
+      title="Advanced Settings"
       className="flex w-full flex-col"
-      collapsed={!props.register.searchTerm.length}
-      hidden={!props.register.activeSections[sectionId]}
+      register={props.register}
+      id={sectionId}
     >
       <SettingItem
         name="Display errors in the editor"
