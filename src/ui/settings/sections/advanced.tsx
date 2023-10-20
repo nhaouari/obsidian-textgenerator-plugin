@@ -32,6 +32,26 @@ export default function AdvancedSetting(props: { register: Register }) {
       id={sectionId}
     >
       <SettingItem
+        name="Streaming"
+        description="Enable streaming if supported by the provider"
+        register={props.register}
+        sectionId={sectionId}
+      >
+        <Input
+          type="checkbox"
+          value={
+            "" +
+            (global.plugin.textGenerator.LLMProvider.streamable &&
+              global.plugin.settings.stream)
+          }
+          setValue={async (val) => {
+            global.plugin.settings.stream = val == "true";
+            await global.plugin.saveSettings();
+            global.triggerReload();
+          }}
+        />
+      </SettingItem>
+      <SettingItem
         name="Display errors in the editor"
         description="If you want to see the errors in the editor"
         register={props.register}
@@ -98,6 +118,7 @@ export default function AdvancedSetting(props: { register: Register }) {
           }}
         />
       </SettingItem>
+
       <SettingItem
         name="Prompts Templates Path"
         description="Path of Prompts Templates"
@@ -113,7 +134,6 @@ export default function AdvancedSetting(props: { register: Register }) {
           }}
         />
       </SettingItem>
-
       <SettingItem
         name="Reload the plugin"
         description="Some changes might require you to reload the plugins"

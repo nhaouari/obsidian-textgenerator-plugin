@@ -11,6 +11,7 @@ export default function SettingItem(props: {
   register: Register;
   sectionId: string;
   tip?: string;
+  textArea?: boolean;
 }) {
   const id = props.id || useId();
 
@@ -28,7 +29,11 @@ export default function SettingItem(props: {
     <div
       data-tip={props.tip}
       className={clsx(
-        "flex w-full items-center justify-between py-2",
+        "flex w-full gap-2 py-2",
+        {
+          "items-center justify-between": !props.textArea,
+          "flex-col": props.textArea,
+        },
         props.className,
         {
           hidden: props.register && !props.register.listOfAllowed.contains(id),

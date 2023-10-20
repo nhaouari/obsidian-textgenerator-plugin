@@ -19,15 +19,19 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
   prefix: "\n\n",
   stream: true,
   context: {
-    includeTitle: false,
-    includeStaredBlocks: true,
-    includeFrontmatter: true,
-    includeHeadings: true,
-    includeChildren: false,
-    includeMentions: false,
-    includeHighlights: true,
-    includeExtractions: false,
+    customInstructEnabled: false,
     includeClipboard: true,
+    customInstruct: `Title: {{title}}
+  
+Starred Blocks: {{#each starredBlocks}} {{this}} {{/each}}
+	  
+{{selection}}`,
+
+    contextTemplate: `Title: {{title}}
+	
+Starred Blocks: {{#each starredBlocks}} {{this}} {{/each}}
+	  
+{{selection}}`,
   },
   requestTimeout: 300000,
   options: {
@@ -51,6 +55,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
     "modal-suggest": false,
     "text-extractor-tool": true,
     "stop-stream": true,
+    "custom-instruct": true,
     reload: true,
   },
   autoSuggestOptions: {

@@ -132,16 +132,22 @@ export function escapeRegExp(text: string) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 }
 
-export function getContextAsString(
+export async function getContextAsString(
   context: Record<string, string | string[]>,
-  withKey = ["title"]
+  template?: string
 ) {
+  if (template) {
+    const ctxt = Handlebars.compile(template)(context);
+    return ctxt;
+  }
+
   let contextString = "";
+
   for (const key in context) {
-    if (!context[key]) continue;
-    if (withKey.includes(key)) {
-      contextString += `${key}:`;
-    }
+    if (!context[key] || key == "content") continue;
+
+    contextString += `${key}:`;
+
     // Check if value is an array and join with \n
     if (Array.isArray(context[key])) {
       contextString += `${(context[key] as string[]).join("\n")}\n`;
@@ -234,6 +240,7 @@ export function promiseForceFullfil(item: any) {
 
 import { SystemMessagePromptTemplate } from "langchain/prompts";
 import get from "lodash.get";
+import { Handlebars } from "#/helpers/handlebars-helpers";
 
 export function compilePrompt(prompt: string, vars: string[]) {
   let newPrompt = prompt;

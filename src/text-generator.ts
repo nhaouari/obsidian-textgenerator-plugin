@@ -14,7 +14,6 @@ const heavyLogger = debug("textgenerator:TextGenerator:heavy");
 
 import EmbeddingScope from "./scope/embeddings";
 import { getHBValues } from "./utils/barhandles";
-import { VIEW_TOOL_ID } from "./ui/tool";
 
 export default class TextGenerator extends RequestHandler {
   plugin: TextGeneratorPlugin;
@@ -115,7 +114,7 @@ export default class TextGenerator extends RequestHandler {
     // get files context
     const contexts = (await this.contextManager.getContextFromFiles(
       files,
-      insertMetadata,
+      //   insertMetadata,
       templatePath,
       additionalProps
     )) as InputContext[];

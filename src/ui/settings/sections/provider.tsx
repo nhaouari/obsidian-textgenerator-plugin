@@ -5,7 +5,6 @@ import LLMProviderInterface from "src/LLMProviders/interface";
 import { LLMProviderRegistery } from "src/LLMProviders";
 import SettingItem from "../components/item";
 import SettingsSection from "../components/section";
-import OtherProviders from "./otherProviders";
 import type { Register } from ".";
 import { useToggle } from "usehooks-ts";
 
@@ -53,7 +52,8 @@ export default function ProviderSetting(props: { register: Register }) {
         alwaysOpen
       >
         <SettingItem
-          name="LLM Provider"
+          name={`LLM Provider`}
+          description={`${selectedLLMName?.split("(")[1].split(")")[0]}`}
           register={props.register}
           sectionId={sectionId}
         >
@@ -80,8 +80,6 @@ export default function ProviderSetting(props: { register: Register }) {
           </div>
         )}
       </SettingsSection>
-
-      <OtherProviders register={props.register} />
     </>
   );
 }

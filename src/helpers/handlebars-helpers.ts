@@ -163,7 +163,7 @@ export default function Helpersfn(self: ContextManager) {
           // empty
         }
       });
-
+      console.log(...vars);
       return "";
     },
 

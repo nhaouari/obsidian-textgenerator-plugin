@@ -8,6 +8,7 @@ import ExtractorOptionsSetting from "./extractors-options";
 import AutoSuggestSetting from "./auto-suggest";
 import OptionsSetting from "./options";
 import Input from "../components/input";
+import OtherProvidersSetting from "./otherProviders";
 // ------------------------------
 
 export type Register = {
@@ -91,6 +92,7 @@ export default function SectionsMain() {
       </div>
       <ProviderSetting register={register} />
       <AdvancedSetting register={register} />
+      <OtherProvidersSetting register={register} />
       <DMPSetting register={register} />
       <ConsideredContextSetting register={register} />
       <ExtractorOptionsSetting register={register} />

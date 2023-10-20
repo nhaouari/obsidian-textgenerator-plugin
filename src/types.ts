@@ -1,13 +1,34 @@
+type Options = Record<
+  | "generate-text"
+  | "generate-text-with-metadata"
+  | "insert-generated-text-From-template"
+  | "create-generated-text-From-template"
+  | "insert-text-From-template"
+  | "create-text-From-template"
+  | "search-results-batch-generate-from-template"
+  | "show-modal-From-template"
+  | "open-template-as-tool"
+  | "set_max_tokens"
+  | "set-llm"
+  | "packageManager"
+  | "create-template"
+  | "get-title"
+  | "generated-text-to-clipboard-From-template"
+  | "calculate-tokens"
+  | "calculate-tokens-for-template"
+  | "modal-suggest"
+  | "text-extractor-tool"
+  | "stop-stream"
+  | "custom-instruct"
+  | "reload",
+  boolean
+>;
+
 type Context = {
-  includeTitle: boolean;
-  includeStaredBlocks: boolean;
-  includeFrontmatter: boolean;
-  includeHeadings: boolean;
-  includeChildren: boolean;
-  includeMentions: boolean;
-  includeHighlights: boolean;
-  includeExtractions: boolean;
   includeClipboard: boolean;
+  customInstructEnabled: boolean;
+  customInstruct: string;
+  contextTemplate: string;
 };
 
 export type Version = `${number}.${number}.${number}${"" | "-beta"}`;
@@ -33,30 +54,7 @@ type TextGeneratorSettings = {
   requestTimeout: number;
   prefix: string;
   stream: boolean;
-  options: Record<
-    | "generate-text"
-    | "generate-text-with-metadata"
-    | "insert-generated-text-From-template"
-    | "create-generated-text-From-template"
-    | "insert-text-From-template"
-    | "create-text-From-template"
-    | "search-results-batch-generate-from-template"
-    | "show-modal-From-template"
-    | "open-template-as-tool"
-    | "set_max_tokens"
-    | "set-llm"
-    | "packageManager"
-    | "create-template"
-    | "get-title"
-    | "generated-text-to-clipboard-From-template"
-    | "calculate-tokens"
-    | "calculate-tokens-for-template"
-    | "modal-suggest"
-    | "text-extractor-tool"
-    | "stop-stream"
-    | "reload",
-    boolean
-  >;
+  options: Options;
   autoSuggestOptions: {
     isEnabled: boolean;
     delay: number;

@@ -13,14 +13,14 @@ export default function SettingsSection(props: {
   register: Register;
   id: string;
 }) {
-  const [collapsed, setCollapsed] = useState(true);
-
+  const [_collapsed, setCollapsed] = useState(true);
+  const collapsed = !props.alwaysOpen && _collapsed;
   useEffect(() => {
     props.register.register(props.id, props.title, "");
   }, [props.id]);
 
   useEffect(
-    () => setCollapsed(!props.alwaysOpen && !props.register.searchTerm.length),
+    () => setCollapsed(!props.register.searchTerm.length),
     [props.register.searchTerm.length]
   );
 
@@ -42,25 +42,27 @@ export default function SettingsSection(props: {
             onClick={() => setCollapsed((o) => !o)}
           >
             <h3>{props.title}</h3>
-            <svg
-              data-accordion-icon
-              className={clsx("h-3 w-3 shrink-0 transition-transform", {
-                "-rotate-180": !collapsed,
-                "-rotate-90": collapsed,
-              })}
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 10 6"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 5 5 1 1 5"
-              />
-            </svg>
+            {!props.alwaysOpen && (
+              <svg
+                data-accordion-icon
+                className={clsx("h-3 w-3 shrink-0 transition-transform", {
+                  "-rotate-180": !collapsed,
+                  "-rotate-90": collapsed,
+                })}
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 10 6"
+              >
+                <path
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 5 5 1 1 5"
+                />
+              </svg>
+            )}
           </div>
         </div>
       )}

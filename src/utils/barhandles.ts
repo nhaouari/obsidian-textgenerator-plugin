@@ -24,7 +24,11 @@ export const getHBValues = (text: string) => {
     }
   };
 
+  console.log(tags);
   for (const tag of tags) {
+    if (tag == "this") {
+      continue;
+    }
     if (tag.startsWith("/")) {
       // context = stack.pop();
       continue;
@@ -67,9 +71,13 @@ export const getHBValues = (text: string) => {
       continue;
     }
 
-    if ("#^".includes(tag[0])) {
-      //   setVar(tag.substr(1), true);
+    if (tag.startsWith("#each ")) {
+      const v = tag.split(" ")[1];
+      tags.push(v);
+      //   const newContext = {};
+      //   context[v] = [newContext];
       //   stack.push(context);
+      //   context = newContext;
       continue;
     }
 
@@ -128,17 +136,14 @@ export const getHBValues = (text: string) => {
       continue;
     }
 
-    if (tag.startsWith("#each ")) {
-      const v = tag.split(" ")[1];
-      const newContext = {};
-      context[v] = [newContext];
-      stack.push(context);
-      context = newContext;
+    if (tag.startsWith("/each")) {
+      //   context = stack.pop();
       continue;
     }
 
-    if (tag.startsWith("/each")) {
-      context = stack.pop();
+    if ("#^".includes(tag[0])) {
+      //   setVar(tag.substr(1), true);
+      //   stack.push(context);
       continue;
     }
 

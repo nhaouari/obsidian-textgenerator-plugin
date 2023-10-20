@@ -4,10 +4,15 @@ import SettingItem from "../components/item";
 import SettingsSection from "../components/section";
 import Input from "../components/input";
 import { useMemo } from "react";
-import { useToggle } from "usehooks-ts";
 import type { Register } from ".";
+import { Context } from "#/types";
 
-const contextNotForTemplate = ["includeTitle", "includeStaredBlocks"];
+const contextVariables: string[] = [
+  "title",
+  "content",
+  "selection",
+  "staredBlocks",
+];
 
 const extendedInfo: Record<
   string,
@@ -59,53 +64,106 @@ export default function ConsideredContextSetting(props: {
   const global = useGlobal();
   const sectionId = useId();
 
-  const listOfContexts = useMemo(
-    () => Object.keys(global.plugin.defaultSettings.context),
-    []
-  );
+  const listOfContexts = useMemo(() => contextVariables, []);
 
   return (
     <>
       <SettingsSection
-        title="Considered Context"
+        title="Custom Instructions"
         className="flex w-full flex-col"
         register={props.register}
         id={sectionId}
       >
-        {listOfContexts
-          .filter((d) => contextNotForTemplate.contains(d))
-          .map((key) => {
-            const moreData = extendedInfo[key];
-            return (
-              <SettingItem
-                key={moreData?.name || key}
-                name={moreData?.name || key}
-                description={
-                  moreData?.description ||
-                  `Include ${key} in the considered context.`
+        <SettingItem
+          name=""
+          description={"You can customize generate text prompt"}
+          register={props.register}
+          sectionId={sectionId}
+        >
+          <Input
+            type="checkbox"
+            value={"" + global.plugin.settings.context.customInstructEnabled}
+            setValue={async (val) => {
+              global.plugin.settings.context.customInstructEnabled =
+                val == "true";
+              await global.plugin.saveSettings();
+              global.triggerReload();
+            }}
+          />
+        </SettingItem>
+        {global.plugin.settings.context.customInstructEnabled && (
+          <>
+            <SettingItem
+              name="Context Template"
+              description="Default template for {{context}} variable"
+              register={props.register}
+              sectionId={sectionId}
+              textArea
+            >
+              <textarea
+                placeholder="Textarea will autosize to fit the content"
+                className="resize-y"
+                value={
+                  global.plugin.settings.context.customInstruct ||
+                  global.plugin.defaultSettings.context.customInstruct
                 }
-                register={props.register}
-                sectionId={sectionId}
-              >
-                <Input
-                  type="checkbox"
-                  value={
-                    "" +
-                    global.plugin.settings.context[
-                      key as keyof typeof global.plugin.settings.context
-                    ]
-                  }
-                  setValue={async (val) => {
-                    global.plugin.settings.context[
-                      key as keyof typeof global.plugin.settings.context
-                    ] = val == "true";
-                    await global.plugin.saveSettings();
-                    global.triggerReload();
-                  }}
-                />
-              </SettingItem>
-            );
-          })}
+                onChange={async (e) => {
+                  global.plugin.settings.context.customInstruct =
+                    e.target.value;
+                  global.triggerReload();
+                  await global.plugin.saveSettings();
+                }}
+                spellCheck={false}
+                rows={10}
+              />
+            </SettingItem>
+            <span className="text-sm opacity-50">Available Variables:</span>
+            <div className="flex flex-wrap gap-2">
+              {
+                listOfContexts.map((v) => {
+                  v = `{{${v}}}`;
+                  return (
+                    <span key={v} className="select-all">
+                      {v}
+                    </span>
+                  );
+                })
+                //   .map((key) => {
+                //     const moreData = extendedInfo[key];
+                //     return (
+                //       <SettingItem
+                //         key={moreData?.name || key}
+                //         name={moreData?.name || key}
+                //         description={
+                //           moreData?.description ||
+                //           `Include ${key} in the considered context.`
+                //         }
+                //         register={props.register}
+                //         sectionId={sectionId}
+                //       >
+                //         <Input
+                //           type="checkbox"
+                //           value={
+                //             "" +
+                //             global.plugin.settings.context[
+                //               key as keyof typeof global.plugin.settings.context
+                //             ]
+                //           }
+                //           setValue={async (val) => {
+                //             global.plugin.settings.context[
+                //               key as keyof typeof global.plugin.settings.context
+                //             ] = val == "true";
+                //             await global.plugin.saveSettings();
+                //             global.triggerReload();
+                //           }}
+                //         />
+                //       </SettingItem>
+                //     );
+                //   })
+              }
+            </div>
+          </>
+        )}
       </SettingsSection>
       <SettingsSection
         title="Considered Context For Templates"
@@ -113,8 +171,8 @@ export default function ConsideredContextSetting(props: {
         register={props.register}
         id={sectionId}
       >
-        {listOfContexts
-          .filter((d) => !contextNotForTemplate.contains(d))
+        {(["includeClipboard"] as (keyof Context)[])
+          //   .filter((d) => !contextNotForTemplate.contains(d as any))
           .map((key) => {
             const moreData = extendedInfo[key];
             return (
@@ -137,9 +195,9 @@ export default function ConsideredContextSetting(props: {
                     ]
                   }
                   setValue={async (val) => {
-                    global.plugin.settings.context[
+                    (global.plugin.settings.context[
                       key as keyof typeof global.plugin.settings.context
-                    ] = val == "true";
+                    ] as any) = val == "true";
                     await global.plugin.saveSettings();
                     global.triggerReload();
                   }}
@@ -147,6 +205,74 @@ export default function ConsideredContextSetting(props: {
               </SettingItem>
             );
           })}
+        <SettingItem
+          name="{{Context}} Template"
+          description="Template for {{context}} variable"
+          register={props.register}
+          sectionId={sectionId}
+          textArea
+        >
+          <textarea
+            placeholder="Textarea will autosize to fit the content"
+            className="resize-y"
+            value={
+              global.plugin.settings.context.contextTemplate ||
+              global.plugin.defaultSettings.context.contextTemplate
+            }
+            onChange={async (e) => {
+              global.plugin.settings.context.contextTemplate = e.target.value;
+              global.triggerReload();
+              await global.plugin.saveSettings();
+            }}
+            spellCheck={false}
+            rows={10}
+          />
+        </SettingItem>
+        <span className="text-sm opacity-50">Available Variables:</span>
+        <div className="flex flex-wrap gap-2">
+          {
+            listOfContexts.map((v) => {
+              v = `{{${v}}}`;
+              return (
+                <span key={v} className="select-all">
+                  {v}
+                </span>
+              );
+            })
+            //   .map((key) => {
+            //     const moreData = extendedInfo[key];
+            //     return (
+            //       <SettingItem
+            //         key={moreData?.name || key}
+            //         name={moreData?.name || key}
+            //         description={
+            //           moreData?.description ||
+            //           `Include ${key} in the considered context.`
+            //         }
+            //         register={props.register}
+            //         sectionId={sectionId}
+            //       >
+            //         <Input
+            //           type="checkbox"
+            //           value={
+            //             "" +
+            //             global.plugin.settings.context[
+            //               key as keyof typeof global.plugin.settings.context
+            //             ]
+            //           }
+            //           setValue={async (val) => {
+            //             global.plugin.settings.context[
+            //               key as keyof typeof global.plugin.settings.context
+            //             ] = val == "true";
+            //             await global.plugin.saveSettings();
+            //             global.triggerReload();
+            //           }}
+            //         />
+            //       </SettingItem>
+            //     );
+            //   })
+          }
+        </div>
       </SettingsSection>
     </>
   );

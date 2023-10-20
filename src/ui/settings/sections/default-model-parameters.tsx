@@ -147,22 +147,6 @@ export default function DMPSetting(props: { register: Register }) {
           }}
         />
       </SettingItem>
-      <SettingItem
-        name="Streaming"
-        description="Enable streaming for commands Generate Text and Generate Text(with metadata)"
-        register={props.register}
-        sectionId={sectionId}
-      >
-        <Input
-          type="checkbox"
-          value={"" + global.plugin.settings.stream}
-          setValue={async (val) => {
-            global.plugin.settings.stream = val == "true";
-            await global.plugin.saveSettings();
-            global.triggerReload();
-          }}
-        />
-      </SettingItem>
     </SettingsSection>
   );
 }
