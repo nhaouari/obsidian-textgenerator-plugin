@@ -54,7 +54,7 @@ const extendedInfo: Record<
   },
 
   includeClipboard: {
-    description: "Include clipboard content",
+    description: "Make clipboard available for templates",
   },
 };
 
