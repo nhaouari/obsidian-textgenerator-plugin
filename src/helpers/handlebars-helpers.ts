@@ -194,7 +194,7 @@ export default function Helpersfn(self: ContextManager) {
       );
 
       const innerTxt = !options.fn
-        ? `{"selection":"${Helpers.escp(otherVariables.length)}"}`
+        ? otherVariables[otherVariables.length - 1]
         : (await await options.fn?.({
             ...this,
             ...TemplateMetadata,
@@ -202,10 +202,14 @@ export default function Helpersfn(self: ContextManager) {
 
       let innerResult = {};
       try {
-        innerResult = JSON.parse(innerTxt);
+        innerResult = innerTxt.trim().startsWith("{")
+          ? JSON.parse(innerTxt)
+          : {
+              tg_selection: innerTxt,
+            };
       } catch (err: any) {
         innerResult = {
-          selection: innerTxt,
+          tg_selection: innerTxt,
         };
         console.warn(
           "couldn't parse data passed to ",

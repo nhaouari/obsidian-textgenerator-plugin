@@ -108,7 +108,7 @@ export default class ContextManager {
       const contextTemplate = this.plugin.settings.context.customInstructEnabled
         ? this.plugin.settings.context.customInstruct ||
           this.plugin.defaultSettings.context.customInstruct
-        : "{{selection}}";
+        : "{{tg_selection}}";
 
       const options = await this.getDefaultContext(
         props.editor,
@@ -156,14 +156,19 @@ export default class ContextManager {
         this.getFrontmatter(fileMeta),
         addtionalOpts,
         {
-          selection: removeYAML(await this.plugin.app.vault.cachedRead(file)),
+          tg_selection: removeYAML(
+            await this.plugin.app.vault.cachedRead(file)
+          ),
         }
       );
 
       const { context, inputTemplate, outputTemplate, preRunnerTemplate } =
         await this.templateFromPath(templatePath, options);
 
+      await preRunnerTemplate?.(options);
+
       const ctx = await this.executeTemplateDataviewQueries(context);
+
       logger("Context Template", { context: ctx, options });
 
       contexts.push({
@@ -363,16 +368,16 @@ export default class ContextManager {
     const context: {
       title?: string;
       starredBlocks?: any;
+      tg_selection?: string;
       selections?: string[];
       selection?: string;
-      tg_selection?: string;
       frontmatter?: any;
       content?: string;
     } = {
+      tg_selection: "",
       selection: "",
       selections: [],
       content: "",
-      tg_selection: "",
     };
 
     const variables = getHBValues(contextTemplate || "") || [];
