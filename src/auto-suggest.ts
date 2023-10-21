@@ -160,7 +160,7 @@ export class AutoSuggest extends EditorSuggest<Completion> {
     this.process = true;
 
     const selection =
-      this.plugin.textGenerator.contextManager.getSelection(editor);
+      this.plugin.textGenerator.contextManager.getTGSelection(editor);
     const lastOccurrenceIndex = selection.lastIndexOf(triggerPhrase);
     const currentPart =
       selection.substring(0, lastOccurrenceIndex) +

@@ -365,12 +365,14 @@ export default class ContextManager {
       starredBlocks?: any;
       selections?: string[];
       selection?: string;
+      tg_selection?: string;
       frontmatter?: any;
       content?: string;
     } = {
       selection: "",
       selections: [],
       content: "",
+      tg_selection: "",
     };
 
     const variables = getHBValues(contextTemplate || "") || [];
@@ -383,10 +385,10 @@ export default class ContextManager {
 
     if (editor) {
       //   context["line"] = this.getConsideredContext(editor);
+      context["tg_selection"] = this.getTGSelection(editor);
 
       const selections = this.getSelections(editor);
       const selection = this.getSelection(editor);
-
       if (selections.length > 1) {
         context["selections"] = selections || [];
       } else {
@@ -520,10 +522,26 @@ export default class ContextManager {
     return fromTo;
   }
 
-  getSelection(editor: Editor) {
-    logger("getSelection", editor);
+  getTGSelection(editor: Editor) {
+    logger("getTGSelection", editor);
     const range = this.getSelectionRange(editor);
     let selectedText = editor.getRange(range.from, range.to);
+
+    const frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document
+    if (
+      typeof frontmatter !== "undefined" &&
+      Object.keys(frontmatter).length !== 0
+    ) {
+      /* Text Generate with metadata */
+      selectedText = removeYAML(selectedText).trim();
+    }
+    logger("getTGSelection", { selectedText });
+    return selectedText;
+  }
+
+  getSelection(editor: Editor) {
+    logger("getSelection", editor);
+    let selectedText = editor.getSelection();
 
     const frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document
     if (
