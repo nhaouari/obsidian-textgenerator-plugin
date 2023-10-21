@@ -10,6 +10,7 @@ import { LLMProviderRegistery } from "../LLMProviders";
 
 import debug from "debug";
 import { VIEW_TOOL_ID } from "#/ui/tool";
+import { VIEW_Playground_ID } from "#/ui/playground";
 const logger = debug("textgenerator:main");
 
 export default class Commands {
@@ -283,6 +284,23 @@ export default class Commands {
       },
     },
 
+    {
+      id: "open-playground",
+      name: "open handlebar playground",
+      icon: "layout",
+      //hotkeys: [{ modifiers: ["Alt"], key: "4"}],
+      async callback() {
+        const self: Commands = this;
+        try {
+          self.plugin.activateView(VIEW_Playground_ID, {
+            editor: self.plugin.app.workspace.activeEditor?.editor,
+            openInPopout: false,
+          });
+        } catch (error) {
+          this.plugin.handelError(error);
+        }
+      },
+    },
     {
       id: "set_max_tokens",
       name: "Set max_tokens",

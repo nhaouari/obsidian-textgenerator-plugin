@@ -48,6 +48,7 @@ import { randomUUID } from "crypto";
 import VersionManager from "./scope/versionManager";
 
 import { registerAPI } from "@vanakat/plugin-api";
+import { PlaygroundView, VIEW_Playground_ID } from "./ui/playground";
 
 let safeStorage: any;
 
@@ -187,6 +188,10 @@ export default class TextGeneratorPlugin extends Plugin {
       };
 
       this.registerView(VIEW_TOOL_ID, (leaf) => new ToolView(leaf, this));
+      this.registerView(
+        VIEW_Playground_ID,
+        (leaf) => new PlaygroundView(leaf, this)
+      );
       this.registerMarkdownCodeBlockProcessor("tg", async (source, el, ctx) =>
         blockTgHandler(source, el, ctx)
       );
@@ -249,6 +254,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
   async onunload() {
     this.app.workspace.detachLeavesOfType(VIEW_TOOL_ID);
+    this.app.workspace.detachLeavesOfType(VIEW_Playground_ID);
   }
 
   async loadSettings() {

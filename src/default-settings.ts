@@ -23,15 +23,15 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
     includeClipboard: true,
     customInstruct: `Title: {{title}}
   
-Starred Blocks: {{#each starredBlocks}} {{this}} {{/each}}
+Starred Blocks: {{starredBlocks}}
 	  
-{{selection}}`,
+{{tg_selection}}`,
 
     contextTemplate: `Title: {{title}}
 	
-Starred Blocks: {{#each starredBlocks}} {{this}} {{/each}}
+Starred Blocks: {{starredBlocks}}
 	  
-{{selection}}`,
+{{tg_selection}}`,
   },
   requestTimeout: 300000,
   options: {
@@ -44,6 +44,7 @@ Starred Blocks: {{#each starredBlocks}} {{this}} {{/each}}
     "create-text-From-template": false,
     "show-modal-From-template": true,
     "open-template-as-tool": true,
+    "open-playground": true,
     set_max_tokens: true,
     "set-llm": true,
     packageManager: true,

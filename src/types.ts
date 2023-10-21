@@ -20,7 +20,8 @@ type Options = Record<
   | "text-extractor-tool"
   | "stop-stream"
   | "custom-instruct"
-  | "reload",
+  | "reload"
+  | "open-playground",
   boolean
 >;
 
