@@ -86,6 +86,31 @@ export class AutoSuggest extends EditorSuggest<Completion> {
         async (context: EditorSuggestContext): Promise<Completion[]> => {
           logger("updateSettings", { delay: this.delay, context });
           if (this.process) {
+            const trimmedQuery = context.query.trim();
+
+            const lineContext = context.editor
+              .getRange(
+                {
+                  ch: 0,
+                  line: context.start.line,
+                },
+                context.end
+              )
+              .trim();
+
+            if (
+              // if its at the begining of a line
+              !context.start.ch ||
+              // if the line has less than 10 characters
+              lineContext.length <= 10 ||
+              // if there are no context
+              trimmedQuery.length <= 5 ||
+              // if its a list item
+              trimmedQuery.endsWith("-") ||
+              trimmedQuery.endsWith("- [ ]")
+            )
+              return [];
+
             const suggestions = await this.getGPTSuggestions(context);
             return suggestions?.length
               ? suggestions
@@ -231,9 +256,8 @@ export class AutoSuggest extends EditorSuggest<Completion> {
   ): Promise<Completion[] | []> {
     logger("getGPTSuggestions", context);
     try {
-      const prompt = `continue the follwing text :
-            ${context.query}
-            `;
+      const prompt = `continue the follwing text:
+${context.query}`;
 
       this.plugin.startProcessing(false);
 
