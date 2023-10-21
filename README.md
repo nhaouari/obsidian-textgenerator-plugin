@@ -22,7 +22,7 @@ There are many benefits to using a Text Generator Plugin, including the followin
 * **Flexible Prompts**: The context of the prompt is straightforward using all the available options in the Considered Context which gives you a higer filexibilty.
 * **Template Engine**: You can create templates to make repetitive tasks more manageable.
 * **Community Templates**: Through this option you can discover new use cases of Generative Artificial Intelligence using the shared templates and you can share your use cases easier.
-* **Highly Flexible Configuration**: Using Frontmatter Configuration, it is possible to use different services such as OpenAI, HugginFace.
+* **Highly Flexible Configuration**: Using Frontmatter Configuration, it is possible to use different services such as OpenAI, HuggingFace.
 # Demonstration 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/OergqWCdFKc/0.jpg)](https://www.youtube.com/watch?v=OergqWCdFKc)
 # Documentation 
