@@ -11,7 +11,7 @@ const contextVariables: string[] = [
   "title",
   "content",
   "selection",
-  "staredBlocks",
+  "starredBlocks",
 ];
 
 const extendedInfo: Record<

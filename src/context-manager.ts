@@ -676,13 +676,13 @@ export default class ContextManager {
   async getStarredBlocks(path = "") {
     const fileCache = this.getMetaData(path);
     let content = "";
-    const staredHeadings = fileCache?.headings?.filter(
+    const starredHeadings = fileCache?.headings?.filter(
       (e: { heading: string }) =>
         e.heading.substring(e.heading.length - 1) === "*"
     );
-    if (staredHeadings) {
-      for (let i = 0; i < staredHeadings.length; i++) {
-        content += await this.getTextBloc(staredHeadings[i].heading);
+    if (starredHeadings) {
+      for (let i = 0; i < starredHeadings.length; i++) {
+        content += await this.getTextBloc(starredHeadings[i].heading);
       }
     }
     return content;
