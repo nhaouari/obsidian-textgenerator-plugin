@@ -24,9 +24,8 @@ export const getHBValues = (text: string) => {
     }
   };
 
-  console.log(tags);
   for (const tag of tags) {
-    if (tag == "this") {
+    if (tag == "this" || tag.startsWith('"') || tag.startsWith("'")) {
       continue;
     }
     if (tag.startsWith("/")) {
@@ -101,6 +100,7 @@ export const getHBValues = (text: string) => {
         arr.shift();
         arr.shift();
         const v = arr.join(" ");
+        if (v.startsWith('"') || v.startsWith("'")) continue;
         const newContext = {};
         context[v] = newContext;
         stack.push(context);

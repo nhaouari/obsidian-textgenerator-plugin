@@ -171,6 +171,7 @@ export default function Helpersfn(self: ContextManager) {
       const options: { data: { root: any }; fn: any } = vars.pop();
 
       if (!options.data.root.templatePath) {
+        console.log({ t: this, options, vars });
         throw new Error("templatePath was not found in run command");
       }
 
@@ -205,11 +206,15 @@ export default function Helpersfn(self: ContextManager) {
         innerResult = innerTxt.trim().startsWith("{")
           ? JSON.parse(innerTxt)
           : {
-              tg_selection: innerTxt,
+              [otherVariables.length > 1
+                ? "VAR:" + otherVariables[1]
+                : "tg_selection"]: innerTxt,
             };
       } catch (err: any) {
         innerResult = {
-          tg_selection: innerTxt,
+          [otherVariables.length > 1
+            ? "VAR:" + otherVariables[1]
+            : "tg_selection"]: innerTxt,
         };
         console.warn(
           "couldn't parse data passed to ",
@@ -222,7 +227,7 @@ export default function Helpersfn(self: ContextManager) {
       }
 
       options.data.root[
-        otherVariables.length > 1 ? "VAR:" + otherVariables[0] : id
+        otherVariables.length >= 1 ? "VAR:" + otherVariables[0] : id
       ] = await self.plugin.textGenerator.templateGen(id, {
         additionalProps: {
           ...options.data.root,
@@ -291,8 +296,7 @@ export default function Helpersfn(self: ContextManager) {
 
       const res = await ce.convert(cntn);
 
-      const ress = JSON.stringify(res);
-      options.data.root[id] = Helpers.escp(ress.substring(1, ress.length - 1));
+      options.data.root[id] = res;
 
       return options.data.root[id];
     },

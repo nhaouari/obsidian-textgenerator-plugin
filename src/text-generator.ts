@@ -314,7 +314,6 @@ export default class TextGenerator extends RequestHandler {
     }
   ) {
     const frontmatter = this.reqFormatter.getFrontmatter("", insertMetadata);
-    console.log({ frontmatter });
     if (
       this.plugin.settings.stream &&
       this.plugin.textGenerator.LLMProvider?.streamable &&

@@ -307,12 +307,11 @@ export default class ContextManager {
 
     logger("getTemplateContext Variables ", { variables });
 
-    if (vars["frontmatter"])
-      blocks["frontmatter"] = merge(
-        {},
-        this.getFrontmatter(this.getMetaData(templatePath)),
-        this.getFrontmatter(activeDocCache)
-      );
+    blocks["frontmatter"] = merge(
+      {},
+      this.getFrontmatter(this.getMetaData(templatePath)),
+      this.getFrontmatter(activeDocCache)
+    );
 
     if (contextOptions.includeClipboard)
       try {
