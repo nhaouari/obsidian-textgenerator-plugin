@@ -100,11 +100,11 @@ export const getHBValues = (text: string) => {
         arr.shift();
         arr.shift();
         const v = arr.join(" ");
-        if (v.startsWith('"') || v.startsWith("'")) continue;
-        const newContext = {};
-        context[v] = newContext;
-        stack.push(context);
-        context = newContext;
+
+        const variables = extractVariableNames(v);
+        console.log("extracted variables are ", variables);
+
+        tags.push(...variables);
       }
       //   context = stack.pop();
       continue;
@@ -159,3 +159,18 @@ export const getHBValues = (text: string) => {
     (v) => !ignoredVariables.includes(v)
   ) as string[];
 };
+
+function extractVariableNames(inputString: string) {
+  const pattern = /'([^']*)'|"([^"]*)"/g;
+  const quotedParts = inputString.match(pattern) || [];
+
+  // Replacing quoted parts with empty strings
+  quotedParts.forEach((quotedPart) => {
+    inputString = inputString.replace(quotedPart, "");
+  });
+
+  const variablePattern = /\b[a-zA-Z_][a-zA-Z0-9_]*\b/g;
+  const variableNames = inputString.match(variablePattern) || [];
+
+  return variableNames;
+}

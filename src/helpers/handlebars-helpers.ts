@@ -194,36 +194,60 @@ export default function Helpersfn(self: ContextManager) {
         self.getMetaData(self.plugin.textGenerator.templatePaths[id])
       );
 
-      const innerTxt = !options.fn
-        ? otherVariables[otherVariables.length - 1]
-        : (await await options.fn?.({
+      let varname = id;
+      let innerResult = {};
+
+      if (!options.fn) {
+        varname ||= otherVariables[1];
+        const innerTxt = otherVariables[0];
+        try {
+          innerResult = innerTxt.trim().startsWith("{")
+            ? JSON.parse(innerTxt)
+            : {
+                [otherVariables.length > 1 ? varname : "tg_selection"]:
+                  innerTxt,
+              };
+        } catch (err: any) {
+          innerResult = {
+            [otherVariables.length > 1 ? varname : "tg_selection"]: innerTxt,
+          };
+          console.warn(
+            "couldn't parse data passed to ",
+            id,
+            {
+              content: innerTxt,
+            },
+            err
+          );
+        }
+      } else {
+        varname = otherVariables[0];
+        const innerTxt =
+          (await await options.fn?.({
             ...this,
             ...TemplateMetadata,
           })) || "{}";
 
-      let innerResult = {};
-      try {
-        innerResult = innerTxt.trim().startsWith("{")
-          ? JSON.parse(innerTxt)
-          : {
-              [otherVariables.length > 1
-                ? "VAR:" + otherVariables[1]
-                : "tg_selection"]: innerTxt,
-            };
-      } catch (err: any) {
-        innerResult = {
-          [otherVariables.length > 1
-            ? "VAR:" + otherVariables[1]
-            : "tg_selection"]: innerTxt,
-        };
-        console.warn(
-          "couldn't parse data passed to ",
-          id,
-          {
-            content: innerTxt,
-          },
-          err
-        );
+        try {
+          innerResult = innerTxt.trim().startsWith("{")
+            ? JSON.parse(innerTxt)
+            : {
+                [otherVariables.length > 1 ? varname : "tg_selection"]:
+                  innerTxt,
+              };
+        } catch (err: any) {
+          innerResult = {
+            [otherVariables.length > 1 ? varname : "tg_selection"]: innerTxt,
+          };
+          console.warn(
+            "couldn't parse data passed to ",
+            id,
+            {
+              content: innerTxt,
+            },
+            err
+          );
+        }
       }
 
       options.data.root[
