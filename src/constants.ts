@@ -15,6 +15,10 @@ export const IGNORE_IN_YAML = [
   "stream",
   "messages",
   "max_tokens",
+  "handlebars_body_in",
+  "handlebars_headers_in",
+  "chain",
+  "splitter",
 ];
 
 export const OPENAI_MODELS: Record<

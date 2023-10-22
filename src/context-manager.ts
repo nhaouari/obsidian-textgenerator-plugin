@@ -825,14 +825,18 @@ export default class ContextManager {
     };
   }
 
-  getMetaDataAsStr(frontmatter: any) {
+  getMetaDataAsStr(frontmatter: Record<string, string | any[]>) {
     let cleanFrontMatter = "";
-    for (const [key, value] of Object.entries(frontmatter)) {
+    for (const [key, value] of Object.entries(frontmatter) as [
+      string,
+      string // or array
+    ]) {
       if (
         key.startsWith("body") ||
         key.startsWith("header") ||
         IGNORE_IN_YAML.findIndex((e) => e === key) != -1 ||
-        key.include(".")
+        key.includes(".") ||
+        !value
       )
         continue;
       if (Array.isArray(value)) {
@@ -841,6 +845,8 @@ export default class ContextManager {
           cleanFrontMatter += `${v}, `;
         });
         cleanFrontMatter += `\n`;
+      } else if (typeof value == "object") {
+        continue;
       } else {
         cleanFrontMatter += `${key} : ${value} \n`;
       }
