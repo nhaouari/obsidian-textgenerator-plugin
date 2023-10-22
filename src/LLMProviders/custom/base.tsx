@@ -588,8 +588,7 @@ export default class CustomProvider
           />
         </SettingItem>
         <div className="opacity-70">
-          Path from one of the choices to the content(if left empty it will
-          assume that the choices is an array of strings)
+          Path to Error message from body object, incase of error, it will show it properly
         </div>
 
         <SettingItem

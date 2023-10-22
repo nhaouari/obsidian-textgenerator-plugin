@@ -199,6 +199,7 @@ export default function Helpersfn(self: ContextManager) {
 
       if (!options.fn) {
         varname ||= otherVariables[1];
+
         const innerTxt = otherVariables[0];
         try {
           innerResult = innerTxt.trim().startsWith("{")
@@ -222,6 +223,7 @@ export default function Helpersfn(self: ContextManager) {
         }
       } else {
         varname = otherVariables[0];
+        const param = otherVariables[1] || "tg_selection";
         const innerTxt =
           (await await options.fn?.({
             ...this,
@@ -232,12 +234,11 @@ export default function Helpersfn(self: ContextManager) {
           innerResult = innerTxt.trim().startsWith("{")
             ? JSON.parse(innerTxt)
             : {
-                [otherVariables.length > 1 ? varname : "tg_selection"]:
-                  innerTxt,
+                [param]: innerTxt,
               };
         } catch (err: any) {
           innerResult = {
-            [otherVariables.length > 1 ? varname : "tg_selection"]: innerTxt,
+            [param]: innerTxt,
           };
           console.warn(
             "couldn't parse data passed to ",
@@ -249,6 +250,12 @@ export default function Helpersfn(self: ContextManager) {
           );
         }
       }
+
+      console.log({
+        varname,
+        innerResult,
+        id,
+      });
 
       options.data.root[
         otherVariables.length >= 1 ? "VAR:" + otherVariables[0] : id
