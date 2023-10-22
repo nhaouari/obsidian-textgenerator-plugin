@@ -299,7 +299,6 @@ export default class ContextManager {
     }
 
     const variables = getHBValues(templateContent);
-
     const vars: Record<string, true> = {};
 
     variables.forEach((v) => {
@@ -381,8 +380,9 @@ export default class ContextManager {
     };
 
     const variables = getHBValues(contextTemplate || "") || [];
-
     const vars: Record<string, true> = {};
+
+    console.log({ vars, contextTemplate });
 
     variables.forEach((v) => {
       vars[v] = true;
@@ -832,11 +832,11 @@ export default class ContextManager {
       string // or array
     ]) {
       if (
-        key.startsWith("body") ||
-        key.startsWith("header") ||
-        IGNORE_IN_YAML.findIndex((e) => e === key) != -1 ||
+        !value ||
         key.includes(".") ||
-        !value
+        IGNORE_IN_YAML[key] ||
+        key.startsWith("body") ||
+        key.startsWith("header")
       )
         continue;
       if (Array.isArray(value)) {
