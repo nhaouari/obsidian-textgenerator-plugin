@@ -1,10 +1,14 @@
+import Helpersfn from "#/helpers/handlebars-helpers";
 import set from "lodash.set";
 
 const ignoredVariables = ["output", "this", "true", "false"];
 
+const helpers: string[] = Object.keys(Helpersfn({} as any));
+const defaultHelpers = ["if", "unless", "with", "each"];
+
 export const getHBValues = (text: string) => {
   const re = /{{[{]?(.*?)[}]?}}/g;
-  const tags: any = [];
+  const tags: string[] = [];
   let matches: any;
   while ((matches = re.exec(text))) {
     if (matches) {
@@ -24,15 +28,25 @@ export const getHBValues = (text: string) => {
     }
   };
 
-  for (const tag of tags) {
+  main: for (const tag of tags) {
     if (
+      // if its a ignored variable name
       ignoredVariables.includes(tag) ||
+      // if its a helper
+      defaultHelpers.includes(tag) ||
+      // if its a helper
+      helpers.includes(tag) ||
+      // if its a inside variable
       tag.startsWith("VAR_") ||
+      // if its a string
       tag.startsWith("'") ||
-      tag.startsWith("'")
+      tag.startsWith('"') ||
+      // if its a number
+      "" + +tag == tag
     ) {
       continue;
     }
+
     if (tag.startsWith("/")) {
       // context = stack.pop();
       continue;
@@ -46,104 +60,20 @@ export const getHBValues = (text: string) => {
       continue;
     }
 
-    if (tag.startsWith("get ") || tag.startsWith("#get ")) {
-      //   context = stack.pop();
-      continue;
-    }
-
-    if (tag.startsWith("log ") || tag.startsWith("#log")) {
-      //   context = stack.pop();
-      continue;
-    }
-
-    if (tag.startsWith("error ") || tag.startsWith("#error")) {
-      //   context = stack.pop();
-      continue;
-    }
-
-    if (tag.startsWith("notice ") || tag.startsWith("#notice")) {
-      //   context = stack.pop();
-      continue;
-    }
-
-    if (tag.startsWith("escp ") || tag.startsWith("escp2 ")) {
-      const vars = tag.split(" ").slice(1);
-      for (const v of vars) {
-        setVar(v, true);
+    for (const helper of helpers) {
+      if (tag.startsWith(`${helper} `) || tag.startsWith(`#${helper} `)) {
+        const vars = tag.split(" ").slice(1);
+        tags.push(...vars);
+        continue main;
       }
-      stack.push(context);
-      continue;
     }
 
-    if (tag.startsWith("#each ")) {
-      const v = tag.split(" ")[1];
-      tags.push(v);
-      //   const newContext = {};
-      //   context[v] = [newContext];
-      //   stack.push(context);
-      //   context = newContext;
-      continue;
-    }
-
-    if (tag.startsWith("#if")) {
-      const vars = tag.split(" ").slice(1);
-      for (const v of vars) {
-        setVar(v, true);
+    for (const helper of defaultHelpers) {
+      if (tag.startsWith(`${helper} `) || tag.startsWith(`#${helper} `)) {
+        const vars = tag.split(" ").slice(1);
+        tags.push(...vars);
+        continue main;
       }
-      stack.push(context);
-      continue;
-    }
-
-    if (
-      tag.startsWith("run ") ||
-      tag.startsWith("#run ") ||
-      tag.startsWith("extract ") ||
-      tag.startsWith("#extract ")
-    ) {
-      if (tag.split(" ").length > 2) {
-        const arr = (tag.split(" ") as string[]) || [];
-        arr.shift();
-        arr.shift();
-        const v = arr.join(" ");
-
-        const variables = extractVariableNames(v);
-        console.log("extracted variables are ", variables);
-
-        tags.push(...variables);
-      }
-      //   context = stack.pop();
-      continue;
-    }
-
-    if (tag.startsWith("#with ")) {
-      const v = tag.split(" ")[1];
-      const newContext = {};
-      context[v] = newContext;
-      stack.push(context);
-      context = newContext;
-      continue;
-    }
-
-    if (tag.startsWith("/with")) {
-      context = stack.pop();
-      continue;
-    }
-
-    if (tag.startsWith("#unless ")) {
-      const v = tag.split(" ")[1];
-      setVar(v, true);
-      stack.push(context);
-      continue;
-    }
-
-    if (tag.startsWith("/unless")) {
-      context = stack.pop();
-      continue;
-    }
-
-    if (tag.startsWith("/each")) {
-      //   context = stack.pop();
-      continue;
     }
 
     if ("#^".includes(tag[0])) {
