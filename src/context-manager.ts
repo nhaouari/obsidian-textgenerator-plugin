@@ -57,9 +57,11 @@ export default class ContextManager {
     filePath?: string;
     insertMetadata?: boolean;
     templatePath?: string;
+    templateContent?: string;
     addtionalOpts?: any;
   }) {
     const templatePath = props.templatePath || "";
+    const templateContent = props.templateContent || "";
 
     logger(
       "getContext",
@@ -67,18 +69,26 @@ export default class ContextManager {
       props.templatePath,
       props.addtionalOpts
     );
+
     /* Template */
-    if (templatePath.length) {
+    if (templatePath.length || templateContent?.length) {
       const options = merge(
         {},
         await this.getTemplateContext({
           editor: props.editor,
           templatePath,
+          templateContent,
           filePath: props.filePath,
         }),
         props.addtionalOpts
       );
       console.log("get context", { templatePath, props, options });
+
+      if (!templatePath.length)
+        return {
+          options,
+        };
+
       const { context, inputTemplate, outputTemplate, preRunnerTemplate } =
         await this.templateFromPath(templatePath, options);
 
@@ -253,7 +263,7 @@ export default class ContextManager {
     editor?: Editor;
     filePath?: string;
     templatePath?: string;
-    content?: string;
+    templateContent?: string;
   }) {
     const templatePath = props.templatePath || "";
     logger("getTemplateContext", props.editor, props.templatePath);
@@ -287,7 +297,7 @@ export default class ContextManager {
     blocks["frontmatter"] = {};
     blocks["headings"] = {};
 
-    let templateContent = props.content || "";
+    let templateContent = props.templateContent || "";
 
     if (templatePath.length > 0) {
       const templateFile = await this.app.vault.getAbstractFileByPath(

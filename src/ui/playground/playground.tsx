@@ -96,6 +96,7 @@ export default function ChatComp(props: {
         await props.plugin.textGenerator.contextManager.getContext({
           insertMetadata: false,
           editor: editor,
+          templateContent: input,
           addtionalOpts: {},
         });
 
@@ -106,7 +107,6 @@ export default function ChatComp(props: {
 
       const result = await Handlebars.compile(input)({
         ...context.options,
-        context: context.context,
       });
 
       console.log({ result });
