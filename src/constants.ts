@@ -22,6 +22,7 @@ export const IGNORE_IN_YAML: Record<string, true> = {
   path_to_message_content: true,
   chain: true,
   splitter: true,
+  disableProvider: true,
 };
 
 export const OPENAI_MODELS: Record<

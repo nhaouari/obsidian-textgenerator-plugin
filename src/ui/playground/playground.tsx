@@ -10,6 +10,7 @@ import useGlobal from "../context/global";
 import { Handlebars } from "#/helpers/handlebars-helpers";
 import clsx from "clsx";
 import AvailableVars from "../components/availableVars";
+import { makeId } from "#/utils";
 
 export default function ChatComp(props: {
   plugin: TextGeneratorPlugin;
@@ -17,14 +18,6 @@ export default function ChatComp(props: {
   view: PlaygroundView;
   onEvent: (cb: (name: string) => void) => void;
 }) {
-  const Global = useGlobal();
-
-  const config = useMemo<{
-    templatePath: string;
-    context: InputContext;
-    editor?: Editor;
-  }>(() => props.view?.getState(), []);
-
   const [input, setInput] = useStateView<string>("", "input", props.view);
 
   const [answer, setAnswer] = useStateView("", "answer", props.view);
@@ -36,11 +29,10 @@ export default function ChatComp(props: {
 
   const firstTextareaRef = React.useRef<HTMLTextAreaElement>(null);
 
-  const openSource = () => {
-    props.view.app.workspace.openLinkText(
-      "",
-      props.view.getState().templatePath,
-      true
+  const createTemplate = () => {
+    props.plugin.textGenerator.createTemplate(
+      firstTextareaRef.current?.value || "",
+      "new_template_" + makeId(4)
     );
   };
 
@@ -60,8 +52,8 @@ export default function ChatComp(props: {
             props.view.app.workspace.moveLeafToPopout(props.view.leaf);
             break;
 
-          case "source":
-            openSource();
+          case "createTemplate":
+            createTemplate();
             break;
 
           default:

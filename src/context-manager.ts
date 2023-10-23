@@ -776,7 +776,7 @@ export default class ContextManager {
     return `${this.app.workspace.getActiveFile()?.basename}`;
   }
 
-  getMetaData(path?: string) {
+  getMetaData(path?: string, withoutCompatibility?: boolean) {
     const activeFile = !path
       ? this.plugin.textGenerator.embeddingsScope.getActiveNote()
       : { path };
@@ -790,51 +790,55 @@ export default class ContextManager {
 
       frontmatter: {
         ...cache?.frontmatter,
-        PromptInfo: {
-          ...cache?.frontmatter,
-          ...(cache?.frontmatter?.PromptInfo || {}),
-        },
 
-        config: {
-          ...cache?.frontmatter,
-          ...(cache?.frontmatter?.config || {}),
-          path_to_choices:
-            cache?.frontmatter?.choices || cache?.frontmatter?.path_to_choices,
-          path_to_message_content:
-            cache?.frontmatter?.pathToContent ||
-            cache?.frontmatter?.path_to_message_content,
-        },
+        ...(!withoutCompatibility && {
+          PromptInfo: {
+            ...cache?.frontmatter,
+            ...(cache?.frontmatter?.PromptInfo || {}),
+          },
 
-        handlebars_body_in:
-          cache?.frontmatter?.body || cache?.frontmatter?.handlebars_body_in,
-        handlebars_headers_in:
-          cache?.frontmatter?.headers ||
-          cache?.frontmatter?.handlebars_headers_in,
+          config: {
+            ...cache?.frontmatter,
+            ...(cache?.frontmatter?.config || {}),
+            path_to_choices:
+              cache?.frontmatter?.choices ||
+              cache?.frontmatter?.path_to_choices,
+            path_to_message_content:
+              cache?.frontmatter?.pathToContent ||
+              cache?.frontmatter?.path_to_message_content,
+          },
 
-        bodyParams: {
-          ...cache?.frontmatter?.bodyParams,
-          ...(cache?.frontmatter?.max_tokens
-            ? { max_tokens: cache?.frontmatter?.max_tokens }
-            : {}),
-          ...getOptionsUnder("body.", cache?.frontmatter),
-        },
+          handlebars_body_in:
+            cache?.frontmatter?.body || cache?.frontmatter?.handlebars_body_in,
+          handlebars_headers_in:
+            cache?.frontmatter?.headers ||
+            cache?.frontmatter?.handlebars_headers_in,
 
-        reqParams: {
-          ...cache?.frontmatter?.reqParams,
-          ...getOptionsUnder("reqParams.", cache?.frontmatter),
-          ...(cache?.frontmatter?.body
-            ? { body: cache?.frontmatter?.body }
-            : {}),
-        },
+          bodyParams: {
+            ...cache?.frontmatter?.bodyParams,
+            ...(cache?.frontmatter?.max_tokens
+              ? { max_tokens: cache?.frontmatter?.max_tokens }
+              : {}),
+            ...getOptionsUnder("body.", cache?.frontmatter),
+          },
 
-        splitter: {
-          ...cache?.frontmatter?.chain,
-          ...getOptionsUnder("splitter.", cache?.frontmatter),
-        },
-        chain: {
-          ...cache?.frontmatter?.chain,
-          ...getOptionsUnder("chain.", cache?.frontmatter),
-        },
+          reqParams: {
+            ...cache?.frontmatter?.reqParams,
+            ...getOptionsUnder("reqParams.", cache?.frontmatter),
+            ...(cache?.frontmatter?.body
+              ? { body: cache?.frontmatter?.body }
+              : {}),
+          },
+
+          splitter: {
+            ...cache?.frontmatter?.chain,
+            ...getOptionsUnder("splitter.", cache?.frontmatter),
+          },
+          chain: {
+            ...cache?.frontmatter?.chain,
+            ...getOptionsUnder("chain.", cache?.frontmatter),
+          },
+        }),
         ...(path ? { templatePath: path } : {}),
       },
 
@@ -996,7 +1000,10 @@ export const contextVariablesObj: Record<
     hint: "An array of notes or sub-notes that are cited or related to the primary note.",
   },
   headings: {
-    example: "{{#each headings}} {{this}} {{/each}}",
+    example: `{{#each headings}}
+# HEADER: {{@key}} 
+{{this}} 
+{{/each}}`,
     hint: "Contains all the headings within the note and their respective content.",
   },
   extractions: {

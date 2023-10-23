@@ -1,11 +1,24 @@
 import TemplateInputModalUI from "./ui/template-input-modal";
-import { App, Notice, Editor, EditorPosition, TFile } from "obsidian";
+import {
+  App,
+  Notice,
+  Editor,
+  EditorPosition,
+  TFile,
+  stringifyYaml,
+} from "obsidian";
 import { TextGeneratorSettings } from "./types";
 import TextGeneratorPlugin from "./main";
 import ReqFormatter from "./api-request-formatter";
 import { SetPath } from "./ui/settings/components/set-path";
 import ContextManager, { InputContext } from "./context-manager";
-import { makeid, createFileWithInput, openFile } from "./utils";
+import {
+  makeId,
+  createFileWithInput,
+  openFile,
+  removeYAML,
+  removeExtensionFromName,
+} from "./utils";
 import safeAwait from "safe-await";
 import debug from "debug";
 import RequestHandler from "./services/api-service";
@@ -14,6 +27,8 @@ const heavyLogger = debug("textgenerator:TextGenerator:heavy");
 
 import EmbeddingScope from "./scope/embeddings";
 import { getHBValues } from "./utils/barhandles";
+import { IGNORE_IN_YAML } from "./constants";
+import merge from "lodash.merge";
 
 export default class TextGenerator extends RequestHandler {
   plugin: TextGeneratorPlugin;
@@ -440,7 +455,7 @@ export default class TextGenerator extends RequestHandler {
 
     const title = this.plugin.app.workspace.activeLeaf?.getDisplayText();
     const suggestedPath =
-      "textgenerator/generations/" + title + "-" + makeid(3) + ".md";
+      "textgenerator/generations/" + title + "-" + makeId(3) + ".md";
     new SetPath(
       this.plugin.app,
       suggestedPath,
@@ -472,7 +487,7 @@ export default class TextGenerator extends RequestHandler {
   ) {
     logger("createToFile");
 
-    const suggestedPath = `textgenerator/generations/${makeid(4)}`;
+    const suggestedPath = `textgenerator/generations/${makeId(4)}`;
 
     new SetPath(
       this.plugin.app,
@@ -551,28 +566,40 @@ export default class TextGenerator extends RequestHandler {
 
   async createTemplate(content: string, title = "") {
     logger("createTemplate");
-    const promptInfo = `promptId: ${title}
-name: 🗞️${title} 
-description: ${title}
-required_values: 
-author: 
-tags: 
-version: 0.0.1`;
 
-    let templateContent = content;
-    const metadata = this.contextManager.getMetaData();
-    // We have three cases: no Front-matter / Frontmatter without PromptInfo/ Frontmatter with PromptInfo
-    if (!metadata?.hasOwnProperty("frontmatter")) {
-      templateContent = `---\n${promptInfo}\n---\n${templateContent}`;
-    } else if (!metadata["frontmatter"]?.hasOwnProperty("PromptInfo")) {
-      if (templateContent.indexOf("---") !== -1) {
-        templateContent = templateContent.replace("---", `---\n${promptInfo}`);
-      } else {
-        templateContent = `---\n${promptInfo}\n---\n${templateContent}`;
-      }
-    }
     const suggestedPath = `${this.plugin.settings.promptsPath}/local/${title}.md`;
     new SetPath(this.plugin.app, suggestedPath, async (path: string) => {
+      const newTitle = removeExtensionFromName(path.split("/").reverse()[0]);
+      const defaultMatter = {
+        promptId: `${newTitle}`,
+        name: `🗞️${newTitle} `,
+        description: `${newTitle}`,
+        author: "",
+        tags: "",
+        version: "0.0.1",
+        disableProvider: false,
+      };
+
+      const metadata = this.contextManager.getMetaData(undefined, true);
+
+      const matter: Record<string, any> = {};
+      Object.entries(metadata?.frontmatter).forEach(([key, content]) => {
+        if (IGNORE_IN_YAML[key]) {
+          matter[key] = content;
+        }
+      });
+
+      const templateContent = `---
+${stringifyYaml(merge({}, defaultMatter, matter))}
+---
+\`\`\`handlebars
+
+\`\`\`
+***
+${removeYAML(content)}
+***
+{{output}}`;
+
       const [errorFile, file] = await safeAwait(
         createFileWithInput(path, templateContent, this.plugin.app)
       );
@@ -582,6 +609,9 @@ version: 0.0.1`;
       }
       openFile(this.plugin.app, file);
     }).open();
+
+    await this.updateTemplatesCache();
+
     logger("createTemplate end");
   }
 

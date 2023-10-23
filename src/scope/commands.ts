@@ -371,10 +371,11 @@ export default class Commands {
       icon: "plus",
       //hotkeys: [{ modifiers: ["Alt"], key: "c"}],
       async editorCallback(editor: Editor) {
+        const self: Commands = this;
         try {
-          await this.plugin.textGenerator.createTemplateFromEditor(editor);
+          await self.plugin.textGenerator.createTemplateFromEditor(editor);
         } catch (error) {
-          this.plugin.handelError(error);
+          self.plugin.handelError(error);
         }
       },
     },

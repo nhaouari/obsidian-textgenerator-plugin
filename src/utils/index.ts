@@ -9,8 +9,8 @@ import {
 import debug from "debug";
 const logger = debug("textgenerator:setModel");
 
-export function makeid(length: number) {
-  logger("makeid");
+export function makeId(length: number) {
+  logger("makeId");
   let result = "";
   const characters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -19,7 +19,7 @@ export function makeid(length: number) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
 
-  logger("makeid end", result);
+  logger("makeId end", result);
   return result;
 }
 /**
@@ -104,6 +104,15 @@ export function removeYAML(content: string) {
   const newContent = content.replace(/^---([\s\S]*?)---/gm, "");
   logger("removeYAML", newContent);
   return newContent;
+}
+
+export function removeExtensionFromName(name: string) {
+  logger("removeExtension", name);
+  const arr = name.contains(".") ? name.split(".") : [name, ""];
+  arr.pop();
+  const res = arr.join(".");
+  logger("removeExtension", res);
+  return res;
 }
 
 export function numberToKFormat(number: number) {

@@ -62,6 +62,7 @@ export class PlaygroundView extends ItemView {
     super.onPaneMenu(menu, source);
     menu
       .addSeparator()
+
       .addItem((item) =>
         item
           .setTitle("Pin")
@@ -86,6 +87,14 @@ export class PlaygroundView extends ItemView {
           .setIcon("arrow-up-right")
           .onClick(() => {
             this.onEvent("popout");
+          })
+      )
+      .addItem((item) =>
+        item
+          .setTitle("createTemplate")
+          .setIcon("arrow-up-right")
+          .onClick(() => {
+            this.onEvent("createTemplate");
           })
       );
     //   .addItem((item) =>
