@@ -142,6 +142,13 @@ export default function Helpersfn(self: ContextManager) {
       return await Helpers.trim(t);
     },
 
+    encodeURI: async function (context: any) {
+      const t = context?.fn
+        ? await context?.fn(context.data.root)
+        : "" + context;
+      return encodeURIComponent(t);
+    },
+
     error: async function (context: any) {
       throw new Error(context);
     },
