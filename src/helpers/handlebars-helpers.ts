@@ -373,12 +373,14 @@ export default function Helpersfn(self: ContextManager) {
         self.getMetaData(self.plugin.textGenerator.templatePaths[id])
       );
 
-      const cntn = await await options.fn?.({
+      const cntn = ((await await options.fn?.({
         ...this,
         ...TemplateMetadata,
-      });
+      })) + "") as string;
 
-      const regexResults = new RegExp(otherVariables[0]).exec(cntn) || [];
+      const reg = new RegExp(otherVariables[0], otherVariables[1]);
+
+      const regexResults = cntn.match(reg);
 
       options.data.root[id] = regexResults;
       return options.data.root[id];
@@ -432,6 +434,10 @@ export default function Helpersfn(self: ContextManager) {
 
     async pullLang(rep: string) {
       return JSON.stringify(await langPull(rep));
+    },
+
+    async wait(time: string) {
+      await new Promise((s) => setTimeout(s, +(time || "1") * 1000));
     },
   } as const;
 
