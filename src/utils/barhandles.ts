@@ -1,6 +1,6 @@
 import set from "lodash.set";
 
-const ignoredVariables = ["output"];
+const ignoredVariables = ["output", "this", "true", "false"];
 
 export const getHBValues = (text: string) => {
   const re = /{{[{]?(.*?)[}]?}}/g;
@@ -25,7 +25,12 @@ export const getHBValues = (text: string) => {
   };
 
   for (const tag of tags) {
-    if (tag == "this" || tag.startsWith('"') || tag.startsWith("'")) {
+    if (
+      ignoredVariables.includes(tag) ||
+      tag.startsWith("VAR_") ||
+      tag.startsWith("'") ||
+      tag.startsWith("'")
+    ) {
       continue;
     }
     if (tag.startsWith("/")) {
@@ -155,9 +160,7 @@ export const getHBValues = (text: string) => {
     setVar(tag, "");
   }
 
-  return Object.keys(root).filter(
-    (v) => !ignoredVariables.includes(v)
-  ) as string[];
+  return Object.keys(root) as string[];
 };
 
 function extractVariableNames(inputString: string) {

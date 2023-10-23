@@ -18,7 +18,7 @@ export default class WebPageExtractor extends Extractor {
     super(app, plugin);
   }
 
-  async convert(url: string) {
+  async convert(url: string, selector?: string | string[]) {
     logger("convert", { url });
     let response: string;
 
@@ -26,8 +26,20 @@ export default class WebPageExtractor extends Extractor {
       response = await request({ url });
     } else {
       const win = new remote.BrowserWindow({ show: false });
+
+      const cookie = {
+        url: new URL(url).origin,
+        name: "dummy_name",
+        value: "dummy",
+      };
+
+      console.log({ cookie });
+
+      await win.webContents.session.cookies.set(cookie);
+
       win.webContents.userAgent =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36";
+
       await win.loadURL(url);
       response = await win.webContents.executeJavaScript(
         "document.documentElement.outerHTML"
@@ -36,7 +48,40 @@ export default class WebPageExtractor extends Extractor {
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(response, "text/html");
-    const turndownService = new TurndownService();
+
+    // try to parse it
+    try {
+      selector = JSON.parse(selector as any);
+    } catch {
+      // empty
+    }
+
+    if (selector) {
+      const selectors = Array.isArray(selector) ? selector : [selector];
+
+      const total: any[] = [];
+
+      selectors.forEach((s) => {
+        doc.body.querySelectorAll(s).forEach((q) => {
+          total.push(q);
+        });
+      });
+
+      doc.body.innerHTML = "";
+
+      const list = doc.body.createEl("ol");
+
+      total.forEach((t) =>
+        (total.length > 1 ? list.createEl("li") : doc.body).appendChild(t)
+      );
+
+      console.log(doc.body.innerText);
+    }
+
+    const turndownService = new TurndownService({
+      headingStyle: "atx",
+    });
+
     const article = new Readability(doc).parse();
     const markdown = turndownService.turndown(
       "# " + article?.title + "\n" + article?.content

@@ -45,10 +45,10 @@ export class ContentExtractor {
     this.extractor = this.createExtractor(extractorName);
   }
 
-  async convert(docPath: string): Promise<string> {
+  async convert(docPath: string, otherOptions?: any): Promise<string> {
     // Use the selected splitter to split the text
     this.plugin.startProcessing(false);
-    const text = await this.extractor.convert(docPath);
+    const text = await this.extractor.convert(docPath, otherOptions);
     this.plugin.endProcessing(false);
     return text;
   }

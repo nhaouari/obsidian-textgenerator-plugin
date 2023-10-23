@@ -198,7 +198,7 @@ export default function Helpersfn(self: ContextManager) {
       let innerResult = {};
 
       if (!options.fn) {
-        varname ||= otherVariables[1];
+        if (otherVariables[1]) varname = otherVariables[1];
 
         const innerTxt = otherVariables[0];
         try {
@@ -258,7 +258,7 @@ export default function Helpersfn(self: ContextManager) {
       });
 
       options.data.root[
-        otherVariables.length >= 1 ? "VAR:" + otherVariables[0] : id
+        otherVariables.length >= 1 ? "VAR_" + otherVariables[0] : id
       ] = await self.plugin.textGenerator.templateGen(id, {
         additionalProps: {
           ...options.data.root,
@@ -271,7 +271,12 @@ export default function Helpersfn(self: ContextManager) {
       return "";
     },
 
-    async get(templateId: string, additionalOptions: { data: { root: any } }) {
+    async get(...vars: any[]) {
+      const additionalOptions = vars.pop();
+      const templateId = vars.shift();
+
+      const clean = vars[0];
+
       const p = additionalOptions.data.root.templatePath?.split("/");
       const parentPackageId = Object.keys(ExtractorSlug).includes(templateId)
         ? "extractions"
@@ -282,19 +287,21 @@ export default function Helpersfn(self: ContextManager) {
           templateId
         : // checking for vars
         Object.keys(additionalOptions.data.root || {}).includes(
-            "VAR:" + templateId
+            "VAR_" + templateId
           )
-        ? "VAR:" + templateId
+        ? "VAR_" + templateId
         : // make packageId/templateId
           `${parentPackageId}/${templateId}`;
+
+      if (clean) {
+        return JSON.stringify(additionalOptions.data.root[id]);
+      }
 
       return additionalOptions.data.root[id];
     },
 
     async extract(...vars: any[]) {
       const options: { data: { root: any }; fn: any } = vars.pop();
-
-      const p = options.data.root.templatePath?.split("/");
 
       const firstVar = vars.shift();
       const id: string = firstVar?.contains("/")
@@ -310,12 +317,21 @@ export default function Helpersfn(self: ContextManager) {
       if (!(firstVar in ExtractorSlug))
         throw new Error(`Extractor ${firstVar} Not found`);
 
-      const cntn =
-        otherVariables[0] ||
-        (await await options.fn?.({
+      let cntn = "";
+      let varname = id;
+      let other = "";
+      if (options.fn) {
+        cntn = await await options.fn?.({
           ...this,
           ...TemplateMetadata,
-        }));
+        });
+        if (otherVariables[0]) varname = otherVariables[0];
+        other = otherVariables[1];
+      } else {
+        cntn = otherVariables[0];
+        if (otherVariables[0]) varname = otherVariables[1];
+        other = otherVariables[2];
+      }
 
       const ce = new ContentExtractor(self.app, self.plugin);
 
@@ -325,10 +341,38 @@ export default function Helpersfn(self: ContextManager) {
         ] as keyof typeof Extractors
       );
 
-      const res = await ce.convert(cntn);
+      const res = await ce.convert(cntn, other);
 
-      options.data.root[id] = res;
+      options.data.root[varname] = res;
 
+      return options.data.root[varname];
+    },
+
+    async regex(...vars: any[]) {
+      const options: { data: { root: any }; fn: any } = vars.pop();
+
+      if (!options.fn) throw "you need to provide data to work with";
+
+      const firstVar = vars.shift();
+
+      if (!firstVar) throw "You need to set a variable name for regex";
+
+      const id = `VAR_${firstVar}`;
+
+      const otherVariables = vars;
+
+      const TemplateMetadata = self.getFrontmatter(
+        self.getMetaData(self.plugin.textGenerator.templatePaths[id])
+      );
+
+      const cntn = await await options.fn?.({
+        ...this,
+        ...TemplateMetadata,
+      });
+
+      const regexResults = new RegExp(otherVariables[0]).exec(cntn) || [];
+
+      options.data.root[id] = regexResults;
       return options.data.root[id];
     },
 
