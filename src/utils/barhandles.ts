@@ -1,3 +1,4 @@
+import { contextVariablesObj } from "#/context-manager";
 import Helpersfn from "#/helpers/handlebars-helpers";
 import set from "lodash.set";
 
@@ -88,9 +89,11 @@ export const getHBValues = (text: string) => {
     }
 
     if ("#^".includes(tag[0])) {
-      //   setVar(tag.substr(1), true);
-      //   stack.push(context);
-      continue;
+      if (contextVariablesObj[tag.substring(1)]) {
+        setVar(tag.substring(1), true);
+        stack.push(context);
+        continue;
+      } else continue;
     }
 
     if (tag.startsWith("/")) {

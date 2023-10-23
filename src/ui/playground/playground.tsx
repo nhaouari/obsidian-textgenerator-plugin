@@ -1,16 +1,15 @@
 import { Command, Editor } from "obsidian";
 import TextGeneratorPlugin from "../../main";
 import React, { useEffect, useMemo, useState } from "react";
-import { InputContext } from "../../context-manager";
-import { getHBValues } from "#/utils/barhandles";
-import safeAwait from "safe-await";
-import { VIEW_Playground_ID, PlaygroundView } from ".";
+import { InputContext, contextVariablesObj } from "../../context-manager";
+import { PlaygroundView } from ".";
 import CopyButton from "../components/copyButton";
 import useStateView from "../context/useStateView";
 import MarkDownViewer from "../components/Markdown";
 import useGlobal from "../context/global";
 import { Handlebars } from "#/helpers/handlebars-helpers";
 import clsx from "clsx";
+import AvailableVars from "../components/availableVars";
 
 export default function ChatComp(props: {
   plugin: TextGeneratorPlugin;
@@ -90,14 +89,16 @@ export default function ChatComp(props: {
     setLoading(true);
     try {
       // @ts-ignore
-      const editor = app.workspace.getLeaf().view?.editor;
+      const editor = app.workspace.getLeaf().view?.editor as Editor;
 
       const context =
         await props.plugin.textGenerator.contextManager.getContext({
           insertMetadata: false,
           editor: editor,
           templateContent: input,
-          addtionalOpts: {},
+          addtionalOpts: {
+            content: editor?.getValue(),
+          },
         });
 
       console.log({
@@ -135,33 +136,32 @@ export default function ChatComp(props: {
     <form className="flex h-full w-full flex-col gap-2" onSubmit={handleSubmit}>
       <div
         className={clsx(
-          "min-h-16 flex w-full resize-y flex-col justify-end gap-6 overflow-y-scroll pb-2",
+          "min-h-16 flex w-full resize-y flex-col justify-end gap-2 overflow-x-hidden overflow-y-scroll pb-2",
           {
             "dz-tooltip dz-tooltip-bottom": warn,
           }
         )}
       >
-        <div className={clsx("flex h-full flex-col gap-2")}>
-          <div className={clsx("flex h-full flex-col gap-4")}>
-            <textarea
-              dir="auto"
-              ref={firstTextareaRef}
-              rows={2}
-              placeholder="Template"
-              className={clsx(
-                "markdown-source-view w-full resize-y rounded border border-gray-300 p-2 outline-2 focus:border-blue-500 focus:outline-none",
-                {
-                  "focus:border-yellow-400": warn,
-                }
-              )}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.shiftKey && e.code == "Enter") return handleSubmit(e);
-              }}
-              value={input}
-            />
-          </div>
-        </div>
+        <textarea
+          dir="auto"
+          ref={firstTextareaRef}
+          rows={2}
+          placeholder="Template"
+          className={clsx(
+            "markdown-source-view min-h-16 h-full w-full resize-y rounded border border-gray-300 p-2 outline-2 focus:border-blue-500 focus:outline-none",
+            {
+              "focus:border-yellow-400": warn,
+            }
+          )}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.shiftKey && e.code == "Enter") return handleSubmit(e);
+          }}
+          value={input}
+        />
+      </div>
+      <div className="">
+        <AvailableVars vars={contextVariablesObj} />
       </div>
       <div className="flex justify-end gap-3 pr-3">
         <span className="text-xs opacity-50">{warn}</span>

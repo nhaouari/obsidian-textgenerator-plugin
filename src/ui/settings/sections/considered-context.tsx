@@ -6,13 +6,8 @@ import Input from "../components/input";
 import { useMemo } from "react";
 import type { Register } from ".";
 import { Context } from "#/types";
-
-const contextVariables: string[] = [
-  "title",
-  "content",
-  "selection",
-  "staredBlocks",
-];
+import AvailableVars from "#/ui/components/availableVars";
+import { contextVariablesObj } from "#/context-manager";
 
 const extendedInfo: Record<
   string,
@@ -63,8 +58,6 @@ export default function ConsideredContextSetting(props: {
 }) {
   const global = useGlobal();
   const sectionId = useId();
-
-  const listOfContexts = useMemo(() => contextVariables, []);
 
   return (
     <>
@@ -117,51 +110,7 @@ export default function ConsideredContextSetting(props: {
                 rows={10}
               />
             </SettingItem>
-            <span className="text-sm opacity-50">Available Variables:</span>
-            <div className="flex flex-wrap gap-2">
-              {
-                listOfContexts.map((v) => {
-                  v = `{{${v}}}`;
-                  return (
-                    <span key={v} className="select-all">
-                      {v}
-                    </span>
-                  );
-                })
-                //   .map((key) => {
-                //     const moreData = extendedInfo[key];
-                //     return (
-                //       <SettingItem
-                //         key={moreData?.name || key}
-                //         name={moreData?.name || key}
-                //         description={
-                //           moreData?.description ||
-                //           `Include ${key} in the considered context.`
-                //         }
-                //         register={props.register}
-                //         sectionId={sectionId}
-                //       >
-                //         <Input
-                //           type="checkbox"
-                //           value={
-                //             "" +
-                //             global.plugin.settings.context[
-                //               key as keyof typeof global.plugin.settings.context
-                //             ]
-                //           }
-                //           setValue={async (val) => {
-                //             global.plugin.settings.context[
-                //               key as keyof typeof global.plugin.settings.context
-                //             ] = val == "true";
-                //             await global.plugin.saveSettings();
-                //             global.triggerReload();
-                //           }}
-                //         />
-                //       </SettingItem>
-                //     );
-                //   })
-              }
-            </div>
+            <AvailableVars vars={contextVariablesObj} />
           </>
         )}
       </SettingsSection>
@@ -228,51 +177,7 @@ export default function ConsideredContextSetting(props: {
             rows={10}
           />
         </SettingItem>
-        <span className="text-sm opacity-50">Available Variables:</span>
-        <div className="flex flex-wrap gap-2">
-          {
-            listOfContexts.map((v) => {
-              v = `{{${v}}}`;
-              return (
-                <span key={v} className="select-all">
-                  {v}
-                </span>
-              );
-            })
-            //   .map((key) => {
-            //     const moreData = extendedInfo[key];
-            //     return (
-            //       <SettingItem
-            //         key={moreData?.name || key}
-            //         name={moreData?.name || key}
-            //         description={
-            //           moreData?.description ||
-            //           `Include ${key} in the considered context.`
-            //         }
-            //         register={props.register}
-            //         sectionId={sectionId}
-            //       >
-            //         <Input
-            //           type="checkbox"
-            //           value={
-            //             "" +
-            //             global.plugin.settings.context[
-            //               key as keyof typeof global.plugin.settings.context
-            //             ]
-            //           }
-            //           setValue={async (val) => {
-            //             global.plugin.settings.context[
-            //               key as keyof typeof global.plugin.settings.context
-            //             ] = val == "true";
-            //             await global.plugin.saveSettings();
-            //             global.triggerReload();
-            //           }}
-            //         />
-            //       </SettingItem>
-            //     );
-            //   })
-          }
-        </div>
+        <AvailableVars vars={contextVariablesObj} />
       </SettingsSection>
     </>
   );

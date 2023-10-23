@@ -1,4 +1,4 @@
-import { App, Notice, Editor, Component, TFile } from "obsidian";
+import { App, Notice, Editor, Component, TFile, HeadingCache } from "obsidian";
 import { Context } from "./types";
 import TextGeneratorPlugin from "./main";
 import { IGNORE_IN_YAML } from "./constants";
@@ -381,12 +381,7 @@ export default class ContextManager {
       selection?: string;
       frontmatter?: any;
       content?: string;
-    } = {
-      tg_selection: "",
-      selection: "",
-      selections: [],
-      content: "",
-    };
+    } = {};
 
     const variables = getHBValues(contextTemplate || "") || [];
     const vars: Record<string, true> = {};
@@ -410,7 +405,8 @@ export default class ContextManager {
       }
 
       if (vars["content"]) {
-        context["content"] = editor?.getValue();
+        context["content"] = editor.getValue();
+        console.log("getting content", context["content"]);
       }
     }
 
@@ -575,7 +571,7 @@ export default class ContextManager {
 
   async getHeadingContent(fileCache: any) {
     const headings = fileCache?.headings;
-    const headingsContent: any = {};
+    const headingsContent: Record<string, string | undefined> = {};
     if (headings) {
       for (let i = 0; i < headings.length; i++) {
         let textBlock = await this.getTextBloc(headings[i].heading);
@@ -601,8 +597,12 @@ export default class ContextManager {
     },
     vars: any
   ) {
-    const contextOptions: Context = this.plugin.settings.context;
-    const children: any = [];
+    // const contextOptions: Context = this.plugin.settings.context;
+    const children: (TFile & {
+      content: string;
+      frontmatter: any;
+      headings: HeadingCache[] | undefined;
+    })[] = [];
     const links = fileCache?.links?.filter(
       (e) => e.original.substring(0, 2) === "[["
     );
@@ -638,7 +638,15 @@ export default class ContextManager {
 
           if (vars["headings"]) blocks["headings"] = metadata?.headings;
 
-          const childInfo = { ...file, content, ...blocks };
+          const childInfo: any = {
+            ...file,
+            content,
+            title: file.name.substring(
+              0,
+              file.name.length - file.extension.length - 1
+            ),
+            ...blocks,
+          };
 
           children.push(childInfo);
         }
@@ -939,3 +947,68 @@ export function getOptionsUnder(
 
   return options[prefix.substring(0, prefix.length - 1)];
 }
+
+export const contextVariablesObj: Record<
+  string,
+  {
+    example: string;
+    hint?: string;
+  }
+> = {
+  title: {
+    example: "{{title}}",
+    hint: "Represents the note's title.",
+  },
+  content: {
+    example: "{{content}}",
+    hint: "Represents the entirety of the note's content.",
+  },
+  selection: {
+    example: "{{selection}}",
+    hint: "The portion of text that has been selected by the user.",
+  },
+  tg_selection: {
+    example: "{{tg_selection}}",
+    hint: "The text selected using the text generator method.",
+  },
+  starredBlocks: {
+    example: "{{starredBlocks}}",
+    hint: "Content under headings marked with a star (*) in the note.",
+  },
+  frontmatter: {
+    example: "{{frontmatter}}",
+    hint: "The initial metadata of the note, often provided in YAML format.",
+  },
+  clipboard: {
+    example: "{{clipboard}}",
+    hint: "The current content copied to the clipboard.",
+  },
+  selections: {
+    example: "{{#each selections}} {{this}} {{/each}}",
+    hint: "All selected text segments in the note, especially when multiple selections are made.",
+  },
+  highlights: {
+    example: "{{#each highlights}} {{this}} {{/each}}",
+    hint: "Highlighted segments marked with ==...== in the note.",
+  },
+  children: {
+    example: "{{#each children}} {{this.content}} {{/each}}",
+    hint: "An array of notes or sub-notes that are cited or related to the primary note.",
+  },
+  headings: {
+    example: "{{#each headings}} {{this}} {{/each}}",
+    hint: "Contains all the headings within the note and their respective content.",
+  },
+  extractions: {
+    example: "{{#each extractions}} {{this}} {{/each}}",
+    hint: "Extracted content from various sources like PDFs, images, audio files, web pages, and YouTube URLs.",
+  },
+  "mentions(linked)": {
+    example: "{{#each mentions.linked}} {{this.results}} {{/each}}",
+    hint: "Mentions across the entire vault where a note is directly linked, e.g., [[note]].",
+  },
+  "mentions(unlinked)": {
+    example: "{{#each mentions.unlinked}} {{this.results}} {{/each}}",
+    hint: "Mentions across the vault where a note is referenced without a direct link, e.g., '...note...'.",
+  },
+};
