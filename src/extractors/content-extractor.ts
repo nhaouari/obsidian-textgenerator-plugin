@@ -1,6 +1,7 @@
 import { App } from "obsidian";
 import PDFExtractor from "./pdf-extractor";
-import WebPageExtractor from "./web-page-extractor";
+import WebPageExtractorHTML from "./web-extractor";
+import WebPageExtractor from "./web-extractor/markdown";
 import YoutubeExtractor from "./youtube-extractor";
 import AudioExtractor from "./audio-extractor";
 import { Extractor } from "./extractor";
@@ -14,6 +15,7 @@ const logger = debug("textgenerator:Extractor");
 export const Extractors = {
   PDFExtractor,
   WebPageExtractor,
+  WebPageExtractorHTML,
   YoutubeExtractor,
   AudioExtractor,
   ImageExtractor,
@@ -22,7 +24,11 @@ export const Extractors = {
 
 export const ExtractorSlug = {
   pdf: "PDFExtractor",
+
   web: "WebPageExtractor",
+  web_md: "WebPageExtractor",
+  web_html: "WebPageExtractorHTML",
+
   youtube: "YoutubeExtractor",
   audio: "AudioExtractor",
   image: "ImageExtractor",

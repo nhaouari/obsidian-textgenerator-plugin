@@ -1,7 +1,5 @@
 import { App, request, Platform } from "obsidian";
-import TurndownService from "turndown";
-import { Extractor } from "./extractor";
-import { Readability } from "@mozilla/readability";
+import { Extractor } from "../extractor";
 import TextGeneratorPlugin from "src/main";
 import debug from "debug";
 
@@ -18,7 +16,7 @@ export default class WebPageExtractor extends Extractor {
     super(app, plugin);
   }
 
-  async convert(url: string, selector?: string | string[]) {
+  async getContent(url: string, selector?: string | string[]) {
     logger("convert", { url });
     let response: string;
 
@@ -78,22 +76,12 @@ export default class WebPageExtractor extends Extractor {
       console.log(doc.body.innerText);
     }
 
-    const turndownService = new TurndownService({
-      headingStyle: "atx",
-    });
+    return doc;
+  }
 
-    const article = new Readability(doc).parse();
-    const markdown = turndownService.turndown(
-      "# " + article?.title + "\n" + article?.content
-    );
-
-    logger("convert end", { markdown });
-
-    if (article?.content) {
-      return markdown;
-    } else {
-      return "No content found";
-    }
+  async convert(url: string, selector?: string | string[]) {
+    const doc = await this.getContent(url, selector);
+    return doc.body.innerHTML;
   }
 
   async extract(filePath?: string) {
@@ -107,7 +95,7 @@ export default class WebPageExtractor extends Extractor {
     return urls;
   }
 
-  private extractUrls(text: string): string[] {
+  protected extractUrls(text: string): string[] {
     const urlRegex =
       /(https?:\/\/(?!.*\.(?:mp3|mp4|mov|avi|pdf|png|jpe?g|gif))[^\s)\]]+)/g;
     const youtubeRegex =

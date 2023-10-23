@@ -311,6 +311,7 @@ export default function Helpersfn(self: ContextManager) {
       const options: { data: { root: any }; fn: any } = vars.pop();
 
       const firstVar = vars.shift();
+
       const id: string = firstVar?.contains("/")
         ? firstVar
         : `extractions/${firstVar}`;
@@ -332,11 +333,11 @@ export default function Helpersfn(self: ContextManager) {
           ...this,
           ...TemplateMetadata,
         });
-        if (otherVariables[0]) varname = otherVariables[0];
+        if (otherVariables[0]) varname = "VAR_" + otherVariables[0];
         other = otherVariables[1];
       } else {
         cntn = otherVariables[0];
-        if (otherVariables[0]) varname = otherVariables[1];
+        if (otherVariables[0]) varname = "VAR_" + otherVariables[1];
         other = otherVariables[2];
       }
 
