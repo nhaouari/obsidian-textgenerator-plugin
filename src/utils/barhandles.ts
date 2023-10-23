@@ -1,9 +1,9 @@
 import Helpersfn from "#/helpers/handlebars-helpers";
 import set from "lodash.set";
 
-const ignoredVariables = ["output", "this", "true", "false"];
-
 const helpers: string[] = Object.keys(Helpersfn({} as any));
+
+const ignoredVariables = ["output", "this", "true", "false"];
 const defaultHelpers = ["if", "unless", "with", "each"];
 
 export const getHBValues = (text: string) => {
@@ -29,20 +29,22 @@ export const getHBValues = (text: string) => {
   };
 
   main: for (const tag of tags) {
+    console.log({ tag, tags });
+
     if (
-      // if its a ignored variable name
-      ignoredVariables.includes(tag) ||
-      // if its a helper
-      defaultHelpers.includes(tag) ||
-      // if its a helper
-      helpers.includes(tag) ||
       // if its a inside variable
       tag.startsWith("VAR_") ||
       // if its a string
       tag.startsWith("'") ||
       tag.startsWith('"') ||
       // if its a number
-      "" + +tag == tag
+      "" + +tag == tag ||
+      // if its a helper
+      defaultHelpers.includes(tag) ||
+      // if its a ignored variable name
+      ignoredVariables.includes(tag) ||
+      // if its a helper
+      helpers.includes(tag)
     ) {
       continue;
     }
@@ -74,6 +76,15 @@ export const getHBValues = (text: string) => {
         tags.push(...vars);
         continue main;
       }
+    }
+
+    if (tag.includes(".")) {
+      const m = tag.split(".")[0];
+
+      tags.push(m);
+
+      // context = stack.pop();
+      continue;
     }
 
     if ("#^".includes(tag[0])) {
