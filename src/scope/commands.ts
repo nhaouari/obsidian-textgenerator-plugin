@@ -259,7 +259,7 @@ export default class Commands {
 
     {
       id: "open-template-as-tool",
-      name: "Open template as tool",
+      name: "Open Template as Tool",
       icon: "layout",
       //hotkeys: [{ modifiers: ["Alt"], key: "4"}],
       async callback() {
@@ -286,7 +286,7 @@ export default class Commands {
 
     {
       id: "open-playground",
-      name: "open handlebar playground",
+      name: "Open Template Playground",
       icon: "layout",
       //hotkeys: [{ modifiers: ["Alt"], key: "4"}],
       async callback() {
