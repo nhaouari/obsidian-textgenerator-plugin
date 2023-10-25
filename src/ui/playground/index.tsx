@@ -21,7 +21,7 @@ export class PlaygroundView extends ItemView {
   }
 
   getDisplayText() {
-    return this.title || this.getState()?.title || "Tool view";
+    return this.title || this.getState()?.title || "Template Playground";
   }
 
   async onOpen() {
@@ -91,7 +91,7 @@ export class PlaygroundView extends ItemView {
       )
       .addItem((item) =>
         item
-          .setTitle("createTemplate")
+          .setTitle("Create Template")
           .setIcon("arrow-up-right")
           .onClick(() => {
             this.onEvent("createTemplate");
@@ -132,12 +132,12 @@ export class PlaygroundView extends ItemView {
 
   getTemp(id?: string) {
     this.id = id || this.id;
-    return this.plugin.temp[this.id ? `tool_${this.id}` : "tool"] || {};
+    return this.plugin.temp[this.id ? `playground_${this.id}` : "playground"] || {};
   }
 
   setTemp(newdata: any, id?: string) {
     this.id = id || this.id;
-    this.plugin.temp[this.id ? `tool_${this.id}` : "tool"] = newdata;
+    this.plugin.temp[this.id ? `playground_${this.id}` : "playground"] = newdata;
   }
 
   toggleAlwaysOnTop(bool?: boolean) {
