@@ -5,6 +5,8 @@ import { pull } from "langchain/hub";
 import asyncHelpers from "../lib/async-handlebars-helper";
 import { compileLangMessages } from "#/utils";
 
+import { pluginApi } from "@vanakat/plugin-api";
+
 export const Handlebars = asyncHelpers(handlebars);
 import type ContextManager from "#/context-manager";
 import {
@@ -462,6 +464,7 @@ export default function Helpersfn(self: ContextManager) {
 
       let content = await options?.fn?.(this) as string || ""
 
+
       if (content.startsWith("```")) {
         let k = content.split("\n");
         k.pop();
@@ -471,10 +474,10 @@ export default function Helpersfn(self: ContextManager) {
       }
 
       return await (0, eval)(`
-        async (plugin, app)=>{
+        async (plugin, app, pluginApi)=>{
           ${content}
         }
-      `).bind(this)(self.plugin, self.app);
+      `).bind(this)(self.plugin, self.app, pluginApi);
     },
   } as const;
 
