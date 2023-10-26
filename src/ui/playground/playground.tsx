@@ -100,6 +100,7 @@ export default function ChatComp(props: {
 
       const result = await Handlebars.compile(input)({
         ...context.options,
+        templatePath: "default/default"
       });
 
       console.log({ result });

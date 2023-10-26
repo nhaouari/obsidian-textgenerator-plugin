@@ -67,10 +67,10 @@ export default class WebPageExtractor extends Extractor {
 
       doc.body.innerHTML = "";
 
-      const list = doc.body.createEl("ol");
+      const list = doc.body.createEl(total.length > 1 ? "ol" : "div");
 
       total.forEach((t) =>
-        (total.length > 1 ? list.createEl("li") : doc.body).appendChild(t)
+        (total.length > 1 ? list.createEl("li") : list).appendChild(t)
       );
 
       console.log(doc.body.innerText);
