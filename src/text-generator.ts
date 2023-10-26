@@ -564,7 +564,7 @@ export default class TextGenerator extends RequestHandler {
     logger("createTemplateFromEditor end");
   }
 
-  async createTemplate(content: string, title = "") {
+  async createTemplate(content: string, title = "", options?: { disableProvider?: boolean }) {
     logger("createTemplate");
 
     const suggestedPath = `${this.plugin.settings.promptsPath}/local/${title}.md`;
@@ -577,7 +577,7 @@ export default class TextGenerator extends RequestHandler {
         author: "",
         tags: "",
         version: "0.0.1",
-        disableProvider: false,
+        disableProvider: !!options?.disableProvider,
       };
 
       const metadata = this.contextManager.getMetaData(undefined, true);
@@ -589,7 +589,27 @@ export default class TextGenerator extends RequestHandler {
         }
       });
 
-      const templateContent = `---
+
+
+      const templateContent = options?.disableProvider ?
+        `---
+${stringifyYaml(merge({}, defaultMatter, matter))}
+---
+\`\`\`handlebars
+You can structure your code here and then use the input or output template to retrieve("get" helper) the processed data, enhancing readability.
+\`\`\`
+***
+This input template is currently disabled due to the 'disabledProvider' setting being set to true.
+
+If you wish to utilize this template with a provider, such as Chatbot or another service, please follow these steps:
+- Enable the provider by setting 'disabledProvider' to false.
+- Cut and paste everything from the output template into this section.
+- Replace the content in the output template with '{{output}}'.
+- Remember to delete this instruction text.
+***
+${removeYAML(content)}
+`
+        : `---
 ${stringifyYaml(merge({}, defaultMatter, matter))}
 ---
 \`\`\`handlebars

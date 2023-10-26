@@ -32,7 +32,9 @@ export default function ChatComp(props: {
   const createTemplate = () => {
     props.plugin.textGenerator.createTemplate(
       firstTextareaRef.current?.value || "",
-      "new_template_" + makeId(4)
+      "new_template_" + makeId(4), {
+      disableProvider: true
+    }
     );
   };
 
