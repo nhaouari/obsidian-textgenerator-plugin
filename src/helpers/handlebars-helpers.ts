@@ -449,6 +449,27 @@ export default function Helpersfn(self: ContextManager) {
     async wait(time: string) {
       await new Promise((s) => setTimeout(s, +(time || "1") * 1000));
     },
+
+    async script(...vars: any[]) {
+      if (!self.plugin.settings.allowJavascriptRun) throw new Error("Scripts are not allowed to run, for security reasons. Go to plugin settings and enable it");
+      const options = vars.pop();
+
+      let content = await options?.fn?.(this) as string || ""
+
+      if (content.startsWith("```")) {
+        let k = content.split("\n");
+        k.pop();
+        k.pop();
+        k.shift();
+        content = k.join("\n");
+      }
+
+      return await eval(`
+        async (plugin, app)=>{
+          ${content}
+        }D
+      `).bind(this)(self.plugin, self.app);
+    },
   } as const;
 
   return Helpers;

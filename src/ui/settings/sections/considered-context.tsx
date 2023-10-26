@@ -195,6 +195,22 @@ export default function ConsideredContextSetting(props: {
           />
         </SettingItem>
         <AvailableVars vars={contextVariablesObj} />
+        <SettingItem
+          name="Allow scripts"
+          description="Only enable this if you trust the authors of the templates, or know what you're doing."
+          register={props.register}
+          sectionId={sectionId}
+        >
+          <Input
+            type="checkbox"
+            value={"" + global.plugin.settings.allowJavascriptRun}
+            setValue={async (val) => {
+              global.plugin.settings.allowJavascriptRun = val == "true";
+              await global.plugin.saveSettings();
+              global.triggerReload();
+            }}
+          />
+        </SettingItem>
       </SettingsSection>
     </>
   );

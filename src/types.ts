@@ -35,6 +35,7 @@ type Context = {
 export type Version = `${number}.${number}.${number}${"" | "-beta"}`;
 
 type TextGeneratorSettings = {
+  allowJavascriptRun?: boolean;
   version: Version;
   endpoint: string;
   api_key: string;

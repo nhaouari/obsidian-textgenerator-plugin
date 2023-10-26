@@ -15,6 +15,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
   showStatusBar: true,
   outputToBlockQuote: false,
   freeCursorOnStreaming: true,
+  allowJavascriptRun: false,
   promptsPath: "textgenerator/prompts",
   prefix: "\n\n",
   tgSelectionLimiter: "^\\*\\*\\*",
