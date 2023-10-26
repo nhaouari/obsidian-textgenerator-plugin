@@ -108,8 +108,7 @@ export default function ChatComp(props: {
     } catch (err: any) {
       console.error(err);
       setAnswer(
-        `ERR: ${
-          err?.message?.replace("stack:", "\n\n\n\nMore Details") || err.message
+        `ERR: ${err?.message?.replace("stack:", "\n\n\n\nMore Details") || err.message
         }`
       );
     } finally {
@@ -128,7 +127,7 @@ export default function ChatComp(props: {
     <form className="flex h-full w-full flex-col gap-2" onSubmit={handleSubmit}>
       <div
         className={clsx(
-          "min-h-16 flex w-full resize-y flex-col justify-end gap-2 overflow-x-hidden overflow-y-scroll pb-2",
+          "min-h-[200px] flex w-full resize-y flex-col justify-end gap-2 overflow-x-hidden overflow-y-scroll pb-2",
           {
             "dz-tooltip dz-tooltip-bottom": warn,
           }
