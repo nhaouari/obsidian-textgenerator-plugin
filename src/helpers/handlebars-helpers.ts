@@ -29,6 +29,16 @@ export default function Helpersfn(self: ContextManager) {
   }
 
 
+
+  const runTemplate = async (id: string, metadata?: any) => {
+    return await self.plugin.textGenerator.templateGen(id, {
+      additionalProps: metadata,
+    })
+  }
+
+
+
+
   const Helpers = {
     length: function (str: string) {
       return str.length;
@@ -207,6 +217,8 @@ export default function Helpersfn(self: ContextManager) {
         throw new Error("templatePath was not found in run command");
       }
 
+
+
       const p = options.data.root.templatePath?.split("/");
       const parentPackageId = p[p.length - 2];
 
@@ -256,6 +268,9 @@ export default function Helpersfn(self: ContextManager) {
       } else {
         varname = otherVariables[0];
         const param = otherVariables[1] || "tg_selection";
+
+
+
         const innerTxt =
           (await await options.fn?.({
             ...this,
@@ -283,24 +298,14 @@ export default function Helpersfn(self: ContextManager) {
         }
       }
 
-      console.log({
-        varname,
-        innerResult,
-        id,
-      });
-
-      const Id = otherVariables.length >= 1 ? "VAR_" + otherVariables[0] : id
-
       options.data.root[
-        Id
-      ] = await self.plugin.textGenerator.templateGen(id, {
-        additionalProps: {
-          ...options.data.root,
-          ...TemplateMetadata,
-          disableProvider: false,
-          ...innerResult,
-        },
-      });
+        otherVariables.length >= 1 ? "VAR_" + otherVariables[0] : id
+      ] = await runTemplate(id, {
+        ...options.data.root,
+        disableProvider: false,
+        ...TemplateMetadata,
+        ...innerResult
+      })
 
       return "";
     },
@@ -466,6 +471,38 @@ export default function Helpersfn(self: ContextManager) {
 
       let content = await options?.fn?.(this) as string || ""
 
+      if (!options.data.root.templatePath) {
+        console.log({ t: this, options, vars });
+        throw new Error("templatePath was not found in run command");
+      }
+
+      const p = options.data.root.templatePath?.split("/");
+      const parentPackageId = p[p.length - 2];
+
+      const run = (id: string, metadata?: any) => {
+
+        let meta: any = {};
+
+        if (content.contains("run(")) {
+          const TemplateMetadata = self.getFrontmatter(
+            self.getMetaData(self.plugin.textGenerator.templatePaths[id])
+          );
+          meta = {
+            ...options.data.root,
+            disableProvider: false,
+            ...TemplateMetadata,
+          }
+        }
+
+        const Id = id?.contains("/")
+          ? id
+          : `${parentPackageId}/${id}`
+
+        return runTemplate(Id, {
+          ...meta,
+          ...metadata
+        })
+      }
 
       if (content.startsWith("```")) {
         let k = content.split("\n");
