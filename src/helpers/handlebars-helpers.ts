@@ -117,6 +117,16 @@ export default function Helpersfn(self: ContextManager) {
       return JSON.parse(context);
     },
 
+    async eachProperty(context: any, options: any) {
+      var ret = "";
+      for (var prop in context) {
+        if (context.hasOwnProperty(prop)) {
+          ret = ret + await options.fn({ property: prop, value: context[prop] });
+        }
+      }
+      return ret;
+    },
+
     escp: async function (context: any) {
       let t = context?.fn ? await context?.fn(context.data.root) : "" + context;
 
@@ -212,9 +222,9 @@ export default function Helpersfn(self: ContextManager) {
           innerResult = innerTxt.trim().startsWith("{")
             ? JSON.parse(innerTxt)
             : {
-                [otherVariables.length > 1 ? varname : "tg_selection"]:
-                  innerTxt,
-              };
+              [otherVariables.length > 1 ? varname : "tg_selection"]:
+                innerTxt,
+            };
         } catch (err: any) {
           innerResult = {
             [otherVariables.length > 1 ? varname : "tg_selection"]: innerTxt,
@@ -241,8 +251,8 @@ export default function Helpersfn(self: ContextManager) {
           innerResult = innerTxt.trim().startsWith("{")
             ? JSON.parse(innerTxt)
             : {
-                [param]: innerTxt,
-              };
+              [param]: innerTxt,
+            };
         } catch (err: any) {
           innerResult = {
             [param]: innerTxt,
@@ -291,13 +301,13 @@ export default function Helpersfn(self: ContextManager) {
 
       const id: string = templateId?.contains("/")
         ? // if it has a slash that means it already have the packageId
-          templateId
+        templateId
         : // checking for vars
         Object.keys(additionalOptions.data.root || {}).includes(
-            "VAR_" + templateId
-          )
-        ? "VAR_" + templateId
-        : // make packageId/templateId
+          "VAR_" + templateId
+        )
+          ? "VAR_" + templateId
+          : // make packageId/templateId
           `${parentPackageId}/${templateId}`;
 
       if (clean) {
@@ -345,7 +355,7 @@ export default function Helpersfn(self: ContextManager) {
 
       ce.setExtractor(
         ExtractorSlug[
-          firstVar as keyof typeof ExtractorSlug
+        firstVar as keyof typeof ExtractorSlug
         ] as keyof typeof Extractors
       );
 
@@ -468,28 +478,28 @@ export async function langPull(rep: string) {
       k.kwargs.messages ||
       (k.kwargs.template
         ? [
-            {
-              prompt: {
-                template: k.kwargs.template,
-                inputVariables: k.kwargs.input_variables,
-              },
+          {
+            prompt: {
+              template: k.kwargs.template,
+              inputVariables: k.kwargs.input_variables,
             },
-          ]
+          },
+        ]
         : []),
   });
 
   const data = compileLangMessages(
     k.kwargs.messages ||
-      (k.kwargs.template
-        ? [
-            {
-              prompt: {
-                template: k.kwargs.template,
-                inputVariables: k.kwargs.input_variables,
-              },
-            },
-          ]
-        : [])
+    (k.kwargs.template
+      ? [
+        {
+          prompt: {
+            template: k.kwargs.template,
+            inputVariables: k.kwargs.input_variables,
+          },
+        },
+      ]
+      : [])
   );
 
   return data;

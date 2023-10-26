@@ -165,7 +165,7 @@ export default class TextGeneratorPlugin extends Plugin {
                 ? await this.textGenerator.contextManager.getTemplateContext({
                     editor: activeView.editor,
                     filePath: activeView?.file?.path,
-                    content: inputContent,
+                    templateContent: inputContent,
                   })
                 : {}),
             };

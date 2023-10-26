@@ -1,5 +1,5 @@
 import { App, Notice, Editor, Component, TFile, HeadingCache } from "obsidian";
-import { Context } from "./types";
+import { AsyncReturnType, Context } from "./types";
 import TextGeneratorPlugin from "./main";
 import { IGNORE_IN_YAML } from "./constants";
 
@@ -82,6 +82,7 @@ export default class ContextManager {
         }),
         props.addtionalOpts
       );
+
       console.log("get context", { templatePath, props, options });
 
       if (!templatePath.length)
@@ -117,7 +118,7 @@ export default class ContextManager {
 
       const contextTemplate = this.plugin.settings.context.customInstructEnabled
         ? this.plugin.settings.context.customInstruct ||
-          this.plugin.defaultSettings.context.customInstruct
+        this.plugin.defaultSettings.context.customInstruct
         : "{{tg_selection}}";
 
       const options = await this.getDefaultContext(
@@ -127,7 +128,7 @@ export default class ContextManager {
       );
 
       // take context
-      let context = await getContextAsString(options, contextTemplate);
+      let context = await getContextAsString(options as any, contextTemplate);
 
       if (props.insertMetadata) {
         const frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document
@@ -269,34 +270,6 @@ export default class ContextManager {
     logger("getTemplateContext", props.editor, props.templatePath);
     const contextOptions: Context = this.plugin.settings.context;
 
-    const title = props.filePath
-      ? this.app.vault.getAbstractFileByPath(props.filePath)?.name ||
-        this.getActiveFileTitle()
-      : this.getActiveFileTitle();
-
-    const contextTemplate =
-      this.plugin.settings.context.contextTemplate ||
-      this.plugin.defaultSettings.context.contextTemplate;
-
-    const contextObj = await this.getDefaultContext(
-      props.editor,
-      undefined,
-      contextTemplate
-    );
-
-    console.log({ contextObj });
-    const context = await getContextAsString(contextObj, contextTemplate);
-
-    const selection = contextObj.selection;
-    const selections = contextObj.selections;
-    const ctnt = contextObj.content;
-
-    const activeDocCache = this.getMetaData(""); // active document
-    const blocks: any = contextObj;
-
-    blocks["frontmatter"] = {};
-    blocks["headings"] = {};
-
     let templateContent = props.templateContent || "";
 
     if (templatePath.length > 0) {
@@ -308,19 +281,43 @@ export default class ContextManager {
       }
     }
 
-    const variables = getHBValues(templateContent);
-    const vars: Record<string, true> = {};
 
-    variables.forEach((v) => {
-      vars[v] = true;
-    });
+    const contextTemplate =
+      this.plugin.settings.context.contextTemplate ||
+      this.plugin.defaultSettings.context.contextTemplate;
 
-    logger("getTemplateContext Variables ", { variables });
+    const contextObj = await this.getDefaultContext(
+      props.editor,
+      undefined,
+      contextTemplate + templateContent
+    );
+
+    console.log({ contextObj });
+    const context = await getContextAsString(contextObj as any, contextTemplate);
+
+    const selection = contextObj.selection;
+    const selections = contextObj.selections;
+    const ctnt = contextObj.content;
+
+    const blocks: any = contextObj;
+
+    blocks["frontmatter"] = {};
+    blocks["headings"] = contextObj.headings;
+
+
+    // const variables = getHBValues(templateContent);
+    // const vars: Record<string, true> = {};
+
+    // variables.forEach((v) => {
+    //   vars[v] = true;
+    // });
+
+    // logger("getTemplateContext Variables ", { variables });
 
     blocks["frontmatter"] = merge(
       {},
       this.getFrontmatter(this.getMetaData(templatePath)),
-      this.getFrontmatter(activeDocCache)
+      contextObj.frontmatter
     );
 
     if (contextOptions.includeClipboard)
@@ -330,25 +327,8 @@ export default class ContextManager {
         // empty
       }
 
-    if (activeDocCache)
-      blocks["headings"] = await this.getHeadingContent(activeDocCache);
-
-    if (vars["children"] && activeDocCache)
-      blocks["children"] = await this.getChildrenContent(activeDocCache, vars);
-
-    if (vars["highlights"])
-      blocks["highlights"] = props.editor
-        ? await this.getHighlights(props.editor)
-        : [];
-
-    if (vars["mentions"] && title)
-      blocks["mentions"] = await this.getMentions(title);
-
-    if (vars["extractions"])
-      blocks["extractions"] = await this.getExtractions();
 
     const options = {
-      title,
       selection,
       selections,
       ...blocks["frontmatter"],
@@ -379,18 +359,32 @@ export default class ContextManager {
       tg_selection?: string;
       selections?: string[];
       selection?: string;
-      frontmatter?: any;
+      frontmatter?: Record<string, any>;
+      frontMatter?: Record<string, any>;
+      metadata?: string;
       content?: string;
+      headings?: AsyncReturnType<typeof this.getHeadingContent>;
+      children?: AsyncReturnType<typeof this.getChildrenContent>;
+      highlights?: ReturnType<typeof this.getHighlights>;
+      mentions?: AsyncReturnType<typeof this.getMentions>
+      extractions?: AsyncReturnType<typeof this.getExtractions>
     } = {};
 
     const variables = getHBValues(contextTemplate || "") || [];
     const vars: Record<string, true> = {};
-
     console.log({ vars, contextTemplate });
-
     variables.forEach((v) => {
       vars[v] = true;
     });
+
+    const title = vars["title"] || vars["mentions"] ?
+      (filePath
+        ? this.app.vault.getAbstractFileByPath(filePath)?.name ||
+        this.getActiveFileTitle()
+        : this.getActiveFileTitle()) || ""
+      : "";
+
+    const activeDocCache = this.getMetaData(filePath || "");
 
     if (editor) {
       //   context["line"] = this.getConsideredContext(editor);
@@ -398,29 +392,56 @@ export default class ContextManager {
 
       const selections = this.getSelections(editor);
       const selection = this.getSelection(editor);
-      if (selections.length > 1) {
+      if (selections.length > 1)
         context["selections"] = selections || [];
-      } else {
+      else
         context["selection"] = selection || "";
-      }
 
-      if (vars["content"]) {
+
+      if (vars["content"])
         context["content"] = editor.getValue();
-        console.log("getting content", context["content"]);
-      }
+
+      console.log("getting content", context["content"]);
+
+      if (vars["highlights"])
+        context["highlights"] = editor
+          ? await this.getHighlights(editor)
+          : [];
     }
 
-    if (vars["title"]) {
-      context["title"] =
-        (filePath
-          ? this.app.vault.getAbstractFileByPath(filePath)?.name
-          : this.getActiveFileTitle()) || "";
-    }
+    if (vars["title"])
+      context["title"] = title
 
-    if (vars["starredBlocks"]) {
+
+    if (vars["starredBlocks"])
       context["starredBlocks"] =
         (await this.getStarredBlocks(filePath || "")) || "";
-    }
+
+
+    context["frontmatter"] = this.getFrontmatter(activeDocCache) || "";
+
+    if (vars["frontMatter"])
+      context["frontMatter"] = this.clearFrontMatterFromIgnored(this.getFrontmatter(activeDocCache) || "");
+
+    if (vars["metadata"])
+      context["metadata"] = this.getMetaDataAsStr(context["frontmatter"] || {}) || "";
+
+
+
+    console.log("testing", { vars, context, activeDocCache })
+
+
+    if (activeDocCache)
+      context["headings"] = await this.getHeadingContent(activeDocCache);
+
+    if (vars["children"] && activeDocCache)
+      context["children"] = await this.getChildrenContent(activeDocCache, vars);
+
+    if (vars["mentions"] && title)
+      context["mentions"] = await this.getMentions(title);
+
+    if (vars["extractions"])
+      context["extractions"] = await this.getExtractions();
 
     logger("getDefaultContext", { context });
     return context;
@@ -449,14 +470,14 @@ export default class ContextManager {
 
     const preRunnerTemplate = preRunnerContent
       ? Handlebars.compile(preRunnerContent, {
-          noEscape: true,
-        })
+        noEscape: true,
+      })
       : null;
 
     const outputTemplate = outputContent
       ? Handlebars.compile(outputContent, {
-          noEscape: true,
-        })
+        noEscape: true,
+      })
       : null;
 
     return {
@@ -467,6 +488,17 @@ export default class ContextManager {
       inputTemplate,
       outputTemplate,
     };
+  }
+
+  clearFrontMatterFromIgnored(yml: Record<string, any>) {
+    const objNew: Record<string, any> = {};
+
+    for (const key in yml) {
+      if (Object.prototype.hasOwnProperty.call(yml, key) && !IGNORE_IN_YAML[key]) {
+        objNew[key] = yml[key];
+      }
+    }
+    return objNew;
   }
 
   async templateFromPath(templatePath: string, options: any) {
@@ -633,10 +665,10 @@ export default class ContextManager {
 
           //only include frontmatter and headings if the option is set
           const blocks: any = {};
-          if (vars["frontmatter"])
-            blocks["frontmatter"] = metadata?.frontmatter;
 
-          if (vars["headings"]) blocks["headings"] = metadata?.headings;
+          blocks["frontmatter"] = metadata?.frontmatter;
+
+          blocks["headings"] = metadata?.headings;
 
           const childInfo: any = {
             ...file,
@@ -743,7 +775,7 @@ export default class ContextManager {
     const extractorMethods = getExtractorMethods().filter(
       (e) =>
         this.plugin.settings.extractorsOptions[
-          e as keyof typeof this.plugin.settings.extractorsOptions
+        e as keyof typeof this.plugin.settings.extractorsOptions
         ]
     );
 
@@ -979,10 +1011,7 @@ export const contextVariablesObj: Record<
     example: "{{starredBlocks}}",
     hint: "Content under headings marked with a star (*) in the note.",
   },
-  frontmatter: {
-    example: "{{frontmatter}}",
-    hint: "The initial metadata of the note, often provided in YAML format.",
-  },
+
   clipboard: {
     example: "{{clipboard}}",
     hint: "The current content copied to the clipboard.",
@@ -999,13 +1028,6 @@ export const contextVariablesObj: Record<
     example: "{{#each children}} {{this.content}} {{/each}}",
     hint: "An array of notes or sub-notes that are cited or related to the primary note.",
   },
-  headings: {
-    example: `{{#each headings}}
-# HEADER: {{@key}} 
-{{this}} 
-{{/each}}`,
-    hint: "Contains all the headings within the note and their respective content.",
-  },
   extractions: {
     example: "{{#each extractions}} {{this}} {{/each}}",
     hint: "Extracted content from various sources like PDFs, images, audio files, web pages, and YouTube URLs.",
@@ -1017,5 +1039,29 @@ export const contextVariablesObj: Record<
   "mentions(unlinked)": {
     example: "{{#each mentions.unlinked}} {{this.results}} {{/each}}",
     hint: "Mentions across the vault where a note is referenced without a direct link, e.g., '...note...'.",
+  },
+  headings: {
+    example: `{{#eachProperty headings}}
+# HEADER: {{property}} 
+{{value}} 
+{{/eachProperty}}`,
+    hint: "Contains all the headings within the note and their respective content.",
+  },
+  metadata: {
+    example: `{{metadata}}`,
+    hint: "The initial metadata of the note, often provided in YAML format.",
+  },
+  frontMatter: {
+    example: `{{#eachProperty frontMatter}} 
+{{property}}: 
+{{value}} 
+{{/eachProperty}}`,
+    hint: "The initial metadata (Object) of the note, often provided in YAML format.",
+  },
+
+  // extractors
+  extract: {
+    example: `{{#extract "web_md" "http://www.google.com"}}`,
+    hint: "Extracts content from various sources like PDFs, images, audio files, web pages, and YouTube URLs. possible values: web_md, web_html, pdf, img, audio",
   },
 };
