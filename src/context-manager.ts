@@ -563,8 +563,7 @@ export default class ContextManager {
         fromTo.to = editor.getCursor("to");
       }
 
-      const limiter = '^\\*\\*\\*'
-      // const limiter = '\\.'
+      const limiter = this.plugin.settings.tgSelectionLimiter;
 
       if (limiter) {
         const reg = new RegExp(limiter, "i")

@@ -67,8 +67,6 @@ export default function ConsideredContextSetting(props: {
         register={props.register}
         id={sectionId}
       >
-
-
         <SettingItem
           name="Enable Custom Instruction"
           description={"You can customize generate text prompt"}

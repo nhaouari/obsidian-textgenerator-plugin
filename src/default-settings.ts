@@ -17,6 +17,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
   freeCursorOnStreaming: true,
   promptsPath: "textgenerator/prompts",
   prefix: "\n\n",
+  tgSelectionLimiter: "^\\*\\*\\*",
   stream: true,
   context: {
     customInstructEnabled: false,
