@@ -67,8 +67,10 @@ export default function ConsideredContextSetting(props: {
         register={props.register}
         id={sectionId}
       >
+
+
         <SettingItem
-          name=""
+          name="Enable Custom Instruction"
           description={"You can customize generate text prompt"}
           register={props.register}
           sectionId={sectionId}
@@ -113,6 +115,23 @@ export default function ConsideredContextSetting(props: {
             <AvailableVars vars={contextVariablesObj} />
           </>
         )}
+
+
+        <SettingItem
+          name="TG Selection Limiter(regex)"
+          description="tg_selection stopping character. Empty means disabled. Default: ^\*\*\*"
+          register={props.register}
+          sectionId={sectionId}
+        >
+          <Input
+            value={global.plugin.settings.tgSelectionLimiter}
+            setValue={async (val) => {
+              global.plugin.settings.tgSelectionLimiter = val;
+              await global.plugin.saveSettings();
+              global.triggerReload();
+            }}
+          />
+        </SettingItem>
       </SettingsSection>
       <SettingsSection
         title="Considered Context For Templates"
@@ -140,7 +159,7 @@ export default function ConsideredContextSetting(props: {
                   value={
                     "" +
                     global.plugin.settings.context[
-                      key as keyof typeof global.plugin.settings.context
+                    key as keyof typeof global.plugin.settings.context
                     ]
                   }
                   setValue={async (val) => {

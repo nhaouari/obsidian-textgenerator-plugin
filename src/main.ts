@@ -163,10 +163,10 @@ export default class TextGeneratorPlugin extends Plugin {
             const context = {
               ...(activeView
                 ? await this.textGenerator.contextManager.getTemplateContext({
-                    editor: activeView.editor,
-                    filePath: activeView?.file?.path,
-                    templateContent: inputContent,
-                  })
+                  editor: activeView.editor,
+                  filePath: activeView?.file?.path,
+                  templateContent: inputContent,
+                })
                 : {}),
             };
 
@@ -226,19 +226,19 @@ export default class TextGeneratorPlugin extends Plugin {
           new PackageManagerUI(
             this.app,
             this,
-            async (result: string) => {}
+            async (result: string) => { }
           ).open();
         }
       );
 
       /*const ribbonIconEl3 = this.addRibbonIcon(
-			"square",
-			"Download webpage as markdown",
-			async (evt: MouseEvent) => {
-				console.log(await navigator.clipboard.readText());
-			}
-		);
-		*/
+      "square",
+      "Download webpage as markdown",
+      async (evt: MouseEvent) => {
+        console.log(await navigator.clipboard.readText());
+      }
+    );
+    */
 
       // registers
       this.commands = new Commands(this);

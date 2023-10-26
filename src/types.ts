@@ -54,6 +54,7 @@ type TextGeneratorSettings = {
   context: Context;
   requestTimeout: number;
   prefix: string;
+  tgSelectionLimiter: string;
   stream: boolean;
   options: Options;
   autoSuggestOptions: {

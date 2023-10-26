@@ -546,6 +546,8 @@ export default class ContextManager {
       const lineNumber = editor.getCursor().line;
       const line = editor.getLine(lineNumber).trimStart();
 
+
+
       if (line.length === 0) {
         fromTo.from = {
           ch: 0,
@@ -557,8 +559,25 @@ export default class ContextManager {
           ch: 0,
           line: lineNumber,
         };
+
         fromTo.to = editor.getCursor("to");
       }
+
+      const limiter = '^\\*\\*\\*'
+      // const limiter = '\\.'
+
+      if (limiter) {
+        const reg = new RegExp(limiter, "i")
+        const lastLimiterIndex = editor.getRange(fromTo.from, fromTo.to).split("\n").findLastIndex(d => reg.test(d))
+
+        if (lastLimiterIndex != -1) {
+          fromTo.from = {
+            ch: 0,
+            line: fromTo.from.line > lastLimiterIndex + 1 ? fromTo.from.line : lastLimiterIndex + 1
+          }
+        }
+      }
+
     }
     logger("getSelection", { selectedText });
     return fromTo;
