@@ -360,7 +360,7 @@ export default class ContextManager {
       selections?: string[];
       selection?: string;
       frontmatter?: Record<string, any>;
-      frontMatter?: Record<string, any>;
+      yaml?: Record<string, any>;
       metadata?: string;
       content?: string;
       headings?: AsyncReturnType<typeof this.getHeadingContent>;
@@ -420,8 +420,8 @@ export default class ContextManager {
 
     context["frontmatter"] = this.getFrontmatter(activeDocCache) || "";
 
-    if (vars["frontMatter"])
-      context["frontMatter"] = this.clearFrontMatterFromIgnored(this.getFrontmatter(activeDocCache) || "");
+    if (vars["yaml"])
+      context["yaml"] = this.clearFrontMatterFromIgnored(this.getFrontmatter(activeDocCache) || "");
 
     if (vars["metadata"])
       context["metadata"] = this.getMetaDataAsStr(context["frontmatter"] || {}) || "";
@@ -1047,16 +1047,17 @@ export const contextVariablesObj: Record<
 {{/eachProperty}}`,
     hint: "Contains all the headings within the note and their respective content.",
   },
+
   metadata: {
     example: `{{metadata}}`,
     hint: "The initial metadata of the note, often provided in YAML format.",
   },
-  frontMatter: {
-    example: `{{#eachProperty frontMatter}} 
-{{property}}: 
-{{value}} 
+
+  yaml: {
+    example: `{{#eachProperty yaml}} 
+{{property}}: {{value}} 
 {{/eachProperty}}`,
-    hint: "The initial metadata (Object) of the note, often provided in YAML format.",
+    hint: "The initial metadata (Object) of the note.",
   },
 
   // extractors
