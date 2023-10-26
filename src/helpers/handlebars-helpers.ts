@@ -14,6 +14,19 @@ import {
 } from "#/extractors/content-extractor";
 
 export default function Helpersfn(self: ContextManager) {
+  const extract = async (id: string, cntn: string, other: any) => {
+    const ce = new ContentExtractor(self.app, self.plugin);
+
+    ce.setExtractor(
+      ExtractorSlug[
+      id as keyof typeof ExtractorSlug
+      ] as keyof typeof Extractors
+    );
+
+    return await ce.convert(cntn, other);
+  }
+
+
   const Helpers = {
     length: function (str: string) {
       return str.length;
@@ -351,15 +364,8 @@ export default function Helpersfn(self: ContextManager) {
         other = otherVariables[2];
       }
 
-      const ce = new ContentExtractor(self.app, self.plugin);
 
-      ce.setExtractor(
-        ExtractorSlug[
-        firstVar as keyof typeof ExtractorSlug
-        ] as keyof typeof Extractors
-      );
-
-      const res = await ce.convert(cntn, other);
+      const res = await extract(firstVar, cntn, other)
 
       options.data.root[varname] = res;
 

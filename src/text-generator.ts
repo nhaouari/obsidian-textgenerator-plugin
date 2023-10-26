@@ -196,11 +196,11 @@ export default class TextGenerator extends RequestHandler {
       currentSelections.length > 1
         ? currentSelections
         : [
-            {
-              anchor: selectedRange.from,
-              head: selectedRange.to,
-            },
-          ]
+          {
+            anchor: selectedRange.from,
+            head: selectedRange.to,
+          },
+        ]
     );
     // --
 
@@ -518,8 +518,8 @@ export default class TextGenerator extends RequestHandler {
               const [errorFile, file] = await safeAwait(
                 createFileWithInput(
                   path +
-                    `/${text?.startsWith("FAILED:") ? "FAILED-" : ""}` +
-                    files[i].path,
+                  `/${text?.startsWith("FAILED:") ? "FAILED-" : ""}` +
+                  files[i].path,
                   text,
                   this.plugin.app
                 )
