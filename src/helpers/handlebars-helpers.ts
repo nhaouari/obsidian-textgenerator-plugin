@@ -289,8 +289,10 @@ export default function Helpersfn(self: ContextManager) {
         id,
       });
 
+      const Id = otherVariables.length >= 1 ? "VAR_" + otherVariables[0] : id
+
       options.data.root[
-        otherVariables.length >= 1 ? "VAR_" + otherVariables[0] : id
+        Id
       ] = await self.plugin.textGenerator.templateGen(id, {
         additionalProps: {
           ...options.data.root,
@@ -473,11 +475,11 @@ export default function Helpersfn(self: ContextManager) {
         content = k.join("\n");
       }
 
-      return await (0, eval)(`
+      return await eval(`
         async (plugin, app, pluginApi, extract)=>{
           ${content}
         }
-      `).bind(this)(self.plugin, self.app, pluginApi, extract);
+      `).bind(this).bind(this, self.plugin, self.app, pluginApi, extract);
     },
   } as const;
 
