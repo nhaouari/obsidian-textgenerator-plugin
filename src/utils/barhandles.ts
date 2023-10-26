@@ -2,7 +2,8 @@ import { contextVariablesObj } from "#/context-manager";
 import Helpersfn from "#/helpers/handlebars-helpers";
 import set from "lodash.set";
 
-const helpers: string[] = Object.keys(Helpersfn({} as any));
+const helpers: Record<string, any> = Helpersfn({} as any);
+const helpersArr: string[] = Object.keys(helpers)
 
 const ignoredVariables = ["output", "this", "true", "false"];
 const defaultHelpers = ["if", "unless", "with", "each"];
@@ -45,7 +46,7 @@ export const getHBValues = (text: string) => {
       // if its a ignored variable name
       ignoredVariables.includes(tag) ||
       // if its a helper
-      helpers.includes(tag)
+      helpers[tag]
     ) {
       continue;
     }
@@ -63,7 +64,7 @@ export const getHBValues = (text: string) => {
       continue;
     }
 
-    for (const helper of helpers) {
+    for (const helper of helpersArr) {
       if (tag.startsWith(`${helper} `) || tag.startsWith(`#${helper} `)) {
         const vars = tag.split(" ").slice(1);
         tags.push(...vars);
