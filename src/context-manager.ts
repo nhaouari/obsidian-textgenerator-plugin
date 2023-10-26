@@ -1080,7 +1080,9 @@ export const contextVariablesObj: Record<
 
   // extractors
   extract: {
-    example: `{{extract "web_md" "http://www.google.com"}}`,
+    example: `{{#extract "web_md" "var1" "a"}}
+  http://www.google.com
+{{/extract}}`,
     hint: "Extracts content from various sources like PDFs, images, audio files, web pages, and YouTube URLs. possible values: web_md, web_html, pdf, img, audio",
   },
 };
