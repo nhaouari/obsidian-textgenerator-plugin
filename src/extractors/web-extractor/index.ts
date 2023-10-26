@@ -3,11 +3,10 @@ import { Extractor } from "../extractor";
 import TextGeneratorPlugin from "src/main";
 import debug from "debug";
 
-// @ts-ignore
-let remote: typeof import("electron").remote;
+let remote: typeof import("electron");
 
 if (!Platform.isMobile) {
-  remote = require("electron")?.remote;
+  remote = (require("electron") as any)?.remote;
 }
 
 const logger = debug("textgenerator:Extractor:WebPageExtractor");
@@ -31,14 +30,13 @@ export default class WebPageExtractor extends Extractor {
         value: "dummy",
       };
 
-      console.log({ cookie });
-
       await win.webContents.session.cookies.set(cookie);
 
       win.webContents.userAgent =
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36";
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) obsidian/1.4.16 Chrome/114.0.5735.289 Electron/25.8.1 Safari/537.36";
 
       await win.loadURL(url);
+
       response = await win.webContents.executeJavaScript(
         "document.documentElement.outerHTML"
       );
@@ -74,6 +72,24 @@ export default class WebPageExtractor extends Extractor {
       );
 
       console.log(doc.body.innerText);
+    }
+
+
+    // change all links if they're relative to obsidian
+    // Get the div element
+
+    // Get all the anchor elements inside the div
+    const elements = doc.getElementsByTagName('a');
+
+    // Loop through each element and change the origin
+    for (let i = 0; i < elements.length; i++) {
+      let currentHref = elements[i].getAttribute('href');
+      if (currentHref?.startsWith('app://obsidian.md')) {
+        elements[i].setAttribute('href', new URL(new URL(currentHref).pathname, new URL(url).origin).href);
+      }
+      if (currentHref?.startsWith("/")) {
+        elements[i].setAttribute('href', new URL(currentHref, new URL(url).origin).href);
+      }
     }
 
     return doc;
