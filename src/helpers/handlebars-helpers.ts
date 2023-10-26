@@ -476,10 +476,10 @@ export default function Helpersfn(self: ContextManager) {
       }
 
       return await eval(`
-        async (plugin, app, pluginApi, extract)=>{
+        async (plugin, app, pluginApi)=>{
           ${content}
         }
-      `).bind(this).bind(this, self.plugin, self.app, pluginApi, extract);
+      `).bind(this)(self.plugin, self.app, pluginApi);
     },
   } as const;
 
