@@ -470,7 +470,7 @@ export default function Helpersfn(self: ContextManager) {
         content = k.join("\n");
       }
 
-      return await eval(`
+      return await (0, eval)(`
         async (plugin, app)=>{
           ${content}
         }
