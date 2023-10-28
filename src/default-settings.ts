@@ -14,7 +14,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
   prompt: "",
   showStatusBar: true,
   outputToBlockQuote: false,
-  freeCursorOnStreaming: true,
+  freeCursorOnStreaming: false,
   allowJavascriptRun: false,
   promptsPath: "textgenerator/prompts",
   prefix: "\n\n",
