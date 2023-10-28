@@ -22,24 +22,41 @@ export default class WebPageExtractor extends Extractor {
     if (Platform.isMobile) {
       response = await request({ url });
     } else {
-      const win = new remote.BrowserWindow({ show: false });
+      const win = new remote.BrowserWindow({ show: false, height: 500, width: 400 });
 
       const cookie = {
         url: new URL(url).origin,
         name: "dummy_name",
         value: "dummy",
       };
-
       await win.webContents.session.cookies.set(cookie);
 
-      win.webContents.userAgent =
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) obsidian/1.4.16 Chrome/114.0.5735.289 Electron/25.8.1 Safari/537.36";
+      response = await new Promise(async (s) => {
 
-      await win.loadURL(url);
+        win.webContents.on('dom-ready', async () => {
+          // in seconds
+          let maxTotal = 20;
+          let fac = 0.2;
 
-      response = await win.webContents.executeJavaScript(
-        "document.documentElement.outerHTML"
-      );
+
+          let tries = maxTotal / fac;
+          const timer = setInterval(async () => {
+            const innerT = await win.webContents.executeJavaScript(`document.documentElement.innerText`)
+            const content = await win.webContents.executeJavaScript(`
+            document.body.innerHTML`);
+            if (innerT.length || tries <= 0) {
+              clearInterval(timer);
+              s(content);
+              tries--;
+            }
+          }, fac * 1000)
+        });
+
+        await win.loadURL(url, {
+          userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) obsidian/1.4.16 Chrome/114.0.5735.289 Electron/25.8.1 Safari/537.36",
+        });
+      })
+
     }
 
     const parser = new DOMParser();
@@ -70,8 +87,6 @@ export default class WebPageExtractor extends Extractor {
       total.forEach((t) =>
         (total.length > 1 ? list.createEl("li") : list).appendChild(t)
       );
-
-      console.log(doc.body.innerText);
     }
 
 
