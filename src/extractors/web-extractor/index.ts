@@ -35,7 +35,7 @@ export default class WebPageExtractor extends Extractor {
 
         win.webContents.on('dom-ready', async () => {
           // in seconds
-          let maxTotal = 20;
+          let maxTotal = 10;
           let fac = 0.2;
 
 
