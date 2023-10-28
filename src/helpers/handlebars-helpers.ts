@@ -512,10 +512,11 @@ export default function Helpersfn(self: ContextManager) {
         content = k.join("\n");
       }
 
+      // do not use (0, eval), it will break "this", and the eval wont be able to access context
       return await eval(`
         async (plugin, app, pluginApi)=>{
           ${content}
-        }
+        }  
       `).bind(this)(self.plugin, self.app, pluginApi);
     },
   } as const;
