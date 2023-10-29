@@ -15,6 +15,7 @@ import {
   Extractors,
 } from "#/extractors/content-extractor";
 import { isMap, isSet } from "util/types";
+import read from "#/extractors";
 
 export default function Helpersfn(self: ContextManager) {
   const extract = async (id: string, cntn: string, other: any) => {
@@ -36,7 +37,6 @@ export default function Helpersfn(self: ContextManager) {
   }
 
   const Helpers = {
-
     each: async (context: any, options: any) => {
       if (!options) {
         throw new Exception('Must pass iterator to #each');
@@ -125,6 +125,7 @@ export default function Helpersfn(self: ContextManager) {
 
       return ret;
     },
+
     length: function (str: string) {
       return str.length;
     },
@@ -594,6 +595,11 @@ export default function Helpersfn(self: ContextManager) {
         }  
       `).bind(this)(self.plugin, self.app, pluginApi);
     },
+
+    async read(path: string) {
+      return await read(path, self.plugin)
+    }
+
   } as const;
 
   return Helpers;

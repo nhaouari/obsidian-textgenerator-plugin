@@ -124,9 +124,9 @@ export default class RequestHandler {
       reqParams?: RequestInit | undefined;
       bodyParams?: any;
     } = {
-      showSpinner: true,
-      signal: undefined,
-    }
+        showSpinner: true,
+        signal: undefined,
+      }
   ) {
     try {
       logger("generate", {
@@ -187,41 +187,45 @@ export default class RequestHandler {
         try {
           const k =
             provider.providerOptions.estimatingMode ||
-            provider.providerOptions.disableProvider
+              provider.providerOptions.disableProvider
               ? ""
               : await this.LLMProvider.generate(
-                  bodyParams.messages,
-                  {
-                    ...allParams,
-                    ...bodyParams,
-                    requestParams: {
-                      // body: JSON.stringify(bodyParams),
-                      ...reqParams,
-                      signal:
-                        additionnalParams.signal ||
-                        this.signalController?.signal,
-                    },
-                    otherOptions:
-                      this.plugin.settings.LLMProviderOptions[
-                        this.LLMProvider.id
-                      ],
-                    streaming: true,
-                    llmPredict: bodyParams.messages?.length == 1,
-                  } as any,
-                  onToken,
-                  provider.providerOptions
-                );
+                bodyParams.messages,
+                {
+                  ...allParams,
+                  ...bodyParams,
+                  requestParams: {
+                    // body: JSON.stringify(bodyParams),
+                    ...reqParams,
+                    signal:
+                      additionnalParams.signal ||
+                      this.signalController?.signal,
+                  },
+                  otherOptions:
+                    this.plugin.settings.LLMProviderOptions[
+                    this.LLMProvider.id
+                    ],
+                  streaming: true,
+                  llmPredict: bodyParams.messages?.length == 1,
+                } as any,
+                onToken,
+                provider.providerOptions
+              );
 
           // output template, template used AFTER the generation happens
           return (
             (provider.providerOptions.output?.length
               ? await Handlebars.compile(
-                  provider.providerOptions.output.replaceAll("\\n", "\n"),
-                  {
-                    noEscape: true,
-                  }
-                )
-              : template?.outputTemplate)?.({ ...options, output: k }) || k
+                provider.providerOptions.output.replaceAll("\\n", "\n"),
+                {
+                  noEscape: true,
+                }
+              )
+              : template?.outputTemplate)?.({
+                requestResults: k,
+                ...options,
+                output: k
+              }) || k
           );
         } catch (err: any) {
           onError?.(err);
@@ -356,26 +360,26 @@ export default class RequestHandler {
 
       let result =
         provider.providerOptions.estimatingMode ||
-        provider.providerOptions.disableProvider
+          provider.providerOptions.disableProvider
           ? ""
           : await this.LLMProvider.generate(
-              bodyParams.messages,
-              {
-                ...allParams,
-                ...bodyParams,
-                requestParams: {
-                  // body: JSON.stringify(bodyParams),
-                  ...reqParams,
-                  signal: this.signalController?.signal,
-                },
-                otherOptions:
-                  this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
-                stream: false,
-                llmPredict: bodyParams.messages?.length == 1,
+            bodyParams.messages,
+            {
+              ...allParams,
+              ...bodyParams,
+              requestParams: {
+                // body: JSON.stringify(bodyParams),
+                ...reqParams,
+                signal: this.signalController?.signal,
               },
-              undefined,
-              provider.providerOptions
-            );
+              otherOptions:
+                this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
+              stream: false,
+              llmPredict: bodyParams.messages?.length == 1,
+            },
+            undefined,
+            provider.providerOptions
+          );
 
       // Remove leading/trailing newlines
       //   result = result.trim();
@@ -385,11 +389,11 @@ export default class RequestHandler {
       result =
         (provider.providerOptions.output?.length
           ? await Handlebars.compile(
-              provider.providerOptions.output.replaceAll("\\n", "\n"),
-              {
-                noEscape: true,
-              }
-            )
+            provider.providerOptions.output.replaceAll("\\n", "\n"),
+            {
+              noEscape: true,
+            }
+          )
           : template?.outputTemplate)?.({ ...options, output: result }) ||
         result;
 

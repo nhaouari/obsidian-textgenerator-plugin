@@ -2,7 +2,9 @@ import { App, Notice, FuzzySuggestModal, FuzzyMatch } from "obsidian";
 import TextGeneratorPlugin from "src/main";
 import { PromptTemplate } from "src/types";
 import debug from "debug";
+
 const logger = debug("textgenerator:model");
+
 export class ExampleModal extends FuzzySuggestModal<PromptTemplate> {
   plugin: TextGeneratorPlugin;
   title: string;
@@ -42,8 +44,8 @@ export class ExampleModal extends FuzzySuggestModal<PromptTemplate> {
 
   getItemText(template: PromptTemplate): string {
     return (
-      template.name +
-      template.description +
+      (template.name || "") +
+      (template.description || "") +
       template.author +
       template.tags +
       template.path

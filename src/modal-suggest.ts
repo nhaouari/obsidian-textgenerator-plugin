@@ -41,9 +41,10 @@ export class ModelSuggest extends EditorSuggest<PromptTemplate> {
     const modal = new ExampleModal(
       this.app,
       this.plugin,
-      async (result) => {},
+      async (result) => { },
       "Choose a template"
     );
+
     const suggestions = modal.getSuggestions(query);
     return suggestions.map((s) => ({
       ...s.item,
