@@ -1059,10 +1059,10 @@ export const contextVariablesObj: Record<
     hint: "Mentions across the vault where a note is referenced without a direct link, e.g., '...note...'.",
   },
   headings: {
-    example: `{{#eachProperty headings}}
-# HEADER: {{property}} 
+    example: `{{#each headings}}
+# HEADER: {{@key}} 
 {{value}} 
-{{/eachProperty}}`,
+{{/each}}`,
     hint: "Contains all the headings within the note and their respective content.",
   },
 
@@ -1072,9 +1072,9 @@ export const contextVariablesObj: Record<
   },
 
   yaml: {
-    example: `{{#eachProperty yaml}} 
-{{property}}: {{value}} 
-{{/eachProperty}}`,
+    example: `{{#each yaml}} 
+{{@key}}: {{value}} 
+{{/each}}`,
     hint: "The initial metadata (Object) of the note.",
   },
 

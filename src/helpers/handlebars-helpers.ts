@@ -1,5 +1,5 @@
 import { Notice, normalizePath } from "obsidian";
-import handlebars from "handlebars";
+import handlebars, { Exception, createFrame } from "handlebars";
 import { pull } from "langchain/hub";
 
 import asyncHelpers from "../lib/async-handlebars-helper";
@@ -14,6 +14,7 @@ import {
   ExtractorSlug,
   Extractors,
 } from "#/extractors/content-extractor";
+import { isMap, isSet } from "util/types";
 
 export default function Helpersfn(self: ContextManager) {
   const extract = async (id: string, cntn: string, other: any) => {
@@ -28,18 +29,102 @@ export default function Helpersfn(self: ContextManager) {
     return await ce.convert(cntn, other);
   }
 
-
-
   const runTemplate = async (id: string, metadata?: any) => {
     return await self.plugin.textGenerator.templateGen(id, {
       additionalProps: metadata,
     })
   }
 
-
-
-
   const Helpers = {
+
+    each: async (context: any, options: any) => {
+      if (!options) {
+        throw new Exception('Must pass iterator to #each');
+      }
+
+      let fn = options.fn,
+        inverse = options.inverse,
+        i = 0,
+        ret = '',
+        data: any;
+
+      if (typeof context == "function") {
+        context = await context.call(this);
+      }
+
+      if (options.data) {
+        data = createFrame(options.data);
+      }
+
+      async function execIteration(field: any, value: any, index: any, last?: any) {
+        if (data) {
+          data.key = field;
+          data.index = index;
+          data.first = index === 0;
+          data.last = !!last;
+        }
+
+        ret =
+          ret +
+          await fn(value, {
+            data: data,
+            blockParams: [context[field], field],
+          });
+      }
+
+      if (context && typeof context === 'object') {
+        if (Array.isArray(context)) {
+          for (let j = context.length; i < j; i++) {
+            if (i in context) {
+              await execIteration(i, context[i], i, i === context.length - 1);
+            }
+          }
+        } else if (isMap(context)) {
+          const j = context.size;
+          for (const [key, value] of context) {
+            await execIteration(key, value, i++, i === j);
+          }
+        } else if (isSet(context)) {
+          const j = context.size;
+          for (const value of context) {
+            await execIteration(i, value, i++, i === j);
+          }
+        } else if (typeof Symbol === 'function' && context[Symbol.iterator]) {
+          const newContext = [];
+          const iterator = context[Symbol.iterator]();
+          for (let it = iterator.next(); !it.done; it = iterator.next()) {
+            newContext.push(it.value);
+          }
+          context = newContext;
+          for (let j = context.length; i < j; i++) {
+            await execIteration(i, context[i], i, i === context.length - 1);
+          }
+        } else {
+          let priorKey: any;
+
+          Promise.all(Object.keys(context).map(async (key) => {
+            // We're running the iterations one step out of sync so we can detect
+            // the last iteration without have to scan the object twice and create
+            // an intermediate keys array.
+            if (priorKey !== undefined) {
+              await execIteration(priorKey, context[priorKey], i - 1,);
+            }
+            priorKey = key;
+            i++;
+          }));
+
+          if (priorKey !== undefined) {
+            await execIteration(priorKey, context[priorKey], i - 1, true);
+          }
+        }
+      }
+
+      if (i === 0) {
+        ret = inverse(this);
+      }
+
+      return ret;
+    },
     length: function (str: string) {
       return str.length;
     },
@@ -140,16 +225,6 @@ export default function Helpersfn(self: ContextManager) {
 
     parse: function (context: any) {
       return JSON.parse(context);
-    },
-
-    async eachProperty(context: any, options: any) {
-      var ret = "";
-      for (var prop in context) {
-        if (context.hasOwnProperty(prop)) {
-          ret = ret + await options.fn({ property: prop, value: context[prop] });
-        }
-      }
-      return ret;
     },
 
     escp: async function (context: any) {
