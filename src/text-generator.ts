@@ -583,7 +583,7 @@ export default class TextGenerator extends RequestHandler {
       const metadata = this.contextManager.getMetaData(undefined, true);
 
       const matter: Record<string, any> = {};
-      Object.entries(metadata?.frontmatter).forEach(([key, content]) => {
+      Object.entries(metadata?.frontmatter || {}).forEach(([key, content]) => {
         if (IGNORE_IN_YAML[key]) {
           matter[key] = content;
         }
