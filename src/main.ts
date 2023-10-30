@@ -50,9 +50,10 @@ import VersionManager from "./scope/versionManager";
 import { registerAPI } from "@vanakat/plugin-api";
 import { PlaygroundView, VIEW_Playground_ID } from "./ui/playground";
 
-let safeStorage: any;
+let safeStorage: Electron.SafeStorage;
 
 if (Platform.isDesktop) {
+  // @ts-ignore
   safeStorage = require("electron")?.remote?.safeStorage;
 }
 
