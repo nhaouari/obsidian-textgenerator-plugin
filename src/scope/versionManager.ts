@@ -1,3 +1,4 @@
+import set from "lodash.set";
 import pkg from "../../package.json";
 import TextGeneratorPlugin from "../main";
 import { Version } from "../types";
@@ -33,10 +34,12 @@ export default class VersionManager {
     }
 
     if (this.plugin.settings.api_key) {
-      this.plugin.settings.api_key_encrypted = this.plugin.getEncryptedKey(
-        this.plugin.settings.api_key
-      );
+      set(this.plugin.settings, `LLMProviderOptions["OpenAI Chat (Langchain)"].api_key`, this.plugin.settings.api_key)
+      set(this.plugin.settings, `LLMProviderOptions["OpenAI Instruct (Langchain)"].api_key`, this.plugin.settings.api_key)
+
+      this.plugin.encryptAllKeys();
     }
+
 
     await this.plugin.saveSettings();
   }
