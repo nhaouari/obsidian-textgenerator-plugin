@@ -1,7 +1,7 @@
 import { ContentExtractor } from "./content-extractor";
 import TextGeneratorPlugin from "#/main";
 
-export default async function read(path: string, plugin: TextGeneratorPlugin) {
+export default async function read(path: string, plugin: TextGeneratorPlugin, otherOptions?: any) {
     if (!app.vault.adapter.exists(path)) throw "file doesn't exist";
 
     const extension = path.split(".").reverse()[0].toLowerCase();
@@ -39,5 +39,5 @@ export default async function read(path: string, plugin: TextGeneratorPlugin) {
             return self.app.vault.cachedRead(self.app.vault.getAbstractFileByPath(path));
     }
 
-    return await extractor.extract(path);
+    return await extractor.convert(path, otherOptions);
 }
