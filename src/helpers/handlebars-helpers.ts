@@ -289,7 +289,6 @@ export default function Helpersfn(self: ContextManager) {
       const options: { data: { root: any }; fn: any } = vars.pop();
 
       if (!options.data.root.templatePath) {
-        console.log({ t: this, options, vars });
         throw new Error("templatePath was not found in run command");
       }
 
@@ -508,14 +507,6 @@ export default function Helpersfn(self: ContextManager) {
 
       data.prompt = data.messages[data.messages?.length - 1] || "";
 
-      console.log({
-        data,
-        l: JSON.stringify({
-          // ...inJson,
-          ...data,
-        }),
-      });
-
       switch (whatToGet) {
         case "system":
           return data.system;
@@ -546,7 +537,6 @@ export default function Helpersfn(self: ContextManager) {
       let content = await options?.fn?.(this) as string || ""
 
       if (!options.data.root.templatePath) {
-        console.log({ t: this, options, vars });
         throw new Error("templatePath was not found in run command");
       }
 
@@ -620,21 +610,6 @@ export async function langPull(rep: string) {
   if (k.kwargs.template_format && k.kwargs.template_format != "f-string")
     throw new Error("only accepts templates with format f-string for now.");
 
-  console.log({
-    k,
-    res:
-      k.kwargs.messages ||
-      (k.kwargs.template
-        ? [
-          {
-            prompt: {
-              template: k.kwargs.template,
-              inputVariables: k.kwargs.input_variables,
-            },
-          },
-        ]
-        : []),
-  });
 
   const data = compileLangMessages(
     k.kwargs.messages ||

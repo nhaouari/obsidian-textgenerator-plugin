@@ -98,17 +98,10 @@ export default function ChatComp(props: {
           },
         });
 
-      console.log({
-        editor,
-        context,
-      });
-
       const result = await Handlebars.compile(input)({
         ...context.options,
         templatePath: "default/default"
       });
-
-      console.log({ result });
 
 
 

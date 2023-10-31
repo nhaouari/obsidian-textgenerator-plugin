@@ -99,14 +99,6 @@ export default class ContextManager {
       const ctx = await this.executeTemplateDataviewQueries(context);
       logger("Context Template", { context: ctx, options });
 
-      console.log({
-        context,
-        options,
-        template: { inputTemplate, outputTemplate },
-        templatePath,
-        adds: props.addtionalOpts,
-      });
-
       return {
         context,
         options,
@@ -145,7 +137,6 @@ export default class ContextManager {
         }
       }
 
-      console.log({ context, options });
       logger("Context without template", { context, options });
       return { context, options } as InputContext;
     }
@@ -208,7 +199,6 @@ export default class ContextManager {
       //   app.workspace.getLeaf().detach();
     }
 
-    console.log({ contexts });
     return contexts;
   }
 
@@ -292,7 +282,6 @@ export default class ContextManager {
       contextTemplate + templateContent
     );
 
-    console.log({ contextObj });
     const context = await getContextAsString(contextObj as any, contextTemplate);
 
     const selection = contextObj.selection;
@@ -373,7 +362,6 @@ export default class ContextManager {
 
     const variables = getHBValues(contextTemplate || "") || [];
     const vars: Record<string, true> = {};
-    console.log({ vars, contextTemplate });
     variables.forEach((v) => {
       vars[v] = true;
     });
@@ -511,7 +499,6 @@ export default class ContextManager {
 
     if (!templateFile) throw `Template ${templatePath} couldn't be found`;
 
-    console.log({ templateFile });
     const templateContent = await this.app.vault.read(templateFile as TFile);
 
     const templates = this.splitTemplate(templateContent);
@@ -539,8 +526,6 @@ export default class ContextManager {
       from: editor.getCursor("from"),
       to: editor.getCursor("to"),
     };
-
-    console.log(editor.getCursor("to"));
 
     const selectedText = editor.getSelection().trimStart();
 

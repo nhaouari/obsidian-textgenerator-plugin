@@ -183,7 +183,6 @@ export default class PackageManager {
     if (index !== -1 && p?.repo) {
       const repo = p.repo;
       const release = await this.getReleaseByRepo(repo);
-      console.log({ release })
       const data = await this.getAsset(release, "data.json");
 
       if (!data) throw "couldn't get assets";
@@ -209,16 +208,14 @@ export default class PackageManager {
     logger("updatePackage end", { packageId });
   }
 
-  getPackageById(packageId: string): PackageTemplate {
+  getPackageById(packageId: string): PackageTemplate | null {
     const index = this.configuration.packages.findIndex(
       (p) => p.packageId === packageId
     );
 
-    if (index !== -1) {
-      return this.configuration.packages[index];
-    }
+    if (index == -1) return null;//throw `couldn't get repo from package ${packageId}`;
 
-    throw `couldn't get repo from package ${packageId}`;
+    return this.configuration.packages[index];
   }
 
   getInstalledPackageIndex(packageId: string): number {
@@ -343,10 +340,12 @@ export default class PackageManager {
       return null;
     }
     logger("getAsset end", { release, name });
+
+    const txt = await request({
+      url: asset.url,
+    })
     return JSON.parse(
-      await request({
-        url: asset.url,
-      })
+      txt
     ) as {
       packageId: string;
       prompts: string[];
@@ -384,7 +383,7 @@ export default class PackageManager {
 
   async installPrompt(packageId: string, promptId: string, overwrite = true) {
     logger("installPrompt", { packageId, promptId, overwrite });
-    const repo = await this.getPackageById(packageId).repo;
+    const repo = await this.getPackageById(packageId)?.repo;
 
     const url = `https://raw.githubusercontent.com/${repo}/master/prompts/${promptId}.md`;
     try {
@@ -456,9 +455,11 @@ export default class PackageManager {
     const remotePackagesList: PackageTemplate[] = JSON.parse(
       await request({ url: remotePackagesListUrl })
     );
+
     const newPackages = remotePackagesList.filter(
-      (p) => this.getPackageById(p.packageId) === null
+      (p) => !this.getPackageById(p.packageId)
     );
+
     newPackages.forEach((p) => this.configuration.packages.push(p));
     this.save();
     logger("updatePackagesList end");

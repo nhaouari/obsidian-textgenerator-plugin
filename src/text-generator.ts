@@ -533,7 +533,6 @@ export default class TextGenerator extends RequestHandler {
           )
         );
 
-        console.log({ results });
         const failed = results?.filter((r) => r?.startsWith("FAILED:"));
 
         if (failed?.length) {

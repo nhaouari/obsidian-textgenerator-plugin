@@ -111,8 +111,6 @@ export default class LangchainProvider
 
         const params = this.configMerger(reqParams);
 
-        console.log("hf params", { params, reqParams })
-
         // if the model is streamable
         params.stream = params.stream && this.streamable;
 

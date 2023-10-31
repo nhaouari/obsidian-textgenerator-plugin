@@ -14,7 +14,7 @@ function TemplateItem({ props, select, update }) {
 					<span className="flair mod-pop">Installed</span>
 				)}
 				{props.installed && update && (
-					<span className="tg-update flair mod-pop">
+					<span className="tg-update flair mod-pop text-xs">
 						Update Available
 					</span>
 				)}

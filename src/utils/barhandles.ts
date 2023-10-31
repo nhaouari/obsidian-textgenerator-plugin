@@ -31,7 +31,6 @@ export const getHBValues = (text: string) => {
   };
 
   main: for (const tag of tags) {
-    console.log({ tag, tags });
 
     if (
       // if its a inside variable
