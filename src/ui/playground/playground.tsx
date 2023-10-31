@@ -6,7 +6,7 @@ import { PlaygroundView } from ".";
 import CopyButton from "../components/copyButton";
 import useStateView from "../context/useStateView";
 import MarkDownViewer from "../components/Markdown";
-import useGlobal from "../context/global";
+import useHoldingKey from "../components/useHoldingKey";
 import { Handlebars } from "#/helpers/handlebars-helpers";
 import clsx from "clsx";
 import AvailableVars from "../components/availableVars";
@@ -79,6 +79,9 @@ export default function ChatComp(props: {
   }, [input]);
 
   const handleSubmit = async (event: any) => {
+
+    const wasHoldingCtrl = holding.ctrl;
+
     event.preventDefault();
     setLoading(true);
     try {
@@ -107,7 +110,18 @@ export default function ChatComp(props: {
 
       console.log({ result });
 
-      setAnswer(result);
+
+
+      if (wasHoldingCtrl) {
+        setAnswer(await props.plugin.textGenerator.LLMProvider.generate([{
+          role: "user",
+          content: result
+        }], props.plugin.settings, async (token, first) => {
+          if (first) setAnswer("");
+          setAnswer((a) => a + token);
+        }));
+      } else
+        setAnswer(result);
     } catch (err: any) {
       console.error(err);
       setAnswer(
@@ -118,6 +132,8 @@ export default function ChatComp(props: {
       setLoading(false);
     }
   };
+
+  const holding = useHoldingKey();
 
   const stopLoading = (e: any) => {
     e.preventDefault();
@@ -167,12 +183,21 @@ export default function ChatComp(props: {
             Stop
           </button>
         ) : (
-          <button
-            type="submit"
-            className="rounded bg-blue-500 px-6 py-2 font-semibold hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300/50"
-          >
-            Preview
-          </button>
+          holding.ctrl ?
+            <button
+              type="submit"
+              data-tip="unhold ctrl to use preview"
+              className="rounded dz-tooltip dz-tooltip-bottom bg-blue-500 px-6 py-2 font-semibold hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300/50"
+            >
+              Run
+            </button> :
+            <button
+              type="submit"
+              data-tip="hold ctrl to use run"
+              className="rounded dz-tooltip dz-tooltip-bottom bg-blue-500 px-6 py-2 font-semibold hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300/50"
+            >
+              Preview
+            </button>
         )}
         {answer && <CopyButton textToCopy={answer} justAButton />}
       </div>
