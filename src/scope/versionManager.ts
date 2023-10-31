@@ -50,8 +50,8 @@ export default class VersionManager {
 
   // positive if version1 is newer than version2
   compare(version1: Version, version2: Version) {
-    const [v1, b1] = version1.split("-");
-    const [v2, b2] = version2.split("-");
+    const [v1, b1] = (version1 || "0.0.0").split("-");
+    const [v2, b2] = (version2 || "0.0.0").split("-");
 
     const version1Parts = v1.split(".").map(Number);
     const version2Parts = v2.split(".").map(Number);
