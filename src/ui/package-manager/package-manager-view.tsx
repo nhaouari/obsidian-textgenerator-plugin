@@ -141,17 +141,20 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                   </div>
                   <div className="setting-item-control">
                     <div
-                      className={`checkbox-container mod-small ${
-                        justInstalled && "is-enabled"
-                      }`}
+                      className={`checkbox-container mod-small ${justInstalled && "is-enabled"
+                        }`}
                       onClick={() => toggleJustInstalled()}
                     >
                       <input type="checkbox" tabIndex={0} />
                     </div>
                   </div>
                 </div>
+
                 <div className="community-modal-search-summary u-muted">
                   Showing {items.length} Packages Templates:
+                </div>
+                <div className="flex w-full justify-end">
+                  <div className="px-4 py-1">Find more community templates on our <a href="https://discord.gg/GvTBgzBz7n">discord server!</a></div>
                 </div>
               </div>
               <div className="community-modal-search-results-wrapper">
@@ -179,6 +182,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                 updateView={updateView}
               />
             )}
+
           </div>
         </div>
       </div>
