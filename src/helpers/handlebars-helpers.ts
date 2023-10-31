@@ -345,8 +345,6 @@ export default function Helpersfn(self: ContextManager) {
         varname = otherVariables[0];
         const param = otherVariables[1] || "tg_selection";
 
-
-
         const innerTxt =
           (await await options.fn?.({
             ...this,
@@ -556,7 +554,6 @@ export default function Helpersfn(self: ContextManager) {
       const parentPackageId = p[p.length - 2];
 
       const run = (id: string, metadata?: any) => {
-
         let meta: any = {};
 
         if (content.contains("run(")) {
@@ -590,10 +587,10 @@ export default function Helpersfn(self: ContextManager) {
 
       // do not use (0, eval), it will break "this", and the eval wont be able to access context
       return await eval(`
-        async (plugin, app, pluginApi)=>{
+        async (plugin, app, pluginApi, run)=>{
           ${content}
         }  
-      `).bind(this)(self.plugin, self.app, pluginApi);
+      `).bind(this)(self.plugin, self.app, pluginApi, run);
     },
 
     async read(path: string) {

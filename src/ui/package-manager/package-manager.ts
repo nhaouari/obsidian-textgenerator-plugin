@@ -183,6 +183,7 @@ export default class PackageManager {
     if (index !== -1 && p?.repo) {
       const repo = p.repo;
       const release = await this.getReleaseByRepo(repo);
+      console.log({ release })
       const data = await this.getAsset(release, "data.json");
 
       if (!data) throw "couldn't get assets";
@@ -315,10 +316,12 @@ export default class PackageManager {
     const rawRelease: any = rawReleases
       .filter((x: any) => !x.draft && !x.prerelease)
       .sort((x: any) => x.published_at)[0];
+
     const downloads: number = rawReleases.reduce(
-      (p: any, c: any) => c.assets[0].download_count + p,
+      (p: any, c: any) => (c.assets[0]?.download_count || 0) + p,
       0
     );
+
     const release = {
       version: rawRelease.tag_name,
       published_at: rawRelease.published_at,
@@ -362,8 +365,7 @@ export default class PackageManager {
         readmeMD,
         el,
         "",
-        // @ts-ignore
-        undefined
+        this.plugin
       );
       logger(" getReadme end", { packageId });
       return el;

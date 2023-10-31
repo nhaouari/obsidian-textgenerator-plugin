@@ -179,8 +179,7 @@ export default class TextGeneratorPlugin extends Plugin {
               markdown,
               container,
               path,
-              // @ts-ignore
-              undefined
+              this
             );
             this.addTGMenu(container, markdown, source, outputTemplate);
           } catch (e) {
