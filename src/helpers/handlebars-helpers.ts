@@ -40,6 +40,10 @@ export default function Helpersfn(self: ContextManager) {
     return await self.plugin.app.vault.adapter.write(path, data)
   }
 
+  const append = async (path: string, data: string,) => {
+    return await self.plugin.app.vault.adapter.append(path, `\n${data}`)
+  }
+
   const Helpers = {
     each: async (context: any, options: any) => {
       if (!options) {
@@ -599,6 +603,13 @@ export default function Helpersfn(self: ContextManager) {
       let data = vars[1];
       if (options.fn) data = await options.fn(options.data.root)
       return await write(vars[0], data)
+    },
+
+    async append(...vars: any[]) {
+      const options: { data: { root: any }; fn: any } = vars.pop();
+      let data = vars[1];
+      if (options.fn) data = await options.fn(options.data.root)
+      return await append(vars[0], data)
     }
 
   } as const;
