@@ -381,6 +381,7 @@ export default class ContextManager {
 
       const selections = this.getSelections(editor);
       const selection = this.getSelection(editor);
+
       if (selections.length > 1)
         context["selections"] = selections || [];
       else
@@ -1048,7 +1049,7 @@ export const contextVariablesObj: Record<
   headings: {
     example: `{{#each headings}}
 # HEADER: {{@key}} 
-{{value}} 
+{{this}} 
 {{/each}}`,
     hint: "Contains all the headings within the note and their respective content.",
   },
@@ -1060,7 +1061,7 @@ export const contextVariablesObj: Record<
 
   yaml: {
     example: `{{#each yaml}} 
-{{@key}}: {{value}} 
+{{@key}}: {{this}} 
 {{/each}}`,
     hint: "The initial metadata (Object) of the note.",
   },
@@ -1069,7 +1070,27 @@ export const contextVariablesObj: Record<
   extract: {
     example: `{{#extract "web_md" "var1" "a"}}
   http://www.google.com
-{{/extract}}`,
+{{/extract}}
+Or
+{{extract "pdf" "test.pdf"}}`,
     hint: "Extracts content from various sources like PDFs, images, audio files, web pages, and YouTube URLs. possible values: web_md, web_html, pdf, img, audio",
+  },
+
+
+
+  read: {
+    example: `{{read "readme.md"}}`,
+    hint: "Reads the content of a file from the vault",
+  },
+
+  // extractors
+  write: {
+    example: `{{#write "readme.md"}}
+  text {{selection}}
+{{/write}}
+Or
+{{write "readme.md" selection}}
+`,
+    hint: "Writes a text or variable into a file",
   },
 };

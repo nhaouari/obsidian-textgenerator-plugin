@@ -95,6 +95,7 @@ export default function ChatComp(props: {
           templateContent: input,
           addtionalOpts: {
             content: editor?.getValue(),
+            selections: props.plugin.textGenerator.contextManager.getSelections(editor)
           },
         });
 
