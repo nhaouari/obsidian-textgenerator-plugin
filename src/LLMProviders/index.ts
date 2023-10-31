@@ -46,11 +46,19 @@ export type llmType = (typeof providers)[number]["id"];
 export type llmSlugType = (typeof providers)[number]["slug"];
 
 const DefaultProviders: Record<llmType, (typeof providers)[number]> = {} as any;
-const ProviderSlugs: Record<llmSlugType, llmType> = {};
+
+/** to get llm from slug */
+export const ProviderSlugs: Record<llmSlugType, llmType> = {};
+/** to get llm slug */
+export const UnProviderSlugs: Record<string, llmSlugType> = {};
 
 for (const pvrd of providers) {
   DefaultProviders[pvrd.id] = pvrd;
-  if (pvrd.slug) ProviderSlugs[pvrd.slug] = pvrd.id;
+  if (pvrd.slug) {
+    ProviderSlugs[pvrd.slug] = pvrd.id;
+    UnProviderSlugs[pvrd.id] = pvrd.slug;
+  }
+
 }
 
 export type LLMProviderType = keyof typeof DefaultProviders;

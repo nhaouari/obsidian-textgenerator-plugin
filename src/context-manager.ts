@@ -367,7 +367,8 @@ export default class ContextManager {
       children?: AsyncReturnType<typeof this.getChildrenContent>;
       highlights?: ReturnType<typeof this.getHighlights>;
       mentions?: AsyncReturnType<typeof this.getMentions>
-      extractions?: AsyncReturnType<typeof this.getExtractions>
+      extractions?: AsyncReturnType<typeof this.getExtractions>;
+      keys?: AsyncReturnType<typeof this.plugin.getApiKeys>;
     } = {};
 
     const variables = getHBValues(contextTemplate || "") || [];
@@ -426,7 +427,8 @@ export default class ContextManager {
     if (vars["metadata"])
       context["metadata"] = this.getMetaDataAsStr(context["frontmatter"] || {}) || "";
 
-
+    if (vars["keys"])
+      context["keys"] = this.plugin.getApiKeys();
 
     console.log("testing", { vars, context, activeDocCache })
 

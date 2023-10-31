@@ -66,8 +66,10 @@ export interface LLMConfig {
   stop?: string[];
   n?: number;
   engine: string;
+  model?: string;
   max_tokens: number;
   temperature: number;
   frequency_penalty: number;
   llmPredict: boolean;
+  bodyParams?: any;
 }

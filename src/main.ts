@@ -49,6 +49,7 @@ import VersionManager from "./scope/versionManager";
 
 import { registerAPI } from "@vanakat/plugin-api";
 import { PlaygroundView, VIEW_Playground_ID } from "./ui/playground";
+import { UnProviderSlugs } from "./LLMProviders";
 
 let safeStorage: Electron.SafeStorage;
 
@@ -697,6 +698,17 @@ export default class TextGeneratorPlugin extends Plugin {
     }
 
     return safeStorage.encryptString(apiKey) as Buffer;
+  }
+
+
+  getApiKeys() {
+    const keys: Record<string, string | undefined> = {};
+    for (const k in this.settings.LLMProviderOptions) {
+      if (Object.prototype.hasOwnProperty.call(this.settings.LLMProviderOptions, k)) {
+        keys[UnProviderSlugs[k]] = this.settings.LLMProviderOptions[k]?.api_key;
+      }
+    }
+    return keys;
   }
 
   resetSettingsToDefault() {

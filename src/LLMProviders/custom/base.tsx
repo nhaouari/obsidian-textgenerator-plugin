@@ -93,8 +93,7 @@ export type CustomConfig = Record<keyof typeof default_values, string>;
 const id = "Default (Custom)" as const;
 export default class CustomProvider
   extends BaseProvider
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   streamable = true;
   id = id;
   static slug = "custom";
@@ -127,19 +126,19 @@ export default class CustomProvider
     const k = (
       params.CORSBypass
         ? await requestUrl({
-            url: params.url,
-            body:
-              typeof requestOptions.body == "string"
-                ? requestOptions.body
-                : undefined,
-            headers:
-              typeof requestOptions.headers == "object"
-                ? (requestOptions.headers as any)
-                : undefined,
+          url: params.url,
+          body:
+            typeof requestOptions.body == "string"
+              ? requestOptions.body
+              : undefined,
+          headers:
+            typeof requestOptions.headers == "object"
+              ? (requestOptions.headers as any)
+              : undefined,
 
-            method: requestOptions.method,
-            throw: true,
-          })
+          method: requestOptions.method,
+          throw: true,
+        })
         : await fetch(params.url, requestOptions)
     ) as AsyncReturnType<typeof fetch>;
 
@@ -235,6 +234,7 @@ export default class CustomProvider
           ...cleanConfig(reqParams.otherOptions),
           ...cleanConfig(reqParams),
           ...customConfig,
+          keys: this.plugin.getApiKeys(),
           // if the model is streamable
           stream:
             (reqParams.stream &&
@@ -246,6 +246,8 @@ export default class CustomProvider
           messages,
         };
 
+        console.log("hbd", { handlebarData })
+
         const res = await this.request({
           method: handlebarData.method,
           url: await Handlebars.compile(
@@ -255,19 +257,19 @@ export default class CustomProvider
           stream: handlebarData.stream,
           headers: JSON.parse(
             "" +
-              (await Handlebars.compile(
-                handlebarData.handlebars_headers_in ||
-                  default_values.handlebars_headers_in
-              )(handlebarData))
+            (await Handlebars.compile(
+              handlebarData.handlebars_headers_in ||
+              default_values.handlebars_headers_in
+            )(handlebarData))
           ) as any,
 
           body: JSON.stringify(
             JSON.parse(
               "" +
-                (await Handlebars.compile(
-                  handlebarData.handlebars_body_in ||
-                    default_values.handlebars_body_in
-                )(handlebarData))
+              (await Handlebars.compile(
+                handlebarData.handlebars_body_in ||
+                default_values.handlebars_body_in
+              )(handlebarData))
             )
           ) as any,
 
@@ -291,7 +293,7 @@ export default class CustomProvider
             (get(
               choices?.[0] || choices,
               handlebarData.path_to_message_content ||
-                default_values.path_to_message_content
+              default_values.path_to_message_content
             ) as string) || choices;
         }
 
@@ -341,7 +343,7 @@ export default class CustomProvider
           headers: JSON.parse(
             await Handlebars.compile(
               handlebarData.handlebars_headers_in ||
-                default_values.handlebars_headers_in
+              default_values.handlebars_headers_in
             )(handlebarData)
           ) as any,
 
@@ -350,7 +352,7 @@ export default class CustomProvider
               JSON.parse(
                 await Handlebars.compile(
                   handlebarData.handlebars_body_in ||
-                    default_values.handlebars_body_in
+                  default_values.handlebars_body_in
                 )(handlebarData)
               )
             )
@@ -365,17 +367,17 @@ export default class CustomProvider
 
         const choices = res
           ? (res as object[])?.map((o) =>
-              get(
-                o,
-                handlebarData.path_to_message_content ||
-                  default_values.path_to_message_content
-              )
-            )
-          : get(
-              res,
+            get(
+              o,
               handlebarData.path_to_message_content ||
-                default_values.path_to_message_content
-            );
+              default_values.path_to_message_content
+            )
+          )
+          : get(
+            res,
+            handlebarData.path_to_message_content ||
+            default_values.path_to_message_content
+          );
 
         logger("generateMultiple end", {
           choices,
@@ -443,7 +445,7 @@ export default class CustomProvider
 
               const compiled = await Handlebars.compile(
                 config.handlebars_headers_in ||
-                  default_values.handlebars_headers_in
+                default_values.handlebars_headers_in
               )({
                 ...global.plugin.settings,
                 ...cleanConfig(config),

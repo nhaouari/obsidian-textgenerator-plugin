@@ -149,6 +149,7 @@ export default class RequestHandler {
       const { reqParams, bodyParams, provider, allParams } =
         this.reqFormatter.getRequestParameters(
           {
+            ...context.options,
             ...params,
             prompt:
               typeof template != "undefined" && !context.context
@@ -275,6 +276,7 @@ export default class RequestHandler {
         context.map(async (ctxt) => {
           return this.reqFormatter.getRequestParameters(
             {
+              ...ctxt.options,
               ...params,
               prompt:
                 typeof ctxt.template != "undefined" && !ctxt.context
@@ -335,6 +337,7 @@ export default class RequestHandler {
       const { reqParams, bodyParams, provider, allParams } =
         this.reqFormatter.getRequestParameters(
           {
+            ...context.options,
             ...params,
             prompt:
               typeof template != "undefined" && !context.context?.trim()
@@ -386,16 +389,31 @@ export default class RequestHandler {
 
       // output template, template used AFTER the generation happens
 
-      result =
-        (provider.providerOptions.output?.length
-          ? await Handlebars.compile(
-            provider.providerOptions.output.replaceAll("\\n", "\n"),
-            {
-              noEscape: true,
-            }
-          )
-          : template?.outputTemplate)?.({ ...options, output: result }) ||
-        result;
+      const conf = {
+        ...options,
+        output: result,
+        requestResults: result
+      }
+
+      result = provider.providerOptions.output ?
+        await Handlebars.compile(
+          provider.providerOptions.output.replaceAll("\\n", "\n"),
+          {
+            noEscape: true,
+          })(conf) : result
+
+
+      console.log("res1",
+        result,
+        await template?.outputTemplate?.({
+          ...conf,
+          output: result
+        }))
+      result = await template?.outputTemplate?.({
+        ...conf,
+        output: result
+      }) || result
+      console.log("res2", result)
 
       logger("generate end", {
         result,
