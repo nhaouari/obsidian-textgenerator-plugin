@@ -36,7 +36,7 @@ export default function Helpersfn(self: ContextManager) {
     })
   }
 
-  const save = async (path: string, data: string) => {
+  const write = async (path: string, data: string) => {
     return await self.plugin.app.vault.adapter.write(path, data)
   }
 
@@ -106,16 +106,19 @@ export default function Helpersfn(self: ContextManager) {
         } else {
           let priorKey: any;
 
-          Promise.all(Object.keys(context).map(async (key) => {
-            // We're running the iterations one step out of sync so we can detect
-            // the last iteration without have to scan the object twice and create
-            // an intermediate keys array.
-            if (priorKey !== undefined) {
-              await execIteration(priorKey, context[priorKey], i - 1,);
+          for (const key in context) {
+            if (Object.prototype.hasOwnProperty.call(context, key)) {
+              // We're running the iterations one step out of sync so we can detect
+              // the last iteration without have to scan the object twice and create
+              // an intermediate keys array.
+              if (priorKey !== undefined) {
+                await execIteration(priorKey, context[priorKey], i - 1,);
+              }
+              priorKey = key;
+              i++;
             }
-            priorKey = key;
-            i++;
-          }));
+          }
+
 
           if (priorKey !== undefined) {
             await execIteration(priorKey, context[priorKey], i - 1, true);
@@ -591,11 +594,11 @@ export default function Helpersfn(self: ContextManager) {
       return await read(path, self.plugin)
     },
 
-    async save(...vars: any[]) {
+    async write(...vars: any[]) {
       const options: { data: { root: any }; fn: any } = vars.pop();
-      if (!options.fn) throw "you need to provide data to work with";
-
-      return await save(vars[0], await options.fn(options.data.root))
+      let data = vars[1];
+      if (options.fn) data = await options.fn(options.data.root)
+      return await write(vars[0], data)
     }
 
   } as const;
