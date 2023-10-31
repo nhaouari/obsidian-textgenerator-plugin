@@ -16,7 +16,7 @@ export default function AvailableVars(props: {
     <>
       <details className="dz-collapse dz-collapse-arrow">
         <summary className="dz-collapse-title opacity-50">
-          Available Variables
+          Examples
         </summary>
         <div className="dz-collapse-content h-full max-h-32 overflow-y-auto overflow-x-hidden">
           <div className="flex h-full flex-wrap gap-2">
