@@ -36,6 +36,10 @@ export default function Helpersfn(self: ContextManager) {
     })
   }
 
+  const save = async (path: string, data: string) => {
+    return await self.plugin.app.vault.adapter.write(path, data)
+  }
+
   const Helpers = {
     each: async (context: any, options: any) => {
       if (!options) {
@@ -585,6 +589,13 @@ export default function Helpersfn(self: ContextManager) {
 
     async read(path: string) {
       return await read(path, self.plugin)
+    },
+
+    async save(...vars: any[]) {
+      const options: { data: { root: any }; fn: any } = vars.pop();
+      if (!options.fn) throw "you need to provide data to work with";
+
+      return await save(vars[0], await options.fn(options.data.root))
     }
 
   } as const;
