@@ -16,6 +16,7 @@ import {
 } from "#/extractors/content-extractor";
 import { isMap, isSet } from "util/types";
 import read from "#/extractors";
+import lodashSet from "lodash.set";
 
 export default function Helpersfn(self: ContextManager) {
   const extract = async (id: string, cntn: string, other: any) => {
@@ -378,14 +379,12 @@ export default function Helpersfn(self: ContextManager) {
         }
       }
 
-      options.data.root[
-        otherVariables.length >= 1 ? "VAR_" + otherVariables[0] : id
-      ] = await runTemplate(id, {
+      lodashSet(options.data.root, otherVariables.length >= 1 ? "var." + otherVariables[0] : id, await runTemplate(id, {
         ...options.data.root,
         disableProvider: false,
         ...TemplateMetadata,
         ...innerResult
-      })
+      }))
 
       return "";
     },
