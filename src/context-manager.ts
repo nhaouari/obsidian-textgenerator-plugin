@@ -615,7 +615,7 @@ export default class ContextManager {
         let textBlock = await this.getTextBloc(headings[i].heading);
         textBlock = textBlock?.substring(
           textBlock.indexOf(headings[i].heading),
-          textBlock.length - 1
+          textBlock.length
         );
         const reSafeHeading = escapeRegExp(headings[i].heading);
         const headingRegex = new RegExp(`${reSafeHeading}\\s*?\n`, "ig");
@@ -748,7 +748,6 @@ export default class ContextManager {
     let level = -1;
     let start = -1;
     let end = -1;
-
     if (!fileCache?.headings?.length) {
       console.error("Headings not found");
       return;
@@ -768,7 +767,7 @@ export default class ContextManager {
     if (start >= 0 && fileCache.path) {
       const doc = await this.app.vault.getAbstractFileByPath(fileCache.path);
       const docContent = await this.app.vault.read(doc as TFile);
-      if (end === -1) end = docContent.length - 1;
+      if (end === -1) end = docContent.length;
       return docContent.substring(start, end);
     } else {
       console.error("Heading not found ");
