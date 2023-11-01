@@ -58,7 +58,6 @@ for (const pvrd of providers) {
     ProviderSlugs[pvrd.slug] = pvrd.id;
     UnProviderSlugs[pvrd.id] = pvrd.slug;
   }
-
 }
 
 export type LLMProviderType = keyof typeof DefaultProviders;

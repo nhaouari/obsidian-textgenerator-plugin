@@ -5,24 +5,31 @@ export const GENERATE_META_ICON = `<defs><style>.cls-1{fill:none;stroke:currentC
 export const IGNORE_IN_YAML: Record<string, true> = {
   PromptInfo: true,
   config: true,
-  position: true,
-  bodyParams: true,
-  reqParams: true,
-  provider: true,
-  output: true,
-  body: true,
-  endpoint: true,
-  stream: true,
+  // position: true,
+  system: true,
   messages: true,
   max_tokens: true,
+  stream: true,
+  provider: true,
+  disableProvider: true,
+  endpoint: true,
+  output: true,
+
+  // objects
+  body: true,
+  headers: true,
+  // langchain stuff
+  chain: true,
+  splitter: true,
+
+  // mapping
+  bodyParams: true,
+  reqParams: true,
   handlebars_body_in: true,
   handlebars_headers_in: true,
   path_to_error_message: true,
   path_to_choices: true,
   path_to_message_content: true,
-  chain: true,
-  splitter: true,
-  disableProvider: true,
 };
 
 export const OPENAI_MODELS: Record<

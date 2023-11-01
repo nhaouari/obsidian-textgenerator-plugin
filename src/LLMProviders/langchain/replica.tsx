@@ -15,8 +15,7 @@ const logger = debug("textgenerator:llmProvider:replicated");
 const id = "Replica (Langchain)" as const;
 export default class LangchainReplicaProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   id = id;
   static id = id;
   streamable = false;
@@ -31,7 +30,7 @@ export default class LangchainReplicaProvider
       apiKey: options.api_key,
 
       // ------------Necessary stuff--------------
-      model: options.engine as any,
+      model: options.model as any,
       maxRetries: 3,
     });
   }
@@ -72,9 +71,9 @@ export default class LangchainReplicaProvider
           sectionId={props.sectionId}
         >
           <Input
-            value={config.engine}
+            value={config.model}
             setValue={async (value) => {
-              config.engine = value;
+              config.model = value;
               global.triggerReload();
               // TODO: it could use a debounce here
               await global.plugin.saveSettings();
