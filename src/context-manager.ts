@@ -1,4 +1,4 @@
-import { App, Notice, Editor, Component, TFile, HeadingCache } from "obsidian";
+import { App, Notice, Editor, Component, TFile, HeadingCache, EditorPosition } from "obsidian";
 import { AsyncReturnType, Context } from "./types";
 import TextGeneratorPlugin from "./main";
 import { IGNORE_IN_YAML } from "./constants";
@@ -382,10 +382,9 @@ export default class ContextManager {
       const selections = this.getSelections(editor);
       const selection = this.getSelection(editor);
 
-      if (selections.length > 1)
-        context["selections"] = selections || [];
-      else
-        context["selection"] = selection || "";
+      context["selections"] = selection && selections.length == 0 ? [selection] : selections || [];
+
+      context["selection"] = selection || "";
 
 
       if (vars["content"])
@@ -514,10 +513,30 @@ export default class ContextManager {
     logger("getSelections", editor);
     const selections = editor
       .listSelections()
-      .map((r) => editor.getRange(r.anchor, r.head))
+      .map((r) => editor.getRange(this.minPos(r.anchor, r.head), this.maxPos(r.anchor, r.head)))
       .filter((text) => text.length > 0);
     logger("getSelections", { selections });
     return selections;
+  }
+
+  sortMinPos(...pos: EditorPosition[]) {
+    return pos.sort((p1, p2) => {
+      if (p1.line !== p2.line) {
+        return p1.line - p2.line;
+      } else {
+        return p1.ch - p2.ch;
+      }
+    });
+  }
+
+  minPos(...pos: EditorPosition[]) {
+    const sortedPositions = this.sortMinPos(...pos);
+    return sortedPositions[0];
+  }
+
+  maxPos(...pos: EditorPosition[]) {
+    const sortedPositions = this.sortMinPos(...pos);
+    return sortedPositions[sortedPositions.length - 1];
   }
 
   getSelectionRange(editor: Editor) {
@@ -1101,10 +1120,39 @@ Or
     hint: "Appends a text or variable into a file",
   },
 
+
+  run: {
+    example: `{{#run "otherTemplateId" "var1" "selection"}}
+  this text will be the "selection" variable for the other template
+  it can be any variable even custom ones
+{{/run}}
+Or
+{{#run "otherTemplateId" "var1"}}
+  this text will be the "tg_selection" variable for the other template
+{{/run}}
+`,
+    hint: "Runs another template, and sending a value to it, the result will be stored in a variable(var1).",
+  },
+
+  script: {
+    example: `{{#script}}
+  return "hello world";
+{{/script}}
+Or
+{{#script "otherTemplateId" "var1"}}
+\`\`\`js
+  return "hello world";
+\`\`\`
+{{/script}}
+`,
+    hint: "Runs javascript code, avoid using it for security reasons.",
+  },
+
   get: {
     example: `{{get "var1"}}`,
     hint: "Gets value of a variable",
   },
+
   set: {
     example: `{{#set "var1"}}
     text {{selection}}
@@ -1113,5 +1161,20 @@ Or
   {{set "var1" selection}}
   `,
     hint: "Gets value of a variable",
+  },
+
+  log: {
+    example: `{{log "test" selection}}`,
+    hint: "Logs anything to console (open console in devtools Ctrl+Shift+i)",
+  },
+
+  notice: {
+    example: `{{notice "test"}}`,
+    hint: "Shows a notice to the user",
+  },
+
+  error: {
+    example: `{{error "Selection was empty"}}`,
+    hint: "Shows a error notice to the user, and it will stop the execution.",
   },
 };

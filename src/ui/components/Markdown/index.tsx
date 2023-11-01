@@ -10,6 +10,7 @@ export default function MarkDownViewer(props: {
   children: string;
   className?: string;
   plugin?: TextGeneratorPlugin;
+  editable?: boolean;
 }) {
   // Create an array of refs for each insight item
   const ref = useRef<HTMLDivElement>(null);
@@ -37,6 +38,8 @@ export default function MarkDownViewer(props: {
     <div
       className={clsx("markdown-source-view", props.className)}
       ref={ref}
+      contentEditable={props.editable}
+      onClick={(e) => e.preventDefault()}
     ></div>
   );
 }

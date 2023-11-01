@@ -88,6 +88,12 @@ export default function ChatComp(props: {
       // @ts-ignore
       const editor = app.workspace.getLeaf().view?.editor as Editor;
 
+
+      const selection = props.plugin.textGenerator.contextManager.getSelection(editor)
+      const selections = props.plugin.textGenerator.contextManager.getSelections(editor)
+
+      console.log({ selections, val: editor.getValue() })
+
       const context =
         await props.plugin.textGenerator.contextManager.getContext({
           insertMetadata: false,
@@ -95,7 +101,8 @@ export default function ChatComp(props: {
           templateContent: input,
           addtionalOpts: {
             content: editor?.getValue(),
-            selections: props.plugin.textGenerator.contextManager.getSelections(editor)
+            selections: selections.length < 1 ? [selection] : selections,
+            selection
           },
         });
 
@@ -110,7 +117,11 @@ export default function ChatComp(props: {
         setAnswer(await props.plugin.textGenerator.LLMProvider.generate([{
           role: "user",
           content: result
-        }], props.plugin.settings, async (token, first) => {
+        }], {
+          ...props.plugin.settings, requestParams: {
+            signal: abortController.signal
+          }
+        }, async (token, first) => {
           if (first) setAnswer("");
           setAnswer((a) => a + token);
         }));
@@ -197,7 +208,7 @@ export default function ChatComp(props: {
       </div>
       <div className="min-h-16 w-full">
         {answer ? (
-          <MarkDownViewer className="h-full w-full select-text overflow-y-auto">
+          <MarkDownViewer className="h-full w-full select-text overflow-y-auto" editable>
             {answer}
           </MarkDownViewer>
         ) : (
