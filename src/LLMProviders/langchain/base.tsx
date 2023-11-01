@@ -26,7 +26,7 @@ export default class LangchainProvider
   implements LLMProviderInterface {
   streamable = true;
   id = "default";
-  static slug = "default";
+  static slug = "default" as any;
   llmPredict = false;
   provider = "Langchain";
   static provider = "Langchain";

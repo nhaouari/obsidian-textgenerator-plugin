@@ -17,7 +17,7 @@ export default class LangchainAzureOpenAIInstructProvider
   implements LLMProviderInterface {
   id = id;
   static id = id;
-  static slug = "azureOpenaiInstruct";
+  static slug = "azureOpenaiInstruct" as const;
   provider = "Langchain";
   llmPredict = true;
   static provider = "Langchain";

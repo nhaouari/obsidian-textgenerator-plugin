@@ -29,7 +29,7 @@ export default class LangchainOpenAIInstructProvider
   llmPredict = true;
   static provider = "Langchain";
   static id = id;
-  static slug = "openAIInstruct";
+  static slug = "openAIInstruct" as const;
 
   getConfig(options: LLMConfig) {
     return this.cleanConfig({

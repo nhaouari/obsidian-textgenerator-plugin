@@ -22,14 +22,16 @@ export const IGNORE_IN_YAML: Record<string, true> = {
   chain: true,
   splitter: true,
 
+  // custom
+  path_to_error_message: true,
+  path_to_choices: true,
+  path_to_message_content: true,
+
   // mapping
   bodyParams: true,
   reqParams: true,
   handlebars_body_in: true,
   handlebars_headers_in: true,
-  path_to_error_message: true,
-  path_to_choices: true,
-  path_to_message_content: true,
 };
 
 export const OPENAI_MODELS: Record<

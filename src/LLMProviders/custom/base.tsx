@@ -96,7 +96,7 @@ export default class CustomProvider
   implements LLMProviderInterface {
   streamable = true;
   id = id;
-  static slug = "custom";
+  static slug = "custom" as const;
   static id = id;
   provider = "Custom";
   static provider = "Custom";

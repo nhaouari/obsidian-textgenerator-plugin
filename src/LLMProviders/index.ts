@@ -48,7 +48,7 @@ export type llmSlugType = (typeof providers)[number]["slug"];
 const DefaultProviders: Record<llmType, (typeof providers)[number]> = {} as any;
 
 /** to get llm from slug */
-export const ProviderSlugs: Record<llmSlugType, llmType> = {};
+export const ProviderSlugs: Partial<Record<llmSlugType, llmType>> = {};
 /** to get llm slug */
 export const UnProviderSlugs: Record<string, llmSlugType> = {};
 

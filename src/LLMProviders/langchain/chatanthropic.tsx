@@ -21,7 +21,7 @@ export default class LangchainChatAnthropicProvider
   implements LLMProviderInterface {
   id = id;
   static id = id;
-  static slug = "chatAnthropic";
+  static slug = "anthropic" as const;
   provider = "Langchain";
   static provider = "Langchain";
   getConfig(

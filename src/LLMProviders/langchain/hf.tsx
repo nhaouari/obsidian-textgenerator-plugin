@@ -18,7 +18,7 @@ export default class LangchainHFProvider
   implements LLMProviderInterface {
   id = id;
   static id = id;
-  static slug = "hf";
+  static slug = "hf" as const;
   streamable = false;
   provider = "Langchain";
   static provider = "Langchain";
