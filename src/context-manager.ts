@@ -1100,4 +1100,18 @@ Or
 `,
     hint: "Appends a text or variable into a file",
   },
+
+  get: {
+    example: `{{get "var1"}}`,
+    hint: "Gets value of a variable",
+  },
+  set: {
+    example: `{{#set "var1"}}
+    text {{selection}}
+  {{/set}}
+  Or
+  {{set "var1" selection}}
+  `,
+    hint: "Gets value of a variable",
+  },
 };
