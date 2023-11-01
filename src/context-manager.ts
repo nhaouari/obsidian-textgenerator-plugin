@@ -1076,14 +1076,12 @@ Or
     hint: "Extracts content from various sources like PDFs, images, audio files, web pages, and YouTube URLs. possible values: web_md, web_html, pdf, img, audio",
   },
 
-
-
   read: {
     example: `{{read "readme.md"}}`,
     hint: "Reads the content of a file from the vault",
   },
 
-  // extractors
+
   write: {
     example: `{{#write "readme.md"}}
   text {{selection}}
@@ -1092,5 +1090,15 @@ Or
 {{write "readme.md" selection}}
 `,
     hint: "Writes a text or variable into a file",
+  },
+
+  append: {
+    example: `{{#append "readme.md"}}
+  text {{selection}}
+{{/append}}
+Or
+{{append "readme.md" selection}}
+`,
+    hint: "Appends a text or variable into a file",
   },
 };
