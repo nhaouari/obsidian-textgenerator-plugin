@@ -21,7 +21,7 @@ export default class LangchainPalmProvider
   static id = id;
   provider = "Langchain";
   static provider = "Langchain";
-  static slug = "palm";
+  static slug = "palm" as const;
   getConfig(options: LLMConfig): Partial<GooglePaLMChatInput> {
     return this.cleanConfig({
       apiKey: options.api_key,

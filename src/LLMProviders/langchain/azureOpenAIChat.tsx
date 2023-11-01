@@ -21,7 +21,7 @@ export default class LangchainAzureOpenAIChatProvider
   implements LLMProviderInterface {
   id = id;
   static id = id;
-  static slug = "azureOpenaiChat";
+  static slug = "azureOpenaiChat" as const;
   provider = "Langchain";
   static provider = "Langchain";
   getConfig(
