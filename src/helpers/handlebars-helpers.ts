@@ -421,6 +421,39 @@ export default function Helpersfn(self: ContextManager) {
       return clean ? JSON.stringify(val) : val
     },
 
+    async set(...vars: any[]) {
+      const additionalOptions = vars.pop();
+      const templateId = vars.shift();
+
+
+
+      const p = additionalOptions.data.root.templatePath?.split("/");
+      const parentPackageId = Object.keys(ExtractorSlug).includes(templateId)
+        ? "extractions"
+        : p[p.length - 2];
+
+      const id: string = templateId?.contains("/")
+        ? // if it has a slash that means it already have the packageId
+        `["${templateId}"]`
+        : // checking for vars
+        Object.keys(additionalOptions.data.root.vars || {}).includes(
+          templateId
+        )
+          ? `vars["${templateId}"]`
+          : // make packageId/templateId
+          `["${parentPackageId}/${templateId}"]`;
+
+
+      let value = vars[0];
+
+      if (additionalOptions.data.fn) {
+        value = await additionalOptions.data.fn(this);
+      }
+
+      lodashSet(additionalOptions.data.root, id, value);
+      return "";
+    },
+
     async extract(...vars: any[]) {
       const options: { data: { root: any }; fn: any } = vars.pop();
 
