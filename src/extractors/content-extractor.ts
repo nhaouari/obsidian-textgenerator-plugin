@@ -11,6 +11,12 @@ import ImageExtractor from "./image-extractor";
 import ImageExtractorEmbded from "./image-extractor-embded";
 const logger = debug("textgenerator:Extractor");
 
+
+export const listOfUsableExtractors = [
+  "PDFExtractor", "WebPageExtractor", "YoutubeExtractor", "AudioExtractor", "ImageExtractor"
+]
+
+
 // Add the new Extractor here
 export const Extractors = {
   PDFExtractor,
@@ -29,11 +35,19 @@ export const ExtractorSlug = {
   web_md: "WebPageExtractor",
   web_html: "WebPageExtractorHTML",
 
-  youtube: "YoutubeExtractor",
+  yt: "YoutubeExtractor",
   audio: "AudioExtractor",
-  image: "ImageExtractor",
-  ImageEmbd: "ImageExtractorEmbded",
+  img: "ImageExtractor",
+  ImgEmbd: "ImageExtractorEmbded",
 } as const;
+
+
+export const UnExtractorSlug: Record<string, string> = {};
+for (const key in ExtractorSlug) {
+  if (Object.prototype.hasOwnProperty.call(ExtractorSlug, key)) {
+    UnExtractorSlug[ExtractorSlug[key as keyof typeof ExtractorSlug]] = key;
+  }
+}
 
 export type ExtractorMethod = keyof typeof Extractors;
 
@@ -71,9 +85,7 @@ export class ContentExtractor {
 }
 
 export const getExtractorMethods = () => {
-  return Object.keys(Extractors).filter(
-    (e) => !(parseInt(e) || e === "0")
-  ) as unknown as ExtractorMethod[];
+  return listOfUsableExtractors as unknown as ExtractorMethod[];
 };
 
 export { Extractor };

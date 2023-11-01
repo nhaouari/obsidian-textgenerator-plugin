@@ -18,8 +18,7 @@ const logger = debug("textgenerator:llmProvider:chatanthropic");
 const id = "Chat Anthropic (Langchain)" as const;
 export default class LangchainChatAnthropicProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   id = id;
   static id = id;
   static slug = "chatAnthropic";
@@ -34,7 +33,7 @@ export default class LangchainChatAnthropicProvider
       stopSequences: options.stop,
 
       // ------------Necessary stuff--------------
-      modelName: options.engine,
+      modelName: options.model,
       maxTokens: options.max_tokens,
       temperature: options.temperature,
       frequencyPenalty: options.frequency_penalty,
@@ -215,9 +214,9 @@ function ModelsHandler(props: {
       >
         <div className="flex items-center gap-2">
           <Dropdown
-            value={global.plugin.settings.engine}
+            value={global.plugin.settings.model}
             setValue={async (selectedModel) => {
-              global.plugin.settings.engine = selectedModel;
+              global.plugin.settings.model = selectedModel;
               await global.plugin.saveSettings();
             }}
             values={[...models].sort()}

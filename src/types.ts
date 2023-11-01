@@ -41,7 +41,7 @@ type TextGeneratorSettings = {
   api_key: string;
   api_key_encrypted?: Buffer | string;
   encrypt_keys?: boolean;
-  engine: string;
+  model: string;
   max_tokens: number;
   temperature: number;
   frequency_penalty: number;

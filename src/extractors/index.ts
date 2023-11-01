@@ -8,15 +8,11 @@ export default async function read(path: string, plugin: TextGeneratorPlugin, ot
 
     const extractor = new ContentExtractor(plugin.app, plugin);
 
-
-
-
     switch (extension) {
         // pdf
         case "pdf":
             extractor.setExtractor("PDFExtractor")
             break;
-
 
         // image
         case "png":

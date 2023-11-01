@@ -14,8 +14,7 @@ const logger = debug("textgenerator:llmProvider:azureopenaiInstruct");
 const id = "Azure OpenAI Instruct (Langchain)" as const;
 export default class LangchainAzureOpenAIInstructProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   id = id;
   static id = id;
   static slug = "azureOpenaiInstruct";
@@ -33,7 +32,7 @@ export default class LangchainAzureOpenAIInstructProvider
       azureOpenAIApiVersion: options.otherOptions?.azureOpenAIApiVersion,
 
       // ------------Necessary stuff--------------
-      modelName: options.engine,
+      modelName: options.model,
       maxTokens: options.max_tokens,
       temperature: options.temperature,
       frequencyPenalty: options.frequency_penalty,
@@ -134,10 +133,10 @@ export default class LangchainAzureOpenAIInstructProvider
           sectionId={props.sectionId}
         >
           <Input
-            value={config.engine}
+            value={config.model}
             placeholder="Enter your Model name"
             setValue={async (value) => {
-              config.engine = value;
+              config.model = value;
               global.triggerReload();
               // TODO: it could use a debounce here
               await global.plugin.saveSettings();

@@ -1,4 +1,4 @@
-import { Notice, normalizePath } from "obsidian";
+import { Notice, Plugin, normalizePath } from "obsidian";
 import handlebars, { Exception, createFrame } from "handlebars";
 import { pull } from "langchain/hub";
 
@@ -274,6 +274,7 @@ export default function Helpersfn(self: ContextManager) {
     },
 
     error: async function (context: any) {
+      await self.plugin.handelError(context);
       throw new Error(context);
     },
 
@@ -425,8 +426,6 @@ export default function Helpersfn(self: ContextManager) {
       const additionalOptions = vars.pop();
       const templateId = vars.shift();
 
-
-
       const p = additionalOptions.data.root.templatePath?.split("/");
       const parentPackageId = Object.keys(ExtractorSlug).includes(templateId)
         ? "extractions"
@@ -446,8 +445,8 @@ export default function Helpersfn(self: ContextManager) {
 
       let value = vars[0];
 
-      if (additionalOptions.data.fn) {
-        value = await additionalOptions.data.fn(this);
+      if (additionalOptions.fn) {
+        value = await additionalOptions.fn(this);
       }
 
       lodashSet(additionalOptions.data.root, id, value);

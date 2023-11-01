@@ -9,6 +9,8 @@ const logger = debug("textgenerator:ContextManager");
 import Helpersfn, { Handlebars } from "./helpers/handlebars-helpers";
 import {
   ContentExtractor,
+  ExtractorSlug,
+  UnExtractorSlug,
   getExtractorMethods,
 } from "./extractors/content-extractor";
 import { getAPI as getDataviewApi } from "obsidian-dataview";
@@ -728,8 +730,8 @@ export default class ContextManager {
     const unlinked: any = [];
     const files = this.app.vault.getMarkdownFiles();
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+
+    await Promise.all(files.map(async (file) => {
       const content = await this.app.vault.cachedRead(file);
 
       const regLinked = new RegExp(`.*\\[\\[${title}\\]\\].*`, "ig");
@@ -743,7 +745,10 @@ export default class ContextManager {
       if (resultsUnlinked) {
         unlinked.push({ ...file, results: resultsUnlinked });
       }
-    }
+    }))
+
+    console.log({ linked, unlinked })
+
     return { linked, unlinked };
   }
 
@@ -807,8 +812,6 @@ export default class ContextManager {
 
     if (!activeFile) throw new Error("ActiveFile was undefined");
 
-    const all: string[] = [];
-
     for (let index = 0; index < extractorMethods.length; index++) {
       const key = extractorMethods[index];
       contentExtractor.setExtractor(key);
@@ -819,12 +822,10 @@ export default class ContextManager {
         const parts = await Promise.all(
           links.map((link) => contentExtractor.convert(link))
         );
-        all.push(...parts);
-        extractedContent[key] = parts;
+        extractedContent[UnExtractorSlug[key]] = parts;
       }
     }
 
-    extractedContent.all = all;
     return extractedContent;
   }
 
@@ -1052,10 +1053,6 @@ export const contextVariablesObj: Record<
     example: "{{#each children}} {{this.content}} {{/each}}",
     hint: "An array of notes or sub-notes that are cited or related to the primary note.",
   },
-  extractions: {
-    example: "{{#each extractions}} {{this}} {{/each}}",
-    hint: "Extracted content from various sources like PDFs, images, audio files, web pages, and YouTube URLs.",
-  },
   "mentions(linked)": {
     example: "{{#each mentions.linked}} {{this.results}} {{/each}}",
     hint: "Mentions across the entire vault where a note is directly linked, e.g., [[note]].",
@@ -1063,6 +1060,14 @@ export const contextVariablesObj: Record<
   "mentions(unlinked)": {
     example: "{{#each mentions.unlinked}} {{this.results}} {{/each}}",
     hint: "Mentions across the vault where a note is referenced without a direct link, e.g., '...note...'.",
+  },
+  extractions: {
+    example: `{{#each extractions}} {{this}} {{/each}}
+
+    Or
+    {{#each extractions.pdf}} {{this}} {{/each}}
+    `,
+    hint: `Extracted content from various sources like PDFs, images, audio files, web pages, and YouTube URLs. possible extractons: ${Object.keys(ExtractorSlug).join(", ")}`,
   },
   headings: {
     example: `{{#each headings}}
@@ -1089,9 +1094,10 @@ export const contextVariablesObj: Record<
     example: `{{#extract "web_md" "var1" "a"}}
   http://www.google.com
 {{/extract}}
+
 Or
 {{extract "pdf" "test.pdf"}}`,
-    hint: "Extracts content from various sources like PDFs, images, audio files, web pages, and YouTube URLs. possible values: web_md, web_html, pdf, img, audio",
+    hint: "Extracts content from various sources like PDFs, images, audio files, web pages, and YouTube URLs. possible values: web_md, web_html, pdf, yt, img, audio",
   },
 
   read: {
@@ -1104,6 +1110,7 @@ Or
     example: `{{#write "readme.md"}}
   text {{selection}}
 {{/write}}
+
 Or
 {{write "readme.md" selection}}
 `,
@@ -1114,6 +1121,7 @@ Or
     example: `{{#append "readme.md"}}
   text {{selection}}
 {{/append}}
+
 Or
 {{append "readme.md" selection}}
 `,
@@ -1126,6 +1134,7 @@ Or
   this text will be the "selection" variable for the other template
   it can be any variable even custom ones
 {{/run}}
+
 Or
 {{#run "otherTemplateId" "var1"}}
   this text will be the "tg_selection" variable for the other template
@@ -1138,6 +1147,7 @@ Or
     example: `{{#script}}
   return "hello world";
 {{/script}}
+
 Or
 {{#script "otherTemplateId" "var1"}}
 \`\`\`js
@@ -1157,6 +1167,7 @@ Or
     example: `{{#set "var1"}}
     text {{selection}}
   {{/set}}
+
   Or
   {{set "var1" selection}}
   `,

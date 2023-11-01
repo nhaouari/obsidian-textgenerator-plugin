@@ -51,8 +51,8 @@ export default class ReqFormatter {
     const params = {
       ...this.plugin.settings,
       ...this.plugin.settings.LLMProviderOptions[
-        frontmatter?.config?.provider ||
-          (this.plugin.settings.selectedProvider as any)
+      frontmatter?.config?.provider ||
+      (this.plugin.settings.selectedProvider as any)
       ],
       ...this.getFrontmatter(templatePath, insertMetadata),
       ..._params,
@@ -61,7 +61,7 @@ export default class ReqFormatter {
     let bodyParams: Partial<LLMConfig & { prompt: string }> & {
       messages: Message[];
     } = {
-      ...(params.engine && { engine: params.engine }),
+      ...(params.model && { model: params.model }),
       ...(params.max_tokens && { max_tokens: params.max_tokens }),
       ...(params.temperature && { temperature: params.temperature }),
       ...(params.frequency_penalty && {

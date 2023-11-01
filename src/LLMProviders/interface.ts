@@ -65,8 +65,7 @@ export interface LLMConfig {
   stream: boolean;
   stop?: string[];
   n?: number;
-  engine: string;
-  model?: string;
+  model: string;
   max_tokens: number;
   temperature: number;
   frequency_penalty: number;

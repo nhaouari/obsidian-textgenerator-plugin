@@ -24,8 +24,7 @@ const default_values = {
 const id = "OpenAI Chat (Langchain)" as const;
 export default class LangchainOpenAIChatProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   id = id;
   provider = "Langchain";
   static provider = "Langchain";
@@ -37,7 +36,7 @@ export default class LangchainOpenAIChatProvider
       openAIApiKey: options.api_key,
 
       // ------------Necessary stuff--------------
-      modelName: options.engine,
+      modelName: options.model,
       maxTokens: +options.max_tokens,
       temperature: +options.temperature,
       frequencyPenalty: +options.frequency_penalty,
@@ -157,7 +156,7 @@ export default class LangchainOpenAIChatProvider
     tokens: number,
     reqParams: Partial<LLMConfig>
   ): Promise<number> {
-    const model = reqParams.engine;
+    const model = reqParams.model;
     const modelInfo =
       OPENAI_MODELS[model as keyof typeof OPENAI_MODELS] ||
       OPENAI_MODELS["gpt-3.5-turbo"];
@@ -174,7 +173,7 @@ export default class LangchainOpenAIChatProvider
     messages: Message[],
     reqParams: Partial<LLMConfig>
   ): ReturnType<LLMProviderInterface["calcTokens"]> {
-    const model = reqParams.engine;
+    const model = reqParams.model;
     const modelInfo =
       OPENAI_MODELS[model as keyof typeof OPENAI_MODELS] ||
       OPENAI_MODELS["gpt-3.5-turbo"];
@@ -243,9 +242,8 @@ function ModelsHandler(props: {
           body: "",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${
-              config.api_key || global.plugin.settings.api_key
-            }`,
+            Authorization: `Bearer ${config.api_key || global.plugin.settings.api_key
+              }`,
           },
         };
 
@@ -285,10 +283,10 @@ function ModelsHandler(props: {
       >
         <div className="flex items-center gap-2">
           <Dropdown
-            value={config.engine}
+            value={config.model}
             setValue={async (selectedModel) => {
-              config.engine = selectedModel;
-              global.plugin.settings.engine = selectedModel;
+              config.model = selectedModel;
+              global.plugin.settings.model = selectedModel;
               await global.plugin.saveSettings();
               global.triggerReload();
             }}

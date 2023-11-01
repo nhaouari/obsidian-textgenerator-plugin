@@ -7,7 +7,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
   models: [],
   api_key: "",
   encrypt_keys: false,
-  engine: "gpt-3.5-turbo",
+  model: "gpt-3.5-turbo",
   max_tokens: 500,
   temperature: 0.7,
   frequency_penalty: 0.5,

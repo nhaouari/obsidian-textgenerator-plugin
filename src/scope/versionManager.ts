@@ -33,6 +33,14 @@ export default class VersionManager {
       }
     }
 
+    // @ts-ignore
+    if (this.plugin.settings.engine) {
+      // @ts-ignore
+      set(this.plugin.settings, `LLMProviderOptions["OpenAI Chat (Langchain)"].model`, this.plugin.settings.engine)
+      // @ts-ignore
+      set(this.plugin.settings, `LLMProviderOptions["OpenAI Instruct (Langchain)"].model`, this.plugin.settings.engine)
+    }
+
     if (this.plugin.settings.api_key) {
       set(this.plugin.settings, `LLMProviderOptions["OpenAI Chat (Langchain)"].api_key`, this.plugin.settings.api_key)
       set(this.plugin.settings, `LLMProviderOptions["OpenAI Instruct (Langchain)"].api_key`, this.plugin.settings.api_key)

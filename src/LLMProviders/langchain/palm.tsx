@@ -14,8 +14,7 @@ const logger = debug("textgenerator:llmProvider:palm");
 const id = "Google Palm (Langchain)" as const;
 export default class LangchainPalmProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   mobileSupport = false;
   streamable = false;
   id = id;
@@ -28,7 +27,7 @@ export default class LangchainPalmProvider
       apiKey: options.api_key,
 
       // ------------Necessary stuff--------------
-      //   modelName: options.engine,
+      //   modelName: options.model,
       maxTokens: options.max_tokens,
       temperature: options.temperature,
       frequencyPenalty: options.frequency_penalty,

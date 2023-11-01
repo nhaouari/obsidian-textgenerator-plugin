@@ -15,8 +15,7 @@ const logger = debug("textgenerator:llmProvider:ollama");
 const id = "Ollama (Langchain)" as const;
 export default class LangchainOllamaProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   id = id;
   static slug = "ollama";
   provider = "Langchain";
@@ -30,7 +29,7 @@ export default class LangchainOllamaProvider
       baseUrl: options.endpoint,
 
       // ------------Necessary stuff--------------
-      model: options.engine as any,
+      model: options.model as any,
       maxTokens: options.max_tokens,
       temperature: options.temperature,
       frequencyPenalty: options.frequency_penalty,
@@ -64,9 +63,9 @@ export default class LangchainOllamaProvider
           sectionId={props.sectionId}
         >
           <Input
-            value={config.engine}
+            value={config.model}
             setValue={async (value) => {
-              config.engine = value;
+              config.model = value;
               global.triggerReload();
               // TODO: it could use a debounce here
               await global.plugin.saveSettings();

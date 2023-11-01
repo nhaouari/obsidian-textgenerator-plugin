@@ -115,11 +115,11 @@ export class AutoSuggest extends EditorSuggest<Completion> {
             return suggestions?.length
               ? suggestions
               : [
-                  {
-                    label: context.query,
-                    value: context.query,
-                  },
-                ];
+                {
+                  label: context.query,
+                  value: context.query,
+                },
+              ];
           } else {
             return [{ label: context.query, value: context.query }];
           }
@@ -141,7 +141,7 @@ export class AutoSuggest extends EditorSuggest<Completion> {
       (this.app.workspace.activeEditor?.editor?.cm?.state?.vim?.mode &&
         // @ts-ignore
         this.app.workspace.activeEditor.editor.cm.state.vim.mode !==
-          "insert") ||
+        "insert") ||
       this.isOpen
     ) {
       this.process = false;
@@ -283,7 +283,7 @@ ${context.query}`;
       // 	"gpt-4-32k",
       // 	"gpt-4-32k-0314",
       // ];
-      // if (chatModels.includes(this.plugin.settings.engine)) {
+      // if (chatModels.includes(this.plugin.settings.model)) {
       // 	suggestions = re.map((r) => r.message.content);
       // } else {
       // 	suggestions = re.map((r) => r.text);

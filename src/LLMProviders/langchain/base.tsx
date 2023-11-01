@@ -39,7 +39,7 @@ export default class LangchainProvider
 
 
       // ------------Necessary stuff--------------
-      modelName: options.engine,
+      modelName: options.model,
       maxTokens: options.max_tokens,
       temperature: options.temperature,
       frequencyPenalty: options.frequency_penalty,
@@ -382,7 +382,7 @@ export default class LangchainProvider
     messages: Message[],
     reqParams: Partial<LLMConfig>
   ): ReturnType<LLMProviderInterface["calcTokens"]> {
-    const model = reqParams.engine;
+    const model = reqParams.model;
     const modelInfo =
       OPENAI_MODELS[model as keyof typeof OPENAI_MODELS] ||
       OPENAI_MODELS["gpt-3.5-turbo"];

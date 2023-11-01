@@ -18,8 +18,7 @@ const logger = debug("textgenerator:llmProvider:azureopenaiChat");
 const id = "Azure OpenAI Chat (Langchain)" as const;
 export default class LangchainAzureOpenAIChatProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   id = id;
   static id = id;
   static slug = "azureOpenaiChat";
@@ -38,7 +37,7 @@ export default class LangchainAzureOpenAIChatProvider
       azureOpenAIApiVersion: options.otherOptions?.azureOpenAIApiVersion,
 
       // ------------Necessary stuff--------------
-      modelName: options.engine,
+      modelName: options.model,
       maxTokens: options.max_tokens,
       temperature: options.temperature,
       frequencyPenalty: options.frequency_penalty,
@@ -138,10 +137,10 @@ export default class LangchainAzureOpenAIChatProvider
           sectionId={props.sectionId}
         >
           <Input
-            value={config.engine}
+            value={config.model}
             placeholder="Enter your Model name"
             setValue={async (value) => {
-              config.engine = value;
+              config.model = value;
               global.triggerReload();
               // TODO: it could use a debounce here
               await global.plugin.saveSettings();
