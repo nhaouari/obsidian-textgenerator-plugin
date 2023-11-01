@@ -34,7 +34,7 @@ export const getHBValues = (text: string) => {
 
     if (
       // if its a inside variable
-      tag.startsWith("VAR_") ||
+      tag.startsWith("vars.") ||
       // if its a string
       tag.startsWith("'") ||
       tag.startsWith('"') ||

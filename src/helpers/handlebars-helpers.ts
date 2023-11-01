@@ -17,6 +17,7 @@ import {
 import { isMap, isSet } from "util/types";
 import read from "#/extractors";
 import lodashSet from "lodash.set";
+import lodashGet from "lodash.get";
 
 export default function Helpersfn(self: ContextManager) {
   const extract = async (id: string, cntn: string, other: any) => {
@@ -383,7 +384,7 @@ export default function Helpersfn(self: ContextManager) {
         }
       }
 
-      lodashSet(options.data.root, otherVariables.length >= 1 ? "var." + otherVariables[0] : id, await runTemplate(id, {
+      lodashSet(options.data.root, otherVariables.length >= 1 ? `vars["${otherVariables[0]}"]` : id, await runTemplate(id, {
         ...options.data.root,
         disableProvider: false,
         ...TemplateMetadata,
@@ -406,20 +407,18 @@ export default function Helpersfn(self: ContextManager) {
 
       const id: string = templateId?.contains("/")
         ? // if it has a slash that means it already have the packageId
-        templateId
+        `["${templateId}"]`
         : // checking for vars
-        Object.keys(additionalOptions.data.root || {}).includes(
-          "VAR_" + templateId
+        Object.keys(additionalOptions.data.root.vars || {}).includes(
+          templateId
         )
-          ? "VAR_" + templateId
+          ? `vars["${templateId}"]`
           : // make packageId/templateId
-          `${parentPackageId}/${templateId}`;
+          `["${parentPackageId}/${templateId}"]`;
 
-      if (clean) {
-        return JSON.stringify(additionalOptions.data.root[id]);
-      }
+      const val = lodashGet(additionalOptions.data.root, id);
 
-      return additionalOptions.data.root[id];
+      return clean ? JSON.stringify(val) : val
     },
 
     async extract(...vars: any[]) {
@@ -448,20 +447,20 @@ export default function Helpersfn(self: ContextManager) {
           ...this,
           ...TemplateMetadata,
         });
-        if (otherVariables[0]) varname = "VAR_" + otherVariables[0];
+        if (otherVariables[0]) varname = `vars["${otherVariables[0]}"]`;
         other = otherVariables[1];
       } else {
         cntn = otherVariables[0];
-        if (otherVariables[0]) varname = "VAR_" + otherVariables[1];
+        if (otherVariables[1]) varname = `vars["${otherVariables[1]}"]`;
         other = otherVariables[2];
       }
 
 
       const res = await extract(firstVar, cntn, other)
 
-      options.data.root[varname] = res;
+      lodashSet(options.data.root, varname, res);
 
-      return options.data.root[varname];
+      return res;
     },
 
     async regex(...vars: any[]) {
@@ -473,25 +472,16 @@ export default function Helpersfn(self: ContextManager) {
 
       if (!firstVar) throw "You need to set a variable name for regex";
 
-      const id = `VAR_${firstVar}`;
-
       const otherVariables = vars;
 
-      const TemplateMetadata = self.getFrontmatter(
-        self.getMetaData(self.plugin.textGenerator.templatePaths[id])
-      );
-
-      const cntn = ((await await options.fn?.({
-        ...this,
-        ...TemplateMetadata,
-      })) + "") as string;
+      const cntn = ((await await options.fn?.(this)) + "") as string;
 
       const reg = new RegExp(otherVariables[0], otherVariables[1]);
 
       const regexResults = cntn.match(reg);
 
-      options.data.root[id] = regexResults;
-      return options.data.root[id];
+      lodashSet(options.data.root, `vars["${firstVar}"]`, regexResults)
+      return regexResults;
     },
 
     async runLang(...vars: any[]) {
