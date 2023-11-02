@@ -8,6 +8,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
   api_key: "",
   encrypt_keys: false,
   model: "gpt-3.5-turbo",
+  selectedProvider: "openAIChat",
   max_tokens: 500,
   temperature: 0.7,
   frequency_penalty: 0.5,

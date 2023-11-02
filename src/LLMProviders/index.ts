@@ -52,11 +52,14 @@ export const ProviderSlugs: Partial<Record<llmSlugType, llmType>> = {};
 /** to get llm slug */
 export const UnProviderSlugs: Record<string, llmSlugType> = {};
 
+export const ProviderSlugsList: llmSlugType[] = [];
+
 for (const pvrd of providers) {
   DefaultProviders[pvrd.id] = pvrd;
   if (pvrd.slug) {
     ProviderSlugs[pvrd.slug] = pvrd.id;
     UnProviderSlugs[pvrd.id] = pvrd.slug;
+    ProviderSlugsList.push(pvrd.slug);
   }
 }
 
