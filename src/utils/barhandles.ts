@@ -31,7 +31,6 @@ export const getHBValues = (text: string) => {
   };
 
   main: for (const tag of tags) {
-
     if (
       // if its a inside variable
       tag.startsWith("vars.") ||
@@ -65,7 +64,7 @@ export const getHBValues = (text: string) => {
 
     for (const helper of helpersArr) {
       if (tag.startsWith(`${helper} `) || tag.startsWith(`#${helper} `)) {
-        const vars = tag.split(" ").slice(1);
+        const vars = extractVariablesAndStrings(tag).slice(1);
         tags.push(...vars);
         continue main;
       }
@@ -73,7 +72,7 @@ export const getHBValues = (text: string) => {
 
     for (const helper of defaultHelpers) {
       if (tag.startsWith(`${helper} `) || tag.startsWith(`#${helper} `)) {
-        const vars = tag.split(" ").slice(1);
+        const vars = extractVariablesAndStrings(tag).slice(1);
         tags.push(...vars);
         continue main;
       }
@@ -120,4 +119,42 @@ function extractVariableNames(inputString: string) {
   const variableNames = inputString.match(variablePattern) || [];
 
   return variableNames;
+}
+
+
+function extractVariablesAndStrings(input: string): string[] {
+  const results: string[] = [];
+  let currentToken = '';
+  let withinQuotes = false;
+  let currentQuote = '';
+
+  for (let i = 0; i < input.length; i++) {
+    const char = input[i];
+
+    if (char === '"' || char === "'") {
+      if (withinQuotes && char === currentQuote) {
+        currentToken += char;
+        results.push(currentToken);
+        currentToken = '';
+        withinQuotes = false;
+      } else if (!withinQuotes) {
+        withinQuotes = true;
+        currentQuote = char;
+        currentToken += char;
+      }
+    } else if (char === ' ' && !withinQuotes) {
+      if (currentToken) {
+        results.push(currentToken);
+      }
+      currentToken = '';
+    } else {
+      currentToken += char;
+    }
+  }
+
+  if (currentToken) {
+    results.push(currentToken);
+  }
+
+  return results;
 }

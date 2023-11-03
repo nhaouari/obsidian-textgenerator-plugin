@@ -743,10 +743,6 @@ ${removeYAML(content)}
     const { inputContent, outputContent, preRunnerContent } =
       this.contextManager.splitTemplate(templateContent);
 
-    // const variables = this.contextManager
-    //   .extractVariablesFromTemplate(inputContent)
-    //   .filter((variable) => !variable.includes("."));
-
     const variables = Array.from(
       new Set([
         ...(await getHBValues(inputContent)),
