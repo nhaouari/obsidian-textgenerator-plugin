@@ -110,6 +110,7 @@ export default class RequestHandler {
             signal: this.signalController?.signal,
             ...reqParams,
           },
+          stream: false,
         },
         undefined,
         provider.providerOptions
