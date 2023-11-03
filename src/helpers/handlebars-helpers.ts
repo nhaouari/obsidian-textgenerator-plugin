@@ -634,10 +634,10 @@ export default function Helpersfn(self: ContextManager) {
 
       // do not use (0, eval), it will break "this", and the eval wont be able to access context
       return await eval(`
-        async (plugin, app, pluginApi, run)=>{
+        async (plugin, app, pluginApi, run, gen)=>{
           ${content}
         }  
-      `).bind(this)(self.plugin, self.app, pluginApi, run);
+      `).bind(this)(self.plugin, self.app, pluginApi, run, gen);
     },
 
     async read(path: string) {
