@@ -81,6 +81,7 @@
 		"remark-math": "^5.1.1",
 		"replicate": "^0.16.1",
 		"request": "^2.88.2",
+		"rss-parser": "^3.13.0",
 		"safe-await": "^2.0.0",
 		"semver": "^7.5.4",
 		"sse": "github:mpetazzoni/sse.js",

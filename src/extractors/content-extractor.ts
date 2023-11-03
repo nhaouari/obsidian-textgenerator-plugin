@@ -9,6 +9,7 @@ import TextGeneratorPlugin from "../main";
 import debug from "debug";
 import ImageExtractor from "./image-extractor";
 import ImageExtractorEmbded from "./image-extractor-embded";
+import RssExtractor from "./rss-extractor";
 const logger = debug("textgenerator:Extractor");
 
 
@@ -26,6 +27,7 @@ export const Extractors = {
   AudioExtractor,
   ImageExtractor,
   ImageExtractorEmbded,
+  RssExtractor
 } as const;
 
 export const ExtractorSlug = {
@@ -40,6 +42,7 @@ export const ExtractorSlug = {
   audio: "AudioExtractor",
   img: "ImageExtractor",
   ImgEmbd: "ImageExtractorEmbded",
+  rss: "RssExtractor"
 } as const;
 
 
@@ -59,6 +62,7 @@ export class ContentExtractor {
   constructor(app: App, plugin: TextGeneratorPlugin) {
     this.app = app;
     this.plugin = plugin;
+    console.log({Extractors})
   }
 
   setExtractor(extractorName: ExtractorMethod) {

@@ -127,8 +127,7 @@ export default class WebPageExtractor extends Extractor {
   }
 
   protected extractUrls(text: string): string[] {
-    const urlRegex =
-      /(https?:\/\/(?!.*\.(?:mp3|mp4|mov|avi|pdf|png|jpe?g|gif))[^\s)\]]+)/g;
+    const urlRegex = /(https?:\/\/(?!.*\.(?:mp3|mp4|mov|avi|pdf|png|jpe?g|gif)|.*(?:feed|rss|feeds))[^\s)\]]+)/g;
     const youtubeRegex =
       /https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[^\s)\]]+/g;
     const matches = text.match(urlRegex);
