@@ -19,9 +19,11 @@ import read from "#/extractors";
 import lodashSet from "lodash.set";
 import lodashGet from "lodash.get";
 
-import { chains, splitters } from "#/lib/langchain"
+import * as langchain from "#/lib/langchain"
 
 export default function Helpersfn(self: ContextManager) {
+  const { chains, splitters } = langchain;
+
   const extract = async (id: string, cntn: string, other: any) => {
     const ce = new ContentExtractor(self.app, self.plugin);
 
