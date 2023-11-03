@@ -309,11 +309,15 @@ export function replaceScriptBlocksWithMustachBlocks(templateString: string) {
   // Regular expressions for matching the script tags
   const startScriptRegex = /{{\s*#script\s*}}/g;
   const endScriptRegex = /{{\s*\/script\s*}}/g;
+  const quadErrorRegex = /{{{{{{\s*\/script\s*}}}}}}/g;
 
   // Replace all occurrences of {{#script}} and {{/script}} with {{{{script}}}} and {{{{/script}}}} respectively
-  const updatedTemplateString = templateString
+  let updatedTemplateString = templateString
     .replace(startScriptRegex, '{{{{script}}}}')
     .replace(endScriptRegex, '{{{{/script}}}}');
+
+  // Handle the case where {{{{/script}}}} is already present
+  updatedTemplateString = updatedTemplateString.replace(quadErrorRegex, '{{{{/script}}}}');
 
   return updatedTemplateString;
 }
