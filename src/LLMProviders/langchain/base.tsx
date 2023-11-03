@@ -187,9 +187,9 @@ export default class LangchainProvider
                 {
                   signal: params.requestParams?.signal || undefined,
                   ...this.getReqOptions(params),
-                  options: {
-                    body: params.bodyParams,
-                  },
+                  // options: {
+                  //   body: params.bodyParams,
+                  // },
                 },
                 llmFuncs
               )

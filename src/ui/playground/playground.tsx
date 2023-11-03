@@ -118,7 +118,8 @@ export default function ChatComp(props: {
           role: "user",
           content: result
         }], {
-          ...props.plugin.settings, requestParams: {
+          ...props.plugin.textGenerator.LLMProvider.getSettings(),
+          requestParams: {
             signal: abortController.signal
           }
         }, async (token, first) => {

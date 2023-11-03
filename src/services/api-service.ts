@@ -67,15 +67,6 @@ export default class RequestHandler {
       settings,
     });
 
-    const { reqParams, provider, allParams } =
-      this.reqFormatter.getRequestParameters(
-        {
-          prompt,
-        },
-        false,
-        ""
-      );
-
     const comp = await Handlebars.compile(this.contextManager.overProcessTemplate(prompt))({
       ...settings,
       templatePath: "default/default"
@@ -91,34 +82,67 @@ export default class RequestHandler {
       }
     })
 
-    if (!this.LLMProvider || provider.selectedProvider !== this.LLMProvider.id)
-      await this.loadllm(provider.selectedProvider);
-
-    await providerOptionsValidator(
-      this.LLMProvider.provider,
-      provider.providerOptions
-    );
-
     try {
-      const result = await this.LLMProvider.generate(
-        [{
-          role: "user",
-          content: comp
-        }],
-        {
-          requestParams: {
-            signal: this.signalController?.signal,
-            ...reqParams,
+      const { reqParams, bodyParams, provider, allParams } =
+        this.reqFormatter.getRequestParameters(
+          {
+            ...this.LLMProvider.getSettings(),
+            ...settings,
+            prompt: comp,
           },
-          stream: false,
-        },
-        undefined,
+          false
+        );
+
+      if (
+        !this.LLMProvider ||
+        provider.selectedProvider !== this.LLMProvider.id
+      )
+        await this.loadllm(provider.selectedProvider);
+
+
+      console.log({
+        d: this.LLMProvider.getSettings(),
+        allParams,
+        bodyParams,
+      }, {
+        ...settings,
+        prompt: comp,
+      })
+
+      await providerOptionsValidator(
+        this.LLMProvider.provider,
         provider.providerOptions
       );
 
-      logger("gen results", {
-        result,
-      });
+      let result =
+        provider.providerOptions.estimatingMode ?
+          bodyParams.messages.map(m => m.content).join(",")
+          :
+          provider.providerOptions.disableProvider
+            ? ""
+            : await this.LLMProvider.generate(
+              bodyParams.messages,
+              {
+                ...allParams,
+                ...bodyParams,
+                requestParams: {
+                  // body: JSON.stringify(bodyParams),
+                  ...reqParams,
+                  signal: this.signalController?.signal,
+                },
+                otherOptions:
+                  this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
+                stream: false,
+                llmPredict: bodyParams.messages?.length == 1,
+              },
+              undefined,
+              provider.providerOptions
+            );
+
+      // Remove leading/trailing newlines
+      //   result = result.trim();
+
+      // output template, template used AFTER the generation happens
 
       return result;
     } catch (error) {
@@ -218,9 +242,7 @@ export default class RequestHandler {
                       this.signalController?.signal,
                   },
                   otherOptions:
-                    this.plugin.settings.LLMProviderOptions[
-                    this.LLMProvider.id
-                    ],
+                    this.LLMProvider.getSettings(),
                   streaming: true,
                   llmPredict: bodyParams.messages?.length == 1,
                 } as any,

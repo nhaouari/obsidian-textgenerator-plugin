@@ -288,7 +288,7 @@ export default class ContextManager {
 
     const selection = contextObj.selection;
     const selections = contextObj.selections;
-    const ctnt = contextObj.content;
+    const ctnt = contextObj?.content;
 
     const blocks: any = contextObj;
 

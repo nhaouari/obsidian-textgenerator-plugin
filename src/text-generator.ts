@@ -588,8 +588,6 @@ export default class TextGenerator extends RequestHandler {
         }
       });
 
-
-
       const templateContent = options?.disableProvider ?
         `---
 ${stringifyYaml(merge({}, defaultMatter, matter))}
