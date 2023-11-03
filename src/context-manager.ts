@@ -3,7 +3,7 @@ import { AsyncReturnType, Context } from "./types";
 import TextGeneratorPlugin from "./main";
 import { IGNORE_IN_YAML } from "./constants";
 
-import { escapeRegExp, getContextAsString, removeYAML } from "./utils";
+import { escapeRegExp, getContextAsString, removeYAML, replaceScriptBlocksWithMustachBlocks } from "./utils";
 import debug from "debug";
 const logger = debug("textgenerator:ContextManager");
 import Helpersfn, { Handlebars } from "./helpers/handlebars-helpers";
@@ -439,6 +439,14 @@ export default class ContextManager {
     return context;
   }
 
+  overProcessTemplate(templateContent: string) {
+    // ignore all scripts content
+    // replace all script helpers with script mustache blocks
+    templateContent = replaceScriptBlocksWithMustachBlocks(templateContent);
+
+    return templateContent;
+  }
+
   /** Editor variable is for passing it to the next templates that are being called from the handlebars */
   splitTemplate(templateContent: string) {
     logger("splitTemplate", templateContent);
@@ -447,13 +455,13 @@ export default class ContextManager {
     let inputContent, outputContent, preRunnerContent;
     if (templateContent.includes("***")) {
       const splitContent = templateContent.replaceAll("\\***", "").split("***");
-      inputContent = splitContent[splitContent.length == 3 ? 1 : 0];
-      outputContent = splitContent[splitContent.length == 3 ? 2 : 1];
+      inputContent = this.overProcessTemplate(splitContent[splitContent.length == 3 ? 1 : 0]);
+      outputContent = this.overProcessTemplate(splitContent[splitContent.length == 3 ? 2 : 1]);
 
-      preRunnerContent = splitContent[splitContent.length - 3];
+      preRunnerContent = this.overProcessTemplate(splitContent[splitContent.length - 3]);
     } else {
-      inputContent = templateContent;
-      outputContent = "";
+      inputContent = this.overProcessTemplate(templateContent);
+      outputContent = this.overProcessTemplate("");
     }
 
     const inputTemplate = Handlebars.compile(inputContent, {
@@ -1189,3 +1197,4 @@ Or
     hint: "Shows a error notice to the user, and it will stop the execution.",
   },
 };
+
