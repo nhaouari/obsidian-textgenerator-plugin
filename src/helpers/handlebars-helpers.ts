@@ -330,31 +330,7 @@ export default function Helpersfn(self: ContextManager) {
       let varname = id;
       let innerResult = {};
 
-      if (!options.fn) {
-        if (otherVariables[1]) varname = otherVariables[1];
-
-        const innerTxt = otherVariables[0];
-        try {
-          innerResult = innerTxt.trim().startsWith("{")
-            ? JSON.parse(innerTxt)
-            : {
-              [otherVariables.length > 1 ? varname : "tg_selection"]:
-                innerTxt,
-            };
-        } catch (err: any) {
-          innerResult = {
-            [otherVariables.length > 1 ? varname : "tg_selection"]: innerTxt,
-          };
-          console.warn(
-            "couldn't parse data passed to ",
-            id,
-            {
-              content: innerTxt,
-            },
-            err
-          );
-        }
-      } else {
+      if (options.fn) {
         varname = otherVariables[0];
         const param = otherVariables[1] || "tg_selection";
 
@@ -383,6 +359,18 @@ export default function Helpersfn(self: ContextManager) {
             err
           );
         }
+
+      } else {
+        if (otherVariables[0]) varname = otherVariables[0];
+
+        const param = otherVariables[2] || "tg_selection";
+
+        const innerTxt = otherVariables[1];
+
+        innerResult = {
+          [otherVariables.length > 1 ? param : "tg_selection"]:
+            innerTxt,
+        };
       }
 
       lodashSet(options.data.root, otherVariables.length >= 1 ? `vars["${otherVariables[0]}"]` : id, await runTemplate(id, {
