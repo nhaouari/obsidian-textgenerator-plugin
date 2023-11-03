@@ -68,7 +68,7 @@ export class ContentExtractor {
   async convert(docPath: string, otherOptions?: any): Promise<string> {
     // Use the selected splitter to split the text
     this.plugin.startProcessing(false);
-    const text = await this.extractor.convert(docPath, otherOptions);
+    const text = await this.extractor.convert(docPath.trimStart().trimEnd(), otherOptions);
     this.plugin.endProcessing(false);
     return text;
   }
