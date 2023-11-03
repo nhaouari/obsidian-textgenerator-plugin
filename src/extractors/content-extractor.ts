@@ -35,7 +35,7 @@ export const ExtractorSlug = {
   web_md: "WebPageExtractor",
   web_html: "WebPageExtractorHTML",
 
-  yt: "YoutubeExtractor",
+  youtube: "YoutubeExtractor",
   audio: "AudioExtractor",
   img: "ImageExtractor",
   ImgEmbd: "ImageExtractorEmbded",
