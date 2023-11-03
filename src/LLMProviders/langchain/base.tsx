@@ -4,8 +4,7 @@ import React from "react";
 
 import { ChatOpenAI, OpenAIChatInput } from "langchain/chat_models/openai";
 import { HuggingFaceInference } from "langchain/llms/hf";
-import * as chains from "langchain/chains";
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
+
 import type { BaseChatModelParams } from "langchain/dist/chat_models/base";
 
 import BaseProvider from "../base";
@@ -18,6 +17,7 @@ import { ContextTemplate } from "#/context-manager";
 
 import { PromptTemplate } from "langchain/prompts";
 import { TypedPromptInputValues } from "langchain/dist/prompts/base";
+import { chains, splitters } from "#/lib/langchain";
 
 const logger = debug("textgenerator:LangchainProvider");
 
@@ -142,7 +142,7 @@ export default class LangchainProvider
           ];
 
         if (customConfig?.chain?.type) {
-          const textSplitter = new RecursiveCharacterTextSplitter({
+          const textSplitter = new splitters.RecursiveCharacterTextSplitter({
             chunkSize: 1000,
             ...customConfig?.splitter,
           });

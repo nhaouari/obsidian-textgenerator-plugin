@@ -3,7 +3,7 @@ import handlebars, { Exception, createFrame } from "handlebars";
 import { pull } from "langchain/hub";
 
 import asyncHelpers from "../lib/async-handlebars-helper";
-import { compileLangMessages } from "#/utils";
+import { compileLangMessages, createFileWithInput, createFolder } from "#/utils";
 
 import { pluginApi } from "@vanakat/plugin-api";
 
@@ -18,6 +18,8 @@ import { isMap, isSet } from "util/types";
 import read from "#/extractors";
 import lodashSet from "lodash.set";
 import lodashGet from "lodash.get";
+
+import { chains, splitters } from "#/lib/langchain"
 
 export default function Helpersfn(self: ContextManager) {
   const extract = async (id: string, cntn: string, other: any) => {
@@ -39,11 +41,31 @@ export default function Helpersfn(self: ContextManager) {
   }
 
   const write = async (path: string, data: string) => {
-    return await self.plugin.app.vault.adapter.write(path, data)
+    return await createFileWithInput(path, data, self.plugin.app)
+  }
+
+  const deleteFile = async (path: string) => {
+    return await self.plugin.app.vault.adapter.remove(path)
   }
 
   const append = async (path: string, data: string,) => {
+    const dirMatch = path.match(/(.*)[/\\]/);
+    let dirName = "";
+    if (dirMatch) dirName = dirMatch[1];
+
+    if (!(await self.app.vault.adapter.exists(dirName)))
+      await createFolder(dirName, app);
+
     return await self.plugin.app.vault.adapter.append(path, `\n${data}`)
+  }
+
+  const error = async function (context: any) {
+    await self.plugin.handelError(context);
+    throw new Error(context);
+  }
+
+  const notice = function (context: any, duration: any) {
+    new Notice(context, typeof duration == "object" ? undefined : +duration);
   }
 
   const Helpers = {
@@ -564,6 +586,8 @@ export default function Helpersfn(self: ContextManager) {
       const parentPackageId = p[p.length - 2];
 
       const run = (id: string, metadata?: any) => {
+
+
         let meta: any = {};
 
         if (content.contains("run(")) {
@@ -583,7 +607,9 @@ export default function Helpersfn(self: ContextManager) {
 
         return runTemplate(Id, {
           ...meta,
-          ...metadata
+          ...(typeof metadata == "object" ? metadata : {
+            "tg_selection": metadata
+          })
         })
       }
 
