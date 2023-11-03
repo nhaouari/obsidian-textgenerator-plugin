@@ -106,7 +106,7 @@ export default function ChatComp(props: {
           },
         });
 
-      const result = await Handlebars.compile(input)({
+      const result = await Handlebars.compile(props.plugin.textGenerator.contextManager.overProcessTemplate(input))({
         ...context.options,
         templatePath: "default/default"
       });

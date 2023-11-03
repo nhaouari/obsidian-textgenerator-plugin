@@ -588,13 +588,11 @@ export default function Helpersfn(self: ContextManager) {
       const parentPackageId = p[p.length - 2];
 
       const gen = async (templateContent: string, metadata: any) => {
-        const result = await Handlebars.compile(templateContent)({
+        return await self.plugin.textGenerator.gen(templateContent, {
           ...options.data.root,
           disableProvider: false,
-          ...metadata,
+          ...metadata
         });
-
-        return await self.plugin.textGenerator.gen(result);
       }
 
 

@@ -67,7 +67,7 @@ export default class RequestHandler {
       settings,
     });
 
-    const { reqParams, bodyParams, provider, allParams } =
+    const { reqParams, provider, allParams } =
       this.reqFormatter.getRequestParameters(
         {
           prompt,
@@ -75,6 +75,21 @@ export default class RequestHandler {
         false,
         ""
       );
+
+    const comp = await Handlebars.compile(this.contextManager.overProcessTemplate(prompt))({
+      ...settings,
+      templatePath: "default/default"
+    });
+
+
+    console.log({
+      prompt,
+      comp,
+      set: {
+        ...settings,
+        templatePath: "default/default"
+      }
+    })
 
     if (!this.LLMProvider || provider.selectedProvider !== this.LLMProvider.id)
       await this.loadllm(provider.selectedProvider);
@@ -86,16 +101,15 @@ export default class RequestHandler {
 
     try {
       const result = await this.LLMProvider.generate(
-        bodyParams["messages"],
+        [{
+          role: "user",
+          content: comp
+        }],
         {
           requestParams: {
             signal: this.signalController?.signal,
             ...reqParams,
           },
-          ...allParams,
-          stream: false,
-          llmPredict: bodyParams["messages"]?.length == 1,
-          otherOptions: this.plugin.settings.LLMProviderOptions,
         },
         undefined,
         provider.providerOptions
