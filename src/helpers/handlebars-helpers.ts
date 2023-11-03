@@ -587,9 +587,18 @@ export default function Helpersfn(self: ContextManager) {
       const p = options.data.root.templatePath?.split("/");
       const parentPackageId = p[p.length - 2];
 
+      const gen = async (templateContent: string, metadata: any) => {
+        const result = await Handlebars.compile(templateContent)({
+          ...options.data.root,
+          disableProvider: false,
+          ...metadata,
+        });
+
+        return await self.plugin.textGenerator.gen(result);
+      }
+
+
       const run = (id: string, metadata?: any) => {
-
-
         let meta: any = {};
 
         if (content.contains("run(")) {
