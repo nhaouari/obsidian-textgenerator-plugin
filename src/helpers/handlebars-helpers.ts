@@ -583,6 +583,8 @@ export default function Helpersfn(self: ContextManager) {
       if (!self.plugin.settings.allowJavascriptRun) throw new Error("Scripts are not allowed to run, for security reasons. Go to plugin settings and enable it");
       const options = vars.pop();
 
+      options.data.root.vars ??= {};
+
       let content = await options?.fn?.(this) as string || ""
 
       if (!options.data.root.templatePath) {
