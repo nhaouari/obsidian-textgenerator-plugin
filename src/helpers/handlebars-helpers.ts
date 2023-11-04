@@ -441,26 +441,11 @@ export default function Helpersfn(self: ContextManager) {
 
     async set(...vars: any[]) {
       const additionalOptions = vars.pop();
-      const templateId = vars.shift();
-
-      const p = additionalOptions.data.root.templatePath?.split("/");
-      const parentPackageId = Object.keys(ExtractorSlug).includes(templateId)
-        ? "extractions"
-        : p[p.length - 2];
-
-      const id: string = templateId?.contains("/")
-        ? // if it has a slash that means it already have the packageId
-        `["${templateId}"]`
-        : // checking for vars
-        Object.keys(additionalOptions.data.root.vars || {}).includes(
-          templateId
-        )
-          ? `vars["${templateId}"]`
-          : // make packageId/templateId
-          `["${parentPackageId}/${templateId}"]`;
 
 
-      let value = vars[0];
+      const id: string = `vars["${vars[0]}"]`
+
+      let value = vars[1];
 
       if (additionalOptions.fn) {
         value = await additionalOptions.fn(this);
