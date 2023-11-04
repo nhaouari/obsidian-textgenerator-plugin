@@ -883,7 +883,8 @@ ${removeYAML(content)}
       additionalProps?: any;
     }
   ): Promise<string> {
-    this.plugin.endProcessing(true);
+    // this.plugin.endProcessing(true);
+    this.plugin.startProcessing();
 
     const [errorContext, context] = await safeAwait(
       this.contextManager.getContext({
@@ -906,7 +907,12 @@ ${removeYAML(content)}
         context,
         options.insertMetadata,
         options.additionalProps,
-        this.templatePaths[id]
+        this.templatePaths[id],
+        {
+          insertMode: false,
+          showSpinner: true,
+          dontCheckProcess: true
+        }
       )
     );
 

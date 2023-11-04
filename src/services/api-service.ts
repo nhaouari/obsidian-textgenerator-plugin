@@ -350,9 +350,11 @@ export default class RequestHandler {
       typeof this.plugin.settings & { disableProvider: boolean }
     > = this.plugin.settings,
     templatePath = "",
-    additionnalParams = {
+    // @TODO: fix this types
+    additionnalParams: any = {
       showSpinner: true,
       insertMode: false,
+      dontCheckProcess: false
     }
   ) {
     try {
@@ -366,7 +368,7 @@ export default class RequestHandler {
 
       const { options, template } = context;
 
-      if (this.plugin.processing) {
+      if (!additionnalParams.dontCheckProcess && this.plugin.processing) {
         logger("generate error", "There is another generation process");
         return Promise.reject(new Error("There is another generation process"));
       }
