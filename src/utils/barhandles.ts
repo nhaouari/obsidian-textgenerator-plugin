@@ -9,11 +9,12 @@ const ignoredVariables = ["output", "this", "true", "false"];
 const defaultHelpers = ["if", "unless", "with", "each"];
 
 export const getHBValues = (text: string) => {
-  const re = /{{[{]?(.*?)[}]?}}/g;
+  const re = /{{[{]?[{]?(.*?)[}]?[}]?}}/g;
   const tags: string[] = [];
   let matches: any;
   while ((matches = re.exec(text))) {
     if (matches) {
+      console.log(matches)
       tags.push(matches[1]);
     }
   }

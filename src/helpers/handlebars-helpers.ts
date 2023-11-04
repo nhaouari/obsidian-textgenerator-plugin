@@ -312,8 +312,11 @@ export default function Helpersfn(self: ContextManager) {
     },
 
     async log(...vars: any[]) {
-      if (vars[vars.length - 1].fn)
+      let fnExists = false;
+      if (vars[vars.length - 1].fn) {
+        fnExists = true;
         vars[vars.length - 1] = (await vars[vars.length - 1].fn?.(this)) || "";
+      }
       else delete vars[vars.length - 1];
 
       // try to json parse them
@@ -324,6 +327,9 @@ export default function Helpersfn(self: ContextManager) {
           // empty
         }
       });
+
+      if (fnExists && !vars[vars.length - 1]) vars.pop();
+
       console.log(...vars);
       return "";
     },
