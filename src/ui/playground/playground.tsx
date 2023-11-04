@@ -131,7 +131,7 @@ export default function ChatComp(props: {
     } catch (err: any) {
       console.error(err);
       setAnswer(
-        `ERR: ${err?.message?.replace("stack:", "\n\n\n\nMore Details") || err.message
+        `ERR: ${err?.message?.replace("stack:", "\n\n\n\nMore Details") || err.message || err
         }`
       );
     } finally {

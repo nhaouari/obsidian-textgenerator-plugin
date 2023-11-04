@@ -15,7 +15,7 @@ import {
   Extractors,
 } from "#/extractors/content-extractor";
 import { isMap, isSet } from "util/types";
-import read from "#/extractors";
+import Read from "#/extractors";
 import lodashSet from "lodash.set";
 import lodashGet from "lodash.get";
 
@@ -42,7 +42,7 @@ export default function Helpersfn(self: ContextManager) {
     })
   }
 
-  const write = async (path: string, data: string) => {
+  const Write = async (path: string, data: string) => {
     return await createFileWithInput(path, data, self.plugin.app)
   }
 
@@ -68,6 +68,11 @@ export default function Helpersfn(self: ContextManager) {
 
   const notice = function (context: any, duration: any) {
     new Notice(context, typeof duration == "object" ? undefined : +duration);
+  }
+
+  const read = async (path: string) => {
+    console.log({ path, plugin: self.plugin })
+    return await Read(path, self.plugin)
   }
 
   const Helpers = {
@@ -638,15 +643,13 @@ export default function Helpersfn(self: ContextManager) {
       `).bind(this)(self.plugin, self.app, pluginApi, run, gen);
     },
 
-    async read(path: string) {
-      return await read(path, self.plugin)
-    },
+    read,
 
     async write(...vars: any[]) {
       const options: { data: { root: any }; fn: any } = vars.pop();
       let data = vars[1];
       if (options.fn) data = await options.fn(options.data.root)
-      return await write(vars[0], data)
+      return await Write(vars[0], data)
     },
 
     async append(...vars: any[]) {

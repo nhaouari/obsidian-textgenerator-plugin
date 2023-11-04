@@ -31,8 +31,10 @@ export default async function read(path: string, plugin: TextGeneratorPlugin, ot
             break;
 
         default:
+            const p = self.app.vault.getAbstractFileByPath(path);
+            if (!p) throw new Error("file doesn't exist");
             // @ts-ignore
-            return self.app.vault.cachedRead(self.app.vault.getAbstractFileByPath(path));
+            return self.app.vault.cachedRead(p);
     }
 
     return await extractor.convert(path, otherOptions);
