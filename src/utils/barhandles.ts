@@ -14,7 +14,6 @@ export const getHBValues = (text: string) => {
   let matches: any;
   while ((matches = re.exec(text))) {
     if (matches) {
-      console.log(matches)
       tags.push(matches[1]);
     }
   }
