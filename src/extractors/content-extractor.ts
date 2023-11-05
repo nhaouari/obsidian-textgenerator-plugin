@@ -14,7 +14,7 @@ const logger = debug("textgenerator:Extractor");
 
 
 export const listOfUsableExtractors = [
-  "PDFExtractor", "WebPageExtractor", "YoutubeExtractor", "AudioExtractor", "ImageExtractor"
+  "PDFExtractor", "WebPageExtractor", "YoutubeExtractor", "AudioExtractor", "ImageExtractor", "RssExtractor"
 ]
 
 
@@ -62,7 +62,7 @@ export class ContentExtractor {
   constructor(app: App, plugin: TextGeneratorPlugin) {
     this.app = app;
     this.plugin = plugin;
-    console.log({Extractors})
+    console.log({ Extractors })
   }
 
   setExtractor(extractorName: ExtractorMethod) {
