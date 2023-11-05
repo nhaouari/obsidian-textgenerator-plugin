@@ -24,6 +24,12 @@ export default class PackageManager {
   constructor(app: App, plugin: TextGeneratorPlugin) {
     this.app = app;
     this.plugin = plugin;
+
+    this.configuration ??= {
+      installedPackages: [],
+      packages: [],
+    };
+
   }
 
   getPromptsPath() {
@@ -460,14 +466,15 @@ export default class PackageManager {
       (p) => !this.getPackageById(p.packageId)
     );
 
-    newPackages.forEach((p) => this.configuration.packages.push(p));
+    this.configuration.packages.push(...newPackages);
+
     this.save();
     logger("updatePackagesList end");
   }
 
   async updatePackagesInfo() {
     logger("updatePackagesInfo");
-    await Promise.all(
+    await Promise.allSettled(
       this.configuration.packages.map((p) =>
         this.updatePackageInfoById(p.packageId)
       )
@@ -479,10 +486,12 @@ export default class PackageManager {
   async updatePackagesStats() {
     logger("updatePackagesStats");
     const stats: any = await this.getStats();
+
     this.configuration.packages = this.configuration.packages.map((p) => ({
       ...p,
       downloads: stats[p.packageId] ? stats[p.packageId].downloads : 0,
     }));
+
     this.save();
     logger("updatePackagesStats end");
   }

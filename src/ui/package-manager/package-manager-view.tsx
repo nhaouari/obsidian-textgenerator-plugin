@@ -40,6 +40,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
 
   async function getAllPackages(update = true) {
     if (update) await global.plugin.packageManager.updatePackagesList();
+
     await global.plugin.packageManager.updatePackagesStats();
     let packages = global.plugin.packageManager.getPackagesList();
     if (justInstalled) packages = packages.filter((p) => p.installed === true);
