@@ -41,8 +41,6 @@ export default class RssExtractor extends Extractor {
     return urls;
   }
 
-  
-
   // Extracts URLs ending with .rss from a given text
   private extractUrls(text: string): string[] {
     // This regex matches URLs that start with 'http://' or 'https://',
@@ -50,9 +48,12 @@ export default class RssExtractor extends Extractor {
     // '.rss', ':feed', 'rss', or 'feeds', at a word boundary, not followed by other URL-valid characters.
     const rssUrlRegex = /https?:\/\/[^\s]+?(?:\.rss|:feed|\/rss|\/feeds)\b(?![\w\-\.%])/g;
     const matches = text.match(rssUrlRegex);
+    console.log({
+      text, matches
+    })
     return matches ? Array.from(new Set(matches)) : [];
   }
-  
+
 
 
   // Optionally, extract URLs from a given file
@@ -75,8 +76,8 @@ export default class RssExtractor extends Extractor {
       itemText += `Description: ${item.contentSnippet}\n`;
     }
     if (item.content) {
-        itemText += `Content: \n ${item.content}\n`;
-      }
+      itemText += `Content: \n ${item.content}\n`;
+    }
     itemText += "\n"; // Add a new line after each item for readability
     return itemText;
   }
