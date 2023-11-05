@@ -225,17 +225,11 @@ export default function Helpersfn(self: ContextManager) {
       return new Handlebars.SafeString(trimmedString);
     },
 
-    getRandomFile: async function getRandomFile(
-      str = "",
-      minLength = 100,
-      maxLength = 1500
-    ) {
-      let files: any[] = self.app.vault.getMarkdownFiles();
+    async getRandomFile(str = "", minLength?: number, maxLength?: number) {
+      let files = self.app.vault.getMarkdownFiles();
 
       if (str) {
-        const filteredFiles = files.filter(
-          (file: any) => file.path.includes(str) && file.stat.size >= minLength
-        );
+        const filteredFiles = files.filter((file) => file.path.match(str) && (!minLength || file.stat.size >= minLength));
         if (filteredFiles.length === 0) {
           throw new Error(`No files match the pattern ${str}`);
         }
@@ -243,14 +237,12 @@ export default function Helpersfn(self: ContextManager) {
       }
 
       const randomIndex = Math.floor(Math.random() * files.length);
-      const filePath = normalizePath(
-        `${files[randomIndex].vault.adapter.basePath}\\${files[randomIndex].path}`
-      );
+      const randomFile = files[randomIndex];
 
-      let content = await self.app.vault.adapter.read(filePath);
-      const fileName = files[randomIndex].name;
+      let content = await self.app.vault.read(randomFile);
+      const fileName = randomFile.name;
 
-      if (content.length > maxLength) {
+      if (maxLength && content.length > maxLength) {
         content = content.substring(0, maxLength) + "...";
       }
 
