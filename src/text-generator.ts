@@ -26,7 +26,6 @@ const logger = debug("textgenerator:TextGenerator");
 const heavyLogger = debug("textgenerator:TextGenerator:heavy");
 
 import EmbeddingScope from "./scope/embeddings";
-import { getHBValues } from "./utils/barhandles";
 import { IGNORE_IN_YAML } from "./constants";
 import merge from "lodash.merge";
 
@@ -741,12 +740,10 @@ ${removeYAML(content)}
     const { inputContent, outputContent, preRunnerContent } =
       this.contextManager.splitTemplate(templateContent);
 
-    const variables = Array.from(
-      new Set([
-        ...(await getHBValues(inputContent)),
-        ...(await getHBValues(outputContent)),
-        ...(await getHBValues(preRunnerContent || "")),
-      ]).values()
+    const variables = this.contextManager.getHBVariablesOfTemplate(
+      inputContent,
+      outputContent,
+      preRunnerContent
     );
 
     console.log(

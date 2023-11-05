@@ -362,7 +362,7 @@ export default class ContextManager {
       keys?: AsyncReturnType<typeof this.plugin.getApiKeys>;
     } = {};
 
-    const variables = getHBValues(contextTemplate || "") || [];
+    const variables = this.getHBVariablesOfTemplate(contextTemplate || "") || [];
     const vars: Record<string, true> = {};
     variables.forEach((v) => {
       vars[v] = true;
@@ -999,6 +999,18 @@ export default class ContextManager {
       }
     );
     return parsedTemplateMD;
+  }
+
+  getHBVariablesOfTemplate(...sections: (string | undefined)[]) {
+    const vars = new Set<string>([]);
+
+    for (const section of sections) {
+      for (const v of getHBValues(section || "")) {
+        vars.add(v);
+      }
+    }
+
+    return Array.from(vars.values())
   }
 }
 
