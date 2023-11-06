@@ -5,7 +5,7 @@ import set from "lodash.set";
 const helpers: Record<string, any> = Helpersfn({} as any);
 const helpersArr: string[] = Object.keys(helpers)
 
-const ignoredVariables = ["output", "this", "true", "false"];
+const ignoredVariables = ["output", "this", "true", "false", "script"];
 const defaultHelpers = ["if", "unless", "with", "each"];
 
 export const getHBValues = (text: string) => {

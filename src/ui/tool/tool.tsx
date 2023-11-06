@@ -150,7 +150,7 @@ export default function ChatComp(props: {
 
 
       const variables = props.plugin.textGenerator.contextManager.getHBVariablesOfTemplate(
-        preRunnerContent, inputContent, templateContent)
+        preRunnerContent, inputContent, outputContent)
 
       const tempateContext =
         await props.plugin.textGenerator.contextManager.getTemplateContext({
