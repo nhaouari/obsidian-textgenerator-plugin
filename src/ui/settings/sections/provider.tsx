@@ -27,7 +27,7 @@ export default function ProviderSetting(props: { register: Register }) {
 
     const llm = LLMProviderRegistery.get(selectedLLMName);
     if (llm) {
-      global.plugin.settings.selectedProvider = selectedLLMName;
+      global.plugin.settings.selectedProvider = selectedLLMName as any;
       setSelectedLLM(
         //@ts-ignore
         new llm({
@@ -53,7 +53,7 @@ export default function ProviderSetting(props: { register: Register }) {
       >
         <SettingItem
           name={`LLM Provider`}
-          description={`${selectedLLMName?.split("(")[1].split(")")[0]}`}
+          description={`${selectedLLMName?.split("(")?.[1]?.split(")")?.[0] || ""}`}
           register={props.register}
           sectionId={sectionId}
         >

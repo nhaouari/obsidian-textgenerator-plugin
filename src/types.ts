@@ -1,4 +1,4 @@
-import { llmSlugType } from "./LLMProviders";
+import { llmSlugType, llmType } from "./LLMProviders";
 
 type Options = Record<
   | "generate-text"
@@ -76,7 +76,7 @@ type TextGeneratorSettings = {
     ImageExtractor: boolean;
   };
 
-  selectedProvider?: llmSlugType;
+  selectedProvider?: llmType;
   // TODO: FUTURE IMPLEMENTATION
   // reason: it will clean code, and also help with custom llm providers later on
   LLMProviderOptions: Record<string, Record<string, any>>;
