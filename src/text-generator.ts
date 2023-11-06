@@ -741,15 +741,16 @@ ${removeYAML(content)}
       this.contextManager.splitTemplate(templateContent);
 
     const variables = this.contextManager.getHBVariablesOfTemplate(
+      preRunnerContent,
       inputContent,
       outputContent,
-      preRunnerContent
     );
 
-    console.log(
-      { variables },
-      this.contextManager.extractVariablesFromTemplate(inputContent)
-    );
+    console.log({
+      taking: "variables",
+      outputContent,
+      variables
+    })
 
     const metadata = this.getMetadata(props.templatePath || "");
     const tempateContext = await this.contextManager.getTemplateContext(props);

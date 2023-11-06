@@ -204,53 +204,54 @@ export default class ContextManager {
     return contexts;
   }
 
-  extractVariablesFromTemplate(templateContent: string): string[] {
-    const ast: hbs.AST.Program =
-      Handlebars.parseWithoutProcessing(templateContent);
+  // DEPRICATED
+  // extractVariablesFromTemplate(templateContent: string): string[] {
+  //   const ast: hbs.AST.Program =
+  //     Handlebars.parseWithoutProcessing(templateContent);
 
-    const extractVariablesFromBody = (
-      body: hbs.AST.Statement[],
-      eachContext: string | null = null
-    ): string[] => {
-      return body
-        .flatMap((statement: hbs.AST.Statement) => {
-          if (statement.type === "MustacheStatement") {
-            const moustacheStatement: hbs.AST.MustacheStatement =
-              statement as hbs.AST.MustacheStatement;
-            const paramsExpressionList =
-              moustacheStatement.params as hbs.AST.PathExpression[];
-            const pathExpression =
-              moustacheStatement.path as hbs.AST.PathExpression;
-            const fullPath = eachContext
-              ? `${eachContext}.${pathExpression.original}`
-              : pathExpression.original;
+  //   const extractVariablesFromBody = (
+  //     body: hbs.AST.Statement[],
+  //     eachContext: string | null = null
+  //   ): string[] => {
+  //     return body
+  //       .flatMap((statement: hbs.AST.Statement) => {
+  //         if (statement.type === "MustacheStatement") {
+  //           const moustacheStatement: hbs.AST.MustacheStatement =
+  //             statement as hbs.AST.MustacheStatement;
+  //           const paramsExpressionList =
+  //             moustacheStatement.params as hbs.AST.PathExpression[];
+  //           const pathExpression =
+  //             moustacheStatement.path as hbs.AST.PathExpression;
+  //           const fullPath = eachContext
+  //             ? `${eachContext}.${pathExpression.original}`
+  //             : pathExpression.original;
 
-            return paramsExpressionList[0]?.original || fullPath;
-          } else if (
-            statement.type === "BlockStatement" &&
-            // @ts-ignore
-            statement.path.original === "each"
-          ) {
-            const blockStatement: hbs.AST.BlockStatement =
-              statement as hbs.AST.BlockStatement;
-            const eachVariable = blockStatement.path.original;
-            // @ts-ignore
-            const eachContext = blockStatement.params[0]?.original;
+  //           return paramsExpressionList[0]?.original || fullPath;
+  //         } else if (
+  //           statement.type === "BlockStatement" &&
+  //           // @ts-ignore
+  //           statement.path.original === "each"
+  //         ) {
+  //           const blockStatement: hbs.AST.BlockStatement =
+  //             statement as hbs.AST.BlockStatement;
+  //           const eachVariable = blockStatement.path.original;
+  //           // @ts-ignore
+  //           const eachContext = blockStatement.params[0]?.original;
 
-            return extractVariablesFromBody(
-              blockStatement.program.body,
-              eachContext
-            );
-          } else {
-            return [];
-          }
-        })
-        .filter((value, index, self) => self.indexOf(value) === index);
-    };
+  //           return extractVariablesFromBody(
+  //             blockStatement.program.body,
+  //             eachContext
+  //           );
+  //         } else {
+  //           return [];
+  //         }
+  //       })
+  //       .filter((value, index, self) => self.indexOf(value) === index);
+  //   };
 
-    const handlebarsVariables = extractVariablesFromBody(ast.body);
-    return handlebarsVariables;
-  }
+  //   const handlebarsVariables = extractVariablesFromBody(ast.body);
+  //   return handlebarsVariables;
+  // }
 
   async getTemplateContext(props: {
     editor?: Editor;

@@ -37,8 +37,8 @@ export default function SectionsMain() {
       !searchTerm.length
         ? Object.entries(items)
         : Object.entries(items).filter(([key, val]) =>
-            `${val.term} ${items[val.sectionId]?.term}`.includes(searchTerm)
-          ),
+          `${val.term} ${items[val.sectionId]?.term}`.includes(searchTerm)
+        ),
     [items, searchTerm]
   );
 
@@ -92,11 +92,11 @@ export default function SectionsMain() {
       </div>
       <ProviderSetting register={register} />
       <AdvancedSetting register={register} />
-      <OtherProvidersSetting register={register} />
       <DMPSetting register={register} />
+      <AutoSuggestSetting register={register} />
       <ConsideredContextSetting register={register} />
       <ExtractorOptionsSetting register={register} />
-      <AutoSuggestSetting register={register} />
+      <OtherProvidersSetting register={register} />
       <OptionsSetting register={register} />
     </div>
   );

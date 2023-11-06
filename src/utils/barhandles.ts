@@ -9,6 +9,12 @@ const ignoredVariables = ["output", "this", "true", "false", "script"];
 const defaultHelpers = ["if", "unless", "with", "each"];
 
 export const getHBValues = (text: string) => {
+  console.log({
+    text,
+    edited: removeScriptOccurrences(text)
+  })
+  text = removeScriptOccurrences(text);
+
   const re = /{{[{]?[{]?(.*?)[}]?[}]?}}/g;
   const tags: string[] = [];
   let matches: any;
@@ -157,4 +163,10 @@ function extractVariablesAndStrings(input: string): string[] {
   }
 
   return results;
+}
+
+function removeScriptOccurrences(text: string): string {
+  const pattern = /\{\{#script\}\}[\s\S]*?\{\{\/script\}\}/g;
+  const pattern2 = /\{\{\{\{script\}\}\}\}[\s\S]*?\{\{\{\{\/script\}\}\}\}/g;
+  return text.replace(pattern2, "").replace(pattern, "");
 }

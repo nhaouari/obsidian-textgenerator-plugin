@@ -132,11 +132,36 @@ export default function ConsideredContextSetting(props: {
         </SettingItem>
       </SettingsSection>
       <SettingsSection
-        title="Considered Context For Templates"
+        title="Template Settings"
         className="flex w-full flex-col"
         register={props.register}
         id={sectionId}
       >
+        <SettingItem
+          name="{{Context}} Template"
+          description="Template for {{context}} variable"
+          register={props.register}
+          sectionId={sectionId}
+          textArea
+        >
+          <textarea
+            placeholder="Textarea will autosize to fit the content"
+            className="resize-y"
+            value={
+              global.plugin.settings.context.contextTemplate ||
+              global.plugin.defaultSettings.context.contextTemplate
+            }
+            onChange={async (e) => {
+              global.plugin.settings.context.contextTemplate = e.target.value;
+              global.triggerReload();
+              await global.plugin.saveSettings();
+            }}
+            spellCheck={false}
+            rows={10}
+          />
+        </SettingItem>
+        <AvailableVars vars={contextVariablesObj} />
+
         {(["includeClipboard"] as (keyof Context)[])
           //   .filter((d) => !contextNotForTemplate.contains(d as any))
           .map((key) => {
@@ -171,30 +196,7 @@ export default function ConsideredContextSetting(props: {
               </SettingItem>
             );
           })}
-        <SettingItem
-          name="{{Context}} Template"
-          description="Template for {{context}} variable"
-          register={props.register}
-          sectionId={sectionId}
-          textArea
-        >
-          <textarea
-            placeholder="Textarea will autosize to fit the content"
-            className="resize-y"
-            value={
-              global.plugin.settings.context.contextTemplate ||
-              global.plugin.defaultSettings.context.contextTemplate
-            }
-            onChange={async (e) => {
-              global.plugin.settings.context.contextTemplate = e.target.value;
-              global.triggerReload();
-              await global.plugin.saveSettings();
-            }}
-            spellCheck={false}
-            rows={10}
-          />
-        </SettingItem>
-        <AvailableVars vars={contextVariablesObj} />
+
         <SettingItem
           name="Allow scripts"
           description="Only enable this if you trust the authors of the templates, or know what you're doing."
