@@ -1,4 +1,4 @@
-import { Notice, Plugin, normalizePath } from "obsidian";
+import { Notice, Plugin, normalizePath, request, requestUrl } from "obsidian";
 import handlebars, { Exception, createFrame } from "handlebars";
 import { pull } from "langchain/hub";
 
@@ -19,7 +19,7 @@ import Read from "#/extractors";
 import lodashSet from "lodash.set";
 import lodashGet from "lodash.get";
 
-import * as langchain from "#/lib/langchain"
+import * as langchain from "#/lib/langchain";
 
 export default function Helpersfn(self: ContextManager) {
   const { chains, splitters } = langchain;
