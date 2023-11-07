@@ -25,13 +25,19 @@ export default function MarkDownViewer(props: {
   useEffect(() => {
     if (!ref.current) return;
     ref.current.innerHTML = "";
-    MarkdownRenderer.render(
-      Global?.plugin.app || app,
-      props.children,
-      ref.current,
-      "",
-      props.plugin || Global.plugin
-    );
+    try {
+
+      MarkdownRenderer.render(
+        Global?.plugin.app || app,
+        "" + props.children,
+        ref.current,
+        "",
+        props.plugin || Global.plugin
+      );
+
+    } catch (err: any) {
+      Global.plugin.handelError(`failed to render "${"" + props.children}" it should be a string`);
+    }
   }, [props.children, ref.current]);
 
   return (
