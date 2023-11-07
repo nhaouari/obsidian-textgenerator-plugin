@@ -1,13 +1,22 @@
-import { App, TFile } from "obsidian";
-import Parser, { Item } from "rss-parser";
+import { App, TFile, Platform } from "obsidian";
 import { Extractor } from "./extractor";
 import debug from "debug";
 import TextGeneratorPlugin from "src/main";
 
+import type { Item } from "rss-parser";
+import type PArser from "rss-parser";
+
+let Parser: typeof PArser;
+
+if (Platform.isDesktop) {
+  // @ts-ignore
+  Parser = require("rss-parser");
+}
+
 const logger = debug("textgenerator:Extractor:RssExtractor");
 
 export default class RssExtractor extends Extractor {
-  parser: Parser;
+  parser: PArser;
 
   constructor(app: App, plugin: TextGeneratorPlugin) {
     super(app, plugin);
@@ -16,6 +25,8 @@ export default class RssExtractor extends Extractor {
 
   // Converts an RSS feed URL to a text representation
   async convert(url: string): Promise<string> {
+    if (!Platform.isDesktop) throw new Error("rss is only supported in desktop")
+
     logger("convert", { url });
     try {
       const feed = await this.parser.parseURL(url);
