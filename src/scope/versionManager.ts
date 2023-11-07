@@ -30,6 +30,11 @@ export default class VersionManager {
     if (this.plugin.settings.endpoint) {
       if (this.plugin.settings.endpoint == "https://api.openai.com") {
         this.plugin.settings.endpoint = this.plugin.defaultSettings.endpoint;
+
+        // @ts-ignore
+        set(this.plugin.settings, `LLMProviderOptions["OpenAI Chat (Langchain)"].basePath`, this.plugin.settings.endpoint)
+        // @ts-ignore
+        set(this.plugin.settings, `LLMProviderOptions["OpenAI Instruct (Langchain)"].basePath`, this.plugin.settings.endpoint)
       }
     }
 

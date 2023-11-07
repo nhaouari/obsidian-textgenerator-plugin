@@ -60,6 +60,7 @@ export default interface LLMProviderInterface {
 export interface LLMConfig {
   api_key: string;
   endpoint?: string;
+  basePath?: string;
   requestParams: RequestInit;
   otherOptions: any;
   stream: boolean;

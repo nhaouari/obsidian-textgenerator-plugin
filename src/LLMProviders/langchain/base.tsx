@@ -56,8 +56,10 @@ export default class LangchainProvider
 
   getLLM(options: LLMConfig) {
     return new (this.llmClass as typeof ChatOpenAI)(this.getConfig(options), {
-      basePath: options.otherOptions?.basePath?.length
-        ? options.endpoint
+      basePath: options.basePath?.length
+        ? options.basePath.endsWith("/")
+          ? options.basePath.substring(0, options.basePath.length - 1)
+          : options.basePath
         : undefined,
 
       defaultQuery: {
