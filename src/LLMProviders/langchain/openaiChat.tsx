@@ -294,7 +294,7 @@ function ModelsHandler(props: {
               .sort()
               .sort(
                 (m1: keyof typeof OPENAI_MODELS, m2: keyof typeof OPENAI_MODELS) =>
-                  (OPENAI_MODELS[m2].order || 0) - (OPENAI_MODELS[m1].order || 0))}
+                  (OPENAI_MODELS[m2]?.order || 0) - (OPENAI_MODELS[m1]?.order || 0))}
           />
 
           <button
