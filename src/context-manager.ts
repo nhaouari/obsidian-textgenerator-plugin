@@ -746,13 +746,21 @@ export default class ContextManager {
       const regLinked = new RegExp(`.*\\[\\[${title}\\]\\].*`, "ig");
       const resultsLinked = content.match(regLinked);
       if (resultsLinked) {
-        linked.push({ ...file, results: resultsLinked });
+        linked.push({
+          ...file,
+          title: file.basename,
+          results: resultsLinked
+        });
       }
 
       const regUnlinked = new RegExp(`.*${title}.*`, "ig");
       const resultsUnlinked = content.match(regUnlinked);
       if (resultsUnlinked) {
-        unlinked.push({ ...file, results: resultsUnlinked });
+        unlinked.push({
+          ...file,
+          title: file.basename,
+          results: resultsUnlinked
+        });
       }
     }))
 
