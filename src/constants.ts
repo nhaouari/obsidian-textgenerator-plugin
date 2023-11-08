@@ -40,7 +40,7 @@ export const OPENAI_MODELS: Record<
     maxTokens: 128000,
     llm: ["OpenAI Chat (Langchain)"],
   },
-  "gpt-4-1106-vision-preview": {
+  "gpt-4-vision-preview": {
     encoding: "cl100k_base",
     prices: {
       prompt: 0.01,
