@@ -15,8 +15,6 @@ export default function SettingItem(props: {
 }) {
   const id = props.id || useId();
   useEffect(() => {
-    if (props.name == "TG Selection Limiter(regex)")
-      console.log("des", props.name, props.description)
     props.register?.register?.(
       id,
       `${props.name}, ${props.description}`.toLocaleLowerCase(),

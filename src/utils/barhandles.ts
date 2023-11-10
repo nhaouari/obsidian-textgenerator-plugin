@@ -9,10 +9,6 @@ const ignoredVariables = ["output", "this", "true", "false", "script"];
 const defaultHelpers = ["if", "unless", "with", "each"];
 
 export const getHBValues = (text: string) => {
-  console.log({
-    text,
-    edited: removeScriptOccurrences(text)
-  })
   text = removeScriptOccurrences(text);
 
   const re = /{{[{]?[{]?(.*?)[}]?[}]?}}/g;
