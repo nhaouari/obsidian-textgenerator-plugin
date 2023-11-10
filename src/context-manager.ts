@@ -96,7 +96,15 @@ export default class ContextManager {
         await this.templateFromPath(templatePath, options);
 
       // run prerunning script
-      await preRunnerTemplate?.(options);
+      const n = new Notice("processing Initialization...", 300000)
+      try {
+        await preRunnerTemplate?.(options);
+      } catch (err: any) {
+        n.hide()
+        throw err
+      }
+      n.hide()
+
 
       const ctx = await this.executeTemplateDataviewQueries(context);
       logger("Context Template", { context: ctx, options });
