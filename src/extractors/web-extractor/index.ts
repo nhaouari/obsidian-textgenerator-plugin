@@ -56,7 +56,7 @@ export default class WebPageExtractor extends Extractor {
           userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) obsidian/1.4.16 Chrome/114.0.5735.289 Electron/25.8.1 Safari/537.36",
         });
       })
-
+      win.destroy()
     }
 
     const parser = new DOMParser();
