@@ -101,10 +101,22 @@ export async function openFile(
 
 export function removeYAML(content: string) {
   logger("removeYAML", content);
-  const newContent = content.replace(/^---([\s\S]*?)---/gm, "");
-  logger("removeYAML", newContent);
-  return newContent;
+
+  // Use a non-greedy match for the content between ---
+  const match = content.match(/^---([\s\S]*?)---/m);
+
+  if (match && match.index === 0) {
+    // If the match starts at the beginning of the content, remove it
+    const newContent = content.slice(match[0].length);
+    logger("removeYAML", newContent);
+    return newContent;
+  } else {
+    // If there is no match or it doesn't start at the beginning, return the original content
+    logger("removeYAML", content);
+    return content;
+  }
 }
+
 
 export function removeExtensionFromName(name: string) {
   logger("removeExtension", name);
