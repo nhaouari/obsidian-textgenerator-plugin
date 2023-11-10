@@ -1,6 +1,7 @@
 import ProviderBase from "./base";
 
-import CustomProvider from "./custom/base";
+import CustomProvider from "./custom/custom";
+import AnthropicCustomProvider from "./custom/anthropic";
 
 import LangchainOpenAIChatProvider from "./langchain/openaiChat";
 import LangchainOpenAIInstructProvider from "./langchain/openaiInstruct";
@@ -37,6 +38,9 @@ const providers = [
 
   // huggingface
   LangchainHFProvider,
+
+  // anthropic custom
+  AnthropicCustomProvider,
 
   // custom
   CustomProvider,
