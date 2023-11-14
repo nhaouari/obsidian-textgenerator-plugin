@@ -115,13 +115,9 @@ export default class WebPageExtractor extends Extractor {
     return doc.body.innerHTML;
   }
 
-  async extract(filePath?: string) {
-    logger("extract", { filePath });
-    const activeFileValue = this.app.workspace
-      // @ts-ignore
-      .getActiveFileView()
-      .editor.getValue();
-    const urls = this.extractUrls(activeFileValue);
+  async extract(filePath: string, fileContent: string) {
+    logger("extract", { filePath, fileContent });
+    const urls = this.extractUrls(fileContent);
     logger("extract end", { urls });
     return urls;
   }

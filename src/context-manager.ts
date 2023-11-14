@@ -442,7 +442,7 @@ export default class ContextManager {
       context["mentions"] = await this.getMentions(title);
 
     if (vars["extractions"])
-      context["extractions"] = await this.getExtractions();
+      context["extractions"] = await this.getExtractions(filePath, editor);
 
     logger("getDefaultContext", { context });
     return context;
@@ -823,8 +823,10 @@ export default class ContextManager {
     }
   }
 
-  async getExtractions() {
+  async getExtractions(filePath?: string, editor?: Editor) {
     const extractedContent: Record<string, string[]> = {};
+
+
     const contentExtractor = new ContentExtractor(this.app, this.plugin);
     const extractorMethods = getExtractorMethods().filter(
       (e) =>
@@ -833,15 +835,24 @@ export default class ContextManager {
         ]
     );
 
-    const activeFile = this.app.workspace.getActiveFile();
 
-    if (!activeFile) throw new Error("ActiveFile was undefined");
+
+    const targetFile = filePath ?
+      app.vault.getAbstractFileByPath(filePath)
+      || this.app.workspace.getActiveFile()
+      : this.app.workspace.getActiveFile();
+
+    const targetFileContent = editor ?
+      editor.getValue()
+      : await app.vault.cachedRead(targetFile as any)
+
+    if (!targetFile) throw new Error("ActiveFile was undefined");
 
     for (let index = 0; index < extractorMethods.length; index++) {
       const key = extractorMethods[index];
       contentExtractor.setExtractor(key);
 
-      const links = await contentExtractor.extract(activeFile.path);
+      const links = await contentExtractor.extract(targetFile.path, targetFileContent);
 
       if (links.length > 0) {
         const parts = await Promise.all(

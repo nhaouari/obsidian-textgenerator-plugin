@@ -14,7 +14,7 @@ export class Extractor {
   }
 
   /** extract embedded files in a file as documents */
-  async extract(filePath: string): Promise<string[]> {
+  async extract(filePath: string, fileContent: string): Promise<string[]> {
     throw Error("Function extract is not implemented");
   }
 }

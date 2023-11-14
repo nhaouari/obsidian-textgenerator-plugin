@@ -21,13 +21,9 @@ export default class YoutubeExtractor extends Extractor {
     return text || "";
   }
 
-  async extract(filePath?: string) {
+  async extract(filePath: string, fileContent: string) {
     logger("extract", { filePath });
-    const activeFileValue = this.app.workspace
-      // @ts-ignore
-      .getActiveFileView()
-      .editor.getValue();
-    const urls = this.extractUrls(activeFileValue);
+    const urls = this.extractUrls(fileContent);
     logger("extract end", { urls });
     return urls;
   }

@@ -80,17 +80,21 @@ export default class TextGeneratorPlugin extends Plugin {
   async onload() {
     try {
       logger("loading textGenerator plugin");
-
+      registerAPI("tg", this.textGenerator, this as any);
       addIcon("GENERATE_ICON", GENERATE_ICON);
       addIcon("GENERATE_META_ICON", GENERATE_META_ICON);
 
       this.defaultSettings = DEFAULT_SETTINGS;
       await this.loadSettings();
 
+      console.log("loading version")
+
       this.versionManager = new VersionManager(this);
       await this.versionManager.load();
 
       // This adds a settings tab so the user can configure various aspects of the plugin
+      console.log("loading settingsTab")
+
       const settingTab = new TextGeneratorSettingTab(this.app, this);
       this.addSettingTab(settingTab);
 
@@ -102,7 +106,12 @@ export default class TextGeneratorPlugin extends Plugin {
       this.tokensScope = new TokensScope(this);
       await this.tokensScope.setup();
 
+      console.log("register editor extension")
+
       this.registerEditorExtension(spinnersPlugin);
+
+      console.log("updating workspace options")
+
       this.app.workspace.updateOptions();
 
       this.textGeneratorIconItem = this.addStatusBarItem();
@@ -242,12 +251,20 @@ export default class TextGeneratorPlugin extends Plugin {
     */
 
       // registers
+      console.log("loading adding commands")
       this.commands = new Commands(this);
 
       await this.commands.addCommands();
-      await this.packageManager.load();
+      console.log("loading packageManager")
+      try {
+        await this.packageManager.load();
+      } catch (err: any) {
+        console.trace("error in packageManager", err);
+      }
 
+      console.log("trying REGISTERAPI")
       registerAPI("tg", this.textGenerator, this as any);
+      console.log("done REGISTERAPI")
     } catch (err: any) {
       this.handelError(err);
     }

@@ -76,17 +76,23 @@ export default class PackageManager {
     logger("checkUpdates");
     await this.fetch();
     const packagesIdsToUpdate: string[] = [];
-    this.configuration.installedPackages.forEach((installedPackage) => {
-      const pkg = this.getPackageById(installedPackage.packageId);
-      if (
-        pkg &&
-        installedPackage.version &&
-        pkg.version &&
-        gt(pkg.version, installedPackage.version)
-      ) {
-        packagesIdsToUpdate.push(installedPackage.packageId);
-      }
-    });
+    await Promise.all(
+      this.configuration.installedPackages.map(async (installedPackage, i: number) => {
+        try {
+          const pkg = this.getPackageById(installedPackage.packageId);
+          if (
+            pkg &&
+            installedPackage.version &&
+            pkg.version &&
+            gt(pkg.version, installedPackage.version)
+          ) {
+            packagesIdsToUpdate.push(installedPackage.packageId);
+          }
+        } catch (err: any) {
+          this.configuration.installedPackages.splice(i, 1)
+          console.error(`error in package`, installedPackage, err);
+        }
+      }));
     logger("checkUpdates end", { packagesIdsToUpdate });
     return packagesIdsToUpdate;
   }

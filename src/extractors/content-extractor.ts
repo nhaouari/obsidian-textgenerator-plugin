@@ -78,8 +78,11 @@ export class ContentExtractor {
     return text;
   }
 
-  async extract(filePath: string) {
-    return this.extractor.extract(filePath);
+  async extract(filePath: string, filecontent?: string) {
+    const fileContent = filecontent
+      || await this.app.vault.cachedRead(this.app.vault.getAbstractFileByPath(filePath) as any)
+
+    return this.extractor.extract(filePath, fileContent);
   }
 
   private createExtractor(extractorName: ExtractorMethod) {
