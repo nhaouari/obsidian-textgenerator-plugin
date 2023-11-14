@@ -26,6 +26,7 @@ export default class LangchainPalmProvider
     return this.cleanConfig({
       apiKey: options.api_key,
 
+
       // ------------Necessary stuff--------------
       //   modelName: options.model,
       maxTokens: options.max_tokens,
@@ -57,7 +58,7 @@ export default class LangchainPalmProvider
     return (
       <>
         <SettingItem
-          name="Palm api key"
+          name="Api Key"
           register={props.register}
           sectionId={props.sectionId}
         >
@@ -79,10 +80,10 @@ export default class LangchainPalmProvider
           sectionId={props.sectionId}
         >
           <Input
-            value={config.palmApiUrl}
+            value={config.basePath}
             placeholder="Enter your API BasePath"
             setValue={async (value) => {
-              config.palmApiUrl = value;
+              config.basePath = value;
               global.triggerReload();
               // TODO: it could use a debounce here
               await global.plugin.saveSettings();

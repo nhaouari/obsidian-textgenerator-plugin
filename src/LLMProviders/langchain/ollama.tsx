@@ -26,7 +26,7 @@ export default class LangchainOllamaProvider
   getConfig(options: LLMConfig): Partial<OllamaInput & BaseLLMParams> {
     console.log(options);
     return this.cleanConfig({
-      baseUrl: options.endpoint,
+      baseUrl: options.basePath,
 
       // ------------Necessary stuff--------------
       model: options.model as any,
@@ -73,16 +73,16 @@ export default class LangchainOllamaProvider
           />
         </SettingItem>
         <SettingItem
-          name="Endpoint"
+          name="Base Path"
           description={`Make sure it supports CORS`}
           register={props.register}
           sectionId={props.sectionId}
         >
           <Input
-            value={config.endpoint}
-            placeholder="Enter your API endpoint"
+            value={config.basePath}
+            placeholder="Enter your API basePath"
             setValue={async (value) => {
-              config.endpoint = value;
+              config.basePath = value;
               global.triggerReload();
               // TODO: it could use a debounce here
               await global.plugin.saveSettings();
