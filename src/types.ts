@@ -112,6 +112,8 @@ type PackageTemplate = {
   repo?: string;
   published_at?: Date;
   downloads?: number;
+  installed?: boolean;
+  price?: number;
 };
 
 type PromptTemplate = {

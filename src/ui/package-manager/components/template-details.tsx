@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-
-function TemplateDetails({
-	packageId,
-	packageManager,
-	updateView,
-	setSelectedIndex,
-	checkForUpdates,
+import DownloadSVG from "./svgs/download"
+import { nFormatter } from "#/utils";
+function TemplateDetails(props: {
+	packageId: any,
+	packageManager: any,
+	updateView: any,
+	setSelectedIndex: any,
+	checkForUpdates: any,
 }) {
 	return (
 		<div className="community-modal-details">
@@ -13,7 +14,7 @@ function TemplateDetails({
 				<div
 					className="clickable-icon"
 					aria-label="Back"
-					onClick={() => setSelectedIndex(-1)}
+					onClick={() => props.setSelectedIndex(-1)}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -31,23 +32,28 @@ function TemplateDetails({
 					</svg>
 				</div>
 			</div>
-			{packageId &&
+			{props.packageId &&
 				getTemplateDetails(
-					packageId,
-					packageManager,
-					updateView,
-					checkForUpdates
+					props
 				)}
 		</div>
 	);
 }
 
-function getTemplateDetails(
-	packageId,
-	packageManager,
-	updateView,
-	checkForUpdates
-) {
+function getTemplateDetails(inProps: {
+	packageId: any,
+	packageManager: any,
+	updateView: any,
+	checkForUpdates: any
+}) {
+	const {
+		packageId,
+		packageManager,
+		updateView,
+		checkForUpdates
+	} = inProps
+
+
 	const [htmlVar, setHtmlVar] = useState("");
 	const [props, setProps] = useState({
 		package: packageManager.getPackageById(packageId),
@@ -59,7 +65,8 @@ function getTemplateDetails(
 			package: packageManager.getPackageById(packageId),
 			installed: packageManager.getInstalledPackageById(packageId),
 		});
-		packageManager.getReadme(packageId).then((html) => {
+
+		packageManager.getReadme(packageId).then((html: any) => {
 			setHtmlVar(html);
 		});
 	}, [packageId]);
@@ -100,40 +107,29 @@ function getTemplateDetails(
 			</div>
 			<div className="community-modal-info-downloads">
 				<span>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="24"
-						height="24"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="2"
-						strokeLinecap="round"
-						strokeLinejoin="round"
-						className="svg-icon lucide-download-cloud"
-					>
-						<path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
-						<path d="M12 12v9"></path>
-						<path d="m8 17 4 4 4-4"></path>
-					</svg>
+					<DownloadSVG />
 				</span>
 				<span className="community-modal-info-downloads-text">
-					{props.package.downloads}
+					{nFormatter(props.package.downloads)}
 				</span>
 			</div>
 			<div className="community-modal-info-version">
-				Version: {props.package.version}{" "}
+				Version: {props.package.version}
 				{props.installed &&
 					`(currently installed: ${props.installed.version})`}
 			</div>
 			<div className="community-modal-info-author">
-				By{" "}
+				<span>
+					By
+				</span>
 				<a target="_blank" href={`${props.package.authorUrl}`}>
 					{props.package.author}
 				</a>
 			</div>
 			<div className="community-modal-info-repo">
-				Repository:{" "}
+				<span>
+					Repository:
+				</span>
 				<a
 					target="_blank"
 					href={`https://github.com/${props.package.repo}`}
@@ -151,8 +147,7 @@ function getTemplateDetails(
 						(window.location.href = `${props.package.authorUrl}`)
 					}
 				>
-					{" "}
-					Support{" "}
+					Support
 				</button>
 
 				{props.installed ? (
@@ -178,7 +173,8 @@ function getTemplateDetails(
 			<hr />
 			<div
 				dangerouslySetInnerHTML={{
-					__html: htmlVar.innerHTML,
+					// @ts-ignore
+					__html: htmlVar.innerHTML || htmlVar || "",
 				}}
 				className="community-modal-readme markdown-rendered"
 			></div>

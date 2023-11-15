@@ -17,6 +17,7 @@ import Confirm from "./components/confirm";
 const logger = debug("textgenerator:PackageManager");
 
 const packageRegistry = `https://raw.githubusercontent.com/text-gen/text-generator-packages/master/community-packages.json`;
+
 export default class PackageManager {
   configuration: TextGeneratorConfiguration;
   app: App;
@@ -225,7 +226,7 @@ export default class PackageManager {
       (p) => p.packageId === packageId
     );
 
-    if (index == -1) return null;//throw `couldn't get repo from package ${packageId}`;
+    if (index == -1) return null; //throw `couldn't get repo from package ${packageId}`;
 
     return this.configuration.packages[index];
   }
@@ -476,6 +477,7 @@ export default class PackageManager {
 
     this.save();
     logger("updatePackagesList end");
+    return newPackages;
   }
 
   async updatePackagesInfo() {

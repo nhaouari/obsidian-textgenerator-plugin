@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import TemplateItem from "./components/template-item";
 import TemplateDetails from "./components/template-details";
 import { PackageTemplate } from "#/types";
@@ -7,12 +7,21 @@ import type { PackageManagerUI } from "./package-manager-ui";
 
 export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   const global = useGlobal();
-  const [items, setItems] = useState<PackageTemplate[]>([]);
+  const [_items, setItems] = useState<(PackageTemplate & { selected?: boolean })[]>([]);
+
+
+
   const parent = p.parent;
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [justInstalled, setJustInstalled] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [packagesIdsToUpdate, setPackagesIdsTOUpdate] = useState<string[]>([]);
+
+  const items = useMemo(() => justInstalled
+    ? _items.filter((p: any) => p.installed === true)
+    : _items,
+    [_items, justInstalled, packagesIdsToUpdate]
+  );
 
   function toggleJustInstalled() {
     setJustInstalled(!justInstalled);
@@ -33,18 +42,20 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
     }
   };
 
-  async function updateView() {
-    const packages = await getAllPackages(false);
-    setItems(packages);
-  }
-
   async function getAllPackages(update = true) {
-    if (update) await global.plugin.packageManager.updatePackagesList();
+    let packages: any = [];
+    console.log("requesting pacakges")
+    if (update) packages = await global.plugin.packageManager.updatePackagesList();
 
     await global.plugin.packageManager.updatePackagesStats();
-    let packages = global.plugin.packageManager.getPackagesList();
-    if (justInstalled) packages = packages.filter((p) => p.installed === true);
-    return packages.map((p, index) => ({ ...p, index, selected: false }));
+
+    packages = global.plugin.packageManager.getPackagesList();
+
+    return packages;
+  }
+
+  async function updateView() {
+    setItems([...items]);
   }
 
   function handleChange(value: string) {
@@ -57,11 +68,6 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
 
   function select(index: number) {
     setSelectedIndex(index);
-    setItems(
-      items.map((p, i) =>
-        i === index ? { ...p, selected: true } : { ...p, selected: false }
-      )
-    );
   }
 
   async function checkForUpdates() {
@@ -71,10 +77,6 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   useEffect(() => {
     filterItem();
   }, [searchInput]);
-
-  useEffect(() => {
-    updateView();
-  }, [justInstalled, packagesIdsToUpdate]);
 
   useEffect(() => {
     getAllPackages().then((packages) => {
@@ -161,10 +163,12 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
               <div className="community-modal-search-results-wrapper">
                 <div className="community-modal-search-results">
                   {items.length > 0 &&
-                    items.map((item) => (
+                    items.map((item, i) => (
                       <TemplateItem
                         key={item.packageId}
-                        props={item}
+                        item={item}
+                        index={i}
+                        selected={selectedIndex == i}
                         select={select}
                         update={
                           packagesIdsToUpdate.indexOf(item.packageId) !== -1
