@@ -25,12 +25,6 @@ export default class PackageManager {
   constructor(app: App, plugin: TextGeneratorPlugin) {
     this.app = app;
     this.plugin = plugin;
-
-    this.configuration ??= {
-      installedPackages: [],
-      packages: [],
-    };
-
   }
 
   getPromptsPath() {
@@ -41,14 +35,47 @@ export default class PackageManager {
     logger("load");
     const adapter = this.app.vault.adapter;
     const configPath = this.getConfigPath();
+
+    this.configuration ??= {
+      installedPackagesHash: {},
+      packagesHash: {},
+    };
+
     if (await adapter.exists(configPath)) {
       this.configuration = JSON.parse(await adapter.read(configPath));
     } else {
       await this.initConfigFlie();
     }
+
+    if (!this.configuration.packagesHash) this.configuration.packagesHash = {};
+    if (!this.configuration.installedPackagesHash) this.configuration.installedPackagesHash = {};
+
+    // @ts-ignore
+    if (this.configuration.installedPackages.length) {
+      // @ts-ignore
+      this.configuration.installedPackages.forEach(p => {
+        this.configuration.installedPackagesHash[p.packageId] = p;
+      })
+
+      // @ts-ignore
+      delete this.configuration["installedPackages"]
+    }
+
+    // @ts-ignore
+    if (this.configuration.packages.length) {
+      // @ts-ignore
+      this.configuration.packages.forEach(p => {
+        this.configuration.installedPackagesHash[p.packageId] = p;
+      })
+
+      // @ts-ignore
+      delete this.configuration["packages"]
+    }
+
     await this.fetch();
     logger("load end", this.configuration);
   }
+
 
   async initConfigFlie() {
     logger("initConfigFlie");
@@ -57,7 +84,7 @@ export default class PackageManager {
       installedPackages: [],
     };
     const adapter = this.app.vault.adapter;
-    adapter.write(this.getConfigPath(), JSON.stringify(initConfig));
+    adapter.write(this.getConfigPath(), JSON.stringify(initConfig, null, 2));
     this.configuration = JSON.parse(await adapter.read(this.getConfigPath()));
   }
 
@@ -69,7 +96,7 @@ export default class PackageManager {
     logger("save");
     const adapter = this.app.vault.adapter;
     const configPath = this.getConfigPath();
-    adapter.write(configPath, JSON.stringify(this.configuration));
+    adapter.write(configPath, JSON.stringify(this.configuration, null, 2));
     logger("save end", this.configuration);
   }
 
@@ -78,7 +105,7 @@ export default class PackageManager {
     await this.fetch();
     const packagesIdsToUpdate: string[] = [];
     await Promise.all(
-      this.configuration.installedPackages.map(async (installedPackage, i: number) => {
+      Object.entries(this.configuration.installedPackagesHash).map(async ([installedPackage, promptId], i: number) => {
         try {
           const pkg = this.getPackageById(installedPackage.packageId);
           if (
@@ -90,7 +117,7 @@ export default class PackageManager {
             packagesIdsToUpdate.push(installedPackage.packageId);
           }
         } catch (err: any) {
-          this.configuration.installedPackages.splice(i, 1)
+          delete this.configuration.installedPackagesHash[promptId]
           console.error(`error in package`, installedPackage, err);
         }
       }));
@@ -122,15 +149,18 @@ export default class PackageManager {
 
     // this.configuration.installedPackages {packageId,prompts,installedPrompts=empty}
     const installedPrompts: string[] = [];
-    if (this.getInstalledPackageIndex(packageId) === -1 && p) {
-      this.configuration.installedPackages.push({
+    if (!this.configuration.installedPackagesHash[packageId] && p) {
+      const obj = {
         packageId,
         prompts: data.prompts.map((promptId) => ({ promptId } as any)),
         installedPrompts: installedPrompts.map(
           (promptId) => ({ promptId } as any)
         ),
         version: p.version,
-      });
+      }
+
+      this.configuration.installedPackagesHash[packageId] = obj
+
       if (installAllPrompts) {
         await Promise.all(
           data.prompts.map((promptId) =>
@@ -140,20 +170,21 @@ export default class PackageManager {
         new Notice(`Package ${packageId} installed`);
       }
     }
+    await this.save();
     logger("installPackage end", { packageId, installAllPrompts });
   }
 
   async uninstallPackage(packageId: string) {
     logger("uninstallPackage", { packageId });
+
     await Promise.all(
       this.getInstalledPackageById(packageId)?.prompts?.map((p) =>
         this.toTrash(packageId, p.promptId)
       ) || []
     );
-    const index = this.configuration.installedPackages.findIndex(
-      (p) => p.packageId === packageId
-    );
-    index !== -1 && this.configuration.installedPackages.splice(index, 1);
+
+    delete this.configuration.installedPackagesHash[packageId];
+
     new Notice(`Package ${packageId} uninstalled`);
     await this.save();
     logger("uninstallPackage end", { packageId });
@@ -192,8 +223,8 @@ export default class PackageManager {
   async updatePackage(packageId: string) {
     logger("updatePackage", { packageId });
     const p = await this.getPackageById(packageId);
-    const index = this.getInstalledPackageIndex(packageId);
-    if (index !== -1 && p?.repo) {
+    const index = packageId
+    if (p?.repo) {
       const repo = p.repo;
       const release = await this.getReleaseByRepo(repo);
       const data = await this.getAsset(release, "data.json");
@@ -207,7 +238,7 @@ export default class PackageManager {
         )
       );
       installedPrompts = data.prompts;
-      this.configuration.installedPackages[index] = {
+      this.configuration.installedPackagesHash[index] = {
         packageId,
         prompts: data.prompts.map((promptId) => ({ promptId } as any)),
         installedPrompts: installedPrompts.map(
@@ -222,44 +253,27 @@ export default class PackageManager {
   }
 
   getPackageById(packageId: string): PackageTemplate | null {
-    const index = this.configuration.packages.findIndex(
-      (p) => p.packageId === packageId
-    );
+    const p = this.configuration.packagesHash[packageId];
 
-    if (index == -1) return null; //throw `couldn't get repo from package ${packageId}`;
+    if (!p) return null; //throw `couldn't get repo from package ${packageId}`;
 
-    return this.configuration.packages[index];
-  }
-
-  getInstalledPackageIndex(packageId: string): number {
-    return this.configuration.installedPackages.findIndex(
-      (p) => p.packageId === packageId
-    );
+    return p;
   }
 
   getPackagesList() {
-    const list = this.configuration.packages.map((p) => ({
+    const list = Object.values(this.configuration.packagesHash).map((p) => ({
       ...p,
-      installed:
-        this.configuration.installedPackages.findIndex(
-          (pi) => pi.packageId === p.packageId
-        ) !== -1,
+      installed: !!this.configuration.installedPackagesHash[p.packageId],
     }));
     return list;
   }
 
   getInstalledPackagesList() {
-    return this.configuration.installedPackages;
+    return Object.values(this.configuration.installedPackagesHash);
   }
 
   getInstalledPackageById(packageId: string) {
-    const index = this.configuration.installedPackages.findIndex(
-      (p) => p.packageId === packageId
-    );
-    if (index !== -1) {
-      return this.configuration.installedPackages[index];
-    }
-    return null;
+    return this.configuration.installedPackagesHash[packageId] || null;
   }
 
   async updatePackageInfoById(packageId: string) {
@@ -278,10 +292,7 @@ export default class PackageManager {
   }
 
   setPackageInfo(packageId: string, info: PackageTemplate) {
-    const packageIndex = this.configuration.packages.findIndex(
-      (p) => p.packageId === packageId
-    );
-    this.configuration.packages[packageIndex] = info;
+    return this.configuration.packagesHash[packageId] = info;
   }
 
   async addPackage(repo: string) {
@@ -292,14 +303,16 @@ export default class PackageManager {
     const manifest = await this.getAsset(release, "manifest.json");
 
     if (!manifest) throw "couldn't get manifest";
-    this.configuration.packages.push(manifest);
+    if (!manifest.packageId && !this.configuration.packagesHash[manifest.packageId]) throw `package id (${manifest.packageId}) already being used, or is undefined`
+
+    this.configuration.packagesHash[manifest.packageId] = manifest;
+
     await this.save();
     logger("addPackage end", { repo });
   }
 
   getPromptById(packageId: string, promptId: string) {
-    return this.configuration.installedPackages
-      .find((p) => p.packageId === packageId)
+    return this.configuration.installedPackagesHash[packageId]
       ?.prompts?.find((prompt) => prompt.promptId === promptId);
   }
 
@@ -406,8 +419,7 @@ export default class PackageManager {
         await request({ url: url }),
         overwrite
       );
-      this.configuration.installedPackages
-        .find((p) => p.packageId === packageId)
+      this.configuration.installedPackagesHash[packageId]
         ?.installedPrompts?.push({ promptId: promptId, version: "" }); //this.getPromptById(packageId,promptId).version
     } catch (error) {
       logger("installPrompt error", error);
@@ -473,7 +485,9 @@ export default class PackageManager {
       (p) => !this.getPackageById(p.packageId)
     );
 
-    this.configuration.packages.push(...newPackages);
+    newPackages.forEach(e => {
+      this.configuration.packagesHash[e.packageId] = e;
+    })
 
     this.save();
     logger("updatePackagesList end");
@@ -483,7 +497,7 @@ export default class PackageManager {
   async updatePackagesInfo() {
     logger("updatePackagesInfo");
     await Promise.allSettled(
-      this.configuration.packages.map((p) =>
+      Object.values(this.configuration.packagesHash).map((p) =>
         this.updatePackageInfoById(p.packageId)
       )
     );
@@ -495,10 +509,12 @@ export default class PackageManager {
     logger("updatePackagesStats");
     const stats: any = await this.getStats();
 
-    this.configuration.packages = this.configuration.packages.map((p) => ({
-      ...p,
-      downloads: stats[p.packageId] ? stats[p.packageId].downloads : 0,
-    }));
+    Object.values(this.configuration.packagesHash).forEach((p) => {
+      this.configuration.packagesHash[p.packageId] = {
+        ...this.configuration.packagesHash[p.packageId],
+        downloads: stats[p.packageId] ? stats[p.packageId].downloads : 0,
+      }
+    })
 
     this.save();
     logger("updatePackagesStats end");

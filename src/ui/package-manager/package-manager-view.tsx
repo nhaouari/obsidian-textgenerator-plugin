@@ -7,40 +7,42 @@ import type { PackageManagerUI } from "./package-manager-ui";
 
 export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   const global = useGlobal();
+
   const [_items, setItems] = useState<(PackageTemplate & { selected?: boolean })[]>([]);
 
-
-
   const parent = p.parent;
+
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [justInstalled, setJustInstalled] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [packagesIdsToUpdate, setPackagesIdsTOUpdate] = useState<string[]>([]);
 
-  const items = useMemo(() => justInstalled
-    ? _items.filter((p: any) => p.installed === true)
-    : _items,
-    [_items, justInstalled, packagesIdsToUpdate]
-  );
+  const pacakgeIdsToUpdateHash = useMemo(() => {
+    const hash: Record<string, boolean> = {};
+    packagesIdsToUpdate.forEach(p => hash[p] = true);
+    return hash;
+  }, [packagesIdsToUpdate])
 
-  function toggleJustInstalled() {
-    setJustInstalled(!justInstalled);
-  }
+  const items = useMemo(() => {
+    let itms = justInstalled
+      ? _items.filter((p: any) => p.installed === true)
+      : _items;
 
-  const filterItem = async () => {
-    setSelectedIndex(-1);
-    if (searchInput.length > 0) {
-      const packages = items.filter((p) =>
+    if (searchInput.length)
+      itms = itms.filter((p) =>
         Object.values(p)
           .join(" ")
           .toLowerCase()
           .includes(searchInput.toLowerCase())
       );
-      setItems(packages);
-    } else {
-      updateView();
-    }
-  };
+    return itms
+  },
+    [_items, justInstalled, packagesIdsToUpdate, searchInput]
+  );
+
+  function toggleJustInstalled() {
+    setJustInstalled((i) => !i);
+  }
 
   async function getAllPackages(update = true) {
     let packages: any = [];
@@ -49,13 +51,11 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
 
     await global.plugin.packageManager.updatePackagesStats();
 
-    packages = global.plugin.packageManager.getPackagesList();
-
     return packages;
   }
 
   async function updateView() {
-    setItems([...items]);
+    setItems(global.plugin.packageManager.getPackagesList());
   }
 
   function handleChange(value: string) {
@@ -75,11 +75,12 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   }
 
   useEffect(() => {
-    filterItem();
-  }, [searchInput]);
+    setSelectedIndex(-1);
+  }, [searchInput])
 
   useEffect(() => {
     getAllPackages().then((packages) => {
+      packages = global.plugin.packageManager.getPackagesList();
       setItems(packages);
     });
   }, []);
@@ -171,7 +172,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                         selected={selectedIndex == i}
                         select={select}
                         update={
-                          packagesIdsToUpdate.indexOf(item.packageId) !== -1
+                          pacakgeIdsToUpdateHash[item.packageId]
                         }
                       />
                     ))}
@@ -180,6 +181,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
             </div>
             {selectedIndex !== -1 && items[selectedIndex] && (
               <TemplateDetails
+                key={items[selectedIndex].packageId || selectedIndex}
                 packageId={items[selectedIndex].packageId}
                 packageManager={global.plugin.packageManager}
                 setSelectedIndex={setSelectedIndex}
@@ -187,7 +189,6 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                 updateView={updateView}
               />
             )}
-
           </div>
         </div>
       </div>

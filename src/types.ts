@@ -84,8 +84,8 @@ type TextGeneratorSettings = {
 };
 
 type TextGeneratorConfiguration = {
-  packages: PackageTemplate[];
-  installedPackages: InstalledPackage[];
+  packagesHash: Record<string, PackageTemplate>;
+  installedPackagesHash: Record<string, InstalledPackage>;
 };
 
 type InstalledPackage = {
