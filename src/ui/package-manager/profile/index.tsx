@@ -2,11 +2,12 @@ import { baseForLogin } from "#/ui/login/login-view";
 import { requestUrl } from "obsidian";
 import React, { useEffect, useState } from "react";
 
-export default function Profile(props: { apiKey: string }) {
+export default function Profile(props: { apiKey: string, mini?: boolean }) {
 
     const [user, setUser] = useState({
         name: "User",
-        image: ""
+        image: "",
+        email: ""
     });
 
     useEffect(() => {
@@ -24,8 +25,8 @@ export default function Profile(props: { apiKey: string }) {
         })()
     })
 
-    return <div className="flex items-center gap-2">
+    return <div className="flex items-center gap-2 dz-tooltip dz-tooltip-bottom" data-tip={user?.name || user?.email}>
         <img src={user?.image} width={24} height={24} />
-        <div>{user?.name}</div>
+        {!props.mini && <div>{user?.name}</div>}
     </div>
 }

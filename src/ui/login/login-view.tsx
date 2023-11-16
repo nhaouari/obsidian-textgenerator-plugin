@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import useGlobal from "../context/global";
 import type { LoginUI } from "./login-ui";
-import { request } from "obsidian";
+import { request, requestUrl } from "obsidian";
 import set from "lodash.set";
 
 
@@ -21,19 +21,34 @@ export const LoginView = (p: { parent: LoginUI }) => {
     let sessionId: any;
 
     const onFocus = async () => {
-      if (!sessionId || p.parent.isClosed) return;
+      try {
+        if (!sessionId || p.parent.isClosed) return;
 
-      // retrive the apikey
-      const apikey = await request(new URL(`/api/auth/session/temp/apikey?session=${encodeURIComponent(sessionId)}`, baseForLogin).href)
+        await new Promise((s) => setTimeout(s, 300))
 
-      console.log(apikey);
+        // retrive the apikey
+        const res = await requestUrl({
+          url: new URL(`/api/auth/session/temp/apikey?session=${encodeURIComponent(sessionId)}`, baseForLogin).href,
+          throw: false
+        })
+
+        if (res.status >= 400)
+          throw await res.text;
 
 
-      if (apikey) {
-        set(global.plugin.settings, `LLMProviderOptions.["package-provider"].apikey`, apikey);
-        await global.plugin.encryptAllKeys();
-        await global.plugin.saveSettings();
-        return p.parent.onSubmit(apikey)
+        const apikey = await res.text;
+
+        console.log(apikey);
+
+
+        if (apikey) {
+          set(global.plugin.settings, `LLMProviderOptions.["package-provider"].apikey`, apikey);
+          await global.plugin.encryptAllKeys();
+          await global.plugin.saveSettings();
+          return p.parent.onSubmit(apikey)
+        }
+      } catch (err: any) {
+        console.error(err);
       }
 
       setFailed(true);

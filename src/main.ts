@@ -51,6 +51,7 @@ import { registerAPI } from "@vanakat/plugin-api";
 import { PlaygroundView, VIEW_Playground_ID } from "./ui/playground";
 import { UnProviderSlugs } from "./LLMProviders";
 
+// @ts-ignore
 let safeStorage: Electron.SafeStorage;
 
 if (Platform.isDesktop) {
