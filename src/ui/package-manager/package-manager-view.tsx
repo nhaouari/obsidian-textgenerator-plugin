@@ -2,11 +2,17 @@ import React, { useState, useEffect, useMemo } from "react";
 import TemplateItem from "./components/template-item";
 import TemplateDetails from "./components/template-details";
 import { PackageTemplate } from "#/types";
+import attemptLogin, { attemptLogout } from "../login";
 import useGlobal from "../context/global";
 import type { PackageManagerUI } from "./package-manager-ui";
+import { baseForLogin } from "../login/login-view";
+import { useToggle } from "usehooks-ts";
+import Profile from "./profile";
 
 export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   const global = useGlobal();
+
+  const [_, triggerReload] = useToggle();
 
   const [_items, setItems] = useState<(PackageTemplate & { selected?: boolean })[]>([]);
 
@@ -85,6 +91,9 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
     });
   }, []);
 
+  const userApikey = global.plugin.settings?.LLMProviderOptions?.["package-provider"]?.apikey
+  const isLoggedIn = !!userApikey;
+
   return (
     <>
       <div className="modal-container">
@@ -136,6 +145,22 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                         <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
                       </svg>
                     </button>
+                    {baseForLogin ? (
+                      isLoggedIn ?
+                        <div className="flex gap-3 items-center">
+                          <Profile apiKey={userApikey} />
+                          <button onClick={async () => {
+                            await attemptLogout(global.plugin);
+                            triggerReload();
+                          }}>Log Out</button>
+                        </div>
+                        :
+                        <button onClick={async () => {
+                          await attemptLogin(global.plugin);
+                          triggerReload();
+                        }}>Login</button>
+                    ) : ""}
+
                   </div>
                 </div>
                 <div className="setting-item mod-toggle">

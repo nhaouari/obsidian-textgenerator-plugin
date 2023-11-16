@@ -51,7 +51,7 @@ export default class PackageManager {
     if (!this.configuration.installedPackagesHash) this.configuration.installedPackagesHash = {};
 
     // @ts-ignore
-    if (this.configuration.installedPackages.length) {
+    if (this.configuration.installedPackages?.length) {
       // @ts-ignore
       this.configuration.installedPackages.forEach(p => {
         this.configuration.installedPackagesHash[p.packageId] = p;
@@ -62,7 +62,7 @@ export default class PackageManager {
     }
 
     // @ts-ignore
-    if (this.configuration.packages.length) {
+    if (this.configuration.packages?.length) {
       // @ts-ignore
       this.configuration.packages.forEach(p => {
         this.configuration.installedPackagesHash[p.packageId] = p;
