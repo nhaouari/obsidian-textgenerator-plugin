@@ -92,19 +92,8 @@ export default class ContextManager {
           options,
         };
 
-      const { context, inputTemplate, outputTemplate, preRunnerTemplate } =
+      const { context, inputTemplate, outputTemplate } =
         await this.templateFromPath(templatePath, options);
-
-      // run prerunning script
-      const n = new Notice("processing Initialization...", 300000)
-      try {
-        await preRunnerTemplate?.(options);
-      } catch (err: any) {
-        n.hide()
-        throw err
-      }
-      n.hide()
-
 
       const ctx = await this.executeTemplateDataviewQueries(context);
       logger("Context Template", { context: ctx, options });
@@ -174,10 +163,9 @@ export default class ContextManager {
         }
       );
 
-      const { context, inputTemplate, outputTemplate, preRunnerTemplate } =
+      const { context, inputTemplate, outputTemplate } =
         await this.templateFromPath(templatePath, options);
 
-      await preRunnerTemplate?.(options);
 
       const ctx = await this.executeTemplateDataviewQueries(context);
 
@@ -521,6 +509,18 @@ export default class ContextManager {
     const templateContent = await this.app.vault.read(templateFile as TFile);
 
     const templates = this.splitTemplate(templateContent);
+
+    if (templates.preRunnerTemplate) {
+      // run prerunning script
+      const n = new Notice("processing Initialization...", 300000)
+      try {
+        await templates.preRunnerTemplate(options);
+      } catch (err: any) {
+        n.hide()
+        throw err
+      }
+      n.hide()
+    }
 
     const input = await templates.inputTemplate(options);
 
