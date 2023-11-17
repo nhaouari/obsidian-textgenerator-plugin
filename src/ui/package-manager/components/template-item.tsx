@@ -22,7 +22,7 @@ function TemplateItem(props: { item: PackageTemplate, selected?: boolean, index?
 					</span>
 				)}
 			</div>
-			<div className="community-item-author">By {props.item.author}</div>
+			<div className="community-item-author">{(props.item.type?.[0].toLocaleUpperCase() || "") + (props.item.type?.substring(1) || "") || "Package"} By {props.item.author}</div>
 			<div className="community-item-downloads">
 				<span>
 					<DownloadSVG />

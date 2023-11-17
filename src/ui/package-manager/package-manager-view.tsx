@@ -91,7 +91,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
     })()
   }, []);
 
-  const userApikey = global.plugin.settings?.LLMProviderOptions?.["package-provider"]?.apikey
+  const userApikey = global.plugin.packageManager.getApikey();
   const isLoggedIn = !!userApikey;
 
 

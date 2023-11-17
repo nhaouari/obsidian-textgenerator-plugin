@@ -86,66 +86,66 @@ export default function TemplateDetails(inProps: {
 	}
 
 	return (<>
+		<div className="flex flex-col gap-2">
+			<div className="community-modal-info-name">
+				{props.package?.name}
+				{props.installed && (
+					<span className="flair mod-pop">Installed</span>
+				)}
+			</div>
+			<div className="flex flex-col gap-1">
+				<div className="community-modal-info-downloads">
+					<span>
+						<DownloadSVG />
+					</span>
+					<span className="community-modal-info-downloads-text">
+						{nFormatter(props.package?.downloads)}
+					</span>
+				</div>
+				<div className="community-modal-info-version flex items-center gap-2">
+					<span>
+						Version:
+					</span>
+					<span> {props.package?.version} </span>
+					<span>
+						{props.installed &&
+							`(currently installed: ${props.installed.version})`}
+					</span>
+				</div>
+				<div className="community-modal-info-repo flex items-center gap-2">
+					<span>
+						Repository:
+					</span>
+					<a
+						target="_blank"
+						href={`https://github.com/${props.package?.repo}`}
+					>
+						{props.package?.repo}
+					</a>
+				</div>
+				<div className="community-modal-info-author flex items-center gap-2">
+					<span>
+						By
+					</span>
+					<a target="_blank" href={`${props.package?.authorUrl}`}>
+						{props.package?.author}
+					</a>
+				</div>
 
-		<div className="community-modal-info-name">
-			{props.package?.name}
-			{props.installed && (
-				<span className="flair mod-pop">Installed</span>
-			)}
-		</div>
-		<div className="community-modal-info-downloads">
-			<span>
-				<DownloadSVG />
-			</span>
-			<span className="community-modal-info-downloads-text">
-				{nFormatter(props.package?.downloads)}
-			</span>
-		</div>
-		<div className="community-modal-info-version">
-			Version: {props.package?.version}
-			{props.installed &&
-				`(currently installed: ${props.installed.version})`}
-		</div>
-		<div className="community-modal-info-author">
-			<span>
-				By
-			</span>
-			<a target="_blank" href={`${props.package?.authorUrl}`}>
-				{props.package?.author}
-			</a>
-		</div>
-		<div className="community-modal-info-repo">
-			<span>
-				Repository:
-			</span>
-			<a
-				target="_blank"
-				href={`https://github.com/${props.package?.repo}`}
-			>
-				{props.package?.repo}
-			</a>
-		</div>
-		<div className="community-modal-info-desc">
-			{props.package?.description}
+				<div className="community-modal-info-desc select-text">
+					{props.package?.description}
+				</div>
+			</div>
 		</div>
 		<div className="community-modal-button-container">
-			<button
-				className="mod-cta"
-				onClick={() =>
-					(window.location.href = `${props.package?.authorUrl}`)
-				}
-			>
-				Support
-			</button>
-
 			{props.installed ? (
 				<span>
-					<button className="mod-cta" onClick={() => !installing && uninstall()}>
+					<button className="bg-red-300 cursor-pointer" onClick={() => !installing && uninstall()}>
 						Uninstall{installing ? "ing..." : ""}
 					</button>
 					{props.installed.version !== props.package?.version && (
 						<button
-							className="mod-cta"
+							className="mod-cta cursor-pointer"
 							onClick={() => update()}
 						>
 							Update
@@ -157,9 +157,16 @@ export default function TemplateDetails(inProps: {
 					Install{installing ? "ing..." : ""}
 				</button>
 			)}
-
-			{error && <span> ERROR: {error}</span>}
+			<button
+				className="mod-cta cursor-pointer"
+				onClick={() =>
+					(window.location.href = `${props.package?.authorUrl}`)
+				}
+			>
+				Support
+			</button>
 		</div>
+		{error && <span> ERROR: {error}</span>}
 		<hr />
 		<div
 			dangerouslySetInnerHTML={{

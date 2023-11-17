@@ -928,24 +928,18 @@ ${removeYAML(content)}
     if (!this.plugin.textGenerator.templatePaths[id])
       throw new Error(`template with id:${id} wasn't found.`);
 
-    const { context, inputTemplate, outputTemplate } =
-      await this.contextManager.templateFromPath(
-        this.plugin.textGenerator.templatePaths[id],
-        {
-          ...this.contextManager.getFrontmatter(
-            this.contextManager.getMetaData(
-              this.plugin.textGenerator.templatePaths[id]
-            )
-          ),
-        }
-      );
-
-    return {
-      context,
-      inputTemplate,
-      outputTemplate,
-    };
+    return this.contextManager.templateFromPath(
+      this.plugin.textGenerator.templatePaths[id],
+      {
+        ...this.contextManager.getFrontmatter(
+          this.contextManager.getMetaData(
+            this.plugin.textGenerator.templatePaths[id]
+          )
+        ),
+      }
+    );
   }
+
   async updateTemplatesCache() {
     const files = await this.plugin.getFilesOnLoad();
     const templates = this.plugin.textGenerator.getTemplates(

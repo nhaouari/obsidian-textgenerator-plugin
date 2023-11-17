@@ -113,6 +113,7 @@ type PackageTemplate = {
   published_at?: Date;
   downloads?: number;
   installed?: boolean;
+  type?: "template" | "extension";
   price?: number;
 };
 

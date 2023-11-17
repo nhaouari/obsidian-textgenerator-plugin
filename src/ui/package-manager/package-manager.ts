@@ -2,6 +2,7 @@ import {
   TextGeneratorConfiguration,
   PackageTemplate,
   PromptTemplate,
+  InstalledPackage,
 } from "src/types";
 import {
   App,
@@ -135,6 +136,10 @@ export default class PackageManager {
     logger("fetch updatePackagesInfo OK");
   }
 
+  getApikey() {
+    return this.plugin.settings?.LLMProviderOptions?.["package-provider"]?.apikey
+  }
+
   async installPackage(packageId: string, installAllPrompts = true) {
     logger("installPackage", { packageId, installAllPrompts });
     const p = await this.getPackageById(packageId);
@@ -142,40 +147,86 @@ export default class PackageManager {
     if (!p?.repo) throw "couldn't find package";
 
     const repo = p.repo;
-    const release = await this.getReleaseByRepo(repo);
-    const data = await this.getAsset(release, "data.json");
 
-    if (!data) throw "couldn't get assets";
+    if (p.type == "extension") {
+      // extension way of installing pacakge
 
-    // this.configuration.installedPackages {packageId,prompts,installedPrompts=empty}
-    const installedPrompts: string[] = [];
-    if (!this.configuration.installedPackagesHash[packageId] && p) {
-      const obj = {
+      // TODO: THIS WILL STAY COMMENTED UNTIL WE CONFIRM WITH THE OBSIDIAN TEAM.
+      // it also requires some more work to it, to seperate the repos
+      // // get manifest.json
+      // const res = await fetch(new URL(`/api/content/${p.repo}`, baseForLogin).href, {
+      //   headers: {
+      //     "Authorization": `Bearer ${this.getApikey()}`,
+      //   }
+      // })
+      // await app.vault.adapter.writeBinary("test/manifest.json", await res.arrayBuffer());
+
+      // // get main.js
+      // const res2 = await fetch(new URL(`/api/content/${p.repo}`, baseForLogin).href, {
+      //   headers: {
+      //     "Authorization": `Bearer ${this.getApikey()}`,
+      //   }
+      // })
+      // await app.vault.adapter.writeBinary("test/main.js", await res2.arrayBuffer());
+
+      // // get style.css
+      // const res3 = await fetch(new URL(`/api/content/${p.repo}`, baseForLogin).href, {
+      //   headers: {
+      //     "Authorization": `Bearer ${this.getApikey()}`,
+      //   }
+      // })
+      // await app.vault.adapter.writeBinary("test/style.css", await res3.arrayBuffer());
+
+      const obj: InstalledPackage = {
         packageId,
-        prompts: data.prompts.map((promptId) => ({ promptId } as any)),
-        installedPrompts: installedPrompts.map(
-          (promptId) => ({ promptId } as any)
-        ),
+        prompts: [],
+        installedPrompts: [],
         version: p.version,
       }
 
       this.configuration.installedPackagesHash[packageId] = obj
 
-      if (installAllPrompts) {
-        await Promise.all(
-          data.prompts.map((promptId) =>
-            this.installPrompt(packageId, promptId, true)
-          )
-        );
-        new Notice(`Package ${packageId} installed`);
+    } else {
+      // Its a normal package templates
+
+      const release = await this.getReleaseByRepo(repo);
+      const data = await this.getAsset(release, "data.json");
+
+
+      if (!data) throw "couldn't get assets";
+
+      // this.configuration.installedPackages {packageId,prompts,installedPrompts=empty}
+      const installedPrompts: string[] = [];
+      if (!this.configuration.installedPackagesHash[packageId] && p) {
+        const obj = {
+          packageId,
+          prompts: data.prompts.map((promptId) => ({ promptId } as any)),
+          installedPrompts: installedPrompts.map(
+            (promptId) => ({ promptId } as any)
+          ),
+          version: p.version,
+        }
+
+        this.configuration.installedPackagesHash[packageId] = obj
+
+        if (installAllPrompts) {
+          await Promise.all(
+            data.prompts.map((promptId) =>
+              this.installPrompt(packageId, promptId, true)
+            )
+          );
+          new Notice(`Package ${packageId} installed`);
+        }
       }
+      await this.save();
+      logger("installPackage end", { packageId, installAllPrompts });
     }
-    await this.save();
-    logger("installPackage end", { packageId, installAllPrompts });
   }
 
   async uninstallPackage(packageId: string) {
     logger("uninstallPackage", { packageId });
+
+    // TODO: incase its a extension
 
     await Promise.all(
       this.getInstalledPackageById(packageId)?.prompts?.map((p) =>
@@ -278,15 +329,22 @@ export default class PackageManager {
 
   async updatePackageInfoById(packageId: string) {
     logger("updatePackageInfoById", { packageId });
-    const repo = await this.getPackageById(packageId)?.repo;
+    let manifest = await this.getPackageById(packageId);
+    if (!manifest) throw `couldn't get repo from package ${packageId}`;
+    if (manifest.type != "extension")
+      try {
+        const repo = manifest.repo
+        if (!manifest) throw `it doesn't have repo ${packageId}`;
+        //const release = await this.getReleaseByRepo(repo);
+        //const manifest= await this.getAsset(release,'manifest.json');
+        const url = `https://raw.githubusercontent.com/${repo}/master/manifest.json`;
+        manifest = JSON.parse(await request({ url: url }));
+        // console.log(manifest);
+        this.setPackageInfo(packageId, (manifest as any));
+      } catch (err: any) {
+        console.error(err);
+      }
 
-    if (!repo) throw `couldn't get repo from package ${packageId}`;
-    //const release = await this.getReleaseByRepo(repo);
-    //const manifest= await this.getAsset(release,'manifest.json');
-    const url = `https://raw.githubusercontent.com/${repo}/master/manifest.json`;
-    const manifest = JSON.parse(await request({ url: url }));
-    // console.log(manifest);
-    this.setPackageInfo(packageId, { ...manifest });
     await this.save();
     logger("updatePackageInfoById end", { packageId });
   }
