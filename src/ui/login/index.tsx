@@ -18,5 +18,5 @@ export default function attemptLogin(plugin: TextGeneratorPlugin) {
 
 
 export async function attemptLogout(plugin: TextGeneratorPlugin) {
-    set(plugin.settings, `LLMProviderOptions.["package-provider"].apikey`, undefined);
+    plugin.packageManager.setApiKey(undefined);
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 // ---------- sections ----------
 import AdvancedSetting from "./advanced";
+import AccountSettings from "./account";
 import ProviderSetting from "./provider";
 import DMPSetting from "./default-model-parameters";
 import ConsideredContextSetting from "./considered-context";
@@ -90,8 +91,11 @@ export default function SectionsMain() {
           placeholder="Search For Option"
         />
       </div>
+
       <ProviderSetting register={register} />
       <AdvancedSetting register={register} />
+      <AccountSettings register={register} />
+
       <DMPSetting register={register} />
       <AutoSuggestSetting register={register} />
       <ConsideredContextSetting register={register} />

@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import useGlobal from "../context/global";
 import type { LoginUI } from "./login-ui";
 import { request, requestUrl } from "obsidian";
-import set from "lodash.set";
-
 
 export const baseForLogin = ""
 
@@ -42,7 +40,7 @@ export const LoginView = (p: { parent: LoginUI }) => {
 
 
         if (apikey) {
-          set(global.plugin.settings, `LLMProviderOptions.["package-provider"].apikey`, apikey);
+          global.plugin.packageManager.setApiKey(apikey);
           await global.plugin.encryptAllKeys();
           await global.plugin.saveSettings();
           return p.parent.onSubmit(apikey)
