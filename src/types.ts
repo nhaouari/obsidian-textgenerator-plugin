@@ -83,9 +83,25 @@ type TextGeneratorSettings = {
   LLMProviderOptionsKeysHashed: Record<string, Buffer | string>;
 };
 
+type Resource = {
+  id: string
+  name: string
+  size: number
+  types: string
+  metadata: Record<string, string>
+}
+
+type Subscription = {
+  id: string,
+  name: string,
+  type: string,
+}
+
 type TextGeneratorConfiguration = {
   packagesHash: Record<string, PackageTemplate>;
   installedPackagesHash: Record<string, InstalledPackage>;
+  resources: Record<string, Resource>;
+  subscriptions: Subscription[];
 };
 
 type InstalledPackage = {
@@ -115,6 +131,9 @@ type PackageTemplate = {
   installed?: boolean;
   type?: "template" | "extension";
   price?: number;
+  core?: boolean;
+  desktopOnly?: boolean;
+  files?: Record<string, string>;
 };
 
 type PromptTemplate = {

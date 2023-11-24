@@ -10,14 +10,22 @@ import {
   request,
   MarkdownRenderer,
   Notice,
+  requestUrl,
 } from "obsidian";
 import TextGeneratorPlugin from "src/main";
 import { gt } from "semver";
 import debug from "debug";
 import Confirm from "./components/confirm";
+import { baseForLogin } from "../login/login-view";
+import { createFolder } from "#/utils";
+import set from "lodash.set";
 const logger = debug("textgenerator:PackageManager");
 
 const packageRegistry = `https://raw.githubusercontent.com/text-gen/text-generator-packages/master/community-packages.json`;
+const corePackageRegistry = `https://raw.githubusercontent.com/text-gen/text-generator-packages/master/core-packages.json`;
+
+export const PackageProviderid = "package-provider"
+
 
 export default class PackageManager {
   configuration: TextGeneratorConfiguration;
@@ -40,10 +48,17 @@ export default class PackageManager {
     this.configuration ??= {
       installedPackagesHash: {},
       packagesHash: {},
+      resources: {},
+      subscriptions: []
     };
 
     if (await adapter.exists(configPath)) {
-      this.configuration = JSON.parse(await adapter.read(configPath));
+      try {
+        this.configuration = JSON.parse(await adapter.read(configPath));
+      } catch (err: any) {
+        console.warn("packageManager: couldn't parse the config file ", configPath);
+        await this.initConfigFlie();
+      }
     } else {
       await this.initConfigFlie();
     }
@@ -134,13 +149,53 @@ export default class PackageManager {
     logger("fetch updatePackagesStats OK");
     await this.updatePackagesInfo(); // update of packages in their repo
     logger("fetch updatePackagesInfo OK");
+    try {
+      await this.updateBoughtResources();
+    } catch (err: any) {
+      console.warn("couldn't updateBoughtResources")
+    }
+  }
+
+  async updateBoughtResources() {
+    const res = await requestUrl({
+      url: new URL(`/api/v2/resources`, baseForLogin).href, headers: {
+        "Authorization": `Bearer ${this.getApikey()}`,
+      },
+      throw: false
+    })
+
+    const data: {
+      resources: Record<string, {
+        id: string
+        name: string
+        size: number
+        types: string
+        metadata: Record<string, string>
+      }>;
+      subscriptions: {
+        id: string,
+        name: string,
+        type: string,
+      }[];
+    } = await res.json;
+
+    if (data.subscriptions)
+      this.configuration.subscriptions = data.subscriptions;
+
+    if (data.resources)
+      this.configuration.resources = data.resources;
   }
 
   getApikey() {
-    return this.plugin.settings?.LLMProviderOptions?.["package-provider"]?.apikey
+    return this.plugin.settings?.LLMProviderOptions?.["package-provider"]?.api_key
+  }
+
+  setApiKey(newKey?: string) {
+    set(this.plugin.settings, `LLMProviderOptions.["package-provider"].api_key`, newKey)
   }
 
   async installPackage(packageId: string, installAllPrompts = true) {
+    console.log("trying to install package", packageId)
     logger("installPackage", { packageId, installAllPrompts });
     const p = await this.getPackageById(packageId);
 
@@ -150,32 +205,33 @@ export default class PackageManager {
 
     if (p.type == "extension") {
       // extension way of installing pacakge
+      console.log(p)
 
-      // TODO: THIS WILL STAY COMMENTED UNTIL WE CONFIRM WITH THE OBSIDIAN TEAM.
-      // it also requires some more work to it, to seperate the repos
-      // // get manifest.json
-      // const res = await fetch(new URL(`/api/content/${p.repo}`, baseForLogin).href, {
-      //   headers: {
-      //     "Authorization": `Bearer ${this.getApikey()}`,
-      //   }
-      // })
-      // await app.vault.adapter.writeBinary("test/manifest.json", await res.arrayBuffer());
+      // create extension folder    
+      const dirPath = `.obsidian/plugins/${p.packageId}`;
+      if (!(await app.vault.adapter.exists(dirPath)))
+        await createFolder(dirPath, app);
 
-      // // get main.js
-      // const res2 = await fetch(new URL(`/api/content/${p.repo}`, baseForLogin).href, {
-      //   headers: {
-      //     "Authorization": `Bearer ${this.getApikey()}`,
-      //   }
-      // })
-      // await app.vault.adapter.writeBinary("test/main.js", await res2.arrayBuffer());
+      // get manifest.json
+      for (const fileName in p.files) {
+        if (Object.prototype.hasOwnProperty.call(p.files, fileName)) {
+          const id = p.files[fileName];
+          const res = await requestUrl({
+            url: new URL(`/api/content/${id}`, baseForLogin).href,
+            headers: {
+              "Authorization": `Bearer ${this.getApikey()}`,
+            },
+            throw: false
+          })
 
-      // // get style.css
-      // const res3 = await fetch(new URL(`/api/content/${p.repo}`, baseForLogin).href, {
-      //   headers: {
-      //     "Authorization": `Bearer ${this.getApikey()}`,
-      //   }
-      // })
-      // await app.vault.adapter.writeBinary("test/style.css", await res3.arrayBuffer());
+          if (res.status >= 300) {
+            throw res.text;
+          }
+
+          await app.vault.adapter.writeBinary(`${dirPath}/${fileName}`, await res.arrayBuffer);
+        }
+      }
+
 
       const obj: InstalledPackage = {
         packageId,
@@ -225,14 +281,16 @@ export default class PackageManager {
 
   async uninstallPackage(packageId: string) {
     logger("uninstallPackage", { packageId });
+    const p = await this.getPackageById(packageId);
 
-    // TODO: incase its a extension
-
-    await Promise.all(
-      this.getInstalledPackageById(packageId)?.prompts?.map((p) =>
-        this.toTrash(packageId, p.promptId)
-      ) || []
-    );
+    if (p?.type === "extension")
+      await this.app.vault.adapter.rmdir(`.obsidian/plugins/${p.packageId}`, true)
+    else
+      await Promise.all(
+        (await this.getInstalledPackageById(packageId))?.prompts?.map((p) =>
+          this.toTrash(packageId, p.promptId)
+        ) || []
+      );
 
     delete this.configuration.installedPackagesHash[packageId];
 
@@ -274,13 +332,19 @@ export default class PackageManager {
   async updatePackage(packageId: string) {
     logger("updatePackage", { packageId });
     const p = await this.getPackageById(packageId);
-    const index = packageId
+    const index = packageId;
+
+    if (p?.type == "extension") {
+      await this.installPackage(p.packageId)
+      return;
+    }
+
     if (p?.repo) {
       const repo = p.repo;
       const release = await this.getReleaseByRepo(repo);
       const data = await this.getAsset(release, "data.json");
 
-      if (!data) throw "couldn't get assets";
+      if (!data) throw "Couldn't get assets";
 
       let installedPrompts: string[] = [];
       await Promise.all(
@@ -323,7 +387,12 @@ export default class PackageManager {
     return Object.values(this.configuration.installedPackagesHash);
   }
 
-  getInstalledPackageById(packageId: string) {
+  async getInstalledPackageById(packageId: string) {
+    if (this.configuration.packagesHash[packageId]?.type == "extension") {
+      return await this.app.vault.adapter.exists(`.obsidian/plugins/${this.configuration.packagesHash[packageId].packageId}`) ?
+        this.configuration.installedPackagesHash[packageId]
+        : null
+    }
     return this.configuration.installedPackagesHash[packageId] || null;
   }
 
@@ -459,6 +528,42 @@ export default class PackageManager {
     }
   }
 
+  async validatedOwnership(packageId: string) {
+    const pkg = this.getPackageById(packageId);
+
+    if (!pkg || !pkg.price) return {
+      allowed: true
+    };
+
+    const firstFile = Object.values(pkg.files || {})[0];
+
+    if (!firstFile) return {
+      allowed: true
+    };
+
+    const res = await requestUrl({
+      url: new URL(`/api/content/${firstFile}/verify`, baseForLogin).href, headers: {
+        "Authorization": `Bearer ${this.getApikey()}`,
+      },
+      throw: false
+    })
+
+    const d: {
+      allowed: boolean;
+      oneRequired: string[];
+    } = await res.json;
+
+    return d;
+  }
+
+  simpleCheckOwnership(packageId: string) {
+    const pkg = this.getPackageById(packageId);
+
+    if (!pkg || !pkg.price) return true;
+
+    return Object.values(pkg.files || []).some((p) => this.configuration.resources?.[p]);
+  }
+
   /**
    * download the prompt content
    * update it if it does exist
@@ -534,23 +639,36 @@ export default class PackageManager {
 
   async updatePackagesList() {
     logger("updatePackagesList");
-    const remotePackagesListUrl = packageRegistry;
-    const remotePackagesList: PackageTemplate[] = JSON.parse(
-      await request({ url: remotePackagesListUrl })
-    );
+    const remotePackagesList: PackageTemplate[] = [
+      ...(JSON.parse(
+        await request({ url: packageRegistry })
+      ) || [])
+        // to exclude any community extensions or labled as core
+        .filter((p: PackageTemplate) => p.type !== "extension" && !p.core),
+
+      // core packages can be templates or extensions 
+      ...(JSON.parse(
+        await request({ url: corePackageRegistry })
+      ) || [])
+    ];
 
     const newPackages = remotePackagesList.filter(
-      (p) => !this.getPackageById(p.packageId)
+      (p) => !this.getPackageById(p.packageId) || JSON.stringify(p) != JSON.stringify(this.configuration.packagesHash[p.packageId])
     );
 
     newPackages.forEach(e => {
-      this.configuration.packagesHash[e.packageId] = e;
+      this.configuration.packagesHash[e.packageId] = {
+        ...e,
+        installed: !!this.configuration.packagesHash[e.packageId]?.installed
+      };
     })
 
     this.save();
     logger("updatePackagesList end");
     return newPackages;
   }
+
+
 
   async updatePackagesInfo() {
     logger("updatePackagesInfo");

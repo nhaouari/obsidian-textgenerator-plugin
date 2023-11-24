@@ -1,4 +1,5 @@
 import { baseForLogin } from "#/ui/login/login-view";
+import clsx from "clsx";
 import { requestUrl } from "obsidian";
 import React, { useEffect, useState } from "react";
 
@@ -23,10 +24,14 @@ export default function Profile(props: { apiKey: string, mini?: boolean }) {
 
             setUser(user)
         })()
-    })
+    }, [props.apiKey])
 
     return <div className="flex items-center gap-2 dz-tooltip dz-tooltip-bottom" data-tip={user?.name || user?.email}>
-        <img src={user?.image} width={24} height={24} />
-        {!props.mini && <div>{user?.name}</div>}
+        <img src={user?.image} width={props.mini ? 24 : 64} height={props.mini ? 24 : 64} className="rounded-md overflow-hidden" />
+        {!props.mini && <div className={clsx({
+            "text-xl": !props.mini
+        })}>
+            {user?.name || user.email}
+        </div>}
     </div>
 }

@@ -87,6 +87,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   useEffect(() => {
     (async () => {
       await getAllPackages();
+      await global.plugin.packageManager.updateBoughtResources();
       setItems(global.plugin.packageManager.getPackagesList());
     })()
   }, []);
@@ -120,7 +121,11 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
         </button>
       }
     </div>
-  ) : ""
+  ) : "";
+
+  const premiumFeatures = items.filter(i => i.core);
+  const communityTemplates = items.filter(i => !i.core);
+
 
   return (
     <>
@@ -203,21 +208,50 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                 </div>
               </div>
               <div className="community-modal-search-results-wrapper">
-                <div className="community-modal-search-results">
-                  {items.length > 0 &&
-                    items.map((item, i) => (
-                      <TemplateItem
-                        key={item.packageId}
-                        item={item}
-                        index={i}
-                        selected={selectedIndex == i}
-                        select={select}
-                        update={
-                          pacakgeIdsToUpdateHash[item.packageId]
-                        }
-                      />
-                    ))}
+                <div className="p-3">
+                  {premiumFeatures?.length ? <>
+                    <h2>Core Features</h2>
+                    <div className="w-full flex gap-2 flex-wrap">
+                      {premiumFeatures.map((item) => {
+                        const i = items.findIndex(it => it.packageId == item.packageId);
+                        return (
+                          <TemplateItem
+                            key={item.packageId + "premium"}
+                            item={item}
+                            index={i}
+                            selected={selectedIndex == i}
+                            select={select}
+                            owned={global.plugin.packageManager.simpleCheckOwnership(item.packageId)}
+                            update={
+                              pacakgeIdsToUpdateHash[item.packageId]
+                            }
+                          />
+                        )
+                      })}
+                    </div>
+                  </> : null}
+                  {premiumFeatures?.length ? <>
+                    <h2>Community Templates</h2>
+                    <div className="community-modal-search-results pl-0">
+                      {communityTemplates.map((item) => {
+                        const i = items.findIndex(it => it.packageId == item.packageId)
+                        return (
+                          <TemplateItem
+                            key={item.packageId + "community"}
+                            item={item}
+                            index={i}
+                            selected={selectedIndex == i}
+                            select={select}
+                            update={
+                              pacakgeIdsToUpdateHash[item.packageId]
+                            }
+                          />
+                        )
+                      })}
+                    </div>
+                  </> : null}
                 </div>
+
               </div>
             </div>
             {selectedIndex !== -1 && items[selectedIndex] && (

@@ -127,9 +127,9 @@ export default class LangchainOpenAIChatProvider
               <IconExternalLink />
             </SettingItem>
           </a>
-          <a href="https://lmstudio.ai/">
+          <a href="https://discord.com/channels/1083485983879741572/1159894948636799126">
             <SettingItem
-              name="You can use LM Studio +v0.2.3"
+              name="You can use LM Studio"
               className="text-xs opacity-50 hover:opacity-100"
               register={props.register}
               sectionId={props.sectionId}
@@ -286,7 +286,6 @@ function ModelsHandler(props: {
             value={config.model}
             setValue={async (selectedModel) => {
               config.model = selectedModel;
-              global.plugin.settings.model = selectedModel;
               await global.plugin.saveSettings();
               global.triggerReload();
             }}
