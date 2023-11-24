@@ -1,4 +1,4 @@
-import { App, Notice, Editor, Component, TFile, HeadingCache, EditorPosition } from "obsidian";
+import { App, Notice, Component, TFile, HeadingCache, EditorPosition } from "obsidian";
 import { AsyncReturnType, Context } from "./types";
 import TextGeneratorPlugin from "./main";
 import { IGNORE_IN_YAML } from "./constants";
@@ -17,6 +17,8 @@ import { getAPI as getDataviewApi } from "obsidian-dataview";
 import set from "lodash.set";
 import merge from "lodash.merge";
 import { getHBValues } from "./utils/barhandles";
+
+import type { ContentManager } from "src/content-manager/types"
 
 interface CodeBlock {
   type: string;
@@ -55,7 +57,7 @@ export default class ContextManager {
   }
 
   async getContext(props: {
-    editor?: Editor;
+    editor?: ContentManager;
     filePath?: string;
     insertMetadata?: boolean;
     templatePath?: string;
@@ -250,7 +252,7 @@ export default class ContextManager {
   // }
 
   async getTemplateContext(props: {
-    editor?: Editor;
+    editor?: ContentManager;
     filePath?: string;
     templatePath?: string;
     templateContent?: string;
@@ -335,7 +337,7 @@ export default class ContextManager {
   }
 
   async getDefaultContext(
-    editor?: Editor,
+    editor?: ContentManager,
     filePath?: string,
     contextTemplate?: string
   ) {
@@ -528,7 +530,7 @@ export default class ContextManager {
     return { context: input, ...templates };
   }
 
-  getSelections(editor: Editor) {
+  getSelections(editor: ContentManager) {
     logger("getSelections", editor);
     const selections = editor
       .listSelections()
@@ -558,7 +560,7 @@ export default class ContextManager {
     return sortedPositions[sortedPositions.length - 1];
   }
 
-  getSelectionRange(editor: Editor) {
+  getSelectionRange(editor: ContentManager) {
     logger("getSelection", editor);
 
     const fromTo = {
@@ -571,8 +573,6 @@ export default class ContextManager {
     if (selectedText.length === 0) {
       const lineNumber = editor.getCursor().line;
       const line = editor.getLine(lineNumber).trimStart();
-
-
 
       if (line.length === 0) {
         fromTo.from = {
@@ -608,7 +608,7 @@ export default class ContextManager {
     return fromTo;
   }
 
-  getTGSelection(editor: Editor) {
+  getTGSelection(editor: ContentManager) {
     logger("getTGSelection", editor);
     const range = this.getSelectionRange(editor);
     let selectedText = editor.getRange(range.from, range.to);
@@ -625,7 +625,7 @@ export default class ContextManager {
     return selectedText;
   }
 
-  getSelection(editor: Editor) {
+  getSelection(editor: ContentManager) {
     logger("getSelection", editor);
     let selectedText = editor.getSelection();
 
@@ -731,7 +731,7 @@ export default class ContextManager {
     return children;
   }
 
-  async getHighlights(editor: Editor) {
+  async getHighlights(editor: ContentManager) {
     const content = editor.getValue();
     const highlights =
       content.match(/==(.*?)==/gi)?.map((s) => s.replaceAll("==", "")) || [];
@@ -823,7 +823,7 @@ export default class ContextManager {
     }
   }
 
-  async getExtractions(filePath?: string, editor?: Editor) {
+  async getExtractions(filePath?: string, editor?: ContentManager) {
     const extractedContent: Record<string, string[]> = {};
 
 

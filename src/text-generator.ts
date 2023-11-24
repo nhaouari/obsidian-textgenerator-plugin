@@ -2,7 +2,6 @@ import TemplateInputModalUI from "./ui/template-input-modal";
 import {
   App,
   Notice,
-  Editor,
   EditorPosition,
   TFile,
   stringifyYaml,
@@ -28,6 +27,7 @@ const heavyLogger = debug("textgenerator:TextGenerator:heavy");
 import EmbeddingScope from "./scope/embeddings";
 import { IGNORE_IN_YAML } from "./constants";
 import merge from "lodash.merge";
+import { ContentManager } from "./content-manager/types";
 
 export default class TextGenerator extends RequestHandler {
   plugin: TextGeneratorPlugin;
@@ -46,7 +46,7 @@ export default class TextGenerator extends RequestHandler {
     this.reqFormatter = new ReqFormatter(app, plugin, this.contextManager);
   }
 
-  getCursor(editor: Editor, mode: "insert" | "replace" | string = "insert") {
+  getCursor(editor: ContentManager, mode: "insert" | "replace" | string = "insert") {
     logger("getCursor");
     const cursor = editor.getCursor(mode == "replace" ? "from" : "to");
 
@@ -70,7 +70,7 @@ export default class TextGenerator extends RequestHandler {
     templatePath: string;
     /** defaults to true */
     insertMetadata?: boolean;
-    editor?: Editor;
+    editor?: ContentManager;
     filePath?: string;
     /** defaults to true */
     activeFile?: boolean;
@@ -170,7 +170,7 @@ export default class TextGenerator extends RequestHandler {
   async generateStreamInEditor(
     params: Partial<TextGeneratorSettings>,
     insertMetadata = false,
-    editor: Editor,
+    editor: ContentManager,
     customContext?: InputContext
   ) {
     logger("generateStreamInEditor");
@@ -183,14 +183,10 @@ export default class TextGenerator extends RequestHandler {
 
     const startingCursor = this.getCursor(editor, mode);
 
-    const cursor: typeof startingCursor = {
-      ch: startingCursor.ch,
-      line: startingCursor.line,
-    };
-
     // --- show selected --
     const selectedRange = this.contextManager.getSelectionRange(editor);
     const currentSelections = editor.listSelections();
+
     editor.setSelections(
       currentSelections.length > 1
         ? currentSelections
@@ -204,6 +200,7 @@ export default class TextGenerator extends RequestHandler {
     // --
 
     try {
+      const streamHandler = editor.insertStream(startingCursor)
       const strm = await this.streamGenerate(
         context,
         insertMetadata,
@@ -219,28 +216,6 @@ export default class TextGenerator extends RequestHandler {
         },
         startingCursor
       );
-
-      let postingContent = "";
-      let stillPlaying = true;
-      let firstTime = true;
-
-      const writerTimer: any = setInterval(() => {
-        if (!stillPlaying) return clearInterval(writerTimer);
-        const posting = postingContent;
-        if (!posting) return;
-
-        if (firstTime) this.insertGeneratedText(posting, editor, cursor, mode);
-        else this.insertGeneratedText(posting, editor, cursor, "stream");
-        postingContent = postingContent.substring(posting.length);
-        firstTime = false;
-
-        cursor.ch += posting.length;
-
-        if (!this.plugin.settings.freeCursorOnStreaming)
-          editor.setCursor(cursor);
-
-        this.plugin.updateSpinnerPos(cursor);
-      }, 100);
 
       const allText =
         (await strm?.(
@@ -268,10 +243,11 @@ export default class TextGenerator extends RequestHandler {
               if (this.plugin.settings.prefix?.length) {
                 content = this.plugin.settings.prefix + content;
               }
+            }
 
-              postingContent = content;
-            } else postingContent += content;
             logger("generateStreamInEditor message", { content });
+
+            streamHandler.insert(content);
             return content;
           },
           (err) => {
@@ -280,38 +256,16 @@ export default class TextGenerator extends RequestHandler {
           }
         )) || "";
 
-      stillPlaying = false;
-
-      editor.replaceRange(
-        mode == "replace" ? allText : "",
-        startingCursor,
-        cursor
-      );
-
-      if (mode !== "replace")
-        this.insertGeneratedText(allText, editor, startingCursor, mode);
-
-      const nc = {
-        ch: startingCursor.ch + allText.length,
-        line: startingCursor.line,
-      };
-
-      editor.replaceRange("", startingCursor, nc);
-
-      await new Promise((s) => setTimeout(s, 500));
-
       this.endLoading(true);
 
-      this.insertGeneratedText(allText, editor, startingCursor, mode);
+      streamHandler.end();
 
-      // here we can do some selecting magic
-      // editor.setSelection(startingCursor, cursor)
+      await streamHandler.replaceAllWith(allText);
 
-      editor.setCursor(nc);
     } catch (err: any) {
       this.plugin.handelError(err);
       // if catched error during or before streaming, it should return to its previews location
-      editor.setCursor(cursor);
+      editor.setCursor(startingCursor);
       this.endLoading(true);
       return Promise.reject(err);
     }
@@ -320,7 +274,7 @@ export default class TextGenerator extends RequestHandler {
   async generateInEditor(
     params: Partial<TextGeneratorSettings>,
     insertMetadata = false,
-    editor: Editor,
+    editor: ContentManager,
     customContext?: InputContext,
     additionnalParams = {
       showSpinner: true,
@@ -366,9 +320,8 @@ export default class TextGenerator extends RequestHandler {
 
     const prefix = this.plugin.settings.prefix;
 
-    this.insertGeneratedText(
+    editor.insertText(
       prefix.length ? prefix + text : text,
-      editor,
       cursor,
       mode
     );
@@ -380,7 +333,7 @@ export default class TextGenerator extends RequestHandler {
     params: Partial<TextGeneratorSettings>,
     templatePath: string,
     insertMetadata = false,
-    editor: Editor
+    editor: ContentManager
   ) {
     logger("generateToClipboard");
     const [errorContext, context] = await safeAwait(
@@ -416,7 +369,7 @@ export default class TextGenerator extends RequestHandler {
   async generatePrompt(
     promptText: string,
     insertMetadata = false,
-    editor: Editor,
+    editor: ContentManager,
     outputTemplate: HandlebarsTemplateDelegate<any>
   ) {
     logger("generatePrompt");
@@ -428,7 +381,7 @@ export default class TextGenerator extends RequestHandler {
       text = outputTemplate({ output: text });
     }
 
-    if (text) this.insertGeneratedText(text, editor, cursor);
+    if (text) editor.insertText(text, cursor);
 
     logger("generatePrompt end");
   }
@@ -554,7 +507,7 @@ export default class TextGenerator extends RequestHandler {
     logger("createToFile end");
   }
 
-  async createTemplateFromEditor(editor: Editor) {
+  async createTemplateFromEditor(editor: ContentManager) {
     logger("createTemplateFromEditor");
     const title = this.plugin.app.workspace.activeLeaf?.getDisplayText();
     const content = editor.getValue();
@@ -649,71 +602,12 @@ ${removeYAML(content)}
     return "\n> [!ai]+ AI\n>\n" + lines.join("\n").trim() + "\n\n";
   }
 
-  async insertGeneratedText(
-    completion: string,
-    editor: Editor,
-    cur: EditorPosition | null = null,
-    mode = "insert"
-  ) {
-    heavyLogger("insertGeneratedText");
-
-    let text = completion;
-    let cursor = cur || this.getCursor(editor);
-
-    // if (mode !== "stream") {
-    // 	 text = this.plugin.settings.prefix.replace(/\\n/g, "\n") + text;
-    // }
-
-    if (editor.listSelections().length > 0) {
-      const anchor = editor.listSelections()[0].anchor;
-      const head = editor.listSelections()[0].head;
-      if (
-        anchor.line > head.line ||
-        (anchor.line === head.line && anchor.ch > head.ch)
-      ) {
-        cursor = editor.listSelections()[0].anchor;
-      }
-    }
-
-    if (this.plugin.settings.outputToBlockQuote && mode !== "stream") {
-      text = this.outputToBlockQuote(text);
-    }
-
-    if (mode === "insert" || mode === "stream") {
-      editor.replaceRange(text, cursor);
-    } else if (mode === "replace") {
-      editor.replaceSelection(text);
-    } else if (mode === "rename") {
-      const sanitizedTitle = text
-        .replace(/[*\\"/<>:|?\.]/g, "")
-        .replace(/^\n*/g, "");
-      const activeFile = this.plugin.app.workspace.getActiveFile();
-
-      if (activeFile) {
-        const renamedFilePath = activeFile.path.replace(
-          activeFile.name,
-          `${sanitizedTitle}.md`
-        );
-        await this.plugin.app.fileManager.renameFile(
-          activeFile,
-          renamedFilePath
-        );
-      } else {
-        logger("Couldn't find active file");
-      }
-    }
-
-    // editor.setCursor(editor.getCursor());
-
-    heavyLogger("insertGeneratedText end");
-  }
-
   async tempalteToModal(props: {
     params: Partial<TextGeneratorSettings>;
     /** Template path */
     templatePath?: string;
-    /** Editor */
-    editor: Editor;
+    /** ContentManager */
+    editor: ContentManager;
     /** filePath */
     filePath?: string;
     /** defaults to true */
@@ -875,7 +769,7 @@ ${removeYAML(content)}
   async templateGen(
     id: string,
     options: {
-      editor?: Editor;
+      editor?: ContentManager;
       filePath?: string;
       insertMetadata?: boolean;
       additionalProps?: any;

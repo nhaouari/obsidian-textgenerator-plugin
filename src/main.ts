@@ -5,11 +5,9 @@ import {
   Notice,
   Plugin,
   MarkdownView,
-  Editor,
   MarkdownRenderer,
   MarkdownPostProcessorContext,
   getIcon,
-  Command,
   TFile,
   Platform,
   EditorPosition,
@@ -50,6 +48,7 @@ import VersionManager from "./scope/versionManager";
 import { registerAPI } from "@vanakat/plugin-api";
 import { PlaygroundView, VIEW_Playground_ID } from "./ui/playground";
 import { UnProviderSlugs } from "./LLMProviders";
+import ContentManagerCls from "./content-manager";
 
 // @ts-ignore
 let safeStorage: Electron.SafeStorage;
@@ -88,13 +87,10 @@ export default class TextGeneratorPlugin extends Plugin {
       this.defaultSettings = DEFAULT_SETTINGS;
       await this.loadSettings();
 
-      console.log("loading version")
-
       this.versionManager = new VersionManager(this);
       await this.versionManager.load();
 
       // This adds a settings tab so the user can configure various aspects of the plugin
-      console.log("loading settingsTab")
 
       const settingTab = new TextGeneratorSettingTab(this.app, this);
       this.addSettingTab(settingTab);
@@ -107,11 +103,7 @@ export default class TextGeneratorPlugin extends Plugin {
       this.tokensScope = new TokensScope(this);
       await this.tokensScope.setup();
 
-      console.log("register editor extension")
-
       this.registerEditorExtension(spinnersPlugin);
-
-      console.log("updating workspace options")
 
       this.app.workspace.updateOptions();
 
@@ -172,10 +164,16 @@ export default class TextGeneratorPlugin extends Plugin {
               this.textGenerator.contextManager.splitTemplate(source);
 
             const activeView = this.getActiveView();
+
+            const CM = ContentManagerCls.compile({
+              editor: activeView?.editor,
+              filePath: activeView?.file?.path
+            })
+
             const context = {
               ...(activeView
                 ? await this.textGenerator.contextManager.getTemplateContext({
-                  editor: activeView.editor,
+                  editor: CM,
                   filePath: activeView?.file?.path,
                   templateContent: inputContent,
                 })
@@ -220,9 +218,12 @@ export default class TextGeneratorPlugin extends Plugin {
           // const activeFile = this.app.workspace.getActiveFile();
           const activeView = this.getActiveView();
           if (activeView !== null) {
-            const editor = activeView.editor;
+            const CM = ContentManagerCls.compile({
+              editor: activeView?.editor,
+              filePath: activeView?.file?.path
+            })
             try {
-              await this.textGenerator.generateInEditor({}, false, editor);
+              await this.textGenerator.generateInEditor({}, false, CM);
             } catch (error) {
               this.handelError(error);
             }
@@ -252,20 +253,16 @@ export default class TextGeneratorPlugin extends Plugin {
     */
 
       // registers
-      console.log("loading adding commands")
       this.commands = new Commands(this);
 
       await this.commands.addCommands();
-      console.log("loading packageManager")
       try {
         await this.packageManager.load();
       } catch (err: any) {
         console.trace("error in packageManager", err);
       }
 
-      console.log("trying REGISTERAPI")
       registerAPI("tg", this.textGenerator, this as any);
-      console.log("done REGISTERAPI")
     } catch (err: any) {
       this.handelError(err);
     }
@@ -571,11 +568,15 @@ export default class TextGeneratorPlugin extends Plugin {
     const button = this.createRunButton("Generate Text", generateSVG);
     button.addEventListener("click", async () => {
       const activeView = this.getActiveView();
+      const CM = ContentManagerCls.compile({
+        editor: activeView?.editor,
+        filePath: activeView?.file?.path
+      })
       if (activeView)
         await this.textGenerator.generatePrompt(
           markdown,
           false,
-          activeView?.editor,
+          CM,
           outputTemplate
         );
 

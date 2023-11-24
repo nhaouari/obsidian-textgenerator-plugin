@@ -11,6 +11,7 @@ import { LLMProviderRegistery } from "../LLMProviders";
 import debug from "debug";
 import { VIEW_TOOL_ID } from "#/ui/tool";
 import { VIEW_Playground_ID } from "#/ui/playground";
+import ContentManagerCls from "#/content-manager";
 const logger = debug("textgenerator:main");
 
 export default class Commands {
@@ -24,7 +25,11 @@ export default class Commands {
       hotkeys: [{ modifiers: ["Mod"], key: "j" }],
       async editorCallback(editor: Editor) {
         try {
-          await this.plugin.textGenerator.generateInEditor({}, false, editor);
+          const CM = ContentManagerCls.compile({
+            editor,
+          })
+
+          await this.plugin.textGenerator.generateInEditor({}, false, CM);
         } catch (error) {
           this.plugin.handelError(error);
         }
@@ -59,12 +64,16 @@ export default class Commands {
             async (result) => {
               if (!result.path) throw "Nothing was selected";
 
+              const CM = ContentManagerCls.compile({
+                editor,
+              })
+
               await self.plugin.textGenerator.generateFromTemplate({
                 params: {},
                 templatePath: result.path,
                 filePath: mx.file?.path,
                 insertMetadata: true,
-                editor,
+                editor: CM,
                 activeFile: true,
               });
             },
@@ -115,12 +124,18 @@ export default class Commands {
             self.plugin,
             async (result) => {
               if (!result.path) throw "Nothing was selected";
+
+              const CM = ContentManagerCls.compile({
+                editor,
+                filePath: mx.file?.path
+              })
+
               await self.plugin.textGenerator.generateFromTemplate({
                 params: {},
                 templatePath: result.path,
                 filePath: mx.file?.path,
                 insertMetadata: true,
-                editor,
+                editor: CM,
                 activeFile: false,
               });
             },
@@ -181,12 +196,18 @@ export default class Commands {
             self.plugin,
             async (result) => {
               if (!result.path) throw "Nothing was selected";
+
+              const CM = ContentManagerCls.compile({
+                editor,
+                filePath: mx.file?.path
+              })
+
               await self.plugin.textGenerator.generateFromTemplate({
                 params: {},
                 templatePath: result.path,
                 filePath: mx.file?.path,
                 insertMetadata: true,
-                editor,
+                editor: CM,
                 activeFile: true,
               });
             },
@@ -211,12 +232,20 @@ export default class Commands {
             self.plugin,
             async (result) => {
               if (!result.path) throw "Nothing was selected";
+
+
+              const CM = ContentManagerCls.compile({
+                editor,
+                filePath: mx.file?.path
+              })
+
+
               await self.plugin.textGenerator.generateFromTemplate({
                 params: {},
                 templatePath: result.path,
                 filePath: mx.file?.path,
                 insertMetadata: true,
-                editor,
+                editor: CM,
                 activeFile: false,
                 insertMode: true,
               });
@@ -241,10 +270,16 @@ export default class Commands {
             this.plugin.app,
             this.plugin,
             async (result) => {
+
+              const CM = ContentManagerCls.compile({
+                editor,
+                filePath: mx.file?.path
+              })
+
               await self.plugin.textGenerator.tempalteToModal({
                 params: {},
                 templatePath: result.path,
-                editor,
+                editor: CM,
                 filePath: mx.file?.path,
               });
             },
@@ -369,10 +404,16 @@ export default class Commands {
       name: "Create a Template",
       icon: "plus",
       //hotkeys: [{ modifiers: ["Alt"], key: "c"}],
-      async editorCallback(editor: Editor) {
+      async editorCallback(editor: Editor, mx) {
         const self: Commands = this;
+
+        const CM = ContentManagerCls.compile({
+          editor,
+          filePath: mx.file?.path
+        })
+
         try {
-          await self.plugin.textGenerator.createTemplateFromEditor(editor);
+          await self.plugin.textGenerator.createTemplateFromEditor(CM);
         } catch (error) {
           self.plugin.handelError(error);
         }
@@ -441,9 +482,15 @@ export default class Commands {
       //hotkeys: [{ modifiers: ["Alt"], key: "c"}],
       async editorCallback(editor, mx) {
         const self: Commands = this;
+
+        const CM = ContentManagerCls.compile({
+          editor,
+          filePath: mx.file?.path
+        })
+
         const context =
           await self.plugin.textGenerator.contextManager.getContext({
-            editor,
+            editor: CM,
             filePath: mx.file?.path,
             insertMetadata: true,
             addtionalOpts: {
@@ -468,9 +515,14 @@ export default class Commands {
             self.plugin.app,
             self.plugin,
             async (result) => {
+              const CM = ContentManagerCls.compile({
+                editor,
+                filePath: mx.file?.path
+              })
+
               const context =
                 await self.plugin.textGenerator.contextManager.getContext({
-                  editor,
+                  editor: CM,
                   filePath: mx.file?.path,
                   insertMetadata: true,
                   templatePath: result.path,
@@ -560,6 +612,12 @@ export default class Commands {
           editorCallback: !["tool"].contains(command)
             ? async (editor, mx) => {
               const self: Commands = this;
+
+              const CM = ContentManagerCls.compile({
+                editor,
+                filePath: mx.file?.path
+              })
+
               try {
                 switch (command) {
                   case "generate":
@@ -567,7 +625,7 @@ export default class Commands {
                       params: {},
                       templatePath: template.path,
                       insertMetadata: true,
-                      editor,
+                      editor: CM,
                       activeFile: true,
                     });
                     break;
@@ -576,7 +634,7 @@ export default class Commands {
                       params: {},
                       templatePath: template.path,
                       insertMetadata: true,
-                      editor,
+                      editor: CM,
                       activeFile: true,
                       insertMode: true,
                     });
@@ -586,7 +644,7 @@ export default class Commands {
                       params: {},
                       templatePath: template.path,
                       insertMetadata: true,
-                      editor,
+                      editor: CM,
                       activeFile: false,
                     });
                     break;
@@ -595,7 +653,7 @@ export default class Commands {
                       params: {},
                       templatePath: template.path,
                       insertMetadata: true,
-                      editor,
+                      editor: CM,
                       activeFile: false,
                       insertMode: true,
                     });
@@ -604,7 +662,7 @@ export default class Commands {
                     await self.plugin.textGenerator.tempalteToModal({
                       params: {},
                       templatePath: template.path,
-                      editor,
+                      editor: CM,
                       filePath: mx.file?.path,
                     });
                     break;
@@ -613,7 +671,7 @@ export default class Commands {
                       {},
                       template.path,
                       true,
-                      editor
+                      CM
                     );
                     break;
                   case "estimate":
@@ -621,7 +679,7 @@ export default class Commands {
                       const context =
                         await this.plugin.textGenerator.contextManager.getContext(
                           {
-                            editor,
+                            editor: CM,
                             filePath: mx.file?.path,
                             insertMetadata: true,
                             templatePath: template.path,
