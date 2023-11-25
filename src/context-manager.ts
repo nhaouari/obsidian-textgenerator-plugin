@@ -538,8 +538,6 @@ export default class ContextManager {
     return selections;
   }
 
-
-
   getTGSelection(editor: ContentManager) {
     logger("getTGSelection", editor);
     return editor.getTgSelection(this.plugin.settings.tgSelectionLimiter);
