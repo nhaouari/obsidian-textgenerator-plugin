@@ -8,11 +8,9 @@ export default class MarkdownManager implements ContentManager {
         this.editor = editor;
     }
 
-
     listSelections(): { anchor: { ch: number; line: number; }; head: { ch: number; line: number; }; }[] {
         return this.editor.listSelections();
     }
-
 
     getValue(): string {
         return this.editor.getValue();
@@ -25,7 +23,6 @@ export default class MarkdownManager implements ContentManager {
     getCursor2(mode?: Mode) {
         return this.editor.getCursor(mode == "replace" ? "from" : "to")
     }
-
 
     getLine(line: number): string {
         return this.editor.getLine(line);
