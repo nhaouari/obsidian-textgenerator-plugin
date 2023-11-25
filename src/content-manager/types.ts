@@ -1,25 +1,22 @@
 
 export type Mode = "insert" | "stream" | "replace"
 
-type EditorPosition = {
+export type EditorPosition = {
     ch: number;
     line: number;
-}
-
-type EditorPositionAnchorHead = {
-    anchor: EditorPosition;
-    head: EditorPosition;
 }
 
 export interface ContentManager {
     getValue(): string;
     getSelection(): string;
-    setSelections(poses: EditorPositionAnchorHead[]): void;
-    listSelections(): EditorPositionAnchorHead[];
 
-    getLine(line: number): string;
+    getSelections(): string[]
 
-    getRange(from: EditorPosition, to: EditorPosition): string;
+    getLastLetterBeforeCursor(): string;
+
+    getTgSelection(tgSelectionLimiter?: string): string
+
+    selectTgSelection(tgSelectionLimiter?: string): void;
 
     getCursor(pos?: "from" | "to"): EditorPosition;
 
@@ -36,6 +33,4 @@ export interface ContentManager {
         end(): void,
         replaceAllWith(newData: string): void
     };
-
-
 }

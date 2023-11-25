@@ -183,22 +183,6 @@ export default class TextGenerator extends RequestHandler {
 
     const startingCursor = this.getCursor(editor, mode);
 
-    // --- show selected --
-    const selectedRange = this.contextManager.getSelectionRange(editor);
-    const currentSelections = editor.listSelections();
-
-    editor.setSelections(
-      currentSelections.length > 1
-        ? currentSelections
-        : [
-          {
-            anchor: selectedRange.from,
-            head: selectedRange.to,
-          },
-        ]
-    );
-    // --
-
     try {
       const streamHandler = editor.insertStream(startingCursor)
       const strm = await this.streamGenerate(
@@ -209,13 +193,7 @@ export default class TextGenerator extends RequestHandler {
       );
 
       // last letter before starting, (used to detirmin if we should add space at the begining)
-      const txt = editor.getRange(
-        {
-          ch: startingCursor.ch - 1,
-          line: startingCursor.line,
-        },
-        startingCursor
-      );
+      const txt = editor.getLastLetterBeforeCursor();
 
       const allText =
         (await strm?.(

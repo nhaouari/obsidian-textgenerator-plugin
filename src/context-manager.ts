@@ -533,96 +533,16 @@ export default class ContextManager {
   getSelections(editor: ContentManager) {
     logger("getSelections", editor);
     const selections = editor
-      .listSelections()
-      .map((r) => editor.getRange(this.minPos(r.anchor, r.head), this.maxPos(r.anchor, r.head)))
-      .filter((text) => text.length > 0);
+      .getSelections();
     logger("getSelections", { selections });
     return selections;
   }
 
-  sortMinPos(...pos: EditorPosition[]) {
-    return pos.sort((p1, p2) => {
-      if (p1.line !== p2.line) {
-        return p1.line - p2.line;
-      } else {
-        return p1.ch - p2.ch;
-      }
-    });
-  }
 
-  minPos(...pos: EditorPosition[]) {
-    const sortedPositions = this.sortMinPos(...pos);
-    return sortedPositions[0];
-  }
-
-  maxPos(...pos: EditorPosition[]) {
-    const sortedPositions = this.sortMinPos(...pos);
-    return sortedPositions[sortedPositions.length - 1];
-  }
-
-  getSelectionRange(editor: ContentManager) {
-    logger("getSelection", editor);
-
-    const fromTo = {
-      from: editor.getCursor("from"),
-      to: editor.getCursor("to"),
-    };
-
-    const selectedText = editor.getSelection().trimStart();
-
-    if (selectedText.length === 0) {
-      const lineNumber = editor.getCursor().line;
-      const line = editor.getLine(lineNumber).trimStart();
-
-      if (line.length === 0) {
-        fromTo.from = {
-          ch: 0,
-          line: 0,
-        };
-        fromTo.to = editor.getCursor("from");
-      } else {
-        fromTo.from = {
-          ch: 0,
-          line: lineNumber,
-        };
-
-        fromTo.to = editor.getCursor("to");
-      }
-
-      const limiter = this.plugin.settings.tgSelectionLimiter;
-
-      if (limiter) {
-        const reg = new RegExp(limiter, "i")
-        const lastLimiterIndex = editor.getRange(fromTo.from, fromTo.to).split("\n").findLastIndex(d => reg.test(d))
-
-        if (lastLimiterIndex != -1) {
-          fromTo.from = {
-            ch: 0,
-            line: fromTo.from.line > lastLimiterIndex + 1 ? fromTo.from.line : lastLimiterIndex + 1
-          }
-        }
-      }
-
-    }
-    logger("getSelection", { selectedText });
-    return fromTo;
-  }
 
   getTGSelection(editor: ContentManager) {
     logger("getTGSelection", editor);
-    const range = this.getSelectionRange(editor);
-    let selectedText = editor.getRange(range.from, range.to);
-
-    const frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document
-    if (
-      typeof frontmatter !== "undefined" &&
-      Object.keys(frontmatter).length !== 0
-    ) {
-      /* Text Generate with metadata */
-      selectedText = removeYAML(selectedText).trim();
-    }
-    logger("getTGSelection", { selectedText });
-    return selectedText;
+    return editor.getTgSelection(this.plugin.settings.tgSelectionLimiter);
   }
 
   getSelection(editor: ContentManager) {

@@ -1,6 +1,7 @@
 import { Editor, EditorPosition } from "obsidian";
 import { ContentManager, Mode } from "./types";
-
+import { minPos, maxPos } from "./utils"
+import { removeYAML } from "#/utils";
 export default class MarkdownManager implements ContentManager {
     editor: Editor;
 
@@ -8,8 +9,9 @@ export default class MarkdownManager implements ContentManager {
         this.editor = editor;
     }
 
-    listSelections(): { anchor: { ch: number; line: number; }; head: { ch: number; line: number; }; }[] {
-        return this.editor.listSelections();
+    getSelections(): string[] {
+        return this.editor.listSelections().map((r) => this.editor.getRange(minPos(r.anchor, r.head), maxPos(r.anchor, r.head)))
+            .filter((text) => text.length > 0)
     }
 
     getValue(): string {
@@ -24,36 +26,106 @@ export default class MarkdownManager implements ContentManager {
         return this.editor.getCursor(mode == "replace" ? "from" : "to")
     }
 
-    getLine(line: number): string {
-        return this.editor.getLine(line);
-    }
-
-    getRange(from: { ch: number; line: number; }, to: { ch: number; line: number; }): string {
-        return this.editor.getRange(from, to)
-    }
-
     getSelection(): string {
         return this.editor.getSelection();
     }
 
-
-    setSelections(poses: { anchor: { ch: number; line: number; }; head: { ch: number; line: number; }; }[]): void {
+    protected setSelections(poses: { anchor: { ch: number; line: number; }; head: { ch: number; line: number; }; }[]): void {
         return this.editor.setSelections(poses);
     }
 
     protected replaceRange(str: string, startingPos: { ch: number; line: number; }, endPos?: { ch: number; line: number; } | undefined): void {
         return this.editor.replaceRange(str, startingPos, endPos);
-
     }
 
     protected replaceSelection(str: string): void {
         return this.editor.replaceSelection(str);
     }
 
+    protected getTgSelectionRange(tgSelectionLimiter?: string) {
+        const fromTo = {
+            from: this.editor.getCursor("from"),
+            to: this.editor.getCursor("to"),
+        };
+
+        const selectedText = this.editor.getSelection().trimStart();
+
+        if (selectedText.length !== 0) return fromTo;
+
+        const lineNumber = this.editor.getCursor().line;
+        const line = this.editor.getLine(lineNumber).trimStart();
+
+        if (line.length === 0) {
+            fromTo.from = {
+                ch: 0,
+                line: 0,
+            };
+            fromTo.to = this.editor.getCursor("from");
+        } else {
+            fromTo.from = {
+                ch: 0,
+                line: lineNumber,
+            };
+
+            fromTo.to = this.editor.getCursor("to");
+        }
+
+
+        if (!tgSelectionLimiter) return fromTo;
+
+        const reg = new RegExp(tgSelectionLimiter, "i")
+        const lastLimiterIndex = this.editor.getRange(fromTo.from, fromTo.to).split("\n").findLastIndex(d => reg.test(d))
+
+        if (lastLimiterIndex != -1) {
+            fromTo.from = {
+                ch: 0,
+                line: fromTo.from.line > lastLimiterIndex + 1 ? fromTo.from.line : lastLimiterIndex + 1
+            }
+        }
+
+        return fromTo;
+    }
+
+
+    getTgSelection(tgSelectionLimiter?: string) {
+        const range = this.getTgSelectionRange(tgSelectionLimiter);
+        let selectedText = this.editor.getRange(range.from, range.to);
+        return removeYAML(selectedText);
+    }
+
+    selectTgSelection(tgSelectionLimiter?: string) {
+        const selectedRange = this.getTgSelectionRange(tgSelectionLimiter);
+        const currentSelections = this.editor.listSelections();
+
+        this.editor.setSelections(
+            currentSelections.length > 1
+                ? currentSelections
+                : [
+                    {
+                        anchor: selectedRange.from,
+                        head: selectedRange.to,
+                    },
+                ]
+        );
+    }
+
+    getLastLetterBeforeCursor(): string {
+        // incase of simple generation
+        const startingCursor = this.editor.getCursor("from")
+
+        return this.editor.getRange(
+            {
+                ch: startingCursor.ch - 1,
+                line: startingCursor.line,
+            },
+            startingCursor
+        );
+    }
+
+
     setCursor(pos: { ch: number; line: number; }): void {
         return this.editor.setCursor(pos);
     }
-
 
     insertText(text: string, cur: EditorPosition, mode?: Mode) {
         let cursor = cur || this.getCursor2(mode);
@@ -62,14 +134,14 @@ export default class MarkdownManager implements ContentManager {
         // 	 text = this.plugin.settings.prefix.replace(/\\n/g, "\n") + text;
         // }
 
-        if (this.listSelections().length > 0) {
-            const anchor = this.listSelections()[0].anchor;
-            const head = this.listSelections()[0].head;
+        if (this.editor.listSelections().length > 0) {
+            const anchor = this.editor.listSelections()[0].anchor;
+            const head = this.editor.listSelections()[0].head;
             if (
                 anchor.line > head.line ||
                 (anchor.line === head.line && anchor.ch > head.ch)
             ) {
-                cursor = this.listSelections()[0].anchor;
+                cursor = this.editor.listSelections()[0].anchor;
             }
         }
 
@@ -164,3 +236,5 @@ export default class MarkdownManager implements ContentManager {
         }
     }
 }
+
+
