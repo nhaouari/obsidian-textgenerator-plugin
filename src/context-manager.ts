@@ -378,10 +378,10 @@ export default class ContextManager {
 
     if (editor) {
       //   context["line"] = this.getConsideredContext(editor);
-      context["tg_selection"] = this.getTGSelection(editor);
+      context["tg_selection"] = await this.getTGSelection(editor);
 
-      const selections = this.getSelections(editor);
-      const selection = this.getSelection(editor);
+      const selections = await this.getSelections(editor);
+      const selection = await this.getSelection(editor);
 
       context["selections"] = selection && selections.length == 0 ? [selection] : selections || [];
 
@@ -389,7 +389,7 @@ export default class ContextManager {
 
 
       if (vars["content"])
-        context["content"] = editor.getValue();
+        context["content"] = await editor.getValue();
 
       console.log("getting content", context["content"]);
 
@@ -543,9 +543,9 @@ export default class ContextManager {
     return editor.getTgSelection(this.plugin.settings.tgSelectionLimiter);
   }
 
-  getSelection(editor: ContentManager) {
+  async getSelection(editor: ContentManager) {
     logger("getSelection", editor);
-    let selectedText = editor.getSelection();
+    let selectedText = await editor.getSelection();
 
     const frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document
     if (
@@ -650,7 +650,7 @@ export default class ContextManager {
   }
 
   async getHighlights(editor: ContentManager) {
-    const content = editor.getValue();
+    const content = await editor.getValue();
     const highlights =
       content.match(/==(.*?)==/gi)?.map((s) => s.replaceAll("==", "")) || [];
     return highlights;
@@ -761,7 +761,7 @@ export default class ContextManager {
       : this.app.workspace.getActiveFile();
 
     const targetFileContent = editor ?
-      editor.getValue()
+      await editor.getValue()
       : await app.vault.cachedRead(targetFile as any)
 
     if (!targetFile) throw new Error("ActiveFile was undefined");

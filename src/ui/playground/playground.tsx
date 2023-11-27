@@ -11,6 +11,7 @@ import { Handlebars } from "#/helpers/handlebars-helpers";
 import clsx from "clsx";
 import AvailableVars from "../components/availableVars";
 import { makeId } from "#/utils";
+import ContentManagerCls from "#/content-manager";
 
 export default function ChatComp(props: {
   plugin: TextGeneratorPlugin;
@@ -85,12 +86,11 @@ export default function ChatComp(props: {
     event.preventDefault();
     setLoading(true);
     try {
-      // @ts-ignore
-      const editor = app.workspace.getLeaf().view?.editor as Editor;
+      const editor = ContentManagerCls.compile(app.workspace.getLeaf().view)
 
 
-      const selection = props.plugin.textGenerator.contextManager.getSelection(editor)
-      const selections = props.plugin.textGenerator.contextManager.getSelections(editor)
+      const selection = await props.plugin.textGenerator.contextManager.getSelection(editor)
+      const selections = await props.plugin.textGenerator.contextManager.getSelections(editor)
 
       console.log({ selections, val: editor.getValue() })
 
