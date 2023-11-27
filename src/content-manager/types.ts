@@ -7,30 +7,30 @@ export type EditorPosition = {
 }
 
 export interface ContentManager {
-    getValue(): string;
-    getSelection(): string;
+    getValue(): Promise<string> | string;
 
-    getSelections(): string[]
+    getSelection(): Promise<string>;
+    getSelections(): Promise<string[]>
 
     getLastLetterBeforeCursor(): string;
 
-    getTgSelection(tgSelectionLimiter?: string): string
+    getTgSelection(tgSelectionLimiter?: string): Promise<string>;
 
     selectTgSelection(tgSelectionLimiter?: string): void;
 
-    getCursor(pos?: "from" | "to"): EditorPosition;
+    getCursor(pos?: "from" | "to"): any;
 
-    setCursor(pos: EditorPosition): void;
+    setCursor(pos: any): void;
 
     // replaceRange(str: string, startingPos: EditorPosition, endPos?: EditorPosition): void;
 
     // replaceSelection(str: string): void;
 
-    insertText(data: string, pos: EditorPosition, mode?: Mode): void;
+    insertText(data: string, pos: any, mode?: Mode): Promise<any>;
 
-    insertStream(pos: EditorPosition): {
+    insertStream(pos: any, mode?: Mode): Promise<{
         insert(data: string): void,
         end(): void,
         replaceAllWith(newData: string): void
-    };
+    }>;
 }

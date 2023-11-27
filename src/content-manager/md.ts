@@ -1,7 +1,7 @@
 import { Editor, EditorPosition } from "obsidian";
 import { ContentManager, Mode } from "./types";
 import { minPos, maxPos } from "./utils"
-import { removeYAML } from "#/utils";
+import { removeYAML } from "../utils";
 export default class MarkdownManager implements ContentManager {
     editor: Editor;
 
@@ -9,7 +9,7 @@ export default class MarkdownManager implements ContentManager {
         this.editor = editor;
     }
 
-    getSelections(): string[] {
+    async getSelections(): Promise<string[]> {
         return this.editor.listSelections().map((r) => this.editor.getRange(minPos(r.anchor, r.head), maxPos(r.anchor, r.head)))
             .filter((text) => text.length > 0)
     }
@@ -26,7 +26,7 @@ export default class MarkdownManager implements ContentManager {
         return this.editor.getCursor(mode == "replace" ? "from" : "to")
     }
 
-    getSelection(): string {
+    async getSelection(): Promise<string> {
         return this.editor.getSelection();
     }
 
@@ -87,7 +87,7 @@ export default class MarkdownManager implements ContentManager {
     }
 
 
-    getTgSelection(tgSelectionLimiter?: string) {
+    async getTgSelection(tgSelectionLimiter?: string) {
         const range = this.getTgSelectionRange(tgSelectionLimiter);
         let selectedText = this.editor.getRange(range.from, range.to);
         return removeYAML(selectedText);
@@ -127,7 +127,7 @@ export default class MarkdownManager implements ContentManager {
         return this.editor.setCursor(pos);
     }
 
-    insertText(text: string, cur: EditorPosition, mode?: Mode) {
+    async insertText(text: string, cur: EditorPosition, mode?: Mode) {
         let cursor = cur || this.getCursor2(mode);
 
         // if (mode !== "stream") {
@@ -163,11 +163,11 @@ export default class MarkdownManager implements ContentManager {
         }
     }
 
-    insertStream(pos: { ch: number; line: number; }, mode?: "insert" | "replace"): {
+    async insertStream(pos: { ch: number; line: number; }, mode?: "insert" | "replace"): Promise<{
         insert(data: string): void,
         end(): void,
         replaceAllWith(newData: string): void
-    } {
+    }> {
         const startingCursor = pos || this.getCursor2(mode);
 
         const cursor: typeof startingCursor = {
@@ -179,13 +179,13 @@ export default class MarkdownManager implements ContentManager {
         let stillPlaying = true;
         let firstTime = true;
 
-        const writerTimer: any = setInterval(() => {
+        const writerTimer: any = setInterval(async () => {
             if (!stillPlaying) return clearInterval(writerTimer);
             const posting = postingContent;
             if (!posting) return;
 
-            if (firstTime) this.insertText(posting, cursor, mode);
-            else this.insertText(posting, cursor, "stream");
+            if (firstTime) await this.insertText(posting, cursor, mode);
+            else await this.insertText(posting, cursor, "stream");
 
             postingContent = postingContent.substring(posting.length);
             firstTime = false;
@@ -212,7 +212,7 @@ export default class MarkdownManager implements ContentManager {
                 );
 
                 if (mode !== "replace")
-                    this.insertText(allText, startingCursor, mode);
+                    await this.insertText(allText, startingCursor, mode);
 
                 console.log("replacing starting cursor")
                 const nc = {
@@ -224,7 +224,7 @@ export default class MarkdownManager implements ContentManager {
 
                 await new Promise((s) => setTimeout(s, 500));
 
-                this.insertText(allText, startingCursor, "insert");
+                await this.insertText(allText, startingCursor, "insert");
 
                 console.log(allText)
 

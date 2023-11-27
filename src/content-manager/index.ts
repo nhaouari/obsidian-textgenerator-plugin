@@ -1,5 +1,7 @@
 import type { View } from "obsidian";
 import MarkdownManager from "./md"
+import ExcalidrawManager from "./ea"
+import CanvasManager from "./canvas"
 import { ContentManager } from "./types";
 export default class ContentManagerCls {
     static compile(view: View): ContentManager {
@@ -10,17 +12,22 @@ export default class ContentManagerCls {
             case "markdown":
                 const editor = view.app.workspace.activeEditor?.editor;
                 if (!editor) throw "couldn't find the editor fsr";
-
                 return new MarkdownManager(editor);
 
             case "excalidraw":
-                // TODO: do it later
-                throw "Not implemented (excalidraw viewType)";
+                // @ts-ignore
+                const ea = view.app.plugins?.plugins["obsidian-excalidraw-plugin"]?.ea;
+                if (!ea) throw "couldn't find the Escalidraw plugin fsr";
+                ea.setView(view);
+                ea.clear();
+                return new ExcalidrawManager(ea);
             case "canvas":
-                // TODO: do it later
-                throw "Not implemented (canvas viewType)";
+                // @ts-ignore
+                if (!view.canvas) throw "couldn't find the canvas plugin fsr";
+                // @ts-ignore
+                return new CanvasManager(view.canvas);
             default:
-                throw `The provided("${type}") content is not supported`;
+                throw `The content ${type} is not supported`;
         }
     }
 }

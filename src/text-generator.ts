@@ -46,9 +46,9 @@ export default class TextGenerator extends RequestHandler {
     this.reqFormatter = new ReqFormatter(app, plugin, this.contextManager);
   }
 
-  getCursor(editor: ContentManager, mode: "insert" | "replace" | string = "insert") {
+  async getCursor(editor: ContentManager, mode: "insert" | "replace" | string = "insert") {
     logger("getCursor");
-    const cursor = editor.getCursor(mode == "replace" ? "from" : "to");
+    const cursor = await editor.getCursor(mode == "replace" ? "from" : "to");
 
     // let selectedText = editor.getSelection();
     // if (selectedText.length === 0) {
@@ -181,10 +181,10 @@ export default class TextGenerator extends RequestHandler {
 
     const mode = this.getMode(context);
 
-    const startingCursor = this.getCursor(editor, mode);
+    const startingCursor = await this.getCursor(editor, mode);
 
     try {
-      const streamHandler = editor.insertStream(startingCursor)
+      const streamHandler = await editor.insertStream(startingCursor, mode)
       const strm = await this.streamGenerate(
         context,
         insertMetadata,
@@ -226,6 +226,7 @@ export default class TextGenerator extends RequestHandler {
             logger("generateStreamInEditor message", { content });
 
             streamHandler.insert(content);
+
             return content;
           },
           (err) => {

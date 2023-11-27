@@ -69,7 +69,6 @@ export default class Commands {
               const self: Commands = this;
               try {
                 const activeView = await self.getActiveView();
-
                 const CM = ContentManagerCls.compile(activeView);
 
                 await self.plugin.textGenerator.generateFromTemplate({

@@ -165,10 +165,9 @@ export default class TextGeneratorPlugin extends Plugin {
 
             const activeView = this.getActiveView();
 
-            const CM = ContentManagerCls.compile({
-              editor: activeView?.editor,
-              filePath: activeView?.file?.path
-            })
+            if (!activeView) throw "active view wasn't detected"
+
+            const CM = ContentManagerCls.compile(activeView)
 
             const context = {
               ...(activeView
@@ -218,10 +217,7 @@ export default class TextGeneratorPlugin extends Plugin {
           // const activeFile = this.app.workspace.getActiveFile();
           const activeView = this.getActiveView();
           if (activeView !== null) {
-            const CM = ContentManagerCls.compile({
-              editor: activeView?.editor,
-              filePath: activeView?.file?.path
-            })
+            const CM = ContentManagerCls.compile(activeView)
             try {
               await this.textGenerator.generateInEditor({}, false, CM);
             } catch (error) {
@@ -568,10 +564,8 @@ export default class TextGeneratorPlugin extends Plugin {
     const button = this.createRunButton("Generate Text", generateSVG);
     button.addEventListener("click", async () => {
       const activeView = this.getActiveView();
-      const CM = ContentManagerCls.compile({
-        editor: activeView?.editor,
-        filePath: activeView?.file?.path
-      })
+      if (!activeView) throw "activeView wasn't detected";
+      const CM = ContentManagerCls.compile(activeView)
       if (activeView)
         await this.textGenerator.generatePrompt(
           markdown,

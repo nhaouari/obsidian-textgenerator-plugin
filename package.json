@@ -15,6 +15,7 @@
 	"author": "",
 	"license": "MIT",
 	"devDependencies": {
+		"@total-typescript/ts-reset": "^0.5.1",
 		"@types/debug": "^4.1.8",
 		"@types/lodash.get": "^4.4.7",
 		"@types/lodash.set": "^4.3.7",
@@ -29,14 +30,14 @@
 		"@typescript-eslint/parser": "^5.62.0",
 		"builtin-modules": "^3.3.0",
 		"daisyui": "^3.9.3",
+		"electron": "^27.0.4",
 		"esbuild": "0.13.12",
 		"esbuild-plugin-wasm": "^1.1.0",
 		"eslint-plugin-tailwindcss": "^3.13.0",
 		"obsidian": "^1.4.11",
 		"prettier": "^3.0.3",
 		"tslib": "2.6.2",
-		"typescript": "5.2.2",
-		"electron": "^27.0.4"
+		"typescript": "5.2.2"
 	},
 	"dependencies": {
 		"@codemirror/language": "^6.8.0",
