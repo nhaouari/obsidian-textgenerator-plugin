@@ -9,6 +9,7 @@ import {
 } from "obsidian";
 import TextGeneratorPlugin from "./main";
 import { ExampleModal } from "./models/model";
+import ContentManagerCls from "./content-manager";
 
 export class ModelSuggest extends EditorSuggest<PromptTemplate> {
   app: App;
@@ -70,13 +71,13 @@ export class ModelSuggest extends EditorSuggest<PromptTemplate> {
 
     if (!activeView) return console.warn("couldn't find activeView");
 
-    const editor: Editor = activeView.editor;
+    const CM = ContentManagerCls.compile(activeView)
 
-    editor.replaceRange("", value.context.start, value.context.end);
+    activeView.editor.replaceRange("", value.context.start, value.context.end);
     await this.plugin.textGenerator.tempalteToModal({
       params: {},
       templatePath: value.path,
-      editor,
+      editor: CM,
       filePath: activeView.file?.path,
     });
 

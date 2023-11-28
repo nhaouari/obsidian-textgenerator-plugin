@@ -633,8 +633,6 @@ export default class Commands {
     const templatesWithCommands = templates.filter((t) => t?.commands);
     logger("Templates with commands ", { templatesWithCommands });
 
-    const ToolsOnlyCallBack = ['tool']
-
     templatesWithCommands.forEach((template) => {
       //
       template.commands?.forEach((command) => {
@@ -643,103 +641,87 @@ export default class Commands {
           id: `${template.path.split("/").slice(-2, -1)[0]}-${command}-${template.id
             }`,
           name: `${template.id || template.name}: ${command.toUpperCase()}`,
-          editorCallback: !ToolsOnlyCallBack.contains(command)
-            ? async (editor, mx) => {
-              const self: Commands = this;
-
-              const activeView = await self.getActiveView();
-
-              const CM = ContentManagerCls.compile(activeView)
-
-              try {
-                switch (command) {
-                  case "generate":
-                    await self.plugin.textGenerator.generateFromTemplate({
-                      params: {},
-                      templatePath: template.path,
-                      insertMetadata: true,
-                      editor: CM,
-                      activeFile: true,
-                    });
-                    break;
-                  case "insert":
-                    await self.plugin.textGenerator.generateFromTemplate({
-                      params: {},
-                      templatePath: template.path,
-                      insertMetadata: true,
-                      editor: CM,
-                      activeFile: true,
-                      insertMode: true,
-                    });
-                    break;
-                  case "generate&create":
-                    await self.plugin.textGenerator.generateFromTemplate({
-                      params: {},
-                      templatePath: template.path,
-                      insertMetadata: true,
-                      editor: CM,
-                      activeFile: false,
-                    });
-                    break;
-                  case "insert&create":
-                    await self.plugin.textGenerator.generateFromTemplate({
-                      params: {},
-                      templatePath: template.path,
-                      insertMetadata: true,
-                      editor: CM,
-                      activeFile: false,
-                      insertMode: true,
-                    });
-                    break;
-                  case "modal":
-                    await self.plugin.textGenerator.tempalteToModal({
-                      params: {},
-                      templatePath: template.path,
-                      editor: CM,
-                      filePath: mx.file?.path,
-                    });
-                    break;
-                  case "clipboard":
-                    await self.plugin.textGenerator.generateToClipboard(
-                      {},
-                      template.path,
-                      true,
-                      CM
-                    );
-                    break;
-                  case "estimate":
-                    {
-                      const context =
-                        await this.plugin.textGenerator.contextManager.getContext(
-                          {
-                            editor: CM,
-                            filePath: mx.file?.path,
-                            insertMetadata: true,
-                            templatePath: template.path,
-                            addtionalOpts: {
-                              estimatingMode: true,
-                            },
-                          }
-                        );
-                      this.plugin.tokensScope.showTokens(
-                        await this.plugin.tokensScope.estimate(context)
-                      );
-                    }
-                    break;
-                  default:
-                    console.error("command name not found", command);
-                    break;
-                }
-              } catch (error) {
-                this.plugin.handelError(error);
-              }
-            }
-            : undefined,
-
           callback: async () => {
             const self: Commands = this;
+
+            const activeView = await self.getActiveView();
+
+            const CM = ContentManagerCls.compile(activeView)
             try {
               switch (command) {
+                case "generate":
+                  await self.plugin.textGenerator.generateFromTemplate({
+                    params: {},
+                    templatePath: template.path,
+                    insertMetadata: true,
+                    editor: CM,
+                    activeFile: true,
+                  });
+                  break;
+                case "insert":
+                  await self.plugin.textGenerator.generateFromTemplate({
+                    params: {},
+                    templatePath: template.path,
+                    insertMetadata: true,
+                    editor: CM,
+                    activeFile: true,
+                    insertMode: true,
+                  });
+                  break;
+                case "generate&create":
+                  await self.plugin.textGenerator.generateFromTemplate({
+                    params: {},
+                    templatePath: template.path,
+                    insertMetadata: true,
+                    editor: CM,
+                    activeFile: false,
+                  });
+                  break;
+                case "insert&create":
+                  await self.plugin.textGenerator.generateFromTemplate({
+                    params: {},
+                    templatePath: template.path,
+                    insertMetadata: true,
+                    editor: CM,
+                    activeFile: false,
+                    insertMode: true,
+                  });
+                  break;
+                case "modal":
+                  await self.plugin.textGenerator.tempalteToModal({
+                    params: {},
+                    templatePath: template.path,
+                    editor: CM,
+                    filePath: self.plugin.app.workspace.activeEditor?.file?.path,
+                  });
+                  break;
+                case "clipboard":
+                  await self.plugin.textGenerator.generateToClipboard(
+                    {},
+                    template.path,
+                    true,
+                    CM
+                  );
+                  break;
+                case "estimate":
+                  {
+                    const context =
+                      await this.plugin.textGenerator.contextManager.getContext(
+                        {
+                          editor: CM,
+                          filePath: self.plugin.app.workspace.activeEditor?.file?.path,
+                          insertMetadata: true,
+                          templatePath: template.path,
+                          addtionalOpts: {
+                            estimatingMode: true,
+                          },
+                        }
+                      );
+                    this.plugin.tokensScope.showTokens(
+                      await this.plugin.tokensScope.estimate(context)
+                    );
+                  }
+                  break;
                 case "tool":
                   self.plugin.activateView(VIEW_TOOL_ID, {
                     templatePath: template.path,
