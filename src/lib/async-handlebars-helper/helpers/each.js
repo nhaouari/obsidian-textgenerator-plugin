@@ -5,17 +5,17 @@ const {
 // const { resolve } = require('eslint-plugin-promise/rules/lib/promise-statics')
 
 module.exports = (handlebars) => {
-  handlebars.registerHelper('each', async function(context, options) {
+  handlebars.registerHelper('each', async function (context, options) {
     if (!options) {
       throw new Error('Must pass iterator to #each')
     }
 
     let { fn } = options,
-        { inverse } = options,
-        i = 0,
-        ret = [],
-        data,
-        contextPath
+      { inverse } = options,
+      i = 0,
+      ret = [],
+      data,
+      contextPath
 
     if (options.data && options.ids) {
       contextPath = `${appendContextPath(options.data.contextPath, options.ids[0])}.`
@@ -62,7 +62,7 @@ module.exports = (handlebars) => {
         }
       } else if (global.Symbol && context[global.Symbol.iterator]) {
         const newContext = [],
-              iterator = context[global.Symbol.iterator]()
+          iterator = context[global.Symbol.iterator]()
         for (let it = iterator.next(); !it.done; it = iterator.next()) {
           newContext.push(it.value)
         }
@@ -70,22 +70,22 @@ module.exports = (handlebars) => {
         for (let j = context.length; i < j; i++) {
           execIteration(i, i, i === context.length - 1)
         }
-      } 
-	//   else if (context instanceof Readable) {
-    //     const newContext = []
-    //     await new Promise((resolve, reject) => {
-    //       context.on('data', (item) => {
-    //         newContext.push(item)
-    //       }).on('end', () => {
-    //         context = newContext
-    //         for (let j = context.length; i < j; i++) {
-    //           execIteration(i, i, i === context.length - 1)
-    //         }
-    //         resolve()
-    //       }).once('error', e => reject(e))
-    //     })
-    //   } 
-	  else {
+      }
+      //   else if (context instanceof Readable) {
+      //     const newContext = []
+      //     await new Promise((resolve, reject) => {
+      //       context.on('data', (item) => {
+      //         newContext.push(item)
+      //       }).on('end', () => {
+      //         context = newContext
+      //         for (let j = context.length; i < j; i++) {
+      //           execIteration(i, i, i === context.length - 1)
+      //         }
+      //         resolve()
+      //       }).once('error', e => reject(e))
+      //     })
+      //   } 
+      else {
         let priorKey
 
         for (const key of Object.keys(context)) {
