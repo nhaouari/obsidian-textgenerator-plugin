@@ -1,3 +1,4 @@
+import { TFile } from "obsidian";
 
 export type Mode = "insert" | "stream" | "replace"
 
@@ -21,6 +22,8 @@ export interface ContentManager {
     getCursor(pos?: "from" | "to"): any;
 
     setCursor(pos: any): void;
+
+    getActiveFile(): Promise<TFile> | TFile | undefined;
 
     // replaceRange(str: string, startingPos: EditorPosition, endPos?: EditorPosition): void;
 

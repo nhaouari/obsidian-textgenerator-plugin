@@ -74,7 +74,7 @@ export default class Commands {
                 await self.plugin.textGenerator.generateFromTemplate({
                   params: {},
                   templatePath: result.path,
-                  filePath: self.plugin.app.workspace.activeEditor?.file?.path,
+                  filePath: (await CM.getActiveFile())?.path,
                   insertMetadata: true,
                   editor: CM,
                   activeFile: true,
@@ -146,7 +146,7 @@ export default class Commands {
                 await self.plugin.textGenerator.generateFromTemplate({
                   params: {},
                   templatePath: result.path,
-                  filePath: self.plugin.app.workspace.activeEditor?.file?.path,
+                  filePath: (await CM.getActiveFile())?.path,
                   insertMetadata: true,
                   editor: CM,
                   activeFile: false,
@@ -221,7 +221,7 @@ export default class Commands {
                 await self.plugin.textGenerator.generateFromTemplate({
                   params: {},
                   templatePath: result.path,
-                  filePath: self.plugin.app.workspace.activeEditor?.file?.path,
+                  filePath: (await CM.getActiveFile())?.path,
                   insertMetadata: true,
                   editor: CM,
                   activeFile: true,
@@ -262,7 +262,7 @@ export default class Commands {
                 await self.plugin.textGenerator.generateFromTemplate({
                   params: {},
                   templatePath: result.path,
-                  filePath: self.plugin.app.workspace.activeEditor?.file?.path,
+                  filePath: (await CM.getActiveFile())?.path,
                   insertMetadata: true,
                   editor: CM,
                   activeFile: false,
@@ -302,7 +302,7 @@ export default class Commands {
                   params: {},
                   templatePath: result.path,
                   editor: CM,
-                  filePath: self.plugin.app.workspace.activeEditor?.file?.path,
+                  filePath: (await CM.getActiveFile())?.path,
                 });
 
               } catch (error) {
@@ -450,12 +450,37 @@ export default class Commands {
       name: "Generate a Title",
       icon: "heading",
       //hotkeys: [{ modifiers: ["Alt"], key: "c"}],
-      async editorCallback(editor, mx) {
+      async callback() {
+        const self: Commands = this;
+
         try {
           const maxLength = 255;
-          const prompt = `Generate a title for the current document (do not use * " \\ / < > : | ? .):
-				${editor.getValue().trim().slice(0, maxLength)}
+
+          const CM = ContentManagerCls.compile(await self.getActiveView());
+          const file = await CM.getActiveFile()
+
+          const selection255 = (await CM.getValue()).trim().slice(0, maxLength)
+
+          let prompt = `Generate a title for the current document (do not use * " \\ / < > : | ? .):
+				${selection255}
 				`;
+
+          try {
+            const templateOverridePath = "default/autoSuggestContinue"
+            const templateOverride = await self.plugin.textGenerator.getTemplate(templateOverridePath);
+
+            const contexts = await self.plugin.textGenerator.contextManager.getTemplateContext({
+              editor: CM,
+              filePath: file?.path,
+              templatePath: templateOverridePath,
+            })
+
+            prompt = await templateOverride?.inputTemplate?.({
+              selection255,
+              ...contexts
+            }) || prompt;
+          } catch { }
+
           const generatedTitle = await this.plugin.textGenerator.gen(
             prompt,
             {}
@@ -465,13 +490,14 @@ export default class Commands {
             .replace(/[*\\"/<>:|?\.]/g, "")
             .replace(/^\n*/g, "");
 
-          if (!mx.file) return logger(`No active file was detected`);
-          const renamedFilePath = mx.file.path.replace(
-            mx.file.name,
-            `${sanitizedTitle}.md`
+          if (!file) return logger(`No active file was detected`);
+          file.parent
+          const renamedFilePath = file.path.replace(
+            file.name,
+            `${sanitizedTitle}.${file.extension}`
           );
           await this.plugin.app.fileManager.renameFile(
-            mx.file,
+            file,
             renamedFilePath
           );
           logger(`Generated a title: ${sanitizedTitle}`);
@@ -515,7 +541,7 @@ export default class Commands {
           const context =
             await self.plugin.textGenerator.contextManager.getContext({
               editor: CM,
-              filePath: self.plugin.app.workspace.activeEditor?.file?.path,
+              filePath: (await CM.getActiveFile())?.path,
               insertMetadata: true,
               addtionalOpts: {
                 estimatingMode: true,
@@ -550,7 +576,7 @@ export default class Commands {
                 const context =
                   await self.plugin.textGenerator.contextManager.getContext({
                     editor: CM,
-                    filePath: self.plugin.app.workspace.activeEditor?.file?.path,
+                    filePath: (await CM.getActiveFile())?.path,
                     insertMetadata: true,
                     templatePath: result.path,
                     addtionalOpts: {
@@ -636,7 +662,7 @@ export default class Commands {
     templatesWithCommands.forEach((template) => {
       //
       template.commands?.forEach((command) => {
-        logger("Tempate commands ", { template, command });
+        logger("Template commands ", { template, command });
         const cmd: Command = {
           id: `${template.path.split("/").slice(-2, -1)[0]}-${command}-${template.id
             }`,
@@ -647,6 +673,8 @@ export default class Commands {
             const activeView = await self.getActiveView();
 
             const CM = ContentManagerCls.compile(activeView)
+
+            const filePath = (await CM.getActiveFile())?.path
             try {
               switch (command) {
                 case "generate":
@@ -692,7 +720,7 @@ export default class Commands {
                     params: {},
                     templatePath: template.path,
                     editor: CM,
-                    filePath: self.plugin.app.workspace.activeEditor?.file?.path,
+                    filePath,
                   });
                   break;
                 case "clipboard":
@@ -709,7 +737,7 @@ export default class Commands {
                       await this.plugin.textGenerator.contextManager.getContext(
                         {
                           editor: CM,
-                          filePath: self.plugin.app.workspace.activeEditor?.file?.path,
+                          filePath,
                           insertMetadata: true,
                           templatePath: template.path,
                           addtionalOpts: {

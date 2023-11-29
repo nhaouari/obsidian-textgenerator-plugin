@@ -1,11 +1,14 @@
+import { TFile, View } from "obsidian";
 import { ContentManager, Mode } from "./types";
 
 type Item = any;
 export default class ExcalidrawManager implements ContentManager {
     ea: any;
+    view: View;
 
-    constructor(ea: any) {
+    constructor(ea: any, view: View) {
         this.ea = ea;
+        this.view = view;
     }
 
     protected async getTextSelectedItems(): Promise<Item[]> {
@@ -172,6 +175,10 @@ export default class ExcalidrawManager implements ContentManager {
                 // this.insertText(allText, startingCursor, "replace");
             }
         }
+    }
+
+    getActiveFile(): TFile {
+        return this.ea.targetView.file;
     }
 }
 

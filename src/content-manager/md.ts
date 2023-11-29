@@ -1,12 +1,14 @@
-import { Editor, EditorPosition } from "obsidian";
+import { Editor, EditorPosition, TFile, View } from "obsidian";
 import { ContentManager, Mode } from "./types";
 import { minPos, maxPos } from "./utils"
 import { removeYAML } from "../utils";
 export default class MarkdownManager implements ContentManager {
     editor: Editor;
+    view: View;
 
-    constructor(editor: Editor) {
+    constructor(editor: Editor, view: View) {
         this.editor = editor;
+        this.view = view;
     }
 
     async getSelections(): Promise<string[]> {
@@ -233,6 +235,10 @@ export default class MarkdownManager implements ContentManager {
                 this.setCursor(nc);
             }
         }
+    }
+
+    getActiveFile(): TFile {
+        return this.view.app.workspace.activeEditor?.file as TFile;
     }
 }
 

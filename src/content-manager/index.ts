@@ -12,7 +12,7 @@ export default class ContentManagerCls {
             case "markdown":
                 const editor = view.app.workspace.activeEditor?.editor;
                 if (!editor) throw "couldn't find the editor fsr";
-                return new MarkdownManager(editor);
+                return new MarkdownManager(editor, view);
 
             case "excalidraw":
                 // @ts-ignore
@@ -20,12 +20,12 @@ export default class ContentManagerCls {
                 if (!ea) throw "couldn't find the Escalidraw plugin fsr";
                 ea.setView(view);
                 ea.clear();
-                return new ExcalidrawManager(ea);
+                return new ExcalidrawManager(ea, view);
             case "canvas":
                 // @ts-ignore
                 if (!view.canvas) throw "couldn't find the canvas plugin fsr";
                 // @ts-ignore
-                return new CanvasManager(view.canvas);
+                return new CanvasManager(view.canvas, view);
             default:
                 throw `The content ${type} is not supported`;
         }

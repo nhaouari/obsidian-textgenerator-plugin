@@ -6,9 +6,11 @@ import { ContentManager, Mode } from "./types";
 type Item = CanvasNode & { rawText?: string } | undefined;
 export default class CanvasManager implements ContentManager {
     canvas: Canvas;
+    view: View;
 
-    constructor(canvas: Canvas) {
+    constructor(canvas: Canvas, view: View) {
         this.canvas = canvas;
+        this.view = view;
     }
 
     protected async updateNode(id: string, nodeData?: Partial<AllCanvasNodeData>) {
@@ -91,6 +93,7 @@ export default class CanvasManager implements ContentManager {
     }
 
     async getSelections(): Promise<string[]> {
+        // @ts-ignore
         return (await this.getTextSelectedItems()).map(e => e?.rawText).filter(Boolean) || [];
     }
 
@@ -241,9 +244,15 @@ export default class CanvasManager implements ContentManager {
             }
         }
     }
+
+    getActiveFile(): TFile {
+        // @ts-ignore
+        return this.view.file;
+    }
 }
 
 import type { Canvas, CanvasNode, CreateNodeOptions, AllCanvasNodeData, CanvasEdgeIntermediate } from "./canvas.d";
+import { TFile, View } from "obsidian";
 
 const MIN_WIDTH = 200;
 const PX_PER_CHAR = 8;
