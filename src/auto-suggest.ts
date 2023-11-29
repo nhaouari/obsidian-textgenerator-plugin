@@ -263,7 +263,7 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 ${context.query}`;
 
       try {
-        const templateOverride = await this.plugin.textGenerator.getTemplate("default/autoSuggestContinue");
+        const templateOverride = await this.plugin.textGenerator.getTemplate("local/autoSuggestContinue");
         prompt = await templateOverride?.inputTemplate?.({
           tg_selection: context.query
         }) || prompt;

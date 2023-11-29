@@ -466,7 +466,7 @@ export default class Commands {
 				`;
 
           try {
-            const templateOverridePath = "default/autoSuggestContinue"
+            const templateOverridePath = "local/autoSuggestContinue"
             const templateOverride = await self.plugin.textGenerator.getTemplate(templateOverridePath);
 
             const contexts = await self.plugin.textGenerator.contextManager.getTemplateContext({
