@@ -799,13 +799,9 @@ ${removeYAML(content)}
       if (!path.startsWith(this.plugin.settings.promptsPath) || path.includes("/trash/")) continue;
       // @ts-ignore
       nowStats[path] = app.vault.adapter.files[path].ctime;
-      if (nowStats[path] != this.lastTemplatePathStats[path]) {
-        console.log("failed at ", path, nowStats[path], this.lastTemplatePathStats[path])
+      if (nowStats[path] != this.lastTemplatePathStats[path])
         return true;
-      }
     }
-
-    console.log("using cache")
 
     return false;
   }
@@ -815,7 +811,16 @@ ${removeYAML(content)}
       await this.updateTemplatesCache();
     }
 
-    return this.templatePaths[id];
+    if (this.templatePaths[id]) return this.templatePaths[id];
+
+    const promptsPath = this.plugin.settings.promptsPath
+
+    const guessPath = `${promptsPath}${promptsPath.endsWith("/") ? "" : "/"}${id}.md`;
+
+    // test if the guess is actually a file
+    if (await this.plugin.app.vault.adapter.exists(guessPath)) return guessPath;
+
+    return undefined;
   }
 
   async getTemplate(id: string) {
@@ -853,7 +858,6 @@ ${removeYAML(content)}
       this.lastTemplatePathStats[template.path] = template.ctime;
     });
 
-    console.log("calling for updating templateCache", this.lastTemplatePathStats, templates.length)
     return templates;
   }
 }
