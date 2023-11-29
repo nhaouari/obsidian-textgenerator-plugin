@@ -214,7 +214,6 @@ export default class MarkdownManager implements ContentManager {
                 if (mode !== "replace")
                     await this.insertText(allText, startingCursor, mode);
 
-                console.log("replacing starting cursor")
                 const nc = {
                     ch: startingCursor.ch + allText.length,
                     line: startingCursor.line,

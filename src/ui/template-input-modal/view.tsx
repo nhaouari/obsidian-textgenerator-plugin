@@ -38,7 +38,6 @@ export default function TemplateInputModalView(props: {
   const firstTextareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    console.log({});
     firstTextareaRef.current?.focus();
   }, [firstTextareaRef]);
 

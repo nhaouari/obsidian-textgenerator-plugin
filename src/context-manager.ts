@@ -87,8 +87,6 @@ export default class ContextManager {
         props.addtionalOpts
       );
 
-      console.log("get context", { templatePath, props, options });
-
       if (!templatePath.length)
         return {
           options,
@@ -391,8 +389,6 @@ export default class ContextManager {
       if (vars["content"])
         context["content"] = await editor.getValue();
 
-      console.log("getting content", context["content"]);
-
       if (vars["highlights"])
         context["highlights"] = editor
           ? await this.getHighlights(editor)
@@ -418,8 +414,6 @@ export default class ContextManager {
 
     if (vars["keys"])
       context["keys"] = this.plugin.getApiKeys();
-
-    console.log("testing", { vars, context, activeDocCache })
 
 
     if (activeDocCache)

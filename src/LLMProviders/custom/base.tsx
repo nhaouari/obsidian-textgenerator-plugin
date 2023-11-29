@@ -114,23 +114,6 @@ export default class CustomProvider
       signal: params.signal,
     };
 
-    console.log({ params, requestOptions }, {
-      url: params.url,
-      body:
-        typeof requestOptions.body == "string"
-          ? requestOptions.body
-          : requestOptions.body
-            ? JSON.stringify(requestOptions.body)
-            : undefined,
-      headers:
-        typeof requestOptions.headers == "object"
-          ? (requestOptions.headers as any)
-          : undefined,
-
-      method: requestOptions.method,
-      throw: true,
-    });
-
     const k = (
       params.CORSBypass
         ? await requestUrl({
@@ -256,8 +239,6 @@ export default class CustomProvider
           n: 1,
           messages,
         };
-
-        console.log("hbd", { handlebarData })
 
         const res = await this.request({
           method: handlebarData.method,

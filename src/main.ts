@@ -695,7 +695,7 @@ export default class TextGeneratorPlugin extends Plugin {
         ? "**FAILED TO DECRYPT KEYS**"
         : decrypted;
     } catch (err: any) {
-      console.log(err);
+      // console.log(err);
       const [inCaseDecryptionFails, key] =
         keyBuffer?.split?.(DecryptKeyPrefix) || [];
       return inCaseDecryptionFails?.length || containsInvalidCharacter(key)

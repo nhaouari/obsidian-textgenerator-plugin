@@ -176,8 +176,6 @@ export default class RequestHandler {
         additionnalParams,
       });
 
-      console.log("generating with stream");
-
       if (this.plugin.processing && !additionnalParams.signal) {
         logger("streamGenerate error", "There is another generation process");
         throw "There is another generation process";
@@ -442,17 +440,10 @@ export default class RequestHandler {
           })(conf) : result
 
 
-      console.log("res1",
-        result,
-        await template?.outputTemplate?.({
-          ...conf,
-          output: result
-        }))
       result = await template?.outputTemplate?.({
         ...conf,
         output: result
       }) || result
-      console.log("res2", result)
 
       logger("generate end", {
         result,
