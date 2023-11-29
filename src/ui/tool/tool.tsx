@@ -152,7 +152,7 @@ export default function ChatComp(props: {
       const variables = props.plugin.textGenerator.contextManager.getHBVariablesOfTemplate(
         preRunnerContent, inputContent, outputContent)
 
-      const tempateContext =
+      const templateContext =
         await props.plugin.textGenerator.contextManager.getTemplateContext({
           editor: config.editor,
           templatePath: config.templatePath,
@@ -161,7 +161,7 @@ export default function ChatComp(props: {
 
       setVals((vs) => {
         for (const v of variables) {
-          if (typeof vs[v] == "undefined") vs[v] = tempateContext[v] || "";
+          if (typeof vs[v] == "undefined") vs[v] = templateContext[v] || "";
         }
         return { ...vs };
       });

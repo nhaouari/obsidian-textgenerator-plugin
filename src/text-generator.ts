@@ -619,21 +619,15 @@ ${removeYAML(content)}
       outputContent,
     );
 
-    console.log({
-      taking: "variables",
-      outputContent,
-      variables
-    })
-
     const metadata = this.getMetadata(props.templatePath || "");
-    const tempateContext = await this.contextManager.getTemplateContext(props);
+    const templateContext = await this.contextManager.getTemplateContext(props);
 
     new TemplateInputModalUI(
       this.plugin.app,
       this.plugin,
       variables,
       metadata,
-      tempateContext,
+      templateContext,
       async (results: any) => {
         try {
           await this.generateFromTemplate({
@@ -659,16 +653,16 @@ ${removeYAML(content)}
     promptsPath: string = this.plugin.settings.promptsPath
   ) {
     const files = _files || this.plugin.app.vault.getFiles();
-    const paths: string[] = files
+    const paths = files
       .filter(
-        (f) => f.path.includes(promptsPath) && !f.path.includes("/trash/")
-      )
-      .map((f) => f.path);
+        (f) => f.path.startsWith(promptsPath) && !f.path.includes("/trash/")
+      );
     return paths.map((s) => {
       return {
-        title: s.substring(promptsPath.length + 1),
-        path: s,
-        ...this.getMetadata(s),
+        title: s.path.substring(promptsPath.length + 1),
+        ctime: s.stat.ctime,
+        path: s.path,
+        ...this.getMetadata(s.path),
       };
     });
   }
@@ -754,7 +748,7 @@ ${removeYAML(content)}
       additionalProps?: any;
     }
   ): Promise<string> {
-    const templatePath = await await this.getTempatePath(id)
+    const templatePath = await await this.getTemplatePath(id)
     // this.plugin.endProcessing(true);
     this.plugin.startProcessing();
 
@@ -771,8 +765,6 @@ ${removeYAML(content)}
     if (errorContext || !context) {
       throw errorContext;
     }
-
-    console.log("going with context", { context });
 
     const [errorGeneration, text] = await safeAwait(
       this.generate(
@@ -797,15 +789,29 @@ ${removeYAML(content)}
 
   /** record of template paths, from id */
   templatePaths: Record<string, string>;
-  lastChangedTimeTemplatePaths: number = 0
+  lastTemplatePathStats: Record<string, number> = {};
 
-  async getTempatePath(id: string) {
-    const ctime = (await this.plugin.app.vault.adapter.stat(this.plugin.settings.promptsPath))?.ctime
-    if (ctime != this.lastChangedTimeTemplatePaths) {
-      console.log("felt the change", {
-        ctime
-      })
-      this.lastChangedTimeTemplatePaths = ctime || 0;
+
+  checkTemplatePathsHasChanged() {
+    const nowStats: Record<string, number> = {};
+    // @ts-ignore
+    for (const path in app.vault.adapter.files) {
+      if (!path.startsWith(this.plugin.settings.promptsPath) || path.includes("/trash/")) continue;
+      // @ts-ignore
+      nowStats[path] = app.vault.adapter.files[path].ctime;
+      if (nowStats[path] != this.lastTemplatePathStats[path]) {
+        console.log("failed at ", path, nowStats[path], this.lastTemplatePathStats[path])
+        return true;
+      }
+    }
+
+    console.log("using cache")
+
+    return false;
+  }
+
+  async getTemplatePath(id: string) {
+    if (await this.checkTemplatePathsHasChanged()) {
       await this.updateTemplatesCache();
     }
 
@@ -813,7 +819,7 @@ ${removeYAML(content)}
   }
 
   async getTemplate(id: string) {
-    const templatePath = await this.getTempatePath(id)
+    const templatePath = await this.getTemplatePath(id)
     if (!templatePath)
       throw new Error(`template with id:${id} wasn't found.`);
 
@@ -831,6 +837,7 @@ ${removeYAML(content)}
 
   async updateTemplatesCache() {
     const files = await this.plugin.getFilesOnLoad();
+
     const templates = this.plugin.textGenerator.getTemplates(
       // get files, it will be empty onLoad, that's why we are using this function
       files
@@ -843,7 +850,10 @@ ${removeYAML(content)}
         this.templatePaths[ss[ss.length - 2] + "/" + template.id] =
           template.path;
       }
+      this.lastTemplatePathStats[template.path] = template.ctime;
     });
+
+    console.log("calling for updating templateCache", this.lastTemplatePathStats, templates.length)
     return templates;
   }
 }

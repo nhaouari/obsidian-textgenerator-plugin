@@ -322,7 +322,6 @@ export default function Helpersfn(self: ContextManager) {
 
       if (fnExists && !vars[vars.length - 1]) vars.pop();
 
-      console.log(...vars);
       return "";
     },
 
@@ -345,13 +344,15 @@ export default function Helpersfn(self: ContextManager) {
 
       const otherVariables = vars;
 
-      if (!self.plugin.textGenerator.templatePaths[id])
+      const templatePath = await self.plugin.textGenerator.getTemplatePath(id)
+
+      if (!templatePath)
         throw new Error(
           `template with packageId/promptId ${id} was not found.`
         );
 
       const TemplateMetadata = self.getFrontmatter(
-        self.getMetaData(self.plugin.textGenerator.templatePaths[id])
+        self.getMetaData(templatePath)
       );
 
       let varname = id;
@@ -463,9 +464,10 @@ export default function Helpersfn(self: ContextManager) {
         : `extractions/${firstVar}`;
 
       const otherVariables = vars;
+      const templatePath = await self.plugin.textGenerator.getTemplatePath(id)
 
       const TemplateMetadata = self.getFrontmatter(
-        self.getMetaData(self.plugin.textGenerator.templatePaths[id])
+        self.getMetaData(templatePath)
       );
 
       if (!(firstVar in ExtractorSlug))

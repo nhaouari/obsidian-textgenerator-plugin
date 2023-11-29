@@ -259,8 +259,16 @@ export class AutoSuggest extends EditorSuggest<Completion> {
   ): Promise<Completion[] | []> {
     logger("getGPTSuggestions", context);
     try {
-      const prompt = `continue the follwing text:
+      let prompt = `continue the follwing text:
 ${context.query}`;
+
+      try {
+        const templateOverride = await this.plugin.textGenerator.getTemplate("default/autoSuggestContinue");
+        prompt = await templateOverride?.inputTemplate?.({
+          tg_selection: context.query
+        }) || prompt;
+      } catch { }
+
 
       this.plugin.startProcessing(false);
 
