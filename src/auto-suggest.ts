@@ -12,6 +12,8 @@ import {
 } from "obsidian";
 
 import debug from "debug";
+import { unpromisifyAsyncFunction } from "./utils";
+import ContentManagerCls from "./content-manager";
 const logger = debug("textgenerator:AutoSuggest");
 
 function debounce<T extends unknown[], R>(
@@ -111,6 +113,7 @@ export class AutoSuggest extends EditorSuggest<Completion> {
             )
               return [];
 
+
             const suggestions = await this.getGPTSuggestions(context);
             return suggestions?.length
               ? suggestions
@@ -137,6 +140,7 @@ export class AutoSuggest extends EditorSuggest<Completion> {
     logger("onTrigger", cursor, editor, file);
     if (
       !this.plugin.settings?.autoSuggestOptions?.isEnabled ||
+      !this.plugin.settings.autoSuggestOptions.triggerPhrase ||
       // @ts-ignore
       (this.app.workspace.activeEditor?.editor?.cm?.state?.vim?.mode &&
         // @ts-ignore
@@ -152,15 +156,17 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 
     const line = editor.getLine(cursor.line).substring(0, cursor.ch);
 
-    if (!line.endsWith(triggerPhrase)) {
+    if (!line.endsWith(triggerPhrase) || line == triggerPhrase) {
       this.process = false;
       return null;
     }
 
     this.process = true;
 
-    const selection =
-      this.plugin.textGenerator.contextManager.getTGSelection(editor);
+    // @ts-ignore
+    const CM = ContentManagerCls.compile(this.plugin.app.workspace.activeLeaf?.view)
+
+    const selection = this.plugin.textGenerator.contextManager.getTGSelection(CM) as unknown as string
     const lastOccurrenceIndex = selection.lastIndexOf(triggerPhrase);
     const currentPart =
       selection.substring(0, lastOccurrenceIndex) +
@@ -176,23 +182,20 @@ export class AutoSuggest extends EditorSuggest<Completion> {
       end: cursor,
       query: currentPart,
     };
+
     logger("onTrigger", result);
     return result;
   }
 
-  public getSuggestions(context: EditorSuggestContext): Promise<Completion[]> {
+  public async getSuggestions(context: EditorSuggestContext): Promise<Completion[]> {
     logger("getSuggestions", context);
+
     this.updateSettings();
-    return new Promise((resolve, reject) => {
-      this.getSuggestionsDebounced(context)
-        .then((suggestions) => {
-          logger("getSuggestions", suggestions);
-          resolve(suggestions);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
+
+    const suggestions = await this.getSuggestionsDebounced(context);
+
+    logger("getSuggestions", suggestions);
+    return suggestions;
   }
 
   public renderSuggestion(value: Completion, el: HTMLElement): void {
@@ -274,20 +277,6 @@ ${context.query}`;
 
       this.plugin.endProcessing(false);
 
-      // let suggestions: string[] = [];
-      // const chatModels = [
-      // 	"gpt-3.5-turbo",
-      // 	"gpt-3.5-turbo-0301",
-      // 	"gpt-4",
-      // 	"gpt-4-0314",
-      // 	"gpt-4-32k",
-      // 	"gpt-4-32k-0314",
-      // ];
-      // if (chatModels.includes(this.plugin.settings.model)) {
-      // 	suggestions = re.map((r) => r.message.content);
-      // } else {
-      // 	suggestions = re.map((r) => r.text);
-      // }
       const suggestions = [...new Set(re)];
       return suggestions.map((r) => {
         let label = r.trim();

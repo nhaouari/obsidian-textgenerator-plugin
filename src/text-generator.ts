@@ -489,7 +489,7 @@ export default class TextGenerator extends RequestHandler {
   async createTemplateFromEditor(editor: ContentManager) {
     logger("createTemplateFromEditor");
     const title = this.plugin.app.workspace.activeLeaf?.getDisplayText();
-    const content = editor.getValue();
+    const content = await editor.getValue();
     await this.createTemplate(content, title);
     logger("createTemplateFromEditor end");
   }
@@ -754,6 +754,7 @@ ${removeYAML(content)}
       additionalProps?: any;
     }
   ): Promise<string> {
+    const templatePath = await await this.getTempatePath(id)
     // this.plugin.endProcessing(true);
     this.plugin.startProcessing();
 
@@ -762,7 +763,7 @@ ${removeYAML(content)}
         editor: options.editor,
         filePath: options.filePath,
         insertMetadata: options.insertMetadata,
-        templatePath: this.templatePaths[id],
+        templatePath,
         addtionalOpts: options.additionalProps,
       })
     );
@@ -778,7 +779,7 @@ ${removeYAML(content)}
         context,
         options.insertMetadata,
         options.additionalProps,
-        this.templatePaths[id],
+        templatePath,
         {
           insertMode: false,
           showSpinner: true,
@@ -796,17 +797,32 @@ ${removeYAML(content)}
 
   /** record of template paths, from id */
   templatePaths: Record<string, string>;
+  lastChangedTimeTemplatePaths: number = 0
+
+  async getTempatePath(id: string) {
+    const ctime = (await this.plugin.app.vault.adapter.stat(this.plugin.settings.promptsPath))?.ctime
+    if (ctime != this.lastChangedTimeTemplatePaths) {
+      console.log("felt the change", {
+        ctime
+      })
+      this.lastChangedTimeTemplatePaths = ctime || 0;
+      await this.updateTemplatesCache();
+    }
+
+    return this.templatePaths[id];
+  }
 
   async getTemplate(id: string) {
-    if (!this.plugin.textGenerator.templatePaths[id])
+    const templatePath = await this.getTempatePath(id)
+    if (!templatePath)
       throw new Error(`template with id:${id} wasn't found.`);
 
     return this.contextManager.templateFromPath(
-      this.plugin.textGenerator.templatePaths[id],
+      templatePath,
       {
         ...this.contextManager.getFrontmatter(
           this.contextManager.getMetaData(
-            this.plugin.textGenerator.templatePaths[id]
+            templatePath
           )
         ),
       }

@@ -86,8 +86,8 @@ export default class MarkdownManager implements ContentManager {
         return fromTo;
     }
 
-
-    async getTgSelection(tgSelectionLimiter?: string) {
+    // DO NOT TURN THIS INTO AN ASYNC FUNCTION, it will break auto suggest
+    getTgSelection(tgSelectionLimiter?: string) {
         const range = this.getTgSelectionRange(tgSelectionLimiter);
         let selectedText = this.editor.getRange(range.from, range.to);
         return removeYAML(selectedText);

@@ -14,7 +14,7 @@ export interface ContentManager {
 
     getLastLetterBeforeCursor(): string;
 
-    getTgSelection(tgSelectionLimiter?: string): Promise<string>;
+    getTgSelection(tgSelectionLimiter?: string): Promise<string> | string;
 
     selectTgSelection(tgSelectionLimiter?: string): void;
 

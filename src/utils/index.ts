@@ -352,3 +352,32 @@ export function nFormatter(n?: number, digits = 1) {
   });
   return item ? (num / item.value).toFixed(digits).replace(rx, "$1") + item.symbol : "0";
 }
+
+
+
+export function unpromisifyAsyncFunction<T>(
+  asyncFunction: Promise<T>
+): T {
+  let isAsyncComplete = false;
+  let result: T;
+
+  // Call the provided asynchronous function
+  asyncFunction.then(asyncResult => {
+    result = asyncResult;
+    isAsyncComplete = true;
+  });
+
+  // Use a while loop to wait for the asynchronous operation to complete
+  while (!isAsyncComplete) {
+    syncWait(10)
+  }
+
+  // Return the result synchronously
+  // @ts-ignore
+  return result;
+}
+
+const syncWait = (ms: number) => {
+  const end = Date.now() + ms
+  while (Date.now() < end) continue
+}
