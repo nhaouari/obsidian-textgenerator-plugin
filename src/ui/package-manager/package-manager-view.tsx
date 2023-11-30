@@ -8,6 +8,9 @@ import type { PackageManagerUI } from "./package-manager-ui";
 import { baseForLogin } from "../login/login-view";
 import { useToggle } from "usehooks-ts";
 import Profile from "./profile";
+import { Platform } from "obsidian";
+
+
 
 export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   const global = useGlobal();
@@ -61,7 +64,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   }
 
   async function updateView() {
-    setItems(global.plugin.packageManager.getPackagesList());
+    setItems(global.plugin.packageManager.getPackagesList().filter(p => !p.desktopOnly || Platform.isDesktop));
   }
 
   function handleChange(value: string) {
