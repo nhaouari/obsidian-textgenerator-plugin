@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import React, { useState, useEffect } from "react";
 
 export default function TemplateInputModalView(props: {
@@ -13,6 +14,7 @@ export default function TemplateInputModalView(props: {
     );
     return initialValues;
   });
+
   const [meta, setMeta] = useState(props.metadata);
 
   const getFormData = () => {
@@ -22,9 +24,15 @@ export default function TemplateInputModalView(props: {
     }, {});
   };
 
+  const allInputsNotFilled = props.templateContext.strict && formValues.some((f, i) => !f && !props.labels[i].contains("optional"))
+
   const handleSubmit = (event: any) => {
     event.preventDefault();
+
     const formData = getFormData();
+
+    if (props.templateContext.strict && allInputsNotFilled) return;
+
     props.onSubmit(formData);
     props.p.close();
   };
@@ -52,7 +60,10 @@ export default function TemplateInputModalView(props: {
             <textarea
               dir="auto"
               ref={index === 0 ? firstTextareaRef : null}
-              className="h-24 w-full resize-none rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none"
+              className={clsx("h-24 w-full resize-none rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none",
+                {
+                  "ring-red-300 ring-1": props.templateContext.strict && !formValues[index] && !label.contains("optional")
+                })}
               onChange={handleChange(index)}
               value={formValues[index]}
             />
@@ -61,7 +72,11 @@ export default function TemplateInputModalView(props: {
       ))}
       <button
         type="submit"
-        className="rounded bg-blue-500 px-6 py-2 font-semibold hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300/50"
+        disabled={allInputsNotFilled}
+        className={clsx("rounded px-6 py-2 font-semibold", {
+          "dz-disabled opacity-40": allInputsNotFilled,
+          "bg-blue-500 hover:bg-blue-600 focus:ring-blue-300/50 focus:outline-none focus:ring-4": !allInputsNotFilled
+        })}
       >
         Generate
       </button>
