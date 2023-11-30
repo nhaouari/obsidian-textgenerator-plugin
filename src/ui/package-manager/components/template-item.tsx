@@ -16,9 +16,9 @@ function TemplateItem(props: { item: PackageTemplate, owned?: boolean, selected?
 			onClick={() => props.select(props.index)}
 		>
 			<div className="flex flex-col gap-2">
-				{!!props.item.core && !!props.item.price && <span className="flair mod-pop text-xs max-w-min">
+				{/* {!!props.item.core && !!props.item.price && <span className="flair mod-pop text-xs max-w-min">
 					Premium
-				</span>}
+				</span>} */}
 				<div className="community-item-name">
 					<span className="w-auto pr-2 break-words">
 						{props.item.name}
