@@ -89,6 +89,7 @@ type Resource = {
   size: number
   types: string
   metadata: Record<string, string>
+  folderName: string
 }
 
 type Subscription = {
@@ -133,7 +134,7 @@ type PackageTemplate = {
   price?: number;
   core?: boolean;
   desktopOnly?: boolean;
-  files?: Record<string, string>;
+  folderName?: string;
 };
 
 type PromptTemplate = {

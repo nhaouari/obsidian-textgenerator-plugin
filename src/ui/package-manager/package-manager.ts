@@ -11,13 +11,14 @@ import {
   MarkdownRenderer,
   Notice,
   requestUrl,
+  debounce,
 } from "obsidian";
 import TextGeneratorPlugin from "src/main";
 import { gt } from "semver";
 import debug from "debug";
 import Confirm from "./components/confirm";
 import { baseForLogin } from "../login/login-view";
-import { createFolder } from "#/utils";
+import { createFolder, removeExtensionFromName } from "#/utils";
 import set from "lodash.set";
 const logger = debug("textgenerator:PackageManager");
 
@@ -157,13 +158,17 @@ export default class PackageManager {
   }
 
   async updateBoughtResources() {
-    if (!baseForLogin) return;
+    const apikey = this.getApikey()
+    if (!baseForLogin || !apikey) return;
+
     const res = await requestUrl({
       url: new URL(`/api/v2/resources`, baseForLogin).href, headers: {
-        "Authorization": `Bearer ${this.getApikey()}`,
+        "Authorization": `Bearer ${apikey}`,
       },
       throw: false
     })
+
+    if (res.status > 300) throw res.text;
 
     const data: {
       resources: Record<string, {
@@ -172,6 +177,7 @@ export default class PackageManager {
         size: number
         types: string
         metadata: Record<string, string>
+        folderName: string
       }>;
       subscriptions: {
         id: string,
@@ -195,6 +201,10 @@ export default class PackageManager {
     set(this.plugin.settings, `LLMProviderOptions.["package-provider"].api_key`, newKey)
   }
 
+  getResourcesOfFolder(folderName?: string) {
+    return Object.values(this.configuration.resources || {}).filter(r => r.folderName == folderName)
+  }
+
   async installPackage(packageId: string, installAllPrompts = true) {
     console.log("trying to install package", packageId)
     logger("installPackage", { packageId, installAllPrompts });
@@ -205,49 +215,27 @@ export default class PackageManager {
     const repo = p.repo;
 
     if (p.type == "extension") {
-      // extension way of installing pacakge
-      console.log(p)
-
-      // create extension folder    
-      const dirPath = `.obsidian/plugins/${p.packageId}`;
-      if (!(await app.vault.adapter.exists(dirPath)))
-        await createFolder(dirPath, app);
-
-      // get manifest.json
-      for (const fileName in p.files) {
-        if (Object.prototype.hasOwnProperty.call(p.files, fileName)) {
-          const id = p.files[fileName];
-          const res = await requestUrl({
-            url: new URL(`/api/content/${id}`, baseForLogin).href,
-            headers: {
-              "Authorization": `Bearer ${this.getApikey()}`,
-            },
-            throw: false
-          })
-
-          if (res.status >= 300) {
-            throw res.text;
-          }
-
-          await app.vault.adapter.writeBinary(`${dirPath}/${fileName}`, await res.arrayBuffer);
-        }
-      }
-
-
-      const obj: InstalledPackage = {
-        packageId,
-        prompts: [],
-        installedPrompts: [],
-        version: p.version,
-      }
-
-      this.configuration.installedPackagesHash[packageId] = obj
-
+      await this.installFeatureExternal(p)
     } else {
       // Its a normal package templates
 
-      const release = await this.getReleaseByRepo(repo);
-      const data = await this.getAsset(release, "data.json");
+      let data: {
+        packageId: string;
+        prompts: string[];
+      } | null = null;
+
+      // if its from an external source
+      if (p.folderName) {
+        const resources = await this.getResourcesOfFolder(p.folderName);
+        data = {
+          packageId: p.packageId,
+          prompts: resources.map(r => r.id)
+        }
+      } else {
+        const release = await this.getReleaseByRepo(repo);
+        data = await this.getAsset(release, "data.json");
+      }
+
 
 
       if (!data) throw "couldn't get assets";
@@ -269,11 +257,14 @@ export default class PackageManager {
         if (installAllPrompts) {
           await Promise.all(
             data.prompts.map((promptId) =>
-              this.installPrompt(packageId, promptId, true)
+              p.folderName
+                ? this.installPromptExternal(packageId, promptId, true)
+                : this.installPrompt(packageId, promptId, true)
             )
           );
           new Notice(`Package ${packageId} installed`);
         }
+
       }
       await this.save();
       logger("installPackage end", { packageId, installAllPrompts });
@@ -286,12 +277,9 @@ export default class PackageManager {
 
     if (p?.type === "extension")
       await this.app.vault.adapter.rmdir(`.obsidian/plugins/${p.packageId}`, true)
-    else
-      await Promise.all(
-        (await this.getInstalledPackageById(packageId))?.prompts?.map((p) =>
-          this.toTrash(packageId, p.promptId)
-        ) || []
-      );
+    else {
+      await this.toTrash(packageId)
+    }
 
     delete this.configuration.installedPackagesHash[packageId];
 
@@ -300,29 +288,53 @@ export default class PackageManager {
     logger("uninstallPackage end", { packageId });
   }
 
-  async toTrash(packageId: string, promptId: string) {
+  async toTrash(packageId: string, promptId?: string) {
     logger("toTrash", { packageId, promptId });
     const adapter = this.app.vault.adapter;
     const trashPackageDir = normalizePath(
       this.getPromptsPath() + "/trash/" + packageId
     );
+
+
+
+
+
     if (!(await adapter.exists(trashPackageDir))) {
       await adapter.mkdir(trashPackageDir);
     }
+
     const promptsPath = this.getPromptsPath();
     const from = this.getPromptPath(packageId, promptId);
     const to = normalizePath(
-      `${promptsPath}/trash/${packageId}/${promptId}.md`
+      `${promptsPath}/trash/${packageId}${promptId ? `/${promptId}.md` : ""}`
     );
+
     if (await adapter.exists(from)) {
-      if (!adapter.exists(to)) {
-        await adapter.copy(from, to);
+      try {
+        // remove destination if exists
+        if (await adapter.exists(to))
+          if (promptId) await adapter.remove(to)
+          else await adapter.rmdir(to, true);
+      } catch { }
+
+      if (!promptId) {
+        const list = (await adapter.list(from)).files;
+
+        if (!await adapter.exists(to)) await adapter.mkdir(to)
+
+        // copy
+        for (const item of list) {
+          await adapter.copy(item, `${to}/${item.split("/").reverse()[0]}`);
+        }
+
+        // remove old
+        await adapter.rmdir(from, true);
       } else {
-        await adapter.writeBinary(to, await adapter.readBinary(from)); // if the file exit in trash, overwrite it with the new version
-      }
-      await adapter.trashLocal(from);
-      if ((await adapter.exists(to)) && (await adapter.exists(from))) {
-        adapter.remove(from);
+        // copy
+        await adapter.copy(from, to);
+
+        // remove old
+        await adapter.remove(from)
       }
     } else {
       console.warn("prompt file does not exist", { packageId, promptId });
@@ -529,21 +541,23 @@ export default class PackageManager {
     }
   }
 
-  async validatedOwnership(packageId: string) {
+
+  async validateOwnership(packageId: string) {
     const pkg = this.getPackageById(packageId);
 
     if (!pkg || !pkg.price) return {
       allowed: true
     };
 
-    const firstFile = Object.values(pkg.files || {})[0];
+    const resources = await this.getResourcesOfFolder(pkg.folderName)
+    const firstFile = resources[0];
 
     if (!firstFile) return {
       allowed: true
     };
 
     const res = await requestUrl({
-      url: new URL(`/api/content/${firstFile}/verify`, baseForLogin).href, headers: {
+      url: new URL(`/api/content/${firstFile.id}/verify`, baseForLogin).href, headers: {
         "Authorization": `Bearer ${this.getApikey()}`,
       },
       throw: false
@@ -552,8 +566,11 @@ export default class PackageManager {
     const d: {
       allowed: boolean;
       oneRequired: string[];
+      detail?: string;
     } = await res.json;
 
+    if (res.status > 300)
+      throw d.detail;
     return d;
   }
 
@@ -561,8 +578,9 @@ export default class PackageManager {
     const pkg = this.getPackageById(packageId);
 
     if (!pkg || !pkg.price) return true;
+    const resources = this.getResourcesOfFolder(pkg.folderName);
 
-    return Object.values(pkg.files || []).some((p) => this.configuration.resources?.[p]);
+    return !!resources.length
   }
 
   /**
@@ -570,13 +588,13 @@ export default class PackageManager {
    * update it if it does exist
    * add if its new
    */
-
   async installPrompt(packageId: string, promptId: string, overwrite = true) {
-    logger("installPrompt", { packageId, promptId, overwrite });
-    const repo = await this.getPackageById(packageId)?.repo;
-
-    const url = `https://raw.githubusercontent.com/${repo}/master/prompts/${promptId}.md`;
     try {
+      logger("installPrompt", { packageId, promptId, overwrite });
+      const pacakge = await this.getPackageById(packageId)
+      const repo = pacakge?.repo;
+      const url = `https://raw.githubusercontent.com/${repo}/master/prompts/${promptId}.md`;
+
       await this.writePrompt(
         packageId,
         promptId,
@@ -585,6 +603,9 @@ export default class PackageManager {
       );
       this.configuration.installedPackagesHash[packageId]
         ?.installedPrompts?.push({ promptId: promptId, version: "" }); //this.getPromptById(packageId,promptId).version
+
+
+
     } catch (error) {
       logger("installPrompt error", error);
       console.error(error);
@@ -593,13 +614,103 @@ export default class PackageManager {
     logger("installPrompt end", { packageId, promptId, overwrite });
   }
 
-  getPromptPath(packageId: string, promptId: string) {
+  /**
+  * download the prompt content from external source
+  * update it if it does exist
+  * add if its new
+  */
+  async installPromptExternal(packageId: string, id: string, overwrite = true) {
+    try {
+      logger("installPromptExternal", { packageId, id, overwrite });
+
+      const resource = this.configuration.resources[id];
+
+      const res = await requestUrl({
+        url: new URL(`/api/content/${id}`, baseForLogin).href,
+        headers: {
+          "Authorization": `Bearer ${this.getApikey()}`,
+        },
+        throw: false
+      })
+
+      if (res.status >= 300) {
+        throw res.text;
+      }
+
+      console.log(resource.name)
+      await this.writePrompt(packageId, resource.name, await res.text, true);
+
+      this.configuration.installedPackagesHash[packageId]
+        ?.installedPrompts?.push({ promptId: resource.name, version: "" }); //this.getPromptById(packageId,promptId).version
+    } catch (error) {
+      logger("installPromptExternal error", error);
+      console.error(error);
+      Promise.reject(error);
+    }
+    logger("installPromptExternal end", { packageId, id, overwrite });
+  }
+
+
+  /**
+  * download the feature from external source
+  * update it if it does exist
+  * add if its new
+  */
+  async installFeatureExternal(p: PackageTemplate) {
+
+    // create extension folder    
+    const dirPath = `.obsidian/plugins/${p.packageId}`;
+    if (!(await app.vault.adapter.exists(dirPath)))
+      await createFolder(dirPath, app);
+
+    const files = this.getResourcesOfFolder(p.folderName)
+
+    // get manifest.json
+    for (const file of files) {
+      const id = file.id;
+      const res = await requestUrl({
+        url: new URL(`/api/content/${id}`, baseForLogin).href,
+        headers: {
+          "Authorization": `Bearer ${this.getApikey()}`,
+        },
+        throw: false
+      })
+
+      if (res.status >= 300) {
+        throw res.text;
+      }
+
+      await app.vault.adapter.writeBinary(`${dirPath}/${file.name}`, await res.arrayBuffer);
+    }
+
+
+    const obj: InstalledPackage = {
+      packageId: p.packageId,
+      prompts: [],
+      installedPrompts: [],
+      version: p.version,
+    }
+
+    this.configuration.installedPackagesHash[p.packageId] = obj
+
+  }
+
+  getPromptPath(packageId: string, promptId?: string) {
     const promptsPath = this.getPromptsPath();
     //app.vault.configDir
     const templatePath = normalizePath(
-      `${promptsPath}/${packageId}/${promptId}.md`
+      `${promptsPath}/${packageId}${promptId ? `/${promptId}.md` : ""}`
     );
     return templatePath;
+  }
+
+  async trashLocal(sourcePath: string) {
+    try {
+      // Read the contents of the source directory
+      await this.app.vault.adapter.trashLocal(sourcePath);
+    } catch (error) {
+      console.error(`Error moving folder: ${error.message}`);
+    }
   }
 
   async writePrompt(
@@ -668,8 +779,6 @@ export default class PackageManager {
     logger("updatePackagesList end");
     return newPackages;
   }
-
-
 
   async updatePackagesInfo() {
     logger("updatePackagesInfo");

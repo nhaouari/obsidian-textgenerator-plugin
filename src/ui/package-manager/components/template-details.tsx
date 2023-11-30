@@ -7,6 +7,7 @@ import { PackageTemplate } from "#/types";
 import { PluginManifest } from "obsidian";
 import { baseForLogin } from "#/ui/login/login-view";
 import { useToggle } from "usehooks-ts";
+import attemptLogin from "#/ui/login";
 
 
 export default function TemplateDetails(inProps: {
@@ -40,12 +41,13 @@ export default function TemplateDetails(inProps: {
 
 	useEffect(() => {
 		(async () => {
-			const pkg = packageManager.getPackageById(packageId)
+			const pkg = packageManager.getPackageById(packageId);
+
 			setProps({
 				package: pkg,
 				installed: await packageManager.getInstalledPackageById(packageId),
 				ownedOrReq: {
-					allowed: !pkg?.price || packageManager.simpleCheckOwnership(pkg?.packageId),
+					allowed: !pkg?.price || !!packageManager.simpleCheckOwnership(pkg?.packageId),
 					oneRequired: []
 				}
 			});
@@ -54,18 +56,21 @@ export default function TemplateDetails(inProps: {
 
 
 	const validateOwnership = async () => {
-		const ownedOrReq = props.installed ? {
-			allowed: true
-		} : await packageManager.validatedOwnership(packageId)
-
-		setProps((props) => ({
-			...props,
-			ownedOrReq
-		}));
+		try {
+			const ownedOrReq = props.installed ? {
+				allowed: true
+			} : await packageManager.validateOwnership(packageId)
+			setProps((props) => ({
+				...props,
+				ownedOrReq
+			}));
+		} catch (err: any) {
+			console.error(err);
+		}
 	}
 
 	useEffect(() => {
-		validateOwnership()
+		validateOwnership();
 	}, [packageId, props.installed]);
 
 	useEffect(() => {
@@ -93,6 +98,8 @@ export default function TemplateDetails(inProps: {
 		setError("");
 		setInstalling(true);
 		try {
+			if (props.package?.type == "extension")
+				await disable()
 			await packageManager.uninstallPackage(packageId);
 			updateLocalView();
 			updateView();
@@ -105,21 +112,19 @@ export default function TemplateDetails(inProps: {
 	}
 
 	async function getExtensionId() {
-		if (!props.installed || props.package?.type != "extension") throw "getExtensionId wont work here";
+		if (!props.installed || !props.package || props.package.type != "extension") throw "getExtensionId wont work here";
 
 		const manifestJson = `.obsidian/plugins/${props.package.packageId}/manifest.json`
 
 		if (!await packageManager.app.vault.adapter.exists(manifestJson)) throw "manifest.json doesn't exist to read the packageid";
 
 		const manifest: PluginManifest = JSON.parse(await packageManager.app.vault.adapter.read(manifestJson))
-		console.log({ manifest })
 		return manifest.id
 	}
 
 	async function enable() {
 		setEnabling(true);
 		try {
-
 			// @ts-ignore
 			await packageManager.app.plugins.enablePlugin(await getExtensionId());
 		} catch (err: any) {
@@ -157,11 +162,12 @@ export default function TemplateDetails(inProps: {
 
 	function buy() {
 		try {
-			const types = props.ownedOrReq?.oneRequired?.join(",");
-			if (!types) throw new Error("Not buyable");
+			const resource = packageManager.getResourcesOfFolder(props.package?.folderName)?.[0];
+
+			if (!resource?.types) throw new Error("Not buyable");
 
 			// open the login website
-			window.open(new URL(`/dashboard/subscriptions/checkout?type=${encodeURIComponent(types)}&callback`, baseForLogin).href);
+			window.open(new URL(`/dashboard/subscriptions/checkout?type=${encodeURIComponent(resource?.types)}&callback`, baseForLogin).href);
 		} catch (err: any) {
 			setEnabling(false);
 			throw err
@@ -199,7 +205,7 @@ export default function TemplateDetails(inProps: {
 		return () => {
 			window.removeEventListener("focus", onFocus)
 		}
-	}, [])
+	}, []);
 
 	return (<>
 		<div className="flex flex-col gap-2">
@@ -243,7 +249,7 @@ export default function TemplateDetails(inProps: {
 						{props.package?.desktopOnly ? "Only Desktop" : "All"}
 					</span>
 				</div>
-				<div className="community-modal-info-repo flex items-center gap-2">
+				{!props.package?.folderName && <div className="community-modal-info-repo flex items-center gap-2">
 					<span>
 						Repository:
 					</span>
@@ -253,7 +259,7 @@ export default function TemplateDetails(inProps: {
 					>
 						{props.package?.repo}
 					</a>
-				</div>
+				</div>}
 
 
 				<div className="community-modal-info-author flex items-center gap-2">
@@ -272,46 +278,55 @@ export default function TemplateDetails(inProps: {
 		</div>
 		{/* Controls */}
 		<div className="community-modal-button-container">
-			{!props.ownedOrReq?.allowed && (
-				<button
-					className="mod-cta cursor-pointer"
-					onClick={() => buy()}
-				>
-					Buy
-				</button>
-			)}
-
-			{props.installed ? (<>
-				{/* extension controls */}
-				{
-					props.package?.type == "extension" &&
-					(!enabledExtension ?
-						<button className="bg-red-300 cursor-pointer" onClick={() => !enabling && enable()}>
-							Enabl{enabling ? "ing..." : "e"}
-						</button>
-						:
-						<button className="bg-red-300 cursor-pointer" onClick={() => !enabling && disable()}>
-							Disabl{enabling ? "ing..." : "e"}
-						</button>
-					)
-				}
-
-				<button className="bg-red-300 cursor-pointer" onClick={() => !installing && uninstall()}>
-					Uninstall{installing ? "ing..." : ""}
-				</button>
-				{props.installed.version !== props.package?.version && (
+			{packageManager.getApikey() ? <>
+				{!props.ownedOrReq?.allowed && (
 					<button
 						className="mod-cta cursor-pointer"
-						onClick={() => update()}
+						onClick={() => buy()}
 					>
-						Update
+						Buy
 					</button>
 				)}
-			</>) : (
-				<button className={installing ? "dz-btn-disabled" : "mod-cta"} onClick={() => !installing && install()} disabled={installing}>
-					Install{installing ? "ing..." : ""}
+
+				{props.installed ? (<>
+					{/* extension controls */}
+					{
+						props.package?.type == "extension" &&
+						(!enabledExtension ?
+							<button className="bg-red-300 cursor-pointer" onClick={() => !enabling && enable()}>
+								Enabl{enabling ? "ing..." : "e"}
+							</button>
+							:
+							<button className="bg-red-300 cursor-pointer" onClick={() => !enabling && disable()}>
+								Disabl{enabling ? "ing..." : "e"}
+							</button>
+						)
+					}
+
+					<button className="bg-red-300 cursor-pointer" onClick={() => !installing && uninstall()}>
+						Uninstall{installing ? "ing..." : ""}
+					</button>
+					{props.installed.version !== props.package?.version && (
+						<button
+							className="mod-cta cursor-pointer"
+							onClick={() => update()}
+						>
+							Update
+						</button>
+					)}
+				</>) : (
+					<button className={installing ? "dz-btn-disabled" : "mod-cta cursor-pointer"} onClick={() => !installing && install()} disabled={installing}>
+						Install{installing ? "ing..." : ""}
+					</button>
+				)}
+			</> :
+				<button
+					className="mod-cta cursor-pointer"
+					onClick={() => attemptLogin(packageManager.plugin)}
+				>
+					Login
 				</button>
-			)}
+			}
 			{!props.package?.core && <button
 				className="mod-cta cursor-pointer"
 				onClick={() =>

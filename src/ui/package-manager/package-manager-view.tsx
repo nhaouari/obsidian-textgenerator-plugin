@@ -87,7 +87,11 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   useEffect(() => {
     (async () => {
       await getAllPackages();
-      await global.plugin.packageManager.updateBoughtResources();
+      try {
+        await global.plugin.packageManager.updateBoughtResources();
+      } catch (err: any) {
+        console.warn("couldn't updateBoughtResources")
+      }
       setItems(global.plugin.packageManager.getPackagesList());
     })()
   }, []);
