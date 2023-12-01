@@ -272,6 +272,12 @@ ${context.query}`;
 
       this.plugin.startProcessing(false);
 
+      const autoSuggestOptions = this.plugin.settings.autoSuggestOptions;
+
+      if (autoSuggestOptions.customProvider && autoSuggestOptions.selectedProvider) {
+        await this.plugin.textGenerator.loadllm(autoSuggestOptions.selectedProvider)
+      }
+
       const re = await this.plugin.textGenerator.LLMProvider.generateMultiple(
         [{ role: "user", content: prompt }],
         {

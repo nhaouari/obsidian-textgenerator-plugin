@@ -68,6 +68,7 @@ Starred Blocks: {{starredBlocks}}
     triggerPhrase: "  ",
     stop: ".",
     showStatus: true,
+    customProvider: false,
   },
   extractorsOptions: {
     PDFExtractor: true,

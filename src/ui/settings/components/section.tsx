@@ -16,7 +16,7 @@ export default function SettingsSection(props: {
   const [_collapsed, setCollapsed] = useState(true);
   const collapsed = !props.alwaysOpen && _collapsed;
   useEffect(() => {
-    props.register.register(props.id, props.title, "");
+    props.register.register(props.id, props.title, props.id);
   }, [props.id]);
 
   useEffect(

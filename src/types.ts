@@ -66,6 +66,8 @@ type TextGeneratorSettings = {
     triggerPhrase: string;
     stop: string;
     showStatus: boolean;
+    customProvider: boolean;
+    selectedProvider?: string;
   };
   extractorsOptions: {
     PDFExtractor: boolean;
