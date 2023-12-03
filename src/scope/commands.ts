@@ -472,7 +472,7 @@ export default class Commands {
             const contexts = await self.plugin.textGenerator.contextManager.getTemplateContext({
               editor: CM,
               filePath: file?.path,
-              templatePath: templateOverridePath,
+              templateContent: templateOverridePath,
             })
 
             prompt = await templateOverride?.inputTemplate?.({
@@ -491,15 +491,17 @@ export default class Commands {
             .replace(/^\n*/g, "");
 
           if (!file) return logger(`No active file was detected`);
-          file.parent
+
           const renamedFilePath = file.path.replace(
             file.name,
             `${sanitizedTitle}.${file.extension}`
           );
+
           await this.plugin.app.fileManager.renameFile(
             file,
             renamedFilePath
           );
+
           logger(`Generated a title: ${sanitizedTitle}`);
         } catch (error) {
           this.plugin.handelError(error);
@@ -516,6 +518,7 @@ export default class Commands {
         this.plugin.settings.autoSuggestOptions.isEnabled =
           !this.plugin.settings.autoSuggestOptions.isEnabled;
         await this.plugin.saveSettings();
+
         this.plugin.AutoSuggestStatusBar();
 
         if (this.plugin.settings.autoSuggestOptions.isEnabled) {

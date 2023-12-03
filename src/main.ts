@@ -262,6 +262,15 @@ export default class TextGeneratorPlugin extends Plugin {
     } catch (err: any) {
       this.handelError(err);
     }
+
+    try {
+      this.registerObsidianProtocolHandler(`text-gen`, async (params) => {
+        console.log(params.intent, this.actions, this.actions[params.intent])
+        this.actions[params.intent]?.(params)
+      });
+    } catch (err: any) {
+      this.handelError(err);
+    }
   }
 
   async onunload() {
@@ -646,9 +655,7 @@ export default class TextGeneratorPlugin extends Plugin {
       const keyval = get(
         this.settings?.LLMProviderOptions,
         pth
-      ) as never as string;
-
-      if (!keyval) return;
+      ) as never as string || "";
 
       const encrypted = this.getEncryptedKey(keyval);
       this.settings.LLMProviderOptionsKeysHashed[pth] = encrypted;
@@ -736,5 +743,10 @@ export default class TextGeneratorPlugin extends Plugin {
     await this.app.plugins.enablePlugin("obsidian-textgenerator-plugin");
     // @ts-ignore
     this.app.setting.openTabById("obsidian-textgenerator-plugin").display();
+  }
+
+  actions: Record<string, any> = {}
+  registerAction<T>(action: `${string}`, cb: (params: T) => void): any {
+    return this.actions[action] = cb;
   }
 }

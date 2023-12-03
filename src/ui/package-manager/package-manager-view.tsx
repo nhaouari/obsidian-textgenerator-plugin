@@ -2,10 +2,10 @@ import React, { useState, useEffect, useMemo } from "react";
 import TemplateItem from "./components/template-item";
 import TemplateDetails from "./components/template-details";
 import { PackageTemplate } from "#/types";
-import attemptLogin, { attemptLogout } from "../login";
 import useGlobal from "../context/global";
 import type { PackageManagerUI } from "./package-manager-ui";
-import { baseForLogin } from "../login/login-view";
+import { baseForLogin } from "./login/login-view";
+import attemptLogin, { attemptLogout } from "./login";
 import { useToggle } from "usehooks-ts";
 import Profile from "./profile";
 import { Platform } from "obsidian";
@@ -55,7 +55,6 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
 
   async function getAllPackages(update = true) {
     let packages: any = [];
-    console.log("requesting pacakges")
     if (update) packages = await global.plugin.packageManager.updatePackagesList();
 
     await global.plugin.packageManager.updatePackagesStats();
@@ -217,7 +216,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
               <div className="community-modal-search-results-wrapper">
                 <div className="p-3">
                   {premiumFeatures?.length ? <>
-                    <h2>Core Features</h2>
+                    <h2>Featured Items</h2>
                     <div className="w-full flex gap-2 flex-wrap">
                       {premiumFeatures.map((item) => {
                         const i = items.findIndex(it => it.packageId == item.packageId);

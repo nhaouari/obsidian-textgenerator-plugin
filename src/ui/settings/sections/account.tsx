@@ -3,8 +3,8 @@ import useGlobal from "../../context/global";
 import SettingsSection from "../components/section";
 import { useToggle } from "usehooks-ts";
 import type { Register } from ".";
-import attemptLogin, { attemptLogout } from "#/ui/login";
-import { baseForLogin } from "#/ui/login/login-view";
+import attemptLogin, { attemptLogout } from "#/ui/package-manager/login";
+import { baseForLogin } from "#/ui/package-manager/login/login-view";
 import Profile from "#/ui/package-manager/profile";
 import SettingItem from "../components/item";
 

@@ -132,7 +132,7 @@ type PackageTemplate = {
   published_at?: Date;
   downloads?: number;
   installed?: boolean;
-  type?: "template" | "extension";
+  type?: "template" | "feature";
   price?: number;
   core?: boolean;
   desktopOnly?: boolean;

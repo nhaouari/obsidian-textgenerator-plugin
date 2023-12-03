@@ -1,7 +1,6 @@
 import {
   TextGeneratorConfiguration,
   PackageTemplate,
-  PromptTemplate,
   InstalledPackage,
 } from "src/types";
 import {
@@ -11,15 +10,17 @@ import {
   MarkdownRenderer,
   Notice,
   requestUrl,
-  debounce,
 } from "obsidian";
 import TextGeneratorPlugin from "src/main";
 import { gt } from "semver";
 import debug from "debug";
 import Confirm from "./components/confirm";
-import { baseForLogin } from "../login/login-view";
-import { createFolder, removeExtensionFromName } from "#/utils";
+import { baseForLogin } from "./login/login-view";
+import { createFolder } from "#/utils";
 import set from "lodash.set";
+
+import showGratitude from "./gratitude"
+
 const logger = debug("textgenerator:PackageManager");
 
 const packageRegistry = `https://raw.githubusercontent.com/text-gen/text-generator-packages/master/community-packages.json`;
@@ -91,6 +92,31 @@ export default class PackageManager {
 
     await this.fetch();
     logger("load end", this.configuration);
+
+    // test
+    // showGratitude(this.plugin, this.configuration.packagesHash[Object.keys(this.configuration.packagesHash)[0]])
+
+    const self = this;
+
+    try {
+      this.plugin.registerAction<{ apikey?: string }>("login", async (props) => {
+        const apikey = props.apikey;
+
+        if (!apikey) return "";
+
+        await self.plugin.packageManager.setApiKey(apikey);
+      });
+    } catch { }
+
+    try {
+      this.plugin.registerAction<{ packageId?: string }>("bought-package", async (props) => {
+        console.log("bought item", { props })
+        console.log("doing something cool", props, self.configuration.packagesHash[props.packageId])
+        // do something cool
+        if (props.packageId)
+          await showGratitude(self.plugin, self.configuration.packagesHash[props.packageId])
+      });
+    } catch { }
   }
 
 
@@ -161,30 +187,7 @@ export default class PackageManager {
     const apikey = this.getApikey()
     if (!baseForLogin || !apikey) return;
 
-    const res = await requestUrl({
-      url: new URL(`/api/v2/resources`, baseForLogin).href, headers: {
-        "Authorization": `Bearer ${apikey}`,
-      },
-      throw: false
-    })
-
-    if (res.status > 300) throw res.text;
-
-    const data: {
-      resources: Record<string, {
-        id: string
-        name: string
-        size: number
-        types: string
-        metadata: Record<string, string>
-        folderName: string
-      }>;
-      subscriptions: {
-        id: string,
-        name: string,
-        type: string,
-      }[];
-    } = await res.json;
+    const data = await getBoughtResources(apikey);
 
     if (data.subscriptions)
       this.configuration.subscriptions = data.subscriptions;
@@ -194,15 +197,39 @@ export default class PackageManager {
   }
 
   getApikey() {
-    return this.plugin.settings?.LLMProviderOptions?.["package-provider"]?.api_key
+    return this.plugin.settings?.LLMProviderOptions?.[PackageProviderid]?.api_key
   }
 
-  setApiKey(newKey?: string) {
-    set(this.plugin.settings, `LLMProviderOptions.["package-provider"].api_key`, newKey)
+  async setApiKey(newKey?: string) {
+    set(this.plugin.settings, `LLMProviderOptions.[${PackageProviderid}].api_key`, newKey);
+    this.plugin.encryptAllKeys();
+    await this.plugin.saveSettings();
   }
 
   getResourcesOfFolder(folderName?: string) {
     return Object.values(this.configuration.resources || {}).filter(r => r.folderName == folderName)
+  }
+
+  async validateOwnership(packageId: string): Promise<{
+    allowed: boolean,
+    oneRequired?: string[],
+  }> {
+    const pkg = this.getPackageById(packageId);
+
+    if (!pkg || !pkg.price || !pkg.folderName) return {
+      allowed: true,
+    };
+
+    return await validateOwnership(pkg.folderName, this.getApikey())
+  }
+
+  simpleCheckOwnership(packageId: string) {
+    const pkg = this.getPackageById(packageId);
+
+    if (!pkg || !pkg.price) return true;
+    const resources = this.getResourcesOfFolder(pkg.folderName);
+
+    return !!resources.length
   }
 
   async installPackage(packageId: string, installAllPrompts = true) {
@@ -214,7 +241,7 @@ export default class PackageManager {
 
     const repo = p.repo;
 
-    if (p.type == "extension") {
+    if (p.type == "feature") {
       await this.installFeatureExternal(p)
     } else {
       // Its a normal package templates
@@ -235,8 +262,6 @@ export default class PackageManager {
         const release = await this.getReleaseByRepo(repo);
         data = await this.getAsset(release, "data.json");
       }
-
-
 
       if (!data) throw "couldn't get assets";
 
@@ -275,7 +300,7 @@ export default class PackageManager {
     logger("uninstallPackage", { packageId });
     const p = await this.getPackageById(packageId);
 
-    if (p?.type === "extension")
+    if (p?.type === "feature")
       await this.app.vault.adapter.rmdir(`.obsidian/plugins/${p.packageId}`, true)
     else {
       await this.toTrash(packageId)
@@ -294,10 +319,6 @@ export default class PackageManager {
     const trashPackageDir = normalizePath(
       this.getPromptsPath() + "/trash/" + packageId
     );
-
-
-
-
 
     if (!(await adapter.exists(trashPackageDir))) {
       await adapter.mkdir(trashPackageDir);
@@ -347,7 +368,7 @@ export default class PackageManager {
     const p = await this.getPackageById(packageId);
     const index = packageId;
 
-    if (p?.type == "extension") {
+    if (p?.type == "feature") {
       await this.installPackage(p.packageId)
       return;
     }
@@ -381,11 +402,7 @@ export default class PackageManager {
   }
 
   getPackageById(packageId: string): PackageTemplate | null {
-    const p = this.configuration.packagesHash[packageId];
-
-    if (!p) return null; //throw `couldn't get repo from package ${packageId}`;
-
-    return p;
+    return this.configuration.packagesHash?.[packageId] || null;
   }
 
   getPackagesList() {
@@ -401,7 +418,7 @@ export default class PackageManager {
   }
 
   async getInstalledPackageById(packageId: string) {
-    if (this.configuration.packagesHash[packageId]?.type == "extension") {
+    if (this.configuration.packagesHash[packageId]?.type == "feature") {
       return await this.app.vault.adapter.exists(`.obsidian/plugins/${this.configuration.packagesHash[packageId].packageId}`) ?
         this.configuration.installedPackagesHash[packageId]
         : null
@@ -413,7 +430,7 @@ export default class PackageManager {
     logger("updatePackageInfoById", { packageId });
     let manifest = await this.getPackageById(packageId);
     if (!manifest) throw `couldn't get repo from package ${packageId}`;
-    if (manifest.type != "extension")
+    if (manifest.type != "feature")
       try {
         const repo = manifest.repo
         if (!manifest) throw `it doesn't have repo ${packageId}`;
@@ -497,6 +514,8 @@ export default class PackageManager {
     logger("getReleaseByRepo end", { repo });
     return release;
   }
+
+
   /** https://github.com/plugins-galore/obsidian-plugins-galore/blob/bd3553908fa9eacf33a5e1c2e7b0dea2a02a9d80/src/util/gitServerInterface.ts#L86 */
   async getAsset(release: any, name: string) {
     logger("getAsset", { release, name });
@@ -542,46 +561,6 @@ export default class PackageManager {
   }
 
 
-  async validateOwnership(packageId: string) {
-    const pkg = this.getPackageById(packageId);
-
-    if (!pkg || !pkg.price) return {
-      allowed: true
-    };
-
-    const resources = await this.getResourcesOfFolder(pkg.folderName)
-    const firstFile = resources[0];
-
-    if (!firstFile) return {
-      allowed: true
-    };
-
-    const res = await requestUrl({
-      url: new URL(`/api/content/${firstFile.id}/verify`, baseForLogin).href, headers: {
-        "Authorization": `Bearer ${this.getApikey()}`,
-      },
-      throw: false
-    })
-
-    const d: {
-      allowed: boolean;
-      oneRequired: string[];
-      detail?: string;
-    } = await res.json;
-
-    if (res.status > 300)
-      throw d.detail;
-    return d;
-  }
-
-  simpleCheckOwnership(packageId: string) {
-    const pkg = this.getPackageById(packageId);
-
-    if (!pkg || !pkg.price) return true;
-    const resources = this.getResourcesOfFolder(pkg.folderName);
-
-    return !!resources.length
-  }
 
   /**
    * download the prompt content
@@ -658,7 +637,7 @@ export default class PackageManager {
   */
   async installFeatureExternal(p: PackageTemplate) {
 
-    // create extension folder    
+    // create feature folder    
     const dirPath = `.obsidian/plugins/${p.packageId}`;
     if (!(await app.vault.adapter.exists(dirPath)))
       await createFolder(dirPath, app);
@@ -755,10 +734,10 @@ export default class PackageManager {
       ...((JSON.parse(
         await request({ url: packageRegistry })
       ) || []) as any)
-        // to exclude any community extensions or labled as core
-        .filter((p: PackageTemplate) => p.type !== "extension" && !p.core),
+        // to exclude any community features or labled as core
+        .filter((p: PackageTemplate) => p.type !== "feature" && !p.core),
 
-      // core packages can be templates or extensions 
+      // core packages can be templates or features 
       ...(JSON.parse(
         await request({ url: corePackageRegistry })
       ) || []) as any
@@ -816,3 +795,65 @@ export default class PackageManager {
     return stats;
   }
 }
+
+
+import FC from "func-cache"
+
+export const validateOwnership = FC(async (packageId: string, apikey: string) => {
+  const res = await requestUrl({
+    url: new URL(`/api/content/package/${packageId}/verify`, baseForLogin).href,
+    headers: {
+      "Authorization": `Bearer ${apikey}`,
+    },
+    throw: false
+  })
+
+  const d: {
+    allowed: boolean;
+    oneRequired: string[];
+    details?: string;
+  } = await res.json;
+
+  if (res.status > 300)
+    throw d.details;
+  return d;
+})
+
+
+const getBoughtResources = FC(async (apikey: string) => {
+  const res = await requestUrl({
+    url: new URL(`/api/v2/resources`, baseForLogin).href, headers: {
+      "Authorization": `Bearer ${apikey}`,
+    },
+    throw: false
+  })
+
+  if (res.status > 300) throw res.text;
+
+  const data: {
+    resources: Record<string, {
+      id: string
+      name: string
+      size: number
+      types: string
+      metadata: Record<string, string>
+      folderName: string
+    }>;
+    subscriptions: {
+      id: string,
+      name: string,
+      type: string,
+    }[];
+  } = await res.json;
+
+  return data;
+}, {
+  // (1 sec) in miliseconds
+  lifeTime: 1000,
+
+  /** debounce time wait to call onDataUpdate, default 1000ms */
+  // debounceTimer: 1000,
+
+  /** incase the call is async, (sometimes the script doesn't detect it's async and wont run the await for it) default: false */
+  async: true,
+})

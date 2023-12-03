@@ -1,4 +1,4 @@
-import { baseForLogin } from "#/ui/login/login-view";
+import { baseForLogin } from "../login/login-view";
 import clsx from "clsx";
 import { requestUrl } from "obsidian";
 import React, { useEffect, useState } from "react";

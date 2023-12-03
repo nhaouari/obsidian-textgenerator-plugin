@@ -5,16 +5,16 @@ import { nFormatter } from "#/utils";
 import PackageManager from "../package-manager";
 import { PackageTemplate } from "#/types";
 import { PluginManifest } from "obsidian";
-import { baseForLogin } from "#/ui/login/login-view";
 import { useToggle } from "usehooks-ts";
-import attemptLogin from "#/ui/login";
-
+import attemptLogin from "../login";
+import { baseForLogin } from "../login/login-view";
 
 export default function TemplateDetails(inProps: {
 	packageId: any,
 	packageManager: PackageManager,
 	updateView: any,
 	checkForUpdates: any,
+	mini?: boolean
 }) {
 
 	const {
@@ -59,7 +59,8 @@ export default function TemplateDetails(inProps: {
 		try {
 			const ownedOrReq = props.installed ? {
 				allowed: true
-			} : await packageManager.validateOwnership(packageId)
+			} : await packageManager.validateOwnership(packageId);
+
 			setProps((props) => ({
 				...props,
 				ownedOrReq
@@ -98,8 +99,13 @@ export default function TemplateDetails(inProps: {
 		setError("");
 		setInstalling(true);
 		try {
-			if (props.package?.type == "extension")
-				await disable()
+			try {
+
+				if (props.package?.type == "feature")
+					await disable()
+			} catch (err: any) {
+				console.warn("couldn't disable the feature")
+			}
 			await packageManager.uninstallPackage(packageId);
 			updateLocalView();
 			updateView();
@@ -111,8 +117,8 @@ export default function TemplateDetails(inProps: {
 		}
 	}
 
-	async function getExtensionId() {
-		if (!props.installed || !props.package || props.package.type != "extension") throw "getExtensionId wont work here";
+	async function getFeatureId() {
+		if (!props.installed || !props.package || props.package.type != "feature") throw "getFeatureId wont work here";
 
 		const manifestJson = `.obsidian/plugins/${props.package.packageId}/manifest.json`
 
@@ -126,7 +132,7 @@ export default function TemplateDetails(inProps: {
 		setEnabling(true);
 		try {
 			// @ts-ignore
-			await packageManager.app.plugins.enablePlugin(await getExtensionId());
+			await packageManager.app.plugins.enablePlugin(await getFeatureId());
 		} catch (err: any) {
 			setEnabling(false);
 			throw err
@@ -138,7 +144,7 @@ export default function TemplateDetails(inProps: {
 		setEnabling(true);
 		try {
 			// @ts-ignore
-			await packageManager.app.plugins.disablePlugin(await getExtensionId());
+			await packageManager.app.plugins.disablePlugin(await getFeatureId());
 		} catch (err: any) {
 			setEnabling(false);
 			throw err
@@ -153,21 +159,22 @@ export default function TemplateDetails(inProps: {
 		checkForUpdates();
 	}
 
-	function updateLocalView() {
+	async function updateLocalView() {
 		setProps({
 			package: packageManager.getPackageById(packageId),
-			installed: packageManager.getInstalledPackageById(packageId),
+			installed: await packageManager.getInstalledPackageById(packageId),
 		});
 	}
 
-	function buy() {
+	async function buy() {
 		try {
-			const resource = packageManager.getResourcesOfFolder(props.package?.folderName)?.[0];
+			if (!props.package?.packageId) throw "no package selected"
+			const pkgOwn = await packageManager.validateOwnership(props.package?.packageId)
 
-			if (!resource?.types) throw new Error("Not buyable");
+			if (!pkgOwn.oneRequired) throw new Error("Not buyable");
 
 			// open the login website
-			window.open(new URL(`/dashboard/subscriptions/checkout?type=${encodeURIComponent(resource?.types)}&callback`, baseForLogin).href);
+			window.open(new URL(`/dashboard/subscriptions/checkout?type=${encodeURIComponent(pkgOwn.oneRequired.join(","))}&callback=${encodeURIComponent(`obsidian://text-gen?intent=bought-package&packageId=${props.package?.packageId}`)}`, baseForLogin).href);
 		} catch (err: any) {
 			setEnabling(false);
 			throw err
@@ -176,7 +183,7 @@ export default function TemplateDetails(inProps: {
 
 
 	// @ts-ignore
-	const enabledExtension = !!packageManager.app.plugins.plugins["obsidian-tg-chat"];
+	const enabledFeature = !!packageManager.app.plugins.plugins["obsidian-tg-chat"];
 
 
 	useEffect(() => {
@@ -279,46 +286,48 @@ export default function TemplateDetails(inProps: {
 		{/* Controls */}
 		<div className="community-modal-button-container">
 			{packageManager.getApikey() ? <>
-				{!props.ownedOrReq?.allowed && (
+				{!props.ownedOrReq?.allowed ? (
 					<button
 						className="mod-cta cursor-pointer"
 						onClick={() => buy()}
 					>
 						Buy
 					</button>
-				)}
+				) :
+					props.installed ? (<>
+						{/* feature controls */}
+						{
+							props.package?.type == "feature" &&
+							(!enabledFeature ?
+								<button className="bg-red-300 cursor-pointer" onClick={() => !enabling && enable()}>
+									Enabl{enabling ? "ing..." : "e"}
+								</button>
+								:
+								<button className="bg-red-300 cursor-pointer" onClick={() => !enabling && disable()}>
+									Disabl{enabling ? "ing..." : "e"}
+								</button>
+							)
+						}
 
-				{props.installed ? (<>
-					{/* extension controls */}
-					{
-						props.package?.type == "extension" &&
-						(!enabledExtension ?
-							<button className="bg-red-300 cursor-pointer" onClick={() => !enabling && enable()}>
-								Enabl{enabling ? "ing..." : "e"}
-							</button>
-							:
-							<button className="bg-red-300 cursor-pointer" onClick={() => !enabling && disable()}>
-								Disabl{enabling ? "ing..." : "e"}
-							</button>
-						)
-					}
-
-					<button className="bg-red-300 cursor-pointer" onClick={() => !installing && uninstall()}>
-						Uninstall{installing ? "ing..." : ""}
-					</button>
-					{props.installed.version !== props.package?.version && (
-						<button
-							className="mod-cta cursor-pointer"
-							onClick={() => update()}
-						>
-							Update
+						<button className="bg-red-300 cursor-pointer" onClick={() => !installing && uninstall()}>
+							Uninstall{installing ? "ing..." : ""}
 						</button>
-					)}
-				</>) : (
-					<button className={installing ? "dz-btn-disabled" : "mod-cta cursor-pointer"} onClick={() => !installing && install()} disabled={installing}>
-						Install{installing ? "ing..." : ""}
-					</button>
-				)}
+						{props.installed.version !== props.package?.version && (
+							<button
+								className="mod-cta cursor-pointer"
+								onClick={() => update()}
+							>
+								Update
+							</button>
+						)}
+					</>) : (
+						<button className={installing ? "dz-btn-disabled" : "mod-cta cursor-pointer"} onClick={() => !installing && install()} disabled={installing}>
+							Install{installing ? "ing..." : ""}
+						</button>
+					)
+				}
+
+
 			</> :
 				<button
 					className="mod-cta cursor-pointer"
@@ -338,13 +347,13 @@ export default function TemplateDetails(inProps: {
 		</div>
 		{error && <span> ERROR: {error}</span>}
 		<hr />
-		<div
+		{!inProps.mini && <div
 			dangerouslySetInnerHTML={{
 				// @ts-ignore
 				__html: htmlVar.innerHTML || htmlVar || "",
 			}}
 			className="community-modal-readme markdown-rendered"
-		></div>
+		></div>}
 	</>
 	);
 }

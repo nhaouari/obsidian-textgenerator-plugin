@@ -1,21 +1,23 @@
 import { App, Modal } from "obsidian";
 import TextGeneratorPlugin from "src/main";
 import * as React from "react";
-import { LoginView } from "./login-view";
+import GratitudeView from "./view";
 import { createRoot } from "react-dom/client";
-import { GlobalProvider } from "../context/global";
+import { GlobalProvider } from "../../context/global";
 
-export class LoginUI extends Modal {
+export default class GratitudeUI extends Modal {
   result: string;
   plugin: TextGeneratorPlugin;
   onSubmit: (result: string) => void;
   onReject: (error: any) => void;
   root: any;
   isClosed = false;
+  data: Record<string, string>;
 
   constructor(
     app: App,
     plugin: TextGeneratorPlugin,
+    data: Record<string, string>,
     onSubmit: (result: string) => void,
     onReject: (error: any) => void
   ) {
@@ -24,6 +26,7 @@ export class LoginUI extends Modal {
     this.onSubmit = onSubmit;
     this.onReject = onReject;
     this.modalEl.addClasses(["mod-settings", "mod-sidebar-layout"]);
+    this.data = data;
   }
 
   async onOpen() {
@@ -32,7 +35,7 @@ export class LoginUI extends Modal {
     this.root.render(
       <React.StrictMode>
         <GlobalProvider plugin={this.plugin}>
-          <LoginView parent={this} />,
+          <GratitudeView parent={this} data={this.data} />
         </GlobalProvider>
       </React.StrictMode>
     );

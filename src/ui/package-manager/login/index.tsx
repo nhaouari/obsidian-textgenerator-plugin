@@ -1,11 +1,11 @@
-import set from "lodash.set";
-import TextGeneratorPlugin from "../../main";
+import TextGeneratorPlugin from "../../../main";
 import { LoginUI } from "./login-ui";
 
 export default function attemptLogin(plugin: TextGeneratorPlugin) {
     return new Promise((s, r) => {
-        const l = new LoginUI(plugin.app, plugin, (a) => {
+        const l = new LoginUI(plugin.app, plugin, async (a) => {
             l.close();
+            await new Promise(s => setTimeout(s, 300))
             s(a)
         }, (a) => {
             l.close();
@@ -18,5 +18,5 @@ export default function attemptLogin(plugin: TextGeneratorPlugin) {
 
 
 export async function attemptLogout(plugin: TextGeneratorPlugin) {
-    plugin.packageManager.setApiKey(undefined);
+    return plugin.packageManager.setApiKey("");
 }
