@@ -318,6 +318,7 @@ export function trimBy<T>(objects: T[], propertyName: string): T[] {
 
 
 export function replaceScriptBlocksWithMustachBlocks(templateString: string) {
+  if (!templateString) return "";
   // Regular expressions for matching the script tags
   const startScriptRegex = /{{\s*#script\s*}}/g;
   const endScriptRegex = /{{\s*\/script\s*}}/g;
