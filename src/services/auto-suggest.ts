@@ -12,8 +12,8 @@ import {
 } from "obsidian";
 
 import debug from "debug";
-import { unpromisifyAsyncFunction } from "./utils";
-import ContentManagerCls from "./content-manager";
+import { unpromisifyAsyncFunction } from "../utils";
+import ContentManagerCls from "../content-manager";
 const logger = debug("textgenerator:AutoSuggest");
 
 function debounce<T extends unknown[], R>(
@@ -263,12 +263,24 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 ${context.query}`;
 
       try {
-        const templateOverride = await this.plugin.textGenerator.getTemplate("local/autoSuggestContinue");
-        prompt = await templateOverride?.inputTemplate?.({
-          tg_selection: context.query
-        }) || prompt;
-      } catch { }
+        if (this.plugin.settings.autoSuggestOptions.customInstructEnabled) {
+          const templateContent = this.plugin.settings.autoSuggestOptions.customInstruct
+            || this.plugin.defaultSettings.autoSuggestOptions.customInstruct;
 
+          const templateContext = {
+            ... await this.plugin.textGenerator.contextManager.getTemplateContext({
+              editor: ContentManagerCls.compile(await this.plugin.commands.getActiveView()),
+              templateContent,
+              filePath: context.file?.path,
+            }),
+            query: context.query
+          }
+
+          const splittedTemplate = this.plugin.textGenerator.contextManager.splitTemplate(templateContent)
+
+          prompt = await splittedTemplate.inputTemplate?.(templateContext);
+        }
+      } catch (err: any) { console.log(err) }
 
       this.plugin.startProcessing(false);
 

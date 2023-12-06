@@ -13,7 +13,7 @@ import { mapMessagesToLangchainMessages } from "../../utils";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 
 import { OPENAI_MODELS } from "#/constants";
-import { ContextTemplate } from "#/context-manager";
+import { ContextTemplate } from "#/scope/context-manager";
 
 import { PromptTemplate } from "langchain/prompts";
 import { TypedPromptInputValues } from "langchain/dist/prompts/base";

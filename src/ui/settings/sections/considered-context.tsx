@@ -7,7 +7,7 @@ import { useMemo } from "react";
 import type { Register } from ".";
 import { Context } from "#/types";
 import AvailableVars from "#/ui/components/availableVars";
-import { contextVariablesObj } from "#/context-manager";
+import { contextVariablesObj } from "#/scope/context-manager";
 
 const extendedInfo: Record<
   string,

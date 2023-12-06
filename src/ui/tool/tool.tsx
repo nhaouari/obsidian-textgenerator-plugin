@@ -1,7 +1,7 @@
 import { Command, Editor } from "obsidian";
 import TextGeneratorPlugin from "../../main";
 import React, { useEffect, useMemo, useState } from "react";
-import { InputContext } from "../../context-manager";
+import { InputContext } from "../../scope/context-manager";
 import safeAwait from "safe-await";
 import { VIEW_TOOL_ID, ToolView } from ".";
 import CopyButton from "../components/copyButton";
@@ -154,7 +154,7 @@ export default function ChatComp(props: {
 
       const templateContext =
         await props.plugin.textGenerator.contextManager.getTemplateContext({
-          editor: config.editor,
+          editor: config.editor as any,
           templatePath: config.templatePath,
           filePath: props.plugin.app.workspace.activeEditor?.file?.path,
         });
@@ -176,7 +176,7 @@ export default function ChatComp(props: {
         await props.plugin.textGenerator.contextManager.getContext({
           insertMetadata: false,
           templatePath: selectedTemplatePath,
-          editor: config.editor,
+          editor: config.editor as any,
           addtionalOpts: vals,
         });
 

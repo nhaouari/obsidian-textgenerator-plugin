@@ -1,7 +1,7 @@
 import { Command, Editor } from "obsidian";
 import TextGeneratorPlugin from "../../main";
 import React, { useEffect, useMemo, useState } from "react";
-import { InputContext, contextVariablesObj } from "../../context-manager";
+import { InputContext, contextVariablesObj } from "../../scope/context-manager";
 import { PlaygroundView } from ".";
 import CopyButton from "../components/copyButton";
 import useStateView from "../context/useStateView";

@@ -12,7 +12,7 @@ import {
   Platform,
   EditorPosition,
 } from "obsidian";
-import { TextGeneratorSettings } from "./types";
+import type { TextGeneratorSettings } from "./types";
 import { containsInvalidCharacter, numberToKFormat } from "./utils";
 import {
   DecryptKeyPrefix,
@@ -28,8 +28,8 @@ import { EditorView } from "@codemirror/view";
 import { spinnersPlugin, SpinnersPlugin } from "./cm/plugin";
 import PrettyError from "pretty-error";
 import ansiToHtml from "ansi-to-html";
-import { AutoSuggest } from "./auto-suggest";
-import { ModelSuggest } from "./modal-suggest";
+import { AutoSuggest } from "./services/auto-suggest";
+import { ModelSuggest } from "./services/modal-suggest";
 import debug from "debug";
 
 import DEFAULT_SETTINGS from "./default-settings";

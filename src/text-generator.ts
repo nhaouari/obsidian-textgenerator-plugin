@@ -8,9 +8,9 @@ import {
 } from "obsidian";
 import { TextGeneratorSettings } from "./types";
 import TextGeneratorPlugin from "./main";
-import ReqFormatter from "./api-request-formatter";
+import ReqFormatter from "./utils/api-request-formatter";
 import { SetPath } from "./ui/settings/components/set-path";
-import ContextManager, { InputContext } from "./context-manager";
+import ContextManager, { InputContext } from "./scope/context-manager";
 import {
   makeId,
   createFileWithInput,

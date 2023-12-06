@@ -1,22 +1,22 @@
 import { App, Notice, Component, TFile, HeadingCache, EditorPosition } from "obsidian";
-import { AsyncReturnType, Context } from "./types";
-import TextGeneratorPlugin from "./main";
-import { IGNORE_IN_YAML } from "./constants";
+import { AsyncReturnType, Context } from "../types";
+import TextGeneratorPlugin from "../main";
+import { IGNORE_IN_YAML } from "../constants";
 
-import { escapeRegExp, getContextAsString, removeYAML, replaceScriptBlocksWithMustachBlocks } from "./utils";
+import { escapeRegExp, getContextAsString, removeYAML, replaceScriptBlocksWithMustachBlocks } from "../utils";
 import debug from "debug";
 const logger = debug("textgenerator:ContextManager");
-import Helpersfn, { Handlebars } from "./helpers/handlebars-helpers";
+import Helpersfn, { Handlebars } from "../helpers/handlebars-helpers";
 import {
   ContentExtractor,
   ExtractorSlug,
   UnExtractorSlug,
   getExtractorMethods,
-} from "./extractors/content-extractor";
+} from "../extractors/content-extractor";
 import { getAPI as getDataviewApi } from "obsidian-dataview";
 import set from "lodash.set";
 import merge from "lodash.merge";
-import { getHBValues } from "./utils/barhandles";
+import { getHBValues } from "../utils/barhandles";
 
 import type { ContentManager } from "src/content-manager/types"
 
@@ -93,7 +93,7 @@ export default class ContextManager {
         };
 
       const { context, inputTemplate, outputTemplate } =
-        await this.templateFromPath(templatePath, options);
+        await this.templateFromPath(templatePath, options, templateContent);
 
       const ctx = await this.executeTemplateDataviewQueries(context);
       logger("Context Template", { context: ctx, options });
@@ -494,7 +494,7 @@ export default class ContextManager {
     return objNew;
   }
 
-  async templateFromPath(templatePath: string, options: any) {
+  async templateFromPath(templatePath: string, options: any, _templateContent?: string) {
     logger("templateFromPath", templatePath, options);
     const templateFile = await this.app.vault.getAbstractFileByPath(
       templatePath
@@ -502,7 +502,7 @@ export default class ContextManager {
 
     if (!templateFile) throw `Template ${templatePath} couldn't be found`;
 
-    const templateContent = await this.app.vault.read(templateFile as TFile);
+    const templateContent = _templateContent || await this.app.vault.read(templateFile as TFile);
 
     const templates = this.splitTemplate(templateContent);
 

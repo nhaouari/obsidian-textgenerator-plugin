@@ -1,10 +1,10 @@
 import { App } from "obsidian";
-import { Message, TextGeneratorSettings } from "./types";
-import TextGeneratorPlugin from "./main";
-import ContextManager from "./context-manager";
+import { Message, TextGeneratorSettings } from "../types";
+import TextGeneratorPlugin from "../main";
+import ContextManager from "../scope/context-manager";
 import debug from "debug";
-import { transformStringsToChatFormat } from "./utils";
-import { LLMConfig } from "./LLMProviders/interface";
+import { transformStringsToChatFormat } from ".";
+import { LLMConfig } from "../LLMProviders/interface";
 const logger = debug("textgenerator:ReqFormatter");
 export default class ReqFormatter {
   plugin: TextGeneratorPlugin;

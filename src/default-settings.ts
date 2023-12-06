@@ -62,6 +62,9 @@ Starred Blocks: {{starredBlocks}}
     reload: true,
   },
   autoSuggestOptions: {
+    customInstructEnabled: false,
+    customInstruct: `continue the follwing text:
+{{query}}`,
     isEnabled: false,
     delay: 300,
     numberOfSuggestions: 5,

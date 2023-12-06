@@ -60,6 +60,8 @@ type TextGeneratorSettings = {
   stream: boolean;
   options: Options;
   autoSuggestOptions: {
+    customInstructEnabled: boolean;
+    customInstruct: string;
     isEnabled: boolean;
     delay: number;
     numberOfSuggestions: number;

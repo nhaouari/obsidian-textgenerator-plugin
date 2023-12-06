@@ -11,8 +11,12 @@ export default class ExcalidrawManager implements ContentManager {
         this.view = view;
     }
 
+    protected async getSelectedItems(): Promise<Item[]> {
+        return this.ea.getViewSelectedElements().sort((a: any, b: any) => a.y + a.height - b.y - b.height)
+    }
+
     protected async getTextSelectedItems(): Promise<Item[]> {
-        return this.ea.getViewSelectedElements().sort((a: any, b: any) => a.y + a.height - b.y + b.height).filter((e: Item) => !e.isDeleted && !!e.rawText);
+        return (await this.getSelectedItems()).filter((e: Item) => !e.isDeleted && !!e.rawText);
     }
 
     protected getElement(id: string): Item {
@@ -52,7 +56,7 @@ export default class ExcalidrawManager implements ContentManager {
 
     async getCursor(dir?: "from" | "to" | undefined): Promise<Item> {
         // get first or last item
-        const items = await this.getTextSelectedItems();
+        const items = await this.getSelectedItems();
         return items[dir == "from" ? 0 : items.length - 1];
     }
 
@@ -91,7 +95,7 @@ export default class ExcalidrawManager implements ContentManager {
 
         let item = this.getElement(itemId) || selectedItem;
 
-        if (pos) {
+        if (pos?.type == "text") {
             if (pos.strokeColor)
                 this.ea.style.strokeColor = pos.strokeColor;
             if (pos.fontSize)
@@ -132,7 +136,7 @@ export default class ExcalidrawManager implements ContentManager {
             // this.ea.clear();
         }
 
-        if (item) {
+        if (item?.type == "text") {
             if (item.strokeColor)
                 this.ea.style.strokeColor = item.strokeColor;
             if (item.fontSize)
@@ -167,8 +171,11 @@ export default class ExcalidrawManager implements ContentManager {
         textSize = this.ea.measureText((elements[0]?.text || "") + text);
 
         elements.forEach((el) => {
-            if (pos)
+            if (pos) {
+                if (!text.startsWith("-"))
+                    el.x += (pos.width / 2) - (el.width / 2)
                 el.y = (pos.y + pos.height + textSize.height) || el.y;
+            }
         });
 
         elements[0] = this.getElement(itemId);

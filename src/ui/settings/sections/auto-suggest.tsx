@@ -6,6 +6,8 @@ import Input from "../components/input";
 import type { Register } from ".";
 import LLMProviderController from "../components/llmProviderController";
 import { useToggle } from "usehooks-ts";
+import AvailableVars from "#/ui/components/availableVars";
+import { contextVariablesObj } from "#/scope/context-manager";
 export default function AutoSuggestSetting(props: { register: Register }) {
   const global = useGlobal();
   const sectionId = useId();
@@ -60,6 +62,7 @@ export default function AutoSuggestSetting(props: { register: Register }) {
               }}
             />
           </SettingItem>
+
           <SettingItem
             name="Delay milliseconds for trigger"
             register={props.register}
@@ -136,6 +139,61 @@ export default function AutoSuggestSetting(props: { register: Register }) {
               }}
             />
           </SettingItem>
+
+          <SettingItem
+            name="Enable Custom Instruct"
+            description={"You can customize auto-suggest template"}
+            register={props.register}
+            sectionId={sectionId}
+          >
+            <Input
+              type="checkbox"
+              value={"" + global.plugin.settings.autoSuggestOptions.customInstructEnabled}
+              setValue={async (val) => {
+                global.plugin.settings.autoSuggestOptions.customInstructEnabled =
+                  val == "true";
+                await global.plugin.saveSettings();
+                global.triggerReload();
+              }}
+            />
+          </SettingItem>
+          {global.plugin.settings.autoSuggestOptions.customInstructEnabled && (
+            <>
+              <SettingItem
+                name="Context Template"
+                description="Default template for auto-suggest"
+                register={props.register}
+                sectionId={sectionId}
+                textArea
+              >
+                <textarea
+                  placeholder="Textarea will autosize to fit the content"
+                  className="resize-y"
+                  value={
+                    global.plugin.settings.autoSuggestOptions.customInstruct ||
+                    global.plugin.defaultSettings.autoSuggestOptions.customInstruct
+                  }
+                  onChange={async (e) => {
+                    global.plugin.settings.autoSuggestOptions.customInstruct =
+                      e.target.value;
+                    global.triggerReload();
+                    await global.plugin.saveSettings();
+                  }}
+                  spellCheck={false}
+                  rows={10}
+                />
+              </SettingItem>
+              <AvailableVars
+                vars={{
+                  ...contextVariablesObj,
+                  query: {
+                    example: "{{query}}",
+                    hint: "query text that triggered auto-suggest"
+                  }
+                }}
+              />
+            </>
+          )}
 
           <SettingItem
             name="Custom Provider"

@@ -1,4 +1,4 @@
-import { PromptTemplate } from "./types";
+import { PromptTemplate } from "../types";
 import {
   App,
   Editor,
@@ -7,9 +7,9 @@ import {
   MarkdownView,
   Scope,
 } from "obsidian";
-import TextGeneratorPlugin from "./main";
-import { ExampleModal } from "./models/model";
-import ContentManagerCls from "./content-manager";
+import TextGeneratorPlugin from "../main";
+import { ExampleModal } from "../models/model";
+import ContentManagerCls from "../content-manager";
 
 export class ModelSuggest extends EditorSuggest<PromptTemplate> {
   app: App;

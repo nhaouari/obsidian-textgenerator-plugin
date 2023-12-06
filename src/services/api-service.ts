@@ -1,8 +1,8 @@
 // import { TemplateModalUI } from "../ui/template-modal-ui";
 // import { App, Notice, Editor, RequestUrlParam, EditorPosition } from "obsidian";
 import TextGeneratorPlugin from "../main";
-import ReqFormatter from "../api-request-formatter";
-import ContextManager, { InputContext } from "../context-manager";
+import ReqFormatter from "../utils/api-request-formatter";
+import ContextManager, { InputContext } from "../scope/context-manager";
 import debug from "debug";
 import LLMProviderInterface from "src/LLMProviders/interface";
 import { LLMProviderRegistery } from "src/LLMProviders";

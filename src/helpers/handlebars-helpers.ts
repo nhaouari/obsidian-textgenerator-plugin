@@ -8,7 +8,7 @@ import { compileLangMessages, createFileWithInput, createFolder } from "#/utils"
 import { pluginApi } from "@vanakat/plugin-api";
 
 export const Handlebars = asyncHelpers(handlebars);
-import type ContextManager from "#/context-manager";
+import type ContextManager from "#/scope/context-manager";
 import {
   ContentExtractor,
   ExtractorSlug,
