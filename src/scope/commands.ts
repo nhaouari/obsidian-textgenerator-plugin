@@ -459,27 +459,30 @@ export default class Commands {
           const CM = ContentManagerCls.compile(await self.getActiveView());
           const file = await CM.getActiveFile()
 
-          const selection255 = (await CM.getValue()).trim().slice(0, maxLength)
+          const content255 = (await CM.getValue()).trim().slice(0, maxLength)
 
           let prompt = `Generate a title for the current document (do not use * " \\ / < > : | ? .):
-				${selection255}
-				`;
+${content255}
+`;
 
           try {
-            const templateOverridePath = "local/autoSuggestContinue"
-            const templateOverride = await self.plugin.textGenerator.getTemplate(templateOverridePath);
+            if (self.plugin.settings.advancedOptions?.generateTitleInstructEnabled) {
+              const templateContent = self.plugin.settings.advancedOptions?.generateTitleInstruct
+                || self.plugin.defaultSettings.advancedOptions?.generateTitleInstruct;
 
-            const contexts = await self.plugin.textGenerator.contextManager.getTemplateContext({
-              editor: CM,
-              filePath: file?.path,
-              templateContent: templateOverridePath,
-            })
+              const templateContext = await self.plugin.textGenerator.contextManager.getTemplateContext({
+                editor: ContentManagerCls.compile(await self.plugin.commands.getActiveView()),
+                templateContent,
+                filePath: file?.path,
+              });
 
-            prompt = await templateOverride?.inputTemplate?.({
-              selection255,
-              ...contexts
-            }) || prompt;
-          } catch { }
+              templateContext.content255 = content255;
+
+              const splittedTemplate = this.plugin.textGenerator.contextManager.splitTemplate(templateContent)
+
+              prompt = await splittedTemplate.inputTemplate?.(templateContext);
+            }
+          } catch (err: any) { logger(err) }
 
           const generatedTitle = await this.plugin.textGenerator.gen(
             prompt,

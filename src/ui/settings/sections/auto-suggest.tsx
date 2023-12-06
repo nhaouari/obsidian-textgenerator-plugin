@@ -160,8 +160,8 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           {global.plugin.settings.autoSuggestOptions.customInstructEnabled && (
             <>
               <SettingItem
-                name="Context Template"
-                description="Default template for auto-suggest"
+                name=""
+                description=""
                 register={props.register}
                 sectionId={sectionId}
                 textArea

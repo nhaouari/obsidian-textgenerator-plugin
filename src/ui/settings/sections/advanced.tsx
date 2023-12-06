@@ -5,6 +5,8 @@ import SettingsSection from "../components/section";
 import Input from "../components/input";
 import type { Register } from ".";
 import Confirm from "#/ui/package-manager/components/confirm";
+import { contextVariablesObj } from "#/scope/context-manager";
+import AvailableVars from "#/ui/components/availableVars";
 export default function AdvancedSetting(props: { register: Register }) {
   const global = useGlobal();
 
@@ -134,6 +136,71 @@ export default function AdvancedSetting(props: { register: Register }) {
           }}
         />
       </SettingItem>
+
+      <SettingItem
+        name="Enable Custom Instruct"
+        description={"You can customize auto-suggest template"}
+        register={props.register}
+        sectionId={sectionId}
+      >
+        <Input
+          type="checkbox"
+          value={"" + global.plugin.settings.advancedOptions?.generateTitleInstructEnabled}
+          setValue={async (val) => {
+            if (!global.plugin.settings.advancedOptions) global.plugin.settings.advancedOptions = {
+              generateTitleInstructEnabled: val == "true",
+            }
+
+            global.plugin.settings.advancedOptions.generateTitleInstructEnabled =
+              val == "true";
+            await global.plugin.saveSettings();
+            global.triggerReload();
+          }}
+        />
+      </SettingItem>
+      {global.plugin.settings.advancedOptions?.generateTitleInstructEnabled && (
+        <>
+          <SettingItem
+            name=""
+            description=""
+            register={props.register}
+            sectionId={sectionId}
+            textArea
+          >
+            <textarea
+              placeholder="Textarea will autosize to fit the content"
+              className="resize-y"
+              value={
+                global.plugin.settings.advancedOptions?.generateTitleInstruct ||
+                global.plugin.defaultSettings.advancedOptions?.generateTitleInstruct
+              }
+              onChange={async (e) => {
+                if (!global.plugin.settings.advancedOptions) global.plugin.settings.advancedOptions = {
+                  generateTitleInstructEnabled: true,
+                  generateTitleInstruct: e.target.value
+                }
+
+                global.plugin.settings.advancedOptions.generateTitleInstruct =
+                  e.target.value;
+
+                global.triggerReload();
+                await global.plugin.saveSettings();
+              }}
+              spellCheck={false}
+              rows={10}
+            />
+          </SettingItem>
+          <AvailableVars
+            vars={{
+              ...contextVariablesObj,
+              query: {
+                example: "{{content255}}",
+                hint: "first 255 letters of trimmed content of the note"
+              }
+            }}
+          />
+        </>
+      )}
       <SettingItem
         name="Reload the plugin"
         description="Some changes might require you to reload the plugins"

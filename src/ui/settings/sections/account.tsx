@@ -39,16 +39,16 @@ export default function AccountSetting(props: { register: Register }) {
         <div className="flex justify-end w-full">
           {loggedIn ?
             <div className="flex gap-2">
-              <button
+              <button className="cursor-pointer"
                 onClick={async () => {
                   await attemptLogout(global.plugin);
                   triggerReload()
                 }}
               >Logout</button>
 
-              <button
+              <button className="cursor-pointer"
                 onClick={async () => {
-                  window.open(new URL("/dashboard/account", baseForLogin).href)
+                  window.open(new URL("/dashboard/settings", baseForLogin).href)
                 }}>Manage Account</button>
             </div>
             : <button
@@ -68,7 +68,7 @@ export default function AccountSetting(props: { register: Register }) {
             }
           </div>
           <div className="flex justify-end w-full">
-            <button onClick={async () => {
+            <button className="cursor-pointer" onClick={async () => {
               window.open(new URL("/dashboard/subscriptions", baseForLogin).href)
             }}>Manage Subscriptions</button>
           </div>

@@ -61,6 +61,13 @@ Starred Blocks: {{starredBlocks}}
     "custom-instruct": true,
     reload: true,
   },
+
+  advancedOptions: {
+    generateTitleInstructEnabled: false,
+    generateTitleInstruct: `Generate a title for the current document (do not use * " \\ / < > : | ? .):
+{{content255}}`,
+  },
+
   autoSuggestOptions: {
     customInstructEnabled: false,
     customInstruct: `continue the follwing text:

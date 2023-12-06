@@ -12,7 +12,6 @@ import {
 } from "obsidian";
 
 import debug from "debug";
-import { unpromisifyAsyncFunction } from "../utils";
 import ContentManagerCls from "../content-manager";
 const logger = debug("textgenerator:AutoSuggest");
 
@@ -267,20 +266,19 @@ ${context.query}`;
           const templateContent = this.plugin.settings.autoSuggestOptions.customInstruct
             || this.plugin.defaultSettings.autoSuggestOptions.customInstruct;
 
-          const templateContext = {
-            ... await this.plugin.textGenerator.contextManager.getTemplateContext({
-              editor: ContentManagerCls.compile(await this.plugin.commands.getActiveView()),
-              templateContent,
-              filePath: context.file?.path,
-            }),
-            query: context.query
-          }
+          const templateContext = await this.plugin.textGenerator.contextManager.getTemplateContext({
+            editor: ContentManagerCls.compile(await this.plugin.commands.getActiveView()),
+            templateContent,
+            filePath: context.file?.path,
+          })
+
+          templateContext.query = context.query
 
           const splittedTemplate = this.plugin.textGenerator.contextManager.splitTemplate(templateContent)
 
           prompt = await splittedTemplate.inputTemplate?.(templateContext);
         }
-      } catch (err: any) { console.log(err) }
+      } catch (err: any) { logger(err) }
 
       this.plugin.startProcessing(false);
 
