@@ -1,4 +1,4 @@
-import TemplateInputModalUI from "./ui/template-input-modal";
+import TemplateInputModalUI from "../ui/template-input-modal";
 import {
   App,
   Notice,
@@ -6,28 +6,28 @@ import {
   TFile,
   stringifyYaml,
 } from "obsidian";
-import { TextGeneratorSettings } from "./types";
-import TextGeneratorPlugin from "./main";
-import ReqFormatter from "./utils/api-request-formatter";
-import { SetPath } from "./ui/settings/components/set-path";
-import ContextManager, { InputContext } from "./scope/context-manager";
+import { TextGeneratorSettings } from "../types";
+import TextGeneratorPlugin from "../main";
+import ReqFormatter from "../utils/api-request-formatter";
+import { SetPath } from "../ui/settings/components/set-path";
+import ContextManager, { InputContext } from "../scope/context-manager";
 import {
   makeId,
   createFileWithInput,
   openFile,
   removeYAML,
   removeExtensionFromName,
-} from "./utils";
+} from "../utils";
 import safeAwait from "safe-await";
 import debug from "debug";
-import RequestHandler from "./services/api-service";
+import RequestHandler from "./api-service";
 const logger = debug("textgenerator:TextGenerator");
 const heavyLogger = debug("textgenerator:TextGenerator:heavy");
 
-import EmbeddingScope from "./scope/embeddings";
-import { IGNORE_IN_YAML } from "./constants";
+import EmbeddingScope from "../scope/embeddings";
+import { IGNORE_IN_YAML } from "../constants";
 import merge from "lodash.merge";
-import { ContentManager } from "./content-manager/types";
+import { ContentManager } from "../content-manager/types";
 
 export default class TextGenerator extends RequestHandler {
   plugin: TextGeneratorPlugin;

@@ -21,7 +21,7 @@ import {
 } from "./constants";
 import TextGeneratorSettingTab from "./ui/settings/settings-page";
 import { SetMaxTokens } from "./ui/settings/components/set-max-tokens";
-import TextGenerator from "./text-generator";
+import TextGenerator from "./services/text-generator";
 import PackageManager from "./ui/package-manager/package-manager";
 import { PackageManagerUI } from "./ui/package-manager/package-manager-ui";
 import { EditorView } from "@codemirror/view";
