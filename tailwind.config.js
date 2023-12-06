@@ -4,8 +4,11 @@ module.exports = {
 	corePlugins: {
 		preflight: false,
 	},
-	darkMode: ["class", '[class*="theme-dark"]'], // or 'media' or 'class'
-	plugins: [require("daisyui")],
+	darkMode: false,
+	// darkMode: ["class", '[class*="theme-dark"]'], // or 'media' or 'class'
+	plugins: [
+		require("daisyui"),
+	],
 
 	daisyui: {
 		prefix: "dz-", // prefix for daisyUI classnames (components, modifiers and responsive class names. Not colors)
