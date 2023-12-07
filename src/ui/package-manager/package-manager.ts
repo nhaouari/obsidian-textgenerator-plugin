@@ -111,7 +111,7 @@ export default class PackageManager {
     try {
       this.plugin.registerAction<{ packageId?: string }>("bought-package", async (props) => {
         console.log("bought item", { props })
-        console.log("doing something cool", props, self.configuration.packagesHash[props.packageId])
+        console.log("doing something cool", props, props.packageId ? self.configuration.packagesHash[props.packageId] : "")
         // do something cool
         if (props.packageId)
           await showGratitude(self.plugin, self.configuration.packagesHash[props.packageId])
@@ -603,7 +603,6 @@ export default class PackageManager {
       logger("installPromptExternal", { packageId, id, overwrite });
 
       const resource = this.configuration.resources[id];
-
       const res = await requestUrl({
         url: new URL(`/api/content/${id}`, baseForLogin).href,
         headers: {
@@ -645,23 +644,26 @@ export default class PackageManager {
     const files = this.getResourcesOfFolder(p.folderName)
 
     // get manifest.json
-    for (const file of files) {
-      const id = file.id;
-      const res = await requestUrl({
-        url: new URL(`/api/content/${id}`, baseForLogin).href,
-        headers: {
-          "Authorization": `Bearer ${this.getApikey()}`,
-        },
-        throw: false
+    await Promise.all(
+      files.map(async (file) => {
+        const id = file.id;
+        const res = await requestUrl({
+          url: new URL(`/api/content/${id}`, baseForLogin).href,
+          headers: {
+            "Authorization": `Bearer ${this.getApikey()}`,
+          },
+          throw: false
+        })
+
+        console.log(`${dirPath}/${file.name}`)
+        if (res.status >= 300) {
+          throw res.text;
+        }
+
+
+        await app.vault.adapter.writeBinary(`${dirPath}/${file.name}`, await res.arrayBuffer);
       })
-
-      if (res.status >= 300) {
-        throw res.text;
-      }
-
-      await app.vault.adapter.writeBinary(`${dirPath}/${file.name}`, await res.arrayBuffer);
-    }
-
+    )
 
     const obj: InstalledPackage = {
       packageId: p.packageId,

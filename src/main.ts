@@ -749,4 +749,21 @@ export default class TextGeneratorPlugin extends Plugin {
   registerAction<T>(action: `${string}`, cb: (params: T) => void): any {
     return this.actions[action] = cb;
   }
+
+  getRelativePathTo(path: string) {
+
+    await this.app.vault.create
+    let k = this.settings.promptsPath;
+    let d = k.split("/");
+
+    if (k.endsWith("/")) d.pop();
+
+    let basePath: string = "";
+
+    if (d.length > 1) d.pop();
+
+    basePath = d.join("/");
+
+    return `${basePath}/${path}`
+  }
 }

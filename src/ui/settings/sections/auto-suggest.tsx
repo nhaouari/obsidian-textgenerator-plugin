@@ -141,8 +141,8 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           </SettingItem>
 
           <SettingItem
-            name="Enable Custom Instruct"
-            description={"You can customize auto-suggest template"}
+            name="Enable auto-suggest Instruct"
+            description={"You can customize auto-suggest prompt"}
             register={props.register}
             sectionId={sectionId}
           >

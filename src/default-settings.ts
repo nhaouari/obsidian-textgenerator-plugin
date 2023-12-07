@@ -65,7 +65,7 @@ Starred Blocks: {{starredBlocks}}
   advancedOptions: {
     generateTitleInstructEnabled: false,
     generateTitleInstruct: `Generate a title for the current document (do not use * " \\ / < > : | ? .):
-{{content255}}`,
+{{substring content 0 255}}`,
   },
 
   autoSuggestOptions: {

@@ -454,34 +454,30 @@ export default class Commands {
         const self: Commands = this;
 
         try {
-          const maxLength = 255;
-
           const CM = ContentManagerCls.compile(await self.getActiveView());
           const file = await CM.getActiveFile()
 
-          const content255 = (await CM.getValue()).trim().slice(0, maxLength)
+          let prompt = ``;
 
-          let prompt = `Generate a title for the current document (do not use * " \\ / < > : | ? .):
-${content255}
-`;
+          let templateContent = self.plugin.defaultSettings.advancedOptions?.generateTitleInstruct;
 
           try {
             if (self.plugin.settings.advancedOptions?.generateTitleInstructEnabled) {
-              const templateContent = self.plugin.settings.advancedOptions?.generateTitleInstruct
-                || self.plugin.defaultSettings.advancedOptions?.generateTitleInstruct;
-
-              const templateContext = await self.plugin.textGenerator.contextManager.getTemplateContext({
-                editor: ContentManagerCls.compile(await self.plugin.commands.getActiveView()),
-                templateContent,
-                filePath: file?.path,
-              });
-
-              templateContext.content255 = content255;
-
-              const splittedTemplate = this.plugin.textGenerator.contextManager.splitTemplate(templateContent)
-
-              prompt = await splittedTemplate.inputTemplate?.(templateContext);
+              templateContent = self.plugin.settings.advancedOptions?.generateTitleInstruct
+                || self.plugin.defaultSettings.advancedOptions?.generateTitleInstruct
             }
+
+            const templateContext = await self.plugin.textGenerator.contextManager.getTemplateContext({
+              editor: ContentManagerCls.compile(await self.plugin.commands.getActiveView()),
+              templateContent,
+              filePath: file?.path,
+            });
+
+            templateContext.content = (await CM.getValue()).trim()
+
+            const splittedTemplate = this.plugin.textGenerator.contextManager.splitTemplate(templateContent)
+
+            prompt = await splittedTemplate.inputTemplate?.(templateContext);
           } catch (err: any) { logger(err) }
 
           const generatedTitle = await this.plugin.textGenerator.gen(
@@ -489,7 +485,8 @@ ${content255}
             {}
           );
 
-          const sanitizedTitle = generatedTitle
+          const sanitizedTitle = generatedTitle.trim()
+            .replaceAll("\\", "")
             .replace(/[*\\"/<>:|?\.]/g, "")
             .replace(/^\n*/g, "");
 

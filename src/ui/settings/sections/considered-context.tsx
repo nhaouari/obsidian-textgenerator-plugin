@@ -68,8 +68,8 @@ export default function ConsideredContextSetting(props: {
         id={sectionId}
       >
         <SettingItem
-          name="Enable Custom Instruction"
-          description={"You can customize generate text prompt"}
+          name="Custom default generation prompt"
+          description={"You can customize {{context}} variable"}
           register={props.register}
           sectionId={sectionId}
         >
@@ -87,8 +87,8 @@ export default function ConsideredContextSetting(props: {
         {global.plugin.settings.context.customInstructEnabled && (
           <>
             <SettingItem
-              name="Context Template"
-              description="Default template for {{context}} variable"
+              name=""
+              description=""
               register={props.register}
               sectionId={sectionId}
               textArea
@@ -116,6 +116,72 @@ export default function ConsideredContextSetting(props: {
 
 
         <SettingItem
+          name="Enable generate title instruct"
+          description={"You can customize generate title prompt"}
+          register={props.register}
+          sectionId={sectionId}
+        >
+          <Input
+            type="checkbox"
+            value={"" + global.plugin.settings.advancedOptions?.generateTitleInstructEnabled}
+            setValue={async (val) => {
+              if (!global.plugin.settings.advancedOptions) global.plugin.settings.advancedOptions = {
+                generateTitleInstructEnabled: val == "true",
+              }
+
+              global.plugin.settings.advancedOptions.generateTitleInstructEnabled =
+                val == "true";
+              await global.plugin.saveSettings();
+              global.triggerReload();
+            }}
+          />
+        </SettingItem>
+        {global.plugin.settings.advancedOptions?.generateTitleInstructEnabled && (
+          <>
+            <SettingItem
+              name=""
+              description=""
+              register={props.register}
+              sectionId={sectionId}
+              textArea
+            >
+              <textarea
+                placeholder="Textarea will autosize to fit the content"
+                className="resize-y"
+                value={
+                  global.plugin.settings.advancedOptions?.generateTitleInstruct ||
+                  global.plugin.defaultSettings.advancedOptions?.generateTitleInstruct
+                }
+                onChange={async (e) => {
+                  if (!global.plugin.settings.advancedOptions) global.plugin.settings.advancedOptions = {
+                    generateTitleInstructEnabled: true,
+                    generateTitleInstruct: e.target.value
+                  }
+
+                  global.plugin.settings.advancedOptions.generateTitleInstruct =
+                    e.target.value;
+
+                  global.triggerReload();
+                  await global.plugin.saveSettings();
+                }}
+                spellCheck={false}
+                rows={10}
+              />
+            </SettingItem>
+            <AvailableVars
+              vars={{
+                ...contextVariablesObj,
+                query: {
+                  example: "{{content255}}",
+                  hint: "first 255 letters of trimmed content of the note"
+                }
+              }}
+            />
+          </>
+        )}
+
+
+        <SettingItem
           name="TG Selection Limiter(regex)"
           description="tg_selection stopping character. Empty means disabled. Default: ^\*\*\*"
           register={props.register}
@@ -131,6 +197,7 @@ export default function ConsideredContextSetting(props: {
           />
         </SettingItem>
       </SettingsSection>
+
       <SettingsSection
         title="Template Settings"
         className="flex w-full flex-col"
