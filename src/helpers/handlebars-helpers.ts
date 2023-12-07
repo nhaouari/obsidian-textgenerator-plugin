@@ -71,7 +71,6 @@ export default function Helpersfn(self: ContextManager) {
   }
 
   const read = async (path: string) => {
-    console.log({ path, plugin: self.plugin })
     return await Read(path, self.plugin)
   }
 
@@ -331,8 +330,6 @@ export default function Helpersfn(self: ContextManager) {
       if (!options.data.root.templatePath) {
         throw new Error("templatePath was not found in run command");
       }
-
-
 
       const p = options.data.root.templatePath?.split("/");
       const parentPackageId = p[p.length - 2];
@@ -604,7 +601,7 @@ export default function Helpersfn(self: ContextManager) {
 
         const Id = id?.contains("/")
           ? id
-          : `${parentPackageId}/${id}`
+          : `${parentPackageId}/${id}`;
 
         return runTemplate(Id, {
           ...meta,

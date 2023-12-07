@@ -45,7 +45,6 @@ export default class ReqFormatter {
     } = {}
   ) {
     logger("prepareReqParameters", _params, insertMetadata, templatePath);
-
     const frontmatter: any = this.getFrontmatter(templatePath, insertMetadata);
 
     const params = {

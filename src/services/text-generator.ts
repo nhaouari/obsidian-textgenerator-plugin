@@ -751,7 +751,7 @@ ${removeYAML(content)}
     const templatePath = await await this.getTemplatePath(id)
     // this.plugin.endProcessing(true);
     this.plugin.startProcessing();
-
+    console.log({ templatePath, id })
     const [errorContext, context] = await safeAwait(
       this.contextManager.getContext({
         editor: options.editor,
@@ -810,6 +810,8 @@ ${removeYAML(content)}
     if (await this.checkTemplatePathsHasChanged()) {
       await this.updateTemplatesCache();
     }
+
+    console.log(this.templatePaths)
 
     if (this.templatePaths[id]) return this.templatePaths[id];
 

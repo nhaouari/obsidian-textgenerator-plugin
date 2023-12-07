@@ -28,9 +28,9 @@ export default class Commands {
         try {
           const activeView = await self.getActiveView();
           const CM = ContentManagerCls.compile(activeView)
-          await this.plugin.textGenerator.generateInEditor({}, false, CM);
+          await self.plugin.textGenerator.generateInEditor({}, false, CM);
         } catch (error) {
-          this.plugin.handelError(error);
+          self.plugin.handelError(error);
         }
       },
     },
@@ -45,9 +45,9 @@ export default class Commands {
         try {
           const activeView = await self.getActiveView();
           const CM = ContentManagerCls.compile(activeView)
-          await this.plugin.textGenerator.generateInEditor({}, true, CM);
+          await self.plugin.textGenerator.generateInEditor({}, true, CM);
         } catch (error) {
-          this.plugin.handelError(error);
+          self.plugin.handelError(error);
         }
       },
     },

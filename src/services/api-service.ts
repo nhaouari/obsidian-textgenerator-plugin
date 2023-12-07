@@ -72,16 +72,6 @@ export default class RequestHandler {
       templatePath: "default/default"
     });
 
-
-    console.log({
-      prompt,
-      comp,
-      set: {
-        ...settings,
-        templatePath: "default/default"
-      }
-    })
-
     try {
       const { reqParams, bodyParams, provider, allParams } =
         this.reqFormatter.getRequestParameters(
@@ -98,16 +88,6 @@ export default class RequestHandler {
         provider.selectedProvider !== this.LLMProvider.id
       )
         await this.loadllm(provider.selectedProvider);
-
-
-      console.log({
-        d: this.LLMProvider.getSettings(),
-        allParams,
-        bodyParams,
-      }, {
-        ...settings,
-        prompt: comp,
-      })
 
       await providerOptionsValidator(
         this.LLMProvider.provider,

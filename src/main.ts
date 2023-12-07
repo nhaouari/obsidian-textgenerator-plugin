@@ -751,8 +751,6 @@ export default class TextGeneratorPlugin extends Plugin {
   }
 
   getRelativePathTo(path: string) {
-
-    await this.app.vault.create
     let k = this.settings.promptsPath;
     let d = k.split("/");
 
