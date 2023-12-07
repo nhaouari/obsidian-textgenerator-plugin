@@ -37,17 +37,16 @@ export default class ExcalidrawManager implements ContentManager {
     }
 
     async getTgSelection(tgSelectionLimiter?: string) {
-        return (await this.getSelections()).join("\n");
-    }
-
-    selectTgSelection(tgSelectionLimiter?: string) {
         let txt = this.ea.getViewSelectedElements().map((e: Item) => e.rawText).filter(Boolean).join("\n").trim();
 
         if (!txt?.length) {
-            txt = this.ea.getValue();
+            txt = this.getValue();
         }
 
         return txt;
+    }
+
+    selectTgSelection(tgSelectionLimiter?: string) {
     }
 
     getLastLetterBeforeCursor(): string {

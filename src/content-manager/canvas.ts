@@ -107,6 +107,12 @@ export default class CanvasManager implements ContentManager {
     }
 
     async getSelection(): Promise<string> {
+        let txt = (await this.getSelections())[0];
+
+        if (!txt?.length) {
+            txt = await this.getValue();
+        }
+
         return (await this.getSelections())[0]
     }
 
