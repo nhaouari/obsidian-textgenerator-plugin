@@ -36,7 +36,7 @@ export default function Helpersfn(self: ContextManager) {
     return await ce.convert(cntn, other);
   }
 
-  const runTemplate = async (id: string, metadata?: any) => {
+  const _runTemplate = async (id: string, metadata?: any) => {
     return await self.plugin.textGenerator.templateGen(id, {
       additionalProps: metadata,
     })
@@ -398,7 +398,7 @@ export default function Helpersfn(self: ContextManager) {
         };
       }
 
-      lodashSet(options.data.root, otherVariables.length >= 1 ? `vars["${otherVariables[0]}"]` : id, await runTemplate(id, {
+      lodashSet(options.data.root, otherVariables.length >= 1 ? `vars["${otherVariables[0]}"]` : id, await _runTemplate(id, {
         ...options.data.root,
         disableProvider: false,
         ...TemplateMetadata,
@@ -603,7 +603,7 @@ export default function Helpersfn(self: ContextManager) {
           ? id
           : `${parentPackageId}/${id}`;
 
-        return runTemplate(Id, {
+        return _runTemplate(Id, {
           ...meta,
           ...(typeof metadata == "object" ? metadata : {
             "tg_selection": metadata
