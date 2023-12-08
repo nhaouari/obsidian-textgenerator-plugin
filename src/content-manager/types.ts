@@ -7,6 +7,10 @@ export type EditorPosition = {
     line: number;
 }
 
+export type Options = {
+    wrapInBlockQuote?: boolean;
+}
+
 export interface ContentManager {
     getValue(): Promise<string> | string;
 

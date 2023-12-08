@@ -167,7 +167,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
             if (!activeView) throw "active view wasn't detected"
 
-            const CM = ContentManagerCls.compile(activeView)
+            const CM = ContentManagerCls.compile(activeView, this)
 
             const context = {
               ...(activeView
@@ -217,7 +217,7 @@ export default class TextGeneratorPlugin extends Plugin {
           // const activeFile = this.app.workspace.getActiveFile();
           const activeView = this.getActiveView();
           if (activeView !== null) {
-            const CM = ContentManagerCls.compile(activeView)
+            const CM = ContentManagerCls.compile(activeView, this)
             try {
               await this.textGenerator.generateInEditor({}, false, CM);
             } catch (error) {
@@ -574,7 +574,7 @@ export default class TextGeneratorPlugin extends Plugin {
     button.addEventListener("click", async () => {
       const activeView = this.getActiveView();
       if (!activeView) throw "activeView wasn't detected";
-      const CM = ContentManagerCls.compile(activeView)
+      const CM = ContentManagerCls.compile(activeView, this)
       if (activeView)
         await this.textGenerator.generatePrompt(
           markdown,

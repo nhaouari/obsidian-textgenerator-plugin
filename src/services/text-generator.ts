@@ -275,7 +275,7 @@ export default class TextGenerator extends RequestHandler {
     }
 
     logger("generateInEditor");
-    const cursor = this.getCursor(editor);
+    const cursor = await this.getCursor(editor);
 
     const context =
       customContext ||
@@ -299,7 +299,7 @@ export default class TextGenerator extends RequestHandler {
 
     const prefix = this.plugin.settings.prefix;
 
-    editor.insertText(
+    await editor.insertText(
       prefix.length ? prefix + text : text,
       cursor,
       mode

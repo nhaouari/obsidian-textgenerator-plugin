@@ -1,14 +1,16 @@
 import { Editor, EditorPosition, TFile, View } from "obsidian";
-import { ContentManager, Mode } from "./types";
+import { ContentManager, Mode, Options } from "./types";
 import { minPos, maxPos } from "./utils"
 import { removeYAML } from "../utils";
 export default class MarkdownManager implements ContentManager {
     editor: Editor;
     view: View;
+    options: Options;
 
-    constructor(editor: Editor, view: View) {
+    constructor(editor: Editor, view: View, options: Options) {
         this.editor = editor;
         this.view = view;
+        this.options = options;
     }
 
     async getSelections(): Promise<string[]> {
@@ -30,6 +32,25 @@ export default class MarkdownManager implements ContentManager {
 
     async getSelection(): Promise<string> {
         return this.editor.getSelection();
+    }
+
+    protected wrapInBlockQuote(text: string) {
+        let lines = text
+            .split("\n")
+            .map((line) => line.trim())
+            .filter((line) => line !== "" && line !== ">");
+
+        lines = lines
+            .map((line, index) => {
+                if (line.includes("[!ai]+ AI")) {
+                    return ">";
+                }
+
+                return line.startsWith(">") ? line : "> " + line;
+            })
+            .filter((line) => line !== "");
+
+        return "\n> [!ai]+ AI\n>\n" + lines.join("\n").trim() + "\n\n";
     }
 
     protected setSelections(poses: { anchor: { ch: number; line: number; }; head: { ch: number; line: number; }; }[]): void {
@@ -153,6 +174,12 @@ export default class MarkdownManager implements ContentManager {
                 break;
 
             case "insert":
+                console.log({
+                    cursor
+                })
+                if (this.options.wrapInBlockQuote)
+                    text = this.wrapInBlockQuote(text)
+
             case "stream":
             default:
                 this.replaceRange(text,
@@ -207,6 +234,10 @@ export default class MarkdownManager implements ContentManager {
             },
 
             replaceAllWith: async (allText) => {
+                if (this.options.wrapInBlockQuote)
+                    allText = this.wrapInBlockQuote(allText)
+
+
                 this.replaceRange(
                     mode == "replace" ? allText : "",
                     startingCursor,

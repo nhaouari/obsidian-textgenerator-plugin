@@ -27,7 +27,7 @@ export default class Commands {
         const self: Commands = this;
         try {
           const activeView = await self.getActiveView();
-          const CM = ContentManagerCls.compile(activeView)
+          const CM = ContentManagerCls.compile(activeView, self.plugin)
           await self.plugin.textGenerator.generateInEditor({}, false, CM);
         } catch (error) {
           self.plugin.handelError(error);
@@ -44,7 +44,7 @@ export default class Commands {
         const self: Commands = this;
         try {
           const activeView = await self.getActiveView();
-          const CM = ContentManagerCls.compile(activeView)
+          const CM = ContentManagerCls.compile(activeView, self.plugin)
           await self.plugin.textGenerator.generateInEditor({}, true, CM);
         } catch (error) {
           self.plugin.handelError(error);
@@ -69,7 +69,7 @@ export default class Commands {
               const self: Commands = this;
               try {
                 const activeView = await self.getActiveView();
-                const CM = ContentManagerCls.compile(activeView);
+                const CM = ContentManagerCls.compile(activeView, self.plugin);
 
                 await self.plugin.textGenerator.generateFromTemplate({
                   params: {},
@@ -105,7 +105,7 @@ export default class Commands {
               const self: Commands = this;
               try {
                 const activeView = await self.getActiveView();
-                const CM = ContentManagerCls.compile(activeView);
+                const CM = ContentManagerCls.compile(activeView, self.plugin);
 
                 await this.plugin.textGenerator.generateToClipboard(
                   {},
@@ -141,7 +141,7 @@ export default class Commands {
 
               try {
                 const activeView = await self.getActiveView();
-                const CM = ContentManagerCls.compile(activeView);
+                const CM = ContentManagerCls.compile(activeView, self.plugin);
 
                 await self.plugin.textGenerator.generateFromTemplate({
                   params: {},
@@ -216,7 +216,7 @@ export default class Commands {
 
               try {
                 const activeView = await self.getActiveView();
-                const CM = ContentManagerCls.compile(activeView);
+                const CM = ContentManagerCls.compile(activeView, self.plugin);
 
                 await self.plugin.textGenerator.generateFromTemplate({
                   params: {},
@@ -257,7 +257,7 @@ export default class Commands {
 
               try {
                 const activeView = await self.getActiveView();
-                const CM = ContentManagerCls.compile(activeView);
+                const CM = ContentManagerCls.compile(activeView, self.plugin);
 
                 await self.plugin.textGenerator.generateFromTemplate({
                   params: {},
@@ -296,7 +296,7 @@ export default class Commands {
 
               try {
                 const activeView = await self.getActiveView();
-                const CM = ContentManagerCls.compile(activeView);
+                const CM = ContentManagerCls.compile(activeView, self.plugin);
 
                 await self.plugin.textGenerator.tempalteToModal({
                   params: {},
@@ -436,7 +436,7 @@ export default class Commands {
 
         try {
           const activeView = await self.getActiveView();
-          const CM = ContentManagerCls.compile(activeView);
+          const CM = ContentManagerCls.compile(activeView, self.plugin);
 
           await self.plugin.textGenerator.createTemplateFromEditor(CM);
         } catch (error) {
@@ -454,7 +454,7 @@ export default class Commands {
         const self: Commands = this;
 
         try {
-          const CM = ContentManagerCls.compile(await self.getActiveView());
+          const CM = ContentManagerCls.compile(await self.getActiveView(), self.plugin);
           const file = await CM.getActiveFile()
 
           let prompt = ``;
@@ -468,7 +468,7 @@ export default class Commands {
             }
 
             const templateContext = await self.plugin.textGenerator.contextManager.getTemplateContext({
-              editor: ContentManagerCls.compile(await self.plugin.commands.getActiveView()),
+              editor: ContentManagerCls.compile(await self.plugin.commands.getActiveView(), self.plugin),
               templateContent,
               filePath: file?.path,
             });
@@ -539,7 +539,7 @@ export default class Commands {
 
         try {
           const activeView = await self.getActiveView();
-          const CM = ContentManagerCls.compile(activeView);
+          const CM = ContentManagerCls.compile(activeView, self.plugin);
 
           const context =
             await self.plugin.textGenerator.contextManager.getContext({
@@ -574,7 +574,7 @@ export default class Commands {
             async (result) => {
               try {
                 const activeView = await self.getActiveView();
-                const CM = ContentManagerCls.compile(activeView);
+                const CM = ContentManagerCls.compile(activeView, self.plugin);
 
                 const context =
                   await self.plugin.textGenerator.contextManager.getContext({
@@ -675,7 +675,7 @@ export default class Commands {
 
             const activeView = await self.getActiveView();
 
-            const CM = ContentManagerCls.compile(activeView)
+            const CM = ContentManagerCls.compile(activeView, self.plugin)
 
             const filePath = (await CM.getActiveFile())?.path
             try {

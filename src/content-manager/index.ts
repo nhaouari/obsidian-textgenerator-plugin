@@ -2,17 +2,21 @@ import type { View } from "obsidian";
 import MarkdownManager from "./md"
 import ExcalidrawManager from "./ea"
 import CanvasManager from "./canvas"
-import { ContentManager } from "./types";
+import { ContentManager, Options } from "./types";
+import TextGeneratorPlugin from "#/main";
 export default class ContentManagerCls {
-    static compile(view: View): ContentManager {
+    static compile(view: View, plugin: TextGeneratorPlugin): ContentManager {
         const type = view.getViewType();
 
+        const options: Options = {
+            wrapInBlockQuote: plugin.settings.outputToBlockQuote
+        }
 
         switch (type) {
             case "markdown":
                 const editor = view.app.workspace.activeEditor?.editor;
                 if (!editor) throw "couldn't find the editor fsr";
-                return new MarkdownManager(editor, view);
+                return new MarkdownManager(editor, view, options);
 
             case "excalidraw":
                 // @ts-ignore

@@ -163,7 +163,7 @@ export class AutoSuggest extends EditorSuggest<Completion> {
     this.process = true;
 
     // @ts-ignore
-    const CM = ContentManagerCls.compile(this.plugin.app.workspace.activeLeaf?.view)
+    const CM = ContentManagerCls.compile(this.plugin.app.workspace.activeLeaf?.view, this.plugin)
 
     const selection = this.plugin.textGenerator.contextManager.getTGSelection(CM) as unknown as string
     const lastOccurrenceIndex = selection.lastIndexOf(triggerPhrase);
@@ -267,7 +267,7 @@ ${context.query}`;
             || this.plugin.defaultSettings.autoSuggestOptions.customInstruct;
 
           const templateContext = await this.plugin.textGenerator.contextManager.getTemplateContext({
-            editor: ContentManagerCls.compile(await this.plugin.commands.getActiveView()),
+            editor: ContentManagerCls.compile(await this.plugin.commands.getActiveView(), this.plugin),
             templateContent,
             filePath: context.file?.path,
           })
