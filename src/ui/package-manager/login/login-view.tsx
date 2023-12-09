@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import useGlobal from "../../context/global";
 import type { LoginUI } from "./login-ui";
 import { request } from "obsidian";
+import { ProviderServer } from "../package-manager";
 
-export const baseForLogin = ""
 
 export const LoginView = (p: { parent: LoginUI }) => {
   const global = useGlobal();
@@ -35,12 +35,12 @@ export const LoginView = (p: { parent: LoginUI }) => {
     (async () => {
       try {
         // request temp session and retrive id, endpoint GET /api/apps/gen-session
-        sessionId = await request(new URL("/api/auth/session/temp/gen", baseForLogin).href)
+        sessionId = await request(new URL("/api/auth/session/temp/gen", ProviderServer).href)
 
         if (!sessionId) return;
 
         // open the login website
-        window.open(new URL(`/login/temp?session=${encodeURIComponent(sessionId)}&callback=${encodeURIComponent("obsidian://text-gen?intent=login")}`, baseForLogin).href);
+        window.open(new URL(`/login/temp?session=${encodeURIComponent(sessionId)}&callback=${encodeURIComponent("obsidian://text-gen?intent=login")}`, ProviderServer).href);
 
         window.addEventListener("focus", onFocus);
 

@@ -15,7 +15,6 @@ import TextGeneratorPlugin from "src/main";
 import { gt } from "semver";
 import debug from "debug";
 import Confirm from "./components/confirm";
-import { baseForLogin } from "./login/login-view";
 import { createFolder } from "#/utils";
 import set from "lodash.set";
 
@@ -27,6 +26,8 @@ const packageRegistry = `https://raw.githubusercontent.com/text-gen/text-generat
 const corePackageRegistry = `https://raw.githubusercontent.com/text-gen/text-generator-packages/master/core-packages.json`;
 
 export const PackageProviderid = "package-provider"
+
+export const ProviderServer = ""
 
 
 export default class PackageManager {
@@ -185,7 +186,7 @@ export default class PackageManager {
 
   async updateBoughtResources() {
     const apikey = this.getApikey()
-    if (!baseForLogin || !apikey) return;
+    if (!ProviderServer || !apikey) return;
 
     const data = await getBoughtResources(apikey);
 
@@ -604,7 +605,7 @@ export default class PackageManager {
 
       const resource = this.configuration.resources[id];
       const res = await requestUrl({
-        url: new URL(`/api/content/${id}`, baseForLogin).href,
+        url: new URL(`/api/content/${id}`, ProviderServer).href,
         headers: {
           "Authorization": `Bearer ${this.getApikey()}`,
         },
@@ -648,7 +649,7 @@ export default class PackageManager {
       files.map(async (file) => {
         const id = file.id;
         const res = await requestUrl({
-          url: new URL(`/api/content/${id}`, baseForLogin).href,
+          url: new URL(`/api/content/${id}`, ProviderServer).href,
           headers: {
             "Authorization": `Bearer ${this.getApikey()}`,
           },
@@ -803,7 +804,7 @@ import FC from "func-cache"
 
 export const validateOwnership = FC(async (packageId: string, apikey: string) => {
   const res = await requestUrl({
-    url: new URL(`/api/content/package/${packageId}/verify`, baseForLogin).href,
+    url: new URL(`/api/content/package/${packageId}/verify`, ProviderServer).href,
     headers: {
       "Authorization": `Bearer ${apikey}`,
     },
@@ -824,7 +825,7 @@ export const validateOwnership = FC(async (packageId: string, apikey: string) =>
 
 const getBoughtResources = FC(async (apikey: string) => {
   const res = await requestUrl({
-    url: new URL(`/api/v2/resources`, baseForLogin).href, headers: {
+    url: new URL(`/api/v2/resources`, ProviderServer).href, headers: {
       "Authorization": `Bearer ${apikey}`,
     },
     throw: false

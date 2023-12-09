@@ -4,11 +4,11 @@ import TemplateDetails from "./components/template-details";
 import { PackageTemplate } from "#/types";
 import useGlobal from "../context/global";
 import type { PackageManagerUI } from "./package-manager-ui";
-import { baseForLogin } from "./login/login-view";
 import attemptLogin, { attemptLogout } from "./login";
 import { useToggle } from "usehooks-ts";
 import Profile from "./profile";
 import { Platform } from "obsidian";
+import { ProviderServer } from "./package-manager";
 
 
 
@@ -102,7 +102,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   const isLoggedIn = !!userApikey;
 
 
-  const loginComponent = baseForLogin ? (
+  const loginComponent = ProviderServer ? (
     <div className="flex gap-2 items-center pr-9">
       {isLoggedIn ? <>
         <Profile key={userApikey} apiKey={userApikey} mini />
@@ -215,7 +215,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
               </div>
               <div className="community-modal-search-results-wrapper">
                 <div className="p-3">
-                  {!!baseForLogin && premiumFeatures?.length ? <>
+                  {!!ProviderServer && premiumFeatures?.length ? <>
                     <h2>Featured Items</h2>
                     <div className="w-full flex gap-2 flex-wrap">
                       {premiumFeatures.map((item) => {

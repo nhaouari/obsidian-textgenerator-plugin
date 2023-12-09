@@ -1,7 +1,7 @@
-import { baseForLogin } from "../login/login-view";
 import clsx from "clsx";
 import { requestUrl } from "obsidian";
 import React, { useEffect, useState } from "react";
+import { ProviderServer } from "../package-manager";
 
 export default function Profile(props: { apiKey: string, mini?: boolean }) {
 
@@ -14,7 +14,7 @@ export default function Profile(props: { apiKey: string, mini?: boolean }) {
     useEffect(() => {
         (async () => {
             const res = await requestUrl({
-                url: new URL("/api/v2/account", baseForLogin).href,
+                url: new URL("/api/v2/account", ProviderServer).href,
                 headers: {
                     authorization: `Bearer ${props.apiKey}`,
                 }

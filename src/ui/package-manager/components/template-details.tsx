@@ -2,12 +2,11 @@ import React, { useState, useEffect } from "react";
 import DownloadSVG from "./svgs/download"
 import BadgeCheckSVG from "./svgs/badge-check"
 import { nFormatter } from "#/utils";
-import PackageManager from "../package-manager";
+import PackageManager, { ProviderServer } from "../package-manager";
 import { PackageTemplate } from "#/types";
 import { PluginManifest } from "obsidian";
 import { useToggle } from "usehooks-ts";
 import attemptLogin from "../login";
-import { baseForLogin } from "../login/login-view";
 
 export default function TemplateDetails(inProps: {
 	packageId: any,
@@ -174,7 +173,7 @@ export default function TemplateDetails(inProps: {
 			if (!pkgOwn.oneRequired) throw new Error("Not buyable");
 
 			// open the login website
-			window.open(new URL(`/dashboard/subscriptions/checkout?type=${encodeURIComponent(pkgOwn.oneRequired.join(","))}&callback=${encodeURIComponent(`obsidian://text-gen?intent=bought-package&packageId=${props.package?.packageId}`)}`, baseForLogin).href);
+			window.open(new URL(`/dashboard/subscriptions/checkout?type=${encodeURIComponent(pkgOwn.oneRequired.join(","))}&callback=${encodeURIComponent(`obsidian://text-gen?intent=bought-package&packageId=${props.package?.packageId}`)}`, ProviderServer).href);
 		} catch (err: any) {
 			setEnabling(false);
 			throw err

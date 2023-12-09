@@ -4,9 +4,9 @@ import SettingsSection from "../components/section";
 import { useToggle } from "usehooks-ts";
 import type { Register } from ".";
 import attemptLogin, { attemptLogout } from "#/ui/package-manager/login";
-import { baseForLogin } from "#/ui/package-manager/login/login-view";
 import Profile from "#/ui/package-manager/profile";
 import SettingItem from "../components/item";
+import { ProviderServer } from "#/ui/package-manager/package-manager";
 
 
 export default function AccountSetting(props: { register: Register }) {
@@ -48,7 +48,7 @@ export default function AccountSetting(props: { register: Register }) {
 
               <button className="cursor-pointer"
                 onClick={async () => {
-                  window.open(new URL("/dashboard/settings", baseForLogin).href)
+                  window.open(new URL("/dashboard/settings", ProviderServer).href)
                 }}>Manage Account</button>
             </div>
             : <button
@@ -69,7 +69,7 @@ export default function AccountSetting(props: { register: Register }) {
           </div>
           <div className="flex justify-end w-full">
             <button className="cursor-pointer" onClick={async () => {
-              window.open(new URL("/dashboard/subscriptions", baseForLogin).href)
+              window.open(new URL("/dashboard/subscriptions", ProviderServer).href)
             }}>Manage Subscriptions</button>
           </div>
         </>}
