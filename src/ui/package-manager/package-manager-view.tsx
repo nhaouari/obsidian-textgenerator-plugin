@@ -215,7 +215,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
               </div>
               <div className="community-modal-search-results-wrapper">
                 <div className="p-3">
-                  {premiumFeatures?.length ? <>
+                  {!!baseForLogin && premiumFeatures?.length ? <>
                     <h2>Featured Items</h2>
                     <div className="w-full flex gap-2 flex-wrap">
                       {premiumFeatures.map((item) => {

@@ -34,7 +34,6 @@ export const LoginView = (p: { parent: LoginUI }) => {
 
     (async () => {
       try {
-
         // request temp session and retrive id, endpoint GET /api/apps/gen-session
         sessionId = await request(new URL("/api/auth/session/temp/gen", baseForLogin).href)
 
