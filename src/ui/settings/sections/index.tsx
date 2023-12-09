@@ -10,6 +10,7 @@ import AutoSuggestSetting from "./auto-suggest";
 import OptionsSetting from "./options";
 import Input from "../components/input";
 import OtherProvidersSetting from "./otherProviders";
+import { ProviderServer } from "#/ui/package-manager/package-manager";
 // ------------------------------
 
 export type Register = {
@@ -96,7 +97,9 @@ export default function SectionsMain() {
 
       <ProviderSetting register={register} />
       <AdvancedSetting register={register} />
-      <AccountSettings register={register} />
+      {
+        !!ProviderServer && <AccountSettings register={register} />
+      }
 
       <DMPSetting register={register} />
       <AutoSuggestSetting register={register} />
