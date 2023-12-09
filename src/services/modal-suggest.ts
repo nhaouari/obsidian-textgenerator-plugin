@@ -71,7 +71,7 @@ export class ModelSuggest extends EditorSuggest<PromptTemplate> {
 
     if (!activeView) return console.warn("couldn't find activeView");
 
-    const CM = ContentManagerCls.compile(activeView)
+    const CM = ContentManagerCls.compile(activeView, this.plugin)
 
     activeView.editor.replaceRange("", value.context.start, value.context.end);
     await this.plugin.textGenerator.tempalteToModal({
