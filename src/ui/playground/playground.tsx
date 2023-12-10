@@ -87,8 +87,6 @@ export default function ChatComp(props: {
     setLoading(true);
     try {
       const editor = ContentManagerCls.compile(app.workspace.getLeaf().view, props.plugin)
-
-
       const selection = await props.plugin.textGenerator.contextManager.getSelection(editor)
       const selections = await props.plugin.textGenerator.contextManager.getSelections(editor)
 

@@ -811,8 +811,6 @@ ${removeYAML(content)}
       await this.updateTemplatesCache();
     }
 
-    console.log(this.templatePaths)
-
     if (this.templatePaths[id]) return this.templatePaths[id];
 
     const promptsPath = this.plugin.settings.promptsPath

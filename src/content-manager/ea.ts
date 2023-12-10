@@ -77,6 +77,8 @@ export default class ExcalidrawManager implements ContentManager {
         let selectedItem = pos || this.getCursor();
         let itemId = selectedItem?.id;
 
+        if (!text.replaceAll("\n", "").trim().length) return pos;
+
         switch (mode) {
             case "replace":
                 // remove selected items(text)

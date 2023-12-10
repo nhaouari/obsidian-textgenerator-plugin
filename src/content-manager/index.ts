@@ -14,7 +14,8 @@ export default class ContentManagerCls {
 
         switch (type) {
             case "markdown":
-                const editor = view.app.workspace.activeEditor?.editor;
+                // @ts-ignore
+                const editor = view?.editor || view.app.workspace.activeEditor?.editor;
                 if (!editor) throw "couldn't find the editor fsr";
                 return new MarkdownManager(editor, view, options);
 
