@@ -123,13 +123,15 @@ export default class PackageManager {
 
   async initConfigFlie() {
     logger("initConfigFlie");
-    const initConfig = {
-      packages: [],
-      installedPackages: [],
+    const initConfig: TextGeneratorConfiguration = {
+      packagesHash: {},
+      resources: {},
+      installedPackagesHash: {},
+      subscriptions: []
     };
     const adapter = this.app.vault.adapter;
     adapter.write(this.getConfigPath(), JSON.stringify(initConfig, null, 2));
-    this.configuration = JSON.parse(await adapter.read(this.getConfigPath())) as any;
+    this.configuration = initConfig;
   }
 
   getConfigPath() {
