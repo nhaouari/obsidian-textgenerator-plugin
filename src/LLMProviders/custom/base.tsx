@@ -227,7 +227,7 @@ export default class CustomProvider
           ...cleanConfig(config),
           ...cleanConfig(reqParams.otherOptions),
           ...cleanConfig(reqParams),
-          ...customConfig,
+          ...cleanConfig(customConfig),
           keys: this.plugin.getApiKeys(),
           // if the model is streamable
           stream:
