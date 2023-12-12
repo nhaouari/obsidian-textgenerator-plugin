@@ -16,12 +16,34 @@ export default class ExcalidrawManager implements ContentManager {
     }
 
     protected async getTextSelectedItems(): Promise<Item[]> {
-        return (await this.getSelectedItems()).filter((e: Item) => !e.isDeleted && !!e.rawText);
+        return (await this.getSelectedItems())
+            .filter((e: Item) => !e.isDeleted && (!!e.rawText || !!e.link?.startsWith("data:text/html;base64,")))
+            .map(ee => {
+                const e = { ...ee };
+                console.log({ e })
+                if (e.link?.startsWith("data:text/html;base64,")) {
+                    e.type = "text";
+                    e.rawText = `\`\`\`html
+ ${Buffer.from(e.link?.split(",")?.[1], "base64").toString()}
+\`\`\``;
+                    console.log({ e })
+                }
+
+                return e.rawText;
+            });
     }
 
     protected getElement(id: string): Item {
         const items = [...this.ea.getViewElements(), ...this.ea.getElements()];
-        return items.find((e: Item) => e.id == id);
+        return items.map(ee => {
+            const e = { ...ee };
+            if (e.link?.startsWith("data:text/html;base64,")) {
+                e.type = "text";
+                e.rawText = Buffer.from(e.link?.split(",")?.[1], "base64").toString()
+            }
+
+            return e;
+        }).find((e: Item) => e.id == id);
     }
 
     async getSelections(): Promise<string[]> {
@@ -29,7 +51,14 @@ export default class ExcalidrawManager implements ContentManager {
     }
 
     getValue(): string {
-        return this.ea.getViewElements().map((e: Item) => e.rawText).filter(Boolean).join("\n");
+        return this.ea.getViewElements().map((ee: Item) => {
+            const e = { ...ee };
+            if (e.link?.startsWith("data:text/html;base64,")) {
+                e.type = "text";
+                e.rawText = Buffer.from(e.link?.split(",")?.[1], "base64").toString()
+            }
+            return e;
+        }).map((e: Item) => e.rawText).filter(Boolean).join("\n");
     }
 
     async getSelection(): Promise<string> {
@@ -37,7 +66,7 @@ export default class ExcalidrawManager implements ContentManager {
     }
 
     async getTgSelection(tgSelectionLimiter?: string) {
-        let txt = this.ea.getViewSelectedElements().map((e: Item) => e.rawText).filter(Boolean).join("\n").trim();
+        let txt = (await this.getTextSelectedItems()).filter(Boolean).join("\n").trim();
 
         if (!txt?.length) {
             txt = this.getValue();
