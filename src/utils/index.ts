@@ -226,7 +226,7 @@ export function cleanConfig<T>(options: T): T {
       const value = options[key];
 
       // Check if the value is not an empty string
-      if (typeof value !== "string" || value !== "") {
+      if (value != undefined && (typeof value !== "string" || value !== "")) {
         cleanedOptions[key] = value; // Copy non-empty properties to the cleaned object
       }
     }
