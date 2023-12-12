@@ -143,6 +143,8 @@ export default class CanvasManager implements ContentManager {
         const items = await this.getTextSelectedItems();
         let selectedItem = parent || await this.getCursor();
 
+        if (!text.replaceAll("\n", "").trim().length) return parent;
+
         await this.canvas.requestFrame();
 
         switch (mode) {
