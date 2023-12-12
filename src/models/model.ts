@@ -5,7 +5,7 @@ import debug from "debug";
 
 const logger = debug("textgenerator:model");
 
-export class ExampleModal extends FuzzySuggestModal<PromptTemplate> {
+export class ExampleModal extends FuzzySuggestModal<PromptTemplate & { id: string }> {
   plugin: TextGeneratorPlugin;
   title: string;
   onChoose: (result: PromptTemplate) => void;
@@ -26,7 +26,8 @@ export class ExampleModal extends FuzzySuggestModal<PromptTemplate> {
   }
 
   getItems() {
-    return this.plugin.textGenerator.getTemplates() as any;
+    const viewType = this.plugin.app.workspace.activeLeaf?.view.getViewType();
+    return this.plugin.textGenerator.getTemplates().filter(t => !viewType || !t.viewTypes || t.viewTypes?.includes(viewType)) as any;
   }
 
   // Renders each suggestion item.

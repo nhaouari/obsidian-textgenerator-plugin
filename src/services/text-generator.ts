@@ -680,6 +680,7 @@ ${removeYAML(content)}
       tags: string[];
       version: string;
       commands: string[];
+      viewTypes?: string[];
     }> = {};
 
     if (metadata?.PromptInfo?.promptId) {
@@ -722,6 +723,14 @@ ${removeYAML(content)}
           ? metadata.PromptInfo.commands.split(",")
           : metadata.PromptInfo.commands;
     }
+
+    if (metadata?.PromptInfo?.viewTypes) {
+      validedMetaData["viewTypes"] =
+        typeof metadata.PromptInfo.viewTypes == "string"
+          ? metadata.PromptInfo.viewTypes.split(",")
+          : metadata.PromptInfo.viewTypes;
+    }
+
 
     logger("getMetadata end");
     return validedMetaData;
