@@ -48,29 +48,37 @@ const ContentExtractorComponent = ({
     return truncatedUrl;
   };
   const handleExtractClick = async () => {
-    const contentExtractor = new ContentExtractor(app, plugin);
-    const extractedUrls = [];
+    try {
+      const contentExtractor = new ContentExtractor(app, plugin);
+      const extractedUrls: {
+        url: string,
+        file,
+        extractorMethod,
+      }[] = [];
 
-    // Iterate through each extractor method and add the extracted URLs to the array.
-    const extractorMethods = getExtractorMethods();
+      // Iterate through each extractor method and add the extracted URLs to the array.
+      const extractorMethods = getExtractorMethods();
 
-    for (let index = 0; index < extractorMethods.length; index++) {
-      const extractorMethod = extractorMethods[index];
-      contentExtractor.setExtractor(extractorMethod);
-      const files = await contentExtractor.extract(
-        app.workspace.getActiveFile().path
-      );
-      if (files.length > 0) {
-        extractedUrls.push(
-          ...files.map((file: any) => ({
-            url: truncateUrl(file?.path || file, 50),
-            file,
-            extractorMethod,
-          }))
+      for (let index = 0; index < extractorMethods.length; index++) {
+        const extractorMethod = extractorMethods[index];
+        contentExtractor.setExtractor(extractorMethod);
+        const files = await contentExtractor.extract(
+          app.workspace.getActiveFile().path
         );
+        if (files.length > 0) {
+          extractedUrls.push(
+            ...files.map((file: any) => ({
+              url: truncateUrl(file?.path || file, 50),
+              file,
+              extractorMethod,
+            }))
+          );
+        }
       }
+      setUrlResults(extractedUrls);
+    } catch (err: any) {
+      plugin.handelError(err)
     }
-    setUrlResults(extractedUrls);
   };
 
   const handleConvertClick = async (
