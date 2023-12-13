@@ -143,6 +143,7 @@ export default class CanvasManager implements ContentManager {
         const items = await this.getTextSelectedItems();
         let selectedItem = parent || await this.getCursor();
 
+        //@ts-ignore
         if (!text.replaceAll("\n", "").trim().length) return parent;
 
         await this.canvas.requestFrame();
@@ -172,14 +173,15 @@ export default class CanvasManager implements ContentManager {
                     }
                 )
 
+                const width = selectedItem.width
                 if (parent)
                     selectedItem.moveAndResize({
                         height: calculateNoteHeight({
                             parentHeight: parent.height,
-                            width: selectedItem.width,
+                            width,
                             text
                         }),
-                        width: selectedItem.width,
+                        width,
                         x: parent.x,
                         y: parent.y + parent.height + NEW_NOTE_MARGIN
                     })
@@ -262,10 +264,10 @@ export default class CanvasManager implements ContentManager {
 import type { Canvas, CanvasNode, CreateNodeOptions, AllCanvasNodeData, CanvasEdgeIntermediate } from "./canvas.d";
 import { TFile, View } from "obsidian";
 
-const MIN_WIDTH = 200;
-const PX_PER_CHAR = 8;
-const PX_PER_LINE = 100;
-const TEXT_PADDING_HEIGHT = 20;
+const MIN_WIDTH = 600;
+const PX_PER_CHAR = 3;
+const PX_PER_LINE = 130;
+const TEXT_PADDING_HEIGHT = 10;
 const NEW_NOTE_MARGIN = 60;
 const MIN_HEIGHT = 60;
 
