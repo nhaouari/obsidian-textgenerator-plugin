@@ -11,6 +11,7 @@ import OllamaLangchainProvider from "./langchain/ollama";
 import LangchainAzureOpenAIChatProvider from "./langchain/azureOpenAIChat";
 import LangchainAzureOpenAIInstructProvider from "./langchain/azureOpenAIInstruct";
 import LangchainPalmProvider from "./langchain/palm";
+import LangchainChatGoogleGenerativeAIProvider from "./langchain/googleGenerativeAI";
 // import LangchainReplicaProvider from "./langchain/replica"
 
 import LLMProviderRegistry from "./registery";
@@ -26,6 +27,7 @@ const providers = [
 
   // palm
   LangchainPalmProvider,
+  LangchainChatGoogleGenerativeAIProvider,
 
   // anthropic
   ChatanthropicLangchainProvider,
