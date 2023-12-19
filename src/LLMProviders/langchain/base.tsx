@@ -117,7 +117,7 @@ export default class LangchainProvider
         // if the model is streamable
         params.stream = params.stream && this.streamable;
 
-        const chat = this.getLLM(params) as HuggingFaceInference;
+        const llm = this.getLLM(params) as HuggingFaceInference;
 
         let first = true;
         let allText = "";
@@ -157,7 +157,7 @@ export default class LangchainProvider
           // This convenience function creates a document chain prompted to summarize a set of documents.
           const chain = getChain(
             customConfig?.chain.loader,
-            chat,
+            llm,
             customConfig.chain
           );
 
@@ -176,7 +176,7 @@ export default class LangchainProvider
           result = res.text;
         } else {
           if (reqParams.llmPredict || this.llmPredict)
-            result = await (chat as any as ChatOpenAI).predict(
+            result = await (llm as any as ChatOpenAI).predict(
               messages.length > 1
                 ? // user: test1
                 // assistant: test2
@@ -197,7 +197,7 @@ export default class LangchainProvider
             )
           else {
             const res = (
-              await chat.predictMessages(
+              await llm.predictMessages(
                 mapMessagesToLangchainMessages(messages),
                 {
                   signal: params.requestParams?.signal || undefined,
@@ -238,13 +238,13 @@ export default class LangchainProvider
         logger("generateMultiple", reqParams);
 
         const params = this.configMerger(reqParams);
-        const chat = this.getLLM(params);
+        const llm = this.getLLM(params);
         let requestResults: any[] = [];
         if (this.legacyN) {
           await processPromisesSetteledBatch(
             Array.from({ length: reqParams.n || 1 }).
               map(async () => {
-                requestResults.push(...(await (chat as HuggingFaceInference).generate(
+                requestResults.push(...(await (llm as HuggingFaceInference).generate(
                   reqParams.llmPredict || this.llmPredict
                     ? messages.length > 1
                       ? // user: test1
@@ -264,7 +264,7 @@ export default class LangchainProvider
           )
 
         } else
-          requestResults = (await (chat as HuggingFaceInference).generate(
+          requestResults = (await (llm as HuggingFaceInference).generate(
             reqParams.llmPredict || this.llmPredict
               ? messages.length > 1
                 ? // user: test1
