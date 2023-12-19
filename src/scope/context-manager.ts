@@ -95,8 +95,7 @@ export default class ContextManager {
       const { context, inputTemplate, outputTemplate } =
         await this.templateFromPath(templatePath, options, templateContent);
 
-      const ctx = await this.executeTemplateDataviewQueries(context);
-      logger("Context Template", { context: ctx, options });
+      logger("Context Template", { context, options });
 
       return {
         context,
@@ -167,9 +166,7 @@ export default class ContextManager {
         await this.templateFromPath(templatePath, options);
 
 
-      const ctx = await this.executeTemplateDataviewQueries(context);
-
-      logger("Context Template", { context: ctx, options });
+      logger("Context Template", { context, options });
 
       contexts.push({
         context,
@@ -199,6 +196,8 @@ export default class ContextManager {
 
     return contexts;
   }
+
+
 
   // DEPRICATED
   // extractVariablesFromTemplate(templateContent: string): string[] {
@@ -502,7 +501,9 @@ export default class ContextManager {
 
     if (!templateFile) throw `Template ${templatePath} couldn't be found`;
 
-    const templateContent = _templateContent || await this.app.vault.read(templateFile as TFile);
+    let templateContent = _templateContent || await this.app.vault.read(templateFile as TFile);
+
+    templateContent = await this.executeTemplateDataviewQueries(templateContent)
 
     const templates = this.splitTemplate(templateContent);
 
@@ -906,7 +907,7 @@ export default class ContextManager {
         try {
           switch (type.trim()) {
             case "dataview": {
-              const res = await getDataviewApi()?.queryMarkdown(content);
+              const res = await getDataviewApi(this.app)?.queryMarkdown(content);
 
               if (!res) throw new Error("Couln't find DataViewApi");
 
