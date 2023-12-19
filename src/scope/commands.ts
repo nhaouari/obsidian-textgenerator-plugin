@@ -10,6 +10,8 @@ import { LLMProviderRegistery } from "../LLMProviders";
 
 import debug from "debug";
 import { VIEW_TOOL_ID } from "#/ui/tool";
+import { VIEW_Playground_ID } from "#/ui/playground";
+import ContentManagerCls from "#/content-manager";
 const logger = debug("textgenerator:main");
 
 export default class Commands {
@@ -21,11 +23,14 @@ export default class Commands {
       name: "Generate Text!",
       icon: "GENERATE_ICON",
       hotkeys: [{ modifiers: ["Mod"], key: "j" }],
-      async editorCallback(editor: Editor) {
+      async callback() {
+        const self: Commands = this;
         try {
-          await this.plugin.textGenerator.generateInEditor({}, false, editor);
+          const activeView = await self.getActiveView();
+          const CM = ContentManagerCls.compile(activeView, self.plugin)
+          await self.plugin.textGenerator.generateInEditor({}, false, CM);
         } catch (error) {
-          this.plugin.handelError(error);
+          self.plugin.handelError(error);
         }
       },
     },
@@ -35,11 +40,14 @@ export default class Commands {
       name: "Generate Text (use Metadata))!",
       icon: "GENERATE_META_ICON",
       hotkeys: [{ modifiers: ["Mod", "Alt"], key: "j" }],
-      async editorCallback(editor: Editor) {
+      async callback() {
+        const self: Commands = this;
         try {
-          await this.plugin.textGenerator.generateInEditor({}, true, editor);
+          const activeView = await self.getActiveView();
+          const CM = ContentManagerCls.compile(activeView, self.plugin)
+          await self.plugin.textGenerator.generateInEditor({}, true, CM);
         } catch (error) {
-          this.plugin.handelError(error);
+          self.plugin.handelError(error);
         }
       },
     },
@@ -49,21 +57,31 @@ export default class Commands {
       name: "Templates: Generate & Insert",
       icon: "circle",
       //hotkeys: [{ modifiers: ["Mod"], key: "q"}],
-      async editorCallback(editor, mx) {
+      async callback() {
         const self: Commands = this;
         try {
           new ExampleModal(
             self.plugin.app,
             self.plugin,
             async (result) => {
-              await self.plugin.textGenerator.generateFromTemplate({
-                params: {},
-                templatePath: result.path,
-                filePath: mx.file?.path,
-                insertMetadata: true,
-                editor,
-                activeFile: true,
-              });
+              if (!result.path) throw "Nothing was selected";
+
+              const self: Commands = this;
+              try {
+                const activeView = await self.getActiveView();
+                const CM = ContentManagerCls.compile(activeView, self.plugin);
+
+                await self.plugin.textGenerator.generateFromTemplate({
+                  params: {},
+                  templatePath: result.path,
+                  filePath: (await CM.getActiveFile())?.path,
+                  insertMetadata: true,
+                  editor: CM,
+                  activeFile: true,
+                });
+              } catch (error) {
+                this.plugin.handelError(error);
+              }
             },
             "Generate and Insert Template In The Active Note"
           ).open();
@@ -78,18 +96,26 @@ export default class Commands {
       name: "Templates: Generate & Copy To Clipboard ",
       icon: "circle",
       //hotkeys: [{ modifiers: ["Mod"], key: "q"}],
-      async editorCallback(editor: Editor) {
+      async callback() {
         try {
           new ExampleModal(
             this.plugin.app,
             this.plugin,
             async (result) => {
-              await this.plugin.textGenerator.generateToClipboard(
-                {},
-                result.path,
-                true,
-                editor
-              );
+              const self: Commands = this;
+              try {
+                const activeView = await self.getActiveView();
+                const CM = ContentManagerCls.compile(activeView, self.plugin);
+
+                await this.plugin.textGenerator.generateToClipboard(
+                  {},
+                  result.path,
+                  true,
+                  CM
+                );
+              } catch (error: any) {
+                self.plugin.handelError(error);
+              }
             },
             "Generate & Copy To Clipboard"
           ).open();
@@ -104,21 +130,31 @@ export default class Commands {
       name: "Templates: Generate & Create Note",
       icon: "plus-circle",
       //hotkeys: [{ modifiers: ["Mod","Shift"], key: "q"}],
-      async editorCallback(editor, mx) {
+      async callback() {
         const self: Commands = this;
         try {
           new ExampleModal(
             self.plugin.app,
             self.plugin,
             async (result) => {
-              await self.plugin.textGenerator.generateFromTemplate({
-                params: {},
-                templatePath: result.path,
-                filePath: mx.file?.path,
-                insertMetadata: true,
-                editor,
-                activeFile: false,
-              });
+              if (!result.path) throw "Nothing was selected";
+
+              try {
+                const activeView = await self.getActiveView();
+                const CM = ContentManagerCls.compile(activeView, self.plugin);
+
+                await self.plugin.textGenerator.generateFromTemplate({
+                  params: {},
+                  templatePath: result.path,
+                  filePath: (await CM.getActiveFile())?.path,
+                  insertMetadata: true,
+                  editor: CM,
+                  activeFile: false,
+                });
+              } catch (error: any) {
+                self.plugin.handelError(error);
+              }
+
             },
             "Generate and Create a New Note From Template"
           ).open();
@@ -140,14 +176,14 @@ export default class Commands {
             self.plugin.app,
             self.plugin,
             async (result) => {
+              if (!result.path) throw "Nothing was selected";
               const files =
                 await self.plugin.textGenerator.embeddingsScope.getSearchResults();
 
-              if ((await files).length) {
+              if (!files.length)
                 return self.plugin.handelError(
                   "You need at least one search result"
                 );
-              }
 
               await self.plugin.textGenerator.generateBatchFromTemplate(
                 files,
@@ -169,21 +205,32 @@ export default class Commands {
       name: "Templates: Insert Template",
       icon: "square",
       //hotkeys: [{ modifiers: ['Alt'], key: "q"}],
-      async editorCallback(editor, mx) {
+      async callback() {
         const self: Commands = this;
         try {
           new ExampleModal(
             self.plugin.app,
             self.plugin,
             async (result) => {
-              await self.plugin.textGenerator.generateFromTemplate({
-                params: {},
-                templatePath: result.path,
-                filePath: mx.file?.path,
-                insertMetadata: true,
-                editor,
-                activeFile: true,
-              });
+              if (!result.path) throw "Nothing was selected";
+
+              try {
+                const activeView = await self.getActiveView();
+                const CM = ContentManagerCls.compile(activeView, self.plugin);
+
+                await self.plugin.textGenerator.generateFromTemplate({
+                  params: {},
+                  templatePath: result.path,
+                  filePath: (await CM.getActiveFile())?.path,
+                  insertMetadata: true,
+                  editor: CM,
+                  activeFile: true,
+                });
+              } catch (error: any) {
+                self.plugin.handelError(error);
+              }
+
+
             },
             "Insert Template In The Active Note"
           ).open();
@@ -198,22 +245,33 @@ export default class Commands {
       name: "Templates: Insert & Create Note",
       icon: "plus-square",
       //hotkeys: [{ modifiers: ["Shift","Alt"], key: "q"}],
-      async editorCallback(editor, mx) {
+      async callback() {
         const self: Commands = this;
         try {
           new ExampleModal(
             self.plugin.app,
             self.plugin,
             async (result) => {
-              await self.plugin.textGenerator.generateFromTemplate({
-                params: {},
-                templatePath: result.path,
-                filePath: mx.file?.path,
-                insertMetadata: true,
-                editor,
-                activeFile: false,
-                insertMode: true,
-              });
+              if (!result.path) throw "Nothing was selected";
+
+
+              try {
+                const activeView = await self.getActiveView();
+                const CM = ContentManagerCls.compile(activeView, self.plugin);
+
+                await self.plugin.textGenerator.generateFromTemplate({
+                  params: {},
+                  templatePath: result.path,
+                  filePath: (await CM.getActiveFile())?.path,
+                  insertMetadata: true,
+                  editor: CM,
+                  activeFile: false,
+                  insertMode: true,
+                });
+
+              } catch (error) {
+                self.plugin.handelError(error);
+              }
             },
             "Create a New Note From Template"
           ).open();
@@ -228,19 +286,29 @@ export default class Commands {
       name: "Show modal From Template",
       icon: "layout",
       //hotkeys: [{ modifiers: ["Alt"], key: "4"}],
-      async editorCallback(editor, mx) {
+      async callback() {
         const self: Commands = this;
         try {
           new ExampleModal(
             this.plugin.app,
             this.plugin,
             async (result) => {
-              await self.plugin.textGenerator.tempalteToModal({
-                params: {},
-                templatePath: result.path,
-                editor,
-                filePath: mx.file?.path,
-              });
+
+              try {
+                const activeView = await self.getActiveView();
+                const CM = ContentManagerCls.compile(activeView, self.plugin);
+
+                await self.plugin.textGenerator.tempalteToModal({
+                  params: {},
+                  templatePath: result.path,
+                  editor: CM,
+                  filePath: (await CM.getActiveFile())?.path,
+                });
+
+              } catch (error) {
+                self.plugin.handelError(error);
+              }
+
             },
             "Choose a template"
           ).open();
@@ -252,7 +320,7 @@ export default class Commands {
 
     {
       id: "open-template-as-tool",
-      name: "Open template as tool",
+      name: "Open Template as Tool",
       icon: "layout",
       //hotkeys: [{ modifiers: ["Alt"], key: "4"}],
       async callback() {
@@ -278,11 +346,28 @@ export default class Commands {
     },
 
     {
+      id: "open-playground",
+      name: "Open Template Playground",
+      icon: "layout",
+      //hotkeys: [{ modifiers: ["Alt"], key: "4"}],
+      async callback() {
+        const self: Commands = this;
+        try {
+          self.plugin.activateView(VIEW_Playground_ID, {
+            editor: self.plugin.app.workspace.activeEditor?.editor,
+            openInPopout: false,
+          });
+        } catch (error) {
+          this.plugin.handelError(error);
+        }
+      },
+    },
+    {
       id: "set_max_tokens",
       name: "Set max_tokens",
       icon: "separator-horizontal",
       //hotkeys: [{ modifiers: ["Alt"], key: "1" }],
-      async editorCallback(editor: Editor) {
+      async callback() {
         new SetMaxTokens(
           this.plugin.app,
           this.plugin,
@@ -302,7 +387,7 @@ export default class Commands {
       name: "Choose a LLM",
       icon: "list-start",
       //hotkeys: [{ modifiers: ["Alt"], key: "2" }],
-      async editorCallback(editor: Editor) {
+      async callback() {
         try {
           new SetLLM(
             this.plugin.app,
@@ -332,11 +417,11 @@ export default class Commands {
       name: "Template Packages Manager",
       icon: "boxes",
       //hotkeys: [{ modifiers: ["Alt"], key: "3" }],
-      async editorCallback(editor: Editor) {
+      async callback() {
         new PackageManagerUI(
           this.plugin.app,
           this.plugin,
-          async (result: string) => {}
+          async (result: string) => { }
         ).open();
       },
     },
@@ -346,11 +431,16 @@ export default class Commands {
       name: "Create a Template",
       icon: "plus",
       //hotkeys: [{ modifiers: ["Alt"], key: "c"}],
-      async editorCallback(editor: Editor) {
+      async callback() {
+        const self: Commands = this;
+
         try {
-          await this.plugin.textGenerator.createTemplateFromEditor(editor);
+          const activeView = await self.getActiveView();
+          const CM = ContentManagerCls.compile(activeView, self.plugin);
+
+          await self.plugin.textGenerator.createTemplateFromEditor(CM);
         } catch (error) {
-          this.plugin.handelError(error);
+          self.plugin.handelError(error);
         }
       },
     },
@@ -360,30 +450,58 @@ export default class Commands {
       name: "Generate a Title",
       icon: "heading",
       //hotkeys: [{ modifiers: ["Alt"], key: "c"}],
-      async editorCallback(editor, mx) {
+      async callback() {
+        const self: Commands = this;
+
         try {
-          const maxLength = 255;
-          const prompt = `Generate a title for the current document (do not use * " \\ / < > : | ? .):
-				${editor.getValue().trim().slice(0, maxLength)}
-				`;
+          const CM = ContentManagerCls.compile(await self.getActiveView(), self.plugin);
+          const file = await CM.getActiveFile()
+
+          let prompt = ``;
+
+          let templateContent = self.plugin.defaultSettings.advancedOptions?.generateTitleInstruct;
+
+          try {
+            if (self.plugin.settings.advancedOptions?.generateTitleInstructEnabled) {
+              templateContent = self.plugin.settings.advancedOptions?.generateTitleInstruct
+                || self.plugin.defaultSettings.advancedOptions?.generateTitleInstruct
+            }
+
+            const templateContext = await self.plugin.textGenerator.contextManager.getTemplateContext({
+              editor: ContentManagerCls.compile(await self.plugin.commands.getActiveView(), self.plugin),
+              templateContent,
+              filePath: file?.path,
+            });
+
+            templateContext.content = (await CM.getValue()).trim()
+
+            const splittedTemplate = this.plugin.textGenerator.contextManager.splitTemplate(templateContent)
+
+            prompt = await splittedTemplate.inputTemplate?.(templateContext);
+          } catch (err: any) { logger(err) }
+
           const generatedTitle = await this.plugin.textGenerator.gen(
             prompt,
             {}
           );
 
-          const sanitizedTitle = generatedTitle
+          const sanitizedTitle = generatedTitle.trim()
+            .replaceAll("\\", "")
             .replace(/[*\\"/<>:|?\.]/g, "")
             .replace(/^\n*/g, "");
 
-          if (!mx.file) return logger(`No active file was detected`);
-          const renamedFilePath = mx.file.path.replace(
-            mx.file.name,
-            `${sanitizedTitle}.md`
+          if (!file) return logger(`No active file was detected`);
+
+          const renamedFilePath = file.path.replace(
+            file.name,
+            `${sanitizedTitle}.${file.extension}`
           );
+
           await this.plugin.app.fileManager.renameFile(
-            mx.file,
+            file,
             renamedFilePath
           );
+
           logger(`Generated a title: ${sanitizedTitle}`);
         } catch (error) {
           this.plugin.handelError(error);
@@ -400,6 +518,7 @@ export default class Commands {
         this.plugin.settings.autoSuggestOptions.isEnabled =
           !this.plugin.settings.autoSuggestOptions.isEnabled;
         await this.plugin.saveSettings();
+
         this.plugin.AutoSuggestStatusBar();
 
         if (this.plugin.settings.autoSuggestOptions.isEnabled) {
@@ -415,20 +534,29 @@ export default class Commands {
       name: "Estimate tokens for the current document",
       icon: "heading",
       //hotkeys: [{ modifiers: ["Alt"], key: "c"}],
-      async editorCallback(editor, mx) {
+      async callback() {
         const self: Commands = this;
-        const context =
-          await self.plugin.textGenerator.contextManager.getContext({
-            editor,
-            filePath: mx.file?.path,
-            insertMetadata: true,
-            addtionalOpts: {
-              estimatingMode: true,
-            },
-          });
-        self.plugin.tokensScope.showTokens(
-          await self.plugin.tokensScope.estimate(context)
-        );
+
+        try {
+          const activeView = await self.getActiveView();
+          const CM = ContentManagerCls.compile(activeView, self.plugin);
+
+          const context =
+            await self.plugin.textGenerator.contextManager.getContext({
+              editor: CM,
+              filePath: (await CM.getActiveFile())?.path,
+              insertMetadata: true,
+              addtionalOpts: {
+                estimatingMode: true,
+              },
+            });
+          self.plugin.tokensScope.showTokens(
+            await self.plugin.tokensScope.estimate(context)
+          );
+
+        } catch (error) {
+          self.plugin.handelError(error);
+        }
       },
     },
 
@@ -437,40 +565,49 @@ export default class Commands {
       name: "Estimate tokens for a Template",
       icon: "layout",
       //hotkeys: [{ modifiers: ["Alt"], key: "4"}],
-      async editorCallback(editor, mx) {
+      async callback() {
         const self: Commands = this;
         try {
           new ExampleModal(
             self.plugin.app,
             self.plugin,
             async (result) => {
-              const context =
-                await self.plugin.textGenerator.contextManager.getContext({
-                  editor,
-                  filePath: mx.file?.path,
-                  insertMetadata: true,
-                  templatePath: result.path,
-                  addtionalOpts: {
-                    estimatingMode: true,
-                  },
-                });
-              self.plugin.tokensScope.showTokens(
-                await self.plugin.tokensScope.estimate(context)
-              );
+              try {
+                const activeView = await self.getActiveView();
+                const CM = ContentManagerCls.compile(activeView, self.plugin);
+
+                const context =
+                  await self.plugin.textGenerator.contextManager.getContext({
+                    editor: CM,
+                    filePath: (await CM.getActiveFile())?.path,
+                    insertMetadata: true,
+                    templatePath: result.path,
+                    addtionalOpts: {
+                      estimatingMode: true,
+                    },
+                  });
+
+                self.plugin.tokensScope.showTokens(
+                  await self.plugin.tokensScope.estimate(context)
+                );
+              } catch (error) {
+                self.plugin.handelError(error);
+              }
             },
             "Choose a template"
           ).open();
         } catch (error) {
           self.plugin.handelError(error);
         }
-      },
+
+      }
     },
 
     {
       id: "text-extractor-tool",
       name: "Text Extractor Tool",
       icon: "layout",
-      async editorCallback(editor: Editor) {
+      async callback() {
         try {
           new TextExtractorTool(this.plugin.app, this.plugin).open();
         } catch (error) {
@@ -483,18 +620,28 @@ export default class Commands {
       id: "stop-stream",
       name: "Stop Stream",
       icon: "layout",
-      async editorCallback(editor: Editor) {
+      async callback() {
         if (!this.plugin.textGenerator.signalController?.signal.aborted) {
           this.plugin.textGenerator.endLoading();
         }
       },
     },
+    {
+      id: "reload",
+      name: "reload Plugin",
+      icon: "layout",
+      async callback() {
+        const self: TextGeneratorPlugin = this;
 
+        self.reload();
+      },
+    },
   ];
 
   commands: Command[] = Commands.commands.map((cmd) => ({
     ...cmd,
     editorCallback: cmd.editorCallback?.bind(this),
+    callback: cmd.callback?.bind(this),
   }));
 
   constructor(plugin: TextGeneratorPlugin) {
@@ -506,25 +653,11 @@ export default class Commands {
     const cmds = this.commands.filter(
       (cmd) =>
         this.plugin.settings.options[
-          cmd.id as keyof typeof this.plugin.settings.options
+        cmd.id as keyof typeof this.plugin.settings.options
         ] === true
     );
 
-    const files = await this.plugin.getFilesOnLoad();
-    const templates = this.plugin.textGenerator.getTemplates(
-      // get files, it will be empty onLoad, that's why we are using this function
-      files
-    );
-
-    this.plugin.textGenerator.contextManager.templatePaths = {};
-    templates.forEach((template) => {
-      if (template.id) {
-        const ss = template.path.split("/");
-        this.plugin.textGenerator.contextManager.templatePaths[
-          ss[ss.length - 2] + "/" + template.id
-        ] = template.path;
-      }
-    });
+    const templates = await this.plugin.textGenerator.updateTemplatesCache();
 
     const templatesWithCommands = templates.filter((t) => t?.commands);
     logger("Templates with commands ", { templatesWithCommands });
@@ -532,104 +665,94 @@ export default class Commands {
     templatesWithCommands.forEach((template) => {
       //
       template.commands?.forEach((command) => {
-        logger("Tempate commands ", { template, command });
+        logger("Template commands ", { template, command });
         const cmd: Command = {
-          id: `${template.path.split("/").slice(-2, -1)[0]}-${command}-${
-            template.id
-          }`,
+          id: `${template.path.split("/").slice(-2, -1)[0]}-${command}-${template.id
+            }`,
           name: `${template.id || template.name}: ${command.toUpperCase()}`,
-          editorCallback: !["tool"].contains(command)
-            ? async (editor, mx) => {
-                const self: Commands = this;
-                try {
-                  switch (command) {
-                    case "generate":
-                      await self.plugin.textGenerator.generateFromTemplate({
-                        params: {},
-                        templatePath: template.path,
-                        insertMetadata: true,
-                        editor,
-                        activeFile: true,
-                      });
-                      break;
-                    case "insert":
-                      await self.plugin.textGenerator.generateFromTemplate({
-                        params: {},
-                        templatePath: template.path,
-                        insertMetadata: true,
-                        editor,
-                        activeFile: true,
-                        insertMode: true,
-                      });
-                      break;
-                    case "generate&create":
-                      await self.plugin.textGenerator.generateFromTemplate({
-                        params: {},
-                        templatePath: template.path,
-                        insertMetadata: true,
-                        editor,
-                        activeFile: false,
-                      });
-                      break;
-                    case "insert&create":
-                      await self.plugin.textGenerator.generateFromTemplate({
-                        params: {},
-                        templatePath: template.path,
-                        insertMetadata: true,
-                        editor,
-                        activeFile: false,
-                        insertMode: true,
-                      });
-                      break;
-                    case "modal":
-                      await self.plugin.textGenerator.tempalteToModal({
-                        params: {},
-                        templatePath: template.path,
-                        editor,
-                        filePath: mx.file?.path,
-                      });
-                      break;
-                    case "clipboard":
-                      await self.plugin.textGenerator.generateToClipboard(
-                        {},
-                        template.path,
-                        true,
-                        editor
-                      );
-                      break;
-                    case "estimate":
-                      {
-                        const context =
-                          await this.plugin.textGenerator.contextManager.getContext(
-                            {
-                              editor,
-                              filePath: mx.file?.path,
-                              insertMetadata: true,
-                              templatePath: template.path,
-                              addtionalOpts: {
-                                estimatingMode: true,
-                              },
-                            }
-                          );
-                        this.plugin.tokensScope.showTokens(
-                          await this.plugin.tokensScope.estimate(context)
-                        );
-                      }
-                      break;
-                    default:
-                      console.error("command name not found", command);
-                      break;
-                  }
-                } catch (error) {
-                  this.plugin.handelError(error);
-                }
-              }
-            : undefined,
-
           callback: async () => {
             const self: Commands = this;
+
+            const activeView = await self.getActiveView();
+
+            const CM = ContentManagerCls.compile(activeView, self.plugin)
+
+            const filePath = (await CM.getActiveFile())?.path
             try {
               switch (command) {
+                case "generate":
+                  await self.plugin.textGenerator.generateFromTemplate({
+                    params: {},
+                    templatePath: template.path,
+                    insertMetadata: true,
+                    editor: CM,
+                    activeFile: true,
+                  });
+                  break;
+                case "insert":
+                  await self.plugin.textGenerator.generateFromTemplate({
+                    params: {},
+                    templatePath: template.path,
+                    insertMetadata: true,
+                    editor: CM,
+                    activeFile: true,
+                    insertMode: true,
+                  });
+                  break;
+                case "generate&create":
+                  await self.plugin.textGenerator.generateFromTemplate({
+                    params: {},
+                    templatePath: template.path,
+                    insertMetadata: true,
+                    editor: CM,
+                    activeFile: false,
+                  });
+                  break;
+                case "insert&create":
+                  await self.plugin.textGenerator.generateFromTemplate({
+                    params: {},
+                    templatePath: template.path,
+                    insertMetadata: true,
+                    editor: CM,
+                    activeFile: false,
+                    insertMode: true,
+                  });
+                  break;
+                case "modal":
+                  await self.plugin.textGenerator.tempalteToModal({
+                    params: {},
+                    templatePath: template.path,
+                    editor: CM,
+                    filePath,
+                  });
+                  break;
+                case "clipboard":
+                  await self.plugin.textGenerator.generateToClipboard(
+                    {},
+                    template.path,
+                    true,
+                    CM
+                  );
+                  break;
+                case "estimate":
+                  {
+                    const context =
+                      await this.plugin.textGenerator.contextManager.getContext(
+                        {
+                          editor: CM,
+                          filePath,
+                          insertMetadata: true,
+                          templatePath: template.path,
+                          addtionalOpts: {
+                            estimatingMode: true,
+                          },
+                        }
+                      );
+                    this.plugin.tokensScope.showTokens(
+                      await this.plugin.tokensScope.estimate(context)
+                    );
+                  }
+                  break;
                 case "tool":
                   self.plugin.activateView(VIEW_TOOL_ID, {
                     templatePath: template.path,
@@ -641,7 +764,7 @@ export default class Commands {
 
                 default:
                   console.error(
-                    "command does not work outside an editor",
+                    "command does not work outside of an editor",
                     command
                   );
                   break;
@@ -663,5 +786,15 @@ export default class Commands {
         callback: command.callback?.bind(this),
       });
     });
+  }
+
+  async getActiveView() {
+    if (!this.plugin.app.workspace.activeLeaf) throw "activeLeaf not found";
+    const activeView = this.plugin.app.workspace.activeLeaf.view;
+
+    if (!activeView) {
+      throw 'No active view to trigger the command.'
+    }
+    return activeView;
   }
 }

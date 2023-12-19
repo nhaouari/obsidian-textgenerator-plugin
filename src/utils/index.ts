@@ -9,8 +9,8 @@ import {
 import debug from "debug";
 const logger = debug("textgenerator:setModel");
 
-export function makeid(length: number) {
-  logger("makeid");
+export function makeId(length: number) {
+  logger("makeId");
   let result = "";
   const characters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -19,7 +19,7 @@ export function makeid(length: number) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
 
-  logger("makeid end", result);
+  logger("makeId end", result);
   return result;
 }
 /**
@@ -101,9 +101,30 @@ export async function openFile(
 
 export function removeYAML(content: string) {
   logger("removeYAML", content);
-  const newContent = content.replace(/^---([\s\S]*?)---/gm, "");
-  logger("removeYAML", newContent);
-  return newContent;
+
+  // Use a non-greedy match for the content between ---
+  const match = content.match(/^---([\s\S]*?)---/m);
+
+  if (match && match.index === 0) {
+    // If the match starts at the beginning of the content, remove it
+    const newContent = content.slice(match[0].length);
+    logger("removeYAML", newContent);
+    return newContent;
+  } else {
+    // If there is no match or it doesn't start at the beginning, return the original content
+    logger("removeYAML", content);
+    return content;
+  }
+}
+
+
+export function removeExtensionFromName(name: string) {
+  logger("removeExtension", name);
+  const arr = name.contains(".") ? name.split(".") : [name, ""];
+  arr.pop();
+  const res = arr.join(".");
+  logger("removeExtension", res);
+  return res;
 }
 
 export function numberToKFormat(number: number) {
@@ -132,16 +153,22 @@ export function escapeRegExp(text: string) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 }
 
-export function getContextAsString(
+export async function getContextAsString(
   context: Record<string, string | string[]>,
-  withKey = ["title"]
+  template?: string
 ) {
+  if (template) {
+    const ctxt = Handlebars.compile(template)(context);
+    return ctxt;
+  }
+
   let contextString = "";
+
   for (const key in context) {
-    if (!context[key]) continue;
-    if (withKey.includes(key)) {
-      contextString += `${key}:`;
-    }
+    if (!context[key] || key == "content") continue;
+
+    contextString += `${key}:`;
+
     // Check if value is an array and join with \n
     if (Array.isArray(context[key])) {
       contextString += `${(context[key] as string[]).join("\n")}\n`;
@@ -199,7 +226,7 @@ export function cleanConfig<T>(options: T): T {
       const value = options[key];
 
       // Check if the value is not an empty string
-      if (typeof value !== "string" || value !== "") {
+      if (value != undefined && (typeof value !== "string" || value !== "")) {
         cleanedOptions[key] = value; // Copy non-empty properties to the cleaned object
       }
     }
@@ -234,6 +261,7 @@ export function promiseForceFullfil(item: any) {
 
 import { SystemMessagePromptTemplate } from "langchain/prompts";
 import get from "lodash.get";
+import { Handlebars } from "#/helpers/handlebars-helpers";
 
 export function compilePrompt(prompt: string, vars: string[]) {
   let newPrompt = prompt;
@@ -286,4 +314,71 @@ export function trimBy<T>(objects: T[], propertyName: string): T[] {
   }
 
   return result;
+}
+
+
+export function replaceScriptBlocksWithMustachBlocks(templateString: string) {
+  if (!templateString) return "";
+  // Regular expressions for matching the script tags
+  const startScriptRegex = /{{\s*#script\s*}}/g;
+  const endScriptRegex = /{{\s*\/script\s*}}/g;
+  const quadErrorRegex = /{{{{{{\s*\/script\s*}}}}}}/g;
+
+  // Replace all occurrences of {{#script}} and {{/script}} with {{{{script}}}} and {{{{/script}}}} respectively
+  let updatedTemplateString = templateString
+    .replace(startScriptRegex, '{{{{script}}}}')
+    .replace(endScriptRegex, '{{{{/script}}}}');
+
+  // Handle the case where {{{{/script}}}} is already present
+  updatedTemplateString = updatedTemplateString.replace(quadErrorRegex, '{{{{/script}}}}');
+
+  return updatedTemplateString;
+}
+
+
+export function nFormatter(n?: number, digits = 1) {
+  const num = n || 0;
+  const lookup = [
+    { value: 1, symbol: "" },
+    { value: 1e3, symbol: "k" },
+    { value: 1e6, symbol: "M" },
+    { value: 1e9, symbol: "G" },
+    { value: 1e12, symbol: "T" },
+    { value: 1e15, symbol: "P" },
+    { value: 1e18, symbol: "E" }
+  ];
+  const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+  var item = lookup.slice().reverse().find(function (item) {
+    return num >= item.value;
+  });
+  return item ? (num / item.value).toFixed(digits).replace(rx, "$1") + item.symbol : "0";
+}
+
+
+
+export function unpromisifyAsyncFunction<T>(
+  asyncFunction: Promise<T>
+): T {
+  let isAsyncComplete = false;
+  let result: T;
+
+  // Call the provided asynchronous function
+  asyncFunction.then(asyncResult => {
+    result = asyncResult;
+    isAsyncComplete = true;
+  });
+
+  // Use a while loop to wait for the asynchronous operation to complete
+  while (!isAsyncComplete) {
+    syncWait(10)
+  }
+
+  // Return the result synchronously
+  // @ts-ignore
+  return result;
+}
+
+const syncWait = (ms: number) => {
+  const end = Date.now() + ms
+  while (Date.now() < end) continue
 }

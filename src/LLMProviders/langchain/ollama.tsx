@@ -5,20 +5,19 @@ import SettingItem from "#/ui/settings/components/item";
 import useGlobal from "#/ui/context/global";
 import { IconExternalLink } from "@tabler/icons-react";
 import Input from "#/ui/settings/components/input";
-import { BaseLLMParams } from "langchain/llms/base";
-import type { OllamaInput } from "langchain/dist/util/ollama.d.ts";
+import { BaseLLMParams } from "langchain/llms/base"
 
 import debug from "debug";
+import { OllamaInput } from "langchain/llms/ollama";
 
 const logger = debug("textgenerator:llmProvider:ollama");
 
 const id = "Ollama (Langchain)" as const;
 export default class LangchainOllamaProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   id = id;
-  static slug = "ollama";
+  static slug = "ollama" as const;
   provider = "Langchain";
   llmPredict = true;
   static provider = "Langchain";
@@ -27,10 +26,10 @@ export default class LangchainOllamaProvider
   getConfig(options: LLMConfig): Partial<OllamaInput & BaseLLMParams> {
     console.log(options);
     return this.cleanConfig({
-      baseUrl: options.endpoint,
+      baseUrl: options.basePath,
 
       // ------------Necessary stuff--------------
-      model: options.engine as any,
+      model: options.model as any,
       maxTokens: options.max_tokens,
       temperature: options.temperature,
       frequencyPenalty: options.frequency_penalty,
@@ -64,9 +63,9 @@ export default class LangchainOllamaProvider
           sectionId={props.sectionId}
         >
           <Input
-            value={config.engine}
+            value={config.model}
             setValue={async (value) => {
-              config.engine = value;
+              config.model = value;
               global.triggerReload();
               // TODO: it could use a debounce here
               await global.plugin.saveSettings();
@@ -74,16 +73,16 @@ export default class LangchainOllamaProvider
           />
         </SettingItem>
         <SettingItem
-          name="Endpoint"
+          name="Base Path"
           description={`Make sure it supports CORS`}
           register={props.register}
           sectionId={props.sectionId}
         >
           <Input
-            value={config.endpoint}
-            placeholder="Enter your API endpoint"
+            value={config.basePath}
+            placeholder="Enter your API basePath"
             setValue={async (value) => {
-              config.endpoint = value;
+              config.basePath = value;
               global.triggerReload();
               // TODO: it could use a debounce here
               await global.plugin.saveSettings();

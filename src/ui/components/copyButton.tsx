@@ -4,15 +4,17 @@ import React, { useState } from "react";
 export default function CopyButton(props: {
   textToCopy: string;
   justAButton?: boolean;
+  justADiv?: boolean;
   className?: string;
+  children?: any;
 }) {
-  const [copyStatus, setCopyStatus] = useState("Copy");
+  const [copyStatus, setCopyStatus] = useState(props.children || "Copy");
 
   const handleCopyClick = () => {
     navigator.clipboard.writeText(props.textToCopy).then(
       () => {
         setCopyStatus("Copied!");
-        setTimeout(() => setCopyStatus("Copy"), 1500);
+        setTimeout(() => setCopyStatus(props.children || "Copy"), 1500);
       },
       (err) => {
         console.error("Could not copy text: ", err);
@@ -20,6 +22,20 @@ export default function CopyButton(props: {
       }
     );
   };
+
+  if (props.justADiv)
+    return (
+      <div
+        onClick={(e) => {
+          e.preventDefault();
+          handleCopyClick();
+        }}
+        title={copyStatus}
+        className={clsx(props.className)}
+      >
+        {copyStatus}
+      </div>
+    );
 
   return (
     <button

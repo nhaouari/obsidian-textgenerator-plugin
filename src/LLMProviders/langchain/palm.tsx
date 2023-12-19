@@ -14,21 +14,21 @@ const logger = debug("textgenerator:llmProvider:palm");
 const id = "Google Palm (Langchain)" as const;
 export default class LangchainPalmProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   mobileSupport = false;
   streamable = false;
   id = id;
   static id = id;
   provider = "Langchain";
   static provider = "Langchain";
-  static slug = "palm";
+  static slug = "palm" as const;
   getConfig(options: LLMConfig): Partial<GooglePaLMChatInput> {
     return this.cleanConfig({
       apiKey: options.api_key,
 
+
       // ------------Necessary stuff--------------
-      //   modelName: options.engine,
+      //   modelName: options.model,
       maxTokens: options.max_tokens,
       temperature: options.temperature,
       frequencyPenalty: options.frequency_penalty,
@@ -58,7 +58,7 @@ export default class LangchainPalmProvider
     return (
       <>
         <SettingItem
-          name="Palm api key"
+          name="Api Key"
           register={props.register}
           sectionId={props.sectionId}
         >
@@ -80,10 +80,10 @@ export default class LangchainPalmProvider
           sectionId={props.sectionId}
         >
           <Input
-            value={config.palmApiUrl}
+            value={config.basePath}
             placeholder="Enter your API BasePath"
             setValue={async (value) => {
-              config.palmApiUrl = value;
+              config.basePath = value;
               global.triggerReload();
               // TODO: it could use a debounce here
               await global.plugin.saveSettings();

@@ -1,10 +1,10 @@
 import { App } from "obsidian";
-import { Message, TextGeneratorSettings } from "./types";
-import TextGeneratorPlugin from "./main";
-import ContextManager from "./context-manager";
+import { Message, TextGeneratorSettings } from "../types";
+import TextGeneratorPlugin from "../main";
+import ContextManager from "../scope/context-manager";
 import debug from "debug";
-import { transformStringsToChatFormat } from "./utils";
-import { LLMConfig } from "./LLMProviders/interface";
+import { transformStringsToChatFormat } from ".";
+import { LLMConfig } from "../LLMProviders/interface";
 const logger = debug("textgenerator:ReqFormatter");
 export default class ReqFormatter {
   plugin: TextGeneratorPlugin;
@@ -45,14 +45,13 @@ export default class ReqFormatter {
     } = {}
   ) {
     logger("prepareReqParameters", _params, insertMetadata, templatePath);
-
     const frontmatter: any = this.getFrontmatter(templatePath, insertMetadata);
 
     const params = {
       ...this.plugin.settings,
       ...this.plugin.settings.LLMProviderOptions[
-        frontmatter?.config?.provider ||
-          (this.plugin.settings.selectedProvider as any)
+      frontmatter?.config?.provider ||
+      (this.plugin.settings.selectedProvider as any)
       ],
       ...this.getFrontmatter(templatePath, insertMetadata),
       ..._params,
@@ -61,7 +60,7 @@ export default class ReqFormatter {
     let bodyParams: Partial<LLMConfig & { prompt: string }> & {
       messages: Message[];
     } = {
-      ...(params.engine && { engine: params.engine }),
+      ...(params.model && { model: params.model }),
       ...(params.max_tokens && { max_tokens: params.max_tokens }),
       ...(params.temperature && { temperature: params.temperature }),
       ...(params.frequency_penalty && {

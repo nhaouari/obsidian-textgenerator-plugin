@@ -1,8 +1,7 @@
 import { Command, Editor } from "obsidian";
 import TextGeneratorPlugin from "../../main";
 import React, { useEffect, useMemo, useState } from "react";
-import { InputContext } from "../../context-manager";
-import { getHBValues } from "#/utils/barhandles";
+import { InputContext } from "../../scope/context-manager";
 import safeAwait from "safe-await";
 import { VIEW_TOOL_ID, ToolView } from ".";
 import CopyButton from "../components/copyButton";
@@ -124,9 +123,9 @@ export default function ChatComp(props: {
 
       const [errortemplateContent, templateContent] = templateFile?.path
         ? await safeAwait(
-            //@ts-ignore
-            props.plugin.app.vault.adapter.read(templateFile?.path)
-          )
+          //@ts-ignore
+          props.plugin.app.vault.adapter.read(templateFile?.path)
+        )
         : ["", ""];
 
       if (errortemplateContent) {
@@ -139,7 +138,7 @@ export default function ChatComp(props: {
         );
       }
 
-      const { inputContent } =
+      const { inputContent, outputContent, preRunnerContent } =
         props.plugin.textGenerator.contextManager.splitTemplate(
           templateContent
         );
@@ -148,18 +147,21 @@ export default function ChatComp(props: {
       //   .extractVariablesFromTemplate(inputContent)
       //   .filter((variable) => !variable.includes("."));
 
-      const variables = getHBValues(inputContent);
 
-      const tempateContext =
+
+      const variables = props.plugin.textGenerator.contextManager.getHBVariablesOfTemplate(
+        preRunnerContent, inputContent, outputContent)
+
+      const templateContext =
         await props.plugin.textGenerator.contextManager.getTemplateContext({
-          editor: config.editor,
+          editor: config.editor as any,
           templatePath: config.templatePath,
           filePath: props.plugin.app.workspace.activeEditor?.file?.path,
         });
 
       setVals((vs) => {
         for (const v of variables) {
-          if (typeof vs[v] == "undefined") vs[v] = tempateContext[v] || "";
+          if (typeof vs[v] == "undefined") vs[v] = templateContext[v] || "";
         }
         return { ...vs };
       });
@@ -174,7 +176,7 @@ export default function ChatComp(props: {
         await props.plugin.textGenerator.contextManager.getContext({
           insertMetadata: false,
           templatePath: selectedTemplatePath,
-          editor: config.editor,
+          editor: config.editor as any,
           addtionalOpts: vals,
         });
 
@@ -207,8 +209,7 @@ export default function ChatComp(props: {
     } catch (err: any) {
       console.error(err);
       setAnswer(
-        `ERR: ${
-          err?.message?.replace("stack:", "\n\n\n\nMore Details") || err.message
+        `ERR: ${err?.message?.replace("stack:", "\n\n\n\nMore Details") || err.message
         }`
       );
     } finally {

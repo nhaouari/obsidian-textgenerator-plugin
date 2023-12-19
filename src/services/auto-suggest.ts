@@ -12,6 +12,7 @@ import {
 } from "obsidian";
 
 import debug from "debug";
+import ContentManagerCls from "../content-manager";
 const logger = debug("textgenerator:AutoSuggest");
 
 function debounce<T extends unknown[], R>(
@@ -86,15 +87,41 @@ export class AutoSuggest extends EditorSuggest<Completion> {
         async (context: EditorSuggestContext): Promise<Completion[]> => {
           logger("updateSettings", { delay: this.delay, context });
           if (this.process) {
+            const trimmedQuery = context.query.trim();
+
+            const lineContext = context.editor
+              .getRange(
+                {
+                  ch: 0,
+                  line: context.start.line,
+                },
+                context.end
+              )
+              .trim();
+
+            if (
+              // if its at the begining of a line
+              !context.start.ch ||
+              // if the line has less than 10 characters
+              lineContext.length <= 10 ||
+              // if there are no context
+              trimmedQuery.length <= 5 ||
+              // if its a list item
+              trimmedQuery.endsWith("-") ||
+              trimmedQuery.endsWith("- [ ]")
+            )
+              return [];
+
+
             const suggestions = await this.getGPTSuggestions(context);
             return suggestions?.length
               ? suggestions
               : [
-                  {
-                    label: context.query,
-                    value: context.query,
-                  },
-                ];
+                {
+                  label: context.query,
+                  value: context.query,
+                },
+              ];
           } else {
             return [{ label: context.query, value: context.query }];
           }
@@ -112,11 +139,12 @@ export class AutoSuggest extends EditorSuggest<Completion> {
     logger("onTrigger", cursor, editor, file);
     if (
       !this.plugin.settings?.autoSuggestOptions?.isEnabled ||
+      !this.plugin.settings.autoSuggestOptions.triggerPhrase ||
       // @ts-ignore
       (this.app.workspace.activeEditor?.editor?.cm?.state?.vim?.mode &&
         // @ts-ignore
         this.app.workspace.activeEditor.editor.cm.state.vim.mode !==
-          "insert") ||
+        "insert") ||
       this.isOpen
     ) {
       this.process = false;
@@ -127,15 +155,17 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 
     const line = editor.getLine(cursor.line).substring(0, cursor.ch);
 
-    if (!line.endsWith(triggerPhrase)) {
+    if (!line.endsWith(triggerPhrase) || line == triggerPhrase) {
       this.process = false;
       return null;
     }
 
     this.process = true;
 
-    const selection =
-      this.plugin.textGenerator.contextManager.getSelection(editor);
+    // @ts-ignore
+    const CM = ContentManagerCls.compile(this.plugin.app.workspace.activeLeaf?.view, this.plugin)
+
+    const selection = this.plugin.textGenerator.contextManager.getTGSelection(CM) as unknown as string
     const lastOccurrenceIndex = selection.lastIndexOf(triggerPhrase);
     const currentPart =
       selection.substring(0, lastOccurrenceIndex) +
@@ -151,23 +181,20 @@ export class AutoSuggest extends EditorSuggest<Completion> {
       end: cursor,
       query: currentPart,
     };
+
     logger("onTrigger", result);
     return result;
   }
 
-  public getSuggestions(context: EditorSuggestContext): Promise<Completion[]> {
+  public async getSuggestions(context: EditorSuggestContext): Promise<Completion[]> {
     logger("getSuggestions", context);
+
     this.updateSettings();
-    return new Promise((resolve, reject) => {
-      this.getSuggestionsDebounced(context)
-        .then((suggestions) => {
-          logger("getSuggestions", suggestions);
-          resolve(suggestions);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
+
+    const suggestions = await this.getSuggestionsDebounced(context);
+
+    logger("getSuggestions", suggestions);
+    return suggestions;
   }
 
   public renderSuggestion(value: Completion, el: HTMLElement): void {
@@ -231,11 +258,35 @@ export class AutoSuggest extends EditorSuggest<Completion> {
   ): Promise<Completion[] | []> {
     logger("getGPTSuggestions", context);
     try {
-      const prompt = `continue the follwing text :
-            ${context.query}
-            `;
+      let prompt = `continue the follwing text:
+${context.query}`;
+
+      try {
+        if (this.plugin.settings.autoSuggestOptions.customInstructEnabled) {
+          const templateContent = this.plugin.settings.autoSuggestOptions.customInstruct
+            || this.plugin.defaultSettings.autoSuggestOptions.customInstruct;
+
+          const templateContext = await this.plugin.textGenerator.contextManager.getTemplateContext({
+            editor: ContentManagerCls.compile(await this.plugin.commands.getActiveView(), this.plugin),
+            templateContent,
+            filePath: context.file?.path,
+          })
+
+          templateContext.query = context.query
+
+          const splittedTemplate = this.plugin.textGenerator.contextManager.splitTemplate(templateContent)
+
+          prompt = await splittedTemplate.inputTemplate?.(templateContext);
+        }
+      } catch (err: any) { logger(err) }
 
       this.plugin.startProcessing(false);
+
+      const autoSuggestOptions = this.plugin.settings.autoSuggestOptions;
+
+      if (autoSuggestOptions.customProvider && autoSuggestOptions.selectedProvider) {
+        await this.plugin.textGenerator.loadllm(autoSuggestOptions.selectedProvider)
+      }
 
       const re = await this.plugin.textGenerator.LLMProvider.generateMultiple(
         [{ role: "user", content: prompt }],
@@ -250,20 +301,6 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 
       this.plugin.endProcessing(false);
 
-      // let suggestions: string[] = [];
-      // const chatModels = [
-      // 	"gpt-3.5-turbo",
-      // 	"gpt-3.5-turbo-0301",
-      // 	"gpt-4",
-      // 	"gpt-4-0314",
-      // 	"gpt-4-32k",
-      // 	"gpt-4-32k-0314",
-      // ];
-      // if (chatModels.includes(this.plugin.settings.engine)) {
-      // 	suggestions = re.map((r) => r.message.content);
-      // } else {
-      // 	suggestions = re.map((r) => r.text);
-      // }
       const suggestions = [...new Set(re)];
       return suggestions.map((r) => {
         let label = r.trim();

@@ -1,4 +1,4 @@
-import { App, TAbstractFile } from "obsidian";
+import { App } from "obsidian";
 import TextGeneratorPlugin from "src/main";
 import Tesseract from "tesseract.js";
 import debug from "debug";

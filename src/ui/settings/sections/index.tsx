@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 // ---------- sections ----------
-import GeneralSetting from "./general";
+import AdvancedSetting from "./advanced";
+import AccountSettings from "./account";
 import ProviderSetting from "./provider";
 import DMPSetting from "./default-model-parameters";
 import ConsideredContextSetting from "./considered-context";
@@ -8,6 +9,8 @@ import ExtractorOptionsSetting from "./extractors-options";
 import AutoSuggestSetting from "./auto-suggest";
 import OptionsSetting from "./options";
 import Input from "../components/input";
+import OtherProvidersSetting from "./otherProviders";
+import { ProviderServer } from "#/ui/package-manager/package-manager";
 // ------------------------------
 
 export type Register = {
@@ -36,8 +39,10 @@ export default function SectionsMain() {
       !searchTerm.length
         ? Object.entries(items)
         : Object.entries(items).filter(([key, val]) =>
-            `${val.term}`.includes(searchTerm)
-          ),
+          `${val.term} ${items[val.sectionId]?.term}`
+            .toLocaleLowerCase()
+            .includes(searchTerm.toLocaleLowerCase())
+        ),
     [items, searchTerm]
   );
 
@@ -89,12 +94,18 @@ export default function SectionsMain() {
           placeholder="Search For Option"
         />
       </div>
-      <GeneralSetting register={register} />
+
       <ProviderSetting register={register} />
+      <AdvancedSetting register={register} />
+      {
+        !!ProviderServer && <AccountSettings register={register} />
+      }
+
       <DMPSetting register={register} />
+      <AutoSuggestSetting register={register} />
       <ConsideredContextSetting register={register} />
       <ExtractorOptionsSetting register={register} />
-      <AutoSuggestSetting register={register} />
+      <OtherProvidersSetting register={register} />
       <OptionsSetting register={register} />
     </div>
   );

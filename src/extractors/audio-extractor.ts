@@ -63,9 +63,9 @@ export default class AudioExtractor extends Extractor {
         this.plugin.settings.LLMProviderOptions[WhisperProviderName]?.basePath
           ?.length
           ? this.plugin.settings.LLMProviderOptions[WhisperProviderName]
-              ?.basePath
+            ?.basePath
           : this.plugin.settings.endpoint ||
-            this.plugin.defaultSettings.endpoint
+          this.plugin.defaultSettings.endpoint
       );
 
       if (

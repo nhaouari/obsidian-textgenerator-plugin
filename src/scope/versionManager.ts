@@ -1,3 +1,4 @@
+import set from "lodash.set";
 import pkg from "../../package.json";
 import TextGeneratorPlugin from "../main";
 import { Version } from "../types";
@@ -29,14 +30,29 @@ export default class VersionManager {
     if (this.plugin.settings.endpoint) {
       if (this.plugin.settings.endpoint == "https://api.openai.com") {
         this.plugin.settings.endpoint = this.plugin.defaultSettings.endpoint;
+
+        // @ts-ignore
+        set(this.plugin.settings, `LLMProviderOptions["OpenAI Chat (Langchain)"].basePath`, this.plugin.settings.endpoint)
+        // @ts-ignore
+        set(this.plugin.settings, `LLMProviderOptions["OpenAI Instruct (Langchain)"].basePath`, this.plugin.settings.endpoint)
       }
     }
 
-    if (this.plugin.settings.api_key) {
-      this.plugin.settings.api_key_encrypted = this.plugin.getEncryptedKey(
-        this.plugin.settings.api_key
-      );
+    // @ts-ignore
+    if (this.plugin.settings.engine) {
+      // @ts-ignore
+      set(this.plugin.settings, `LLMProviderOptions["OpenAI Chat (Langchain)"].model`, this.plugin.settings.engine)
+      // @ts-ignore
+      set(this.plugin.settings, `LLMProviderOptions["OpenAI Instruct (Langchain)"].model`, this.plugin.settings.engine)
     }
+
+    if (this.plugin.settings.api_key) {
+      set(this.plugin.settings, `LLMProviderOptions["OpenAI Chat (Langchain)"].api_key`, this.plugin.settings.api_key)
+      set(this.plugin.settings, `LLMProviderOptions["OpenAI Instruct (Langchain)"].api_key`, this.plugin.settings.api_key)
+
+      this.plugin.encryptAllKeys();
+    }
+
 
     await this.plugin.saveSettings();
   }
@@ -47,8 +63,8 @@ export default class VersionManager {
 
   // positive if version1 is newer than version2
   compare(version1: Version, version2: Version) {
-    const [v1, b1] = version1.split("-");
-    const [v2, b2] = version2.split("-");
+    const [v1, b1] = (version1 || "0.0.0").split("-");
+    const [v2, b2] = (version2 || "0.0.0").split("-");
 
     const version1Parts = v1.split(".").map(Number);
     const version2Parts = v2.split(".").map(Number);

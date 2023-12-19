@@ -1,8 +1,8 @@
 // import { TemplateModalUI } from "../ui/template-modal-ui";
 // import { App, Notice, Editor, RequestUrlParam, EditorPosition } from "obsidian";
 import TextGeneratorPlugin from "../main";
-import ReqFormatter from "../api-request-formatter";
-import ContextManager, { InputContext } from "../context-manager";
+import ReqFormatter from "../utils/api-request-formatter";
+import ContextManager, { InputContext } from "../scope/context-manager";
 import debug from "debug";
 import LLMProviderInterface from "src/LLMProviders/interface";
 import { LLMProviderRegistery } from "src/LLMProviders";
@@ -67,43 +67,62 @@ export default class RequestHandler {
       settings,
     });
 
-    const { reqParams, bodyParams, provider, allParams } =
-      this.reqFormatter.getRequestParameters(
-        {
-          prompt,
-        },
-        false,
-        ""
-      );
-
-    if (!this.LLMProvider || provider.selectedProvider !== this.LLMProvider.id)
-      await this.loadllm(provider.selectedProvider);
-
-    await providerOptionsValidator(
-      this.LLMProvider.provider,
-      provider.providerOptions
-    );
+    const comp = await Handlebars.compile(this.contextManager.overProcessTemplate(prompt))({
+      ...settings,
+      templatePath: "default/default"
+    });
 
     try {
-      const result = await this.LLMProvider.generate(
-        bodyParams["messages"],
-        {
-          requestParams: {
-            signal: this.signalController?.signal,
-            ...reqParams,
+      const { reqParams, bodyParams, provider, allParams } =
+        this.reqFormatter.getRequestParameters(
+          {
+            ...this.LLMProvider.getSettings(),
+            ...settings,
+            prompt: comp,
           },
-          ...allParams,
-          stream: false,
-          llmPredict: bodyParams["messages"]?.length == 1,
-          otherOptions: this.plugin.settings.LLMProviderOptions,
-        },
-        undefined,
+          false
+        );
+
+      if (
+        !this.LLMProvider ||
+        provider.selectedProvider !== this.LLMProvider.id
+      )
+        await this.loadllm(provider.selectedProvider);
+
+      await providerOptionsValidator(
+        this.LLMProvider.provider,
         provider.providerOptions
       );
 
-      logger("gen results", {
-        result,
-      });
+      let result =
+        provider.providerOptions.estimatingMode ?
+          bodyParams.messages.map(m => m.content).join(",")
+          :
+          provider.providerOptions.disableProvider
+            ? ""
+            : await this.LLMProvider.generate(
+              bodyParams.messages,
+              {
+                ...allParams,
+                ...bodyParams,
+                requestParams: {
+                  // body: JSON.stringify(bodyParams),
+                  ...reqParams,
+                  signal: this.signalController?.signal,
+                },
+                otherOptions:
+                  this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
+                stream: false,
+                llmPredict: bodyParams.messages?.length == 1,
+              },
+              undefined,
+              provider.providerOptions
+            );
+
+      // Remove leading/trailing newlines
+      //   result = result.trim();
+
+      // output template, template used AFTER the generation happens
 
       return result;
     } catch (error) {
@@ -124,9 +143,9 @@ export default class RequestHandler {
       reqParams?: RequestInit | undefined;
       bodyParams?: any;
     } = {
-      showSpinner: true,
-      signal: undefined,
-    }
+        showSpinner: true,
+        signal: undefined,
+      }
   ) {
     try {
       logger("generate", {
@@ -136,8 +155,6 @@ export default class RequestHandler {
         templatePath,
         additionnalParams,
       });
-
-      console.log("generating with stream");
 
       if (this.plugin.processing && !additionnalParams.signal) {
         logger("streamGenerate error", "There is another generation process");
@@ -149,6 +166,7 @@ export default class RequestHandler {
       const { reqParams, bodyParams, provider, allParams } =
         this.reqFormatter.getRequestParameters(
           {
+            ...context.options,
             ...params,
             prompt:
               typeof template != "undefined" && !context.context
@@ -187,41 +205,43 @@ export default class RequestHandler {
         try {
           const k =
             provider.providerOptions.estimatingMode ||
-            provider.providerOptions.disableProvider
+              provider.providerOptions.disableProvider
               ? ""
               : await this.LLMProvider.generate(
-                  bodyParams.messages,
-                  {
-                    ...allParams,
-                    ...bodyParams,
-                    requestParams: {
-                      // body: JSON.stringify(bodyParams),
-                      ...reqParams,
-                      signal:
-                        additionnalParams.signal ||
-                        this.signalController?.signal,
-                    },
-                    otherOptions:
-                      this.plugin.settings.LLMProviderOptions[
-                        this.LLMProvider.id
-                      ],
-                    streaming: true,
-                    llmPredict: bodyParams.messages?.length == 1,
-                  } as any,
-                  onToken,
-                  provider.providerOptions
-                );
+                bodyParams.messages,
+                {
+                  ...allParams,
+                  ...bodyParams,
+                  requestParams: {
+                    // body: JSON.stringify(bodyParams),
+                    ...reqParams,
+                    signal:
+                      additionnalParams.signal ||
+                      this.signalController?.signal,
+                  },
+                  otherOptions:
+                    this.LLMProvider.getSettings(),
+                  streaming: true,
+                  llmPredict: bodyParams.messages?.length == 1,
+                } as any,
+                onToken,
+                provider.providerOptions
+              );
 
           // output template, template used AFTER the generation happens
           return (
             (provider.providerOptions.output?.length
               ? await Handlebars.compile(
-                  provider.providerOptions.output.replaceAll("\\n", "\n"),
-                  {
-                    noEscape: true,
-                  }
-                )
-              : template?.outputTemplate)?.({ ...options, output: k }) || k
+                provider.providerOptions.output.replaceAll("\\n", "\n"),
+                {
+                  noEscape: true,
+                }
+              )
+              : template?.outputTemplate)?.({
+                requestResults: k,
+                ...options,
+                output: k
+              }) || k
           );
         } catch (err: any) {
           onError?.(err);
@@ -271,6 +291,7 @@ export default class RequestHandler {
         context.map(async (ctxt) => {
           return this.reqFormatter.getRequestParameters(
             {
+              ...ctxt.options,
               ...params,
               prompt:
                 typeof ctxt.template != "undefined" && !ctxt.context
@@ -307,9 +328,11 @@ export default class RequestHandler {
       typeof this.plugin.settings & { disableProvider: boolean }
     > = this.plugin.settings,
     templatePath = "",
-    additionnalParams = {
+    // @TODO: fix this types
+    additionnalParams: any = {
       showSpinner: true,
       insertMode: false,
+      dontCheckProcess: false
     }
   ) {
     try {
@@ -323,7 +346,7 @@ export default class RequestHandler {
 
       const { options, template } = context;
 
-      if (this.plugin.processing) {
+      if (!additionnalParams.dontCheckProcess && this.plugin.processing) {
         logger("generate error", "There is another generation process");
         return Promise.reject(new Error("There is another generation process"));
       }
@@ -331,6 +354,7 @@ export default class RequestHandler {
       const { reqParams, bodyParams, provider, allParams } =
         this.reqFormatter.getRequestParameters(
           {
+            ...context.options,
             ...params,
             prompt:
               typeof template != "undefined" && !context.context?.trim()
@@ -356,42 +380,50 @@ export default class RequestHandler {
 
       let result =
         provider.providerOptions.estimatingMode ||
-        provider.providerOptions.disableProvider
+          provider.providerOptions.disableProvider
           ? ""
           : await this.LLMProvider.generate(
-              bodyParams.messages,
-              {
-                ...allParams,
-                ...bodyParams,
-                requestParams: {
-                  // body: JSON.stringify(bodyParams),
-                  ...reqParams,
-                  signal: this.signalController?.signal,
-                },
-                otherOptions:
-                  this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
-                stream: false,
-                llmPredict: bodyParams.messages?.length == 1,
+            bodyParams.messages,
+            {
+              ...allParams,
+              ...bodyParams,
+              requestParams: {
+                // body: JSON.stringify(bodyParams),
+                ...reqParams,
+                signal: this.signalController?.signal,
               },
-              undefined,
-              provider.providerOptions
-            );
+              otherOptions:
+                this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
+              stream: false,
+              llmPredict: bodyParams.messages?.length == 1,
+            },
+            undefined,
+            provider.providerOptions
+          );
 
       // Remove leading/trailing newlines
       //   result = result.trim();
 
       // output template, template used AFTER the generation happens
 
-      result =
-        (provider.providerOptions.output?.length
-          ? await Handlebars.compile(
-              provider.providerOptions.output.replaceAll("\\n", "\n"),
-              {
-                noEscape: true,
-              }
-            )
-          : template?.outputTemplate)?.({ ...options, output: result }) ||
-        result;
+      const conf = {
+        ...options,
+        output: result,
+        requestResults: result
+      }
+
+      result = provider.providerOptions.output ?
+        await Handlebars.compile(
+          provider.providerOptions.output.replaceAll("\\n", "\n"),
+          {
+            noEscape: true,
+          })(conf) : result
+
+
+      result = await template?.outputTemplate?.({
+        ...conf,
+        output: result
+      }) || result
 
       logger("generate end", {
         result,

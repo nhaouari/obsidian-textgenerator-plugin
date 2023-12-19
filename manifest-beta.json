@@ -1,11 +1,11 @@
 {
 	"id": "obsidian-textgenerator-plugin",
 	"name": "Text Generator",
-	"version": "0.5.5-beta",
+	"version": "0.5.21-beta",
 	"minAppVersion": "0.12.0",
 	"description": "Text generation using OpenAI",
 	"author": "Noureddine Haouari",
-	"authorUrl": "https://obsidian.md",
+	"authorUrl": "https://text-gen.com",
 	"isDesktopOnly": false,
 	"fundingUrl": "https://www.buymeacoffee.com/haouarine"
 }

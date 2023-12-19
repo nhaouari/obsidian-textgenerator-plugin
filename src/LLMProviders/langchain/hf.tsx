@@ -15,11 +15,10 @@ const logger = debug("textgenerator:llmProvider:hf");
 const id = "Huggingface (Langchain)" as const;
 export default class LangchainHFProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   id = id;
   static id = id;
-  static slug = "hf";
+  static slug = "hf" as const;
   streamable = false;
   provider = "Langchain";
   static provider = "Langchain";
@@ -28,9 +27,9 @@ export default class LangchainHFProvider
     console.log(options);
     return this.cleanConfig({
       apiKey: options.otherOptions.api_key,
-
       // ------------Necessary stuff--------------
-      model: options.otherOptions.engine as any,
+      model: options.model || options.otherOptions.model as any,
+
       maxTokens: options.max_tokens,
       temperature: options.temperature,
       frequencyPenalty: options.frequency_penalty,
@@ -38,6 +37,9 @@ export default class LangchainHFProvider
       stop: options.stop,
       streaming: options.stream,
       maxRetries: 3,
+      parameters: {
+        candidate_labels: ["refund", "legal", "faq"]
+      }
     });
   }
 
@@ -82,9 +84,9 @@ export default class LangchainHFProvider
           sectionId={props.sectionId}
         >
           <Input
-            value={config.engine}
+            value={config.model}
             setValue={async (value) => {
-              config.engine = value;
+              config.model = value;
               global.triggerReload();
               // TODO: it could use a debounce here
               await global.plugin.saveSettings();

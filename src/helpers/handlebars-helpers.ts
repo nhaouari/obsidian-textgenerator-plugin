@@ -1,20 +1,172 @@
-import { Notice, normalizePath } from "obsidian";
-import handlebars from "handlebars";
+import { Notice, Plugin, normalizePath, request, requestUrl } from "obsidian";
+import handlebars, { Exception, createFrame } from "handlebars";
 import { pull } from "langchain/hub";
 
 import asyncHelpers from "../lib/async-handlebars-helper";
-import { compileLangMessages } from "#/utils";
+import { compileLangMessages, createFileWithInput, createFolder } from "#/utils";
+
+import { pluginApi } from "@vanakat/plugin-api";
 
 export const Handlebars = asyncHelpers(handlebars);
-import type ContextManager from "#/context-manager";
+import type ContextManager from "#/scope/context-manager";
 import {
   ContentExtractor,
   ExtractorSlug,
   Extractors,
 } from "#/extractors/content-extractor";
+import { isMap, isSet } from "util/types";
+import Read from "#/extractors";
+import lodashSet from "lodash.set";
+import lodashGet from "lodash.get";
+
+import * as langchain from "#/lib/langchain";
 
 export default function Helpersfn(self: ContextManager) {
+  const { chains, splitters } = langchain;
+
+  const extract = async (id: string, cntn: string, other: any) => {
+    const ce = new ContentExtractor(self.app, self.plugin);
+
+    ce.setExtractor(
+      ExtractorSlug[
+      id as keyof typeof ExtractorSlug
+      ] as keyof typeof Extractors
+    );
+
+    return await ce.convert(cntn, other);
+  }
+
+  const _runTemplate = async (id: string, metadata?: any) => {
+    return await self.plugin.textGenerator.templateGen(id, {
+      additionalProps: metadata,
+    })
+  }
+
+  const Write = async (path: string, data: string) => {
+    return await createFileWithInput(path, data, self.plugin.app)
+  }
+
+  const deleteFile = async (path: string) => {
+    return await self.plugin.app.vault.adapter.remove(path)
+  }
+
+  const append = async (path: string, data: string,) => {
+    const dirMatch = path.match(/(.*)[/\\]/);
+    let dirName = "";
+    if (dirMatch) dirName = dirMatch[1];
+
+    if (!(await self.app.vault.adapter.exists(dirName)))
+      await createFolder(dirName, app);
+
+    return await self.plugin.app.vault.adapter.append(path, `\n${data}`)
+  }
+
+  const error = async function (context: any) {
+    await self.plugin.handelError(context);
+    throw new Error(context);
+  }
+
+  const notice = function (context: any, duration: any) {
+    new Notice(context, typeof duration == "object" ? undefined : +duration);
+  }
+
+  const read = async (path: string) => {
+    return await Read(path, self.plugin)
+  }
+
   const Helpers = {
+    each: async (context: any, options: any) => {
+      if (!options) {
+        throw new Exception('Must pass iterator to #each');
+      }
+
+      let fn = options.fn,
+        inverse = options.inverse,
+        i = 0,
+        ret = '',
+        data: any;
+
+      if (typeof context == "function") {
+        context = await context.call(this);
+      }
+
+      if (options.data) {
+        data = createFrame(options.data);
+      }
+
+      async function execIteration(field: any, value: any, index: any, last?: any) {
+        if (data) {
+          data.key = field;
+          data.index = index;
+          data.first = index === 0;
+          data.last = !!last;
+        }
+
+        ret =
+          ret +
+          await fn(value, {
+            data: data,
+            blockParams: [context[field], field],
+          });
+      }
+
+      if (context && typeof context === 'object') {
+        if (Array.isArray(context)) {
+          for (let j = context.length; i < j; i++) {
+            if (i in context) {
+              await execIteration(i, context[i], i, i === context.length - 1);
+            }
+          }
+        } else if (isMap(context)) {
+          const j = context.size;
+          for (const [key, value] of context) {
+            await execIteration(key, value, i++, i === j);
+          }
+        } else if (isSet(context)) {
+          const j = context.size;
+          for (const value of context) {
+            await execIteration(i, value, i++, i === j);
+          }
+        } else if (typeof Symbol === 'function' && context[Symbol.iterator]) {
+          const newContext = [];
+          const iterator = context[Symbol.iterator]();
+          for (let it = iterator.next(); !it.done; it = iterator.next()) {
+            newContext.push(it.value);
+          }
+          context = newContext;
+          for (let j = context.length; i < j; i++) {
+            await execIteration(i, context[i], i, i === context.length - 1);
+          }
+        } else {
+          let priorKey: any;
+
+          for (const key in context) {
+            if (Object.prototype.hasOwnProperty.call(context, key)) {
+              // We're running the iterations one step out of sync so we can detect
+              // the last iteration without have to scan the object twice and create
+              // an intermediate keys array.
+              if (priorKey !== undefined) {
+                await execIteration(priorKey, context[priorKey], i - 1,);
+              }
+              priorKey = key;
+              i++;
+            }
+          }
+
+
+          if (priorKey !== undefined) {
+            await execIteration(priorKey, context[priorKey], i - 1, true);
+          }
+        }
+      }
+
+      if (i === 0) {
+        ret = inverse(this);
+      }
+
+      return ret;
+    },
+
     length: function (str: string) {
       return str.length;
     },
@@ -72,17 +224,11 @@ export default function Helpersfn(self: ContextManager) {
       return new Handlebars.SafeString(trimmedString);
     },
 
-    getRandomFile: async function getRandomFile(
-      str = "",
-      minLength = 100,
-      maxLength = 1500
-    ) {
-      let files: any[] = self.app.vault.getMarkdownFiles();
+    async getRandomFile(str = "", minLength?: number, maxLength?: number) {
+      let files = self.app.vault.getMarkdownFiles();
 
       if (str) {
-        const filteredFiles = files.filter(
-          (file: any) => file.path.includes(str) && file.stat.size >= minLength
-        );
+        const filteredFiles = files.filter((file) => file.path.match(str) && (!minLength || file.stat.size >= minLength));
         if (filteredFiles.length === 0) {
           throw new Error(`No files match the pattern ${str}`);
         }
@@ -90,14 +236,12 @@ export default function Helpersfn(self: ContextManager) {
       }
 
       const randomIndex = Math.floor(Math.random() * files.length);
-      const filePath = normalizePath(
-        `${files[randomIndex].vault.adapter.basePath}\\${files[randomIndex].path}`
-      );
+      const randomFile = files[randomIndex];
 
-      let content = await self.app.vault.adapter.read(filePath);
-      const fileName = files[randomIndex].name;
+      let content = await self.app.vault.read(randomFile);
+      const fileName = randomFile.name;
 
-      if (content.length > maxLength) {
+      if (maxLength && content.length > maxLength) {
         content = content.substring(0, maxLength) + "...";
       }
 
@@ -142,7 +286,15 @@ export default function Helpersfn(self: ContextManager) {
       return await Helpers.trim(t);
     },
 
+    encodeURI: async function (context: any) {
+      const t = context?.fn
+        ? await context?.fn(context.data.root)
+        : "" + context;
+      return encodeURIComponent(t);
+    },
+
     error: async function (context: any) {
+      await self.plugin.handelError(context);
       throw new Error(context);
     },
 
@@ -151,8 +303,11 @@ export default function Helpersfn(self: ContextManager) {
     },
 
     async log(...vars: any[]) {
-      if (vars[vars.length - 1].fn)
+      let fnExists = false;
+      if (vars[vars.length - 1].fn) {
+        fnExists = true;
         vars[vars.length - 1] = (await vars[vars.length - 1].fn?.(this)) || "";
+      }
       else delete vars[vars.length - 1];
 
       // try to json parse them
@@ -163,6 +318,8 @@ export default function Helpersfn(self: ContextManager) {
           // empty
         }
       });
+
+      if (fnExists && !vars[vars.length - 1]) vars.pop();
 
       return "";
     },
@@ -184,54 +341,79 @@ export default function Helpersfn(self: ContextManager) {
 
       const otherVariables = vars;
 
-      if (!self.templatePaths[id])
+      const templatePath = await self.plugin.textGenerator.getTemplatePath(id)
+
+      if (!templatePath)
         throw new Error(
           `template with packageId/promptId ${id} was not found.`
         );
 
       const TemplateMetadata = self.getFrontmatter(
-        self.getMetaData(self.templatePaths[id])
+        self.getMetaData(templatePath)
       );
 
-      const innerTxt = !options.fn
-        ? `{"selection":"${Helpers.escp(otherVariables.length)}"}`
-        : (await await options.fn?.({
+      let varname = id;
+      let innerResult = {};
+
+      if (options.fn) {
+        varname = otherVariables[0];
+        const param = otherVariables[1] || "tg_selection";
+
+        const innerTxt =
+          (await await options.fn?.({
             ...this,
             ...TemplateMetadata,
           })) || "{}";
 
-      let innerResult = {};
-      try {
-        innerResult = JSON.parse(innerTxt);
-      } catch (err: any) {
+        try {
+          innerResult = innerTxt.trim().startsWith("{")
+            ? JSON.parse(innerTxt)
+            : {
+              [param]: innerTxt,
+            };
+        } catch (err: any) {
+          innerResult = {
+            [param]: innerTxt,
+          };
+          console.warn(
+            "couldn't parse data passed to ",
+            id,
+            {
+              content: innerTxt,
+            },
+            err
+          );
+        }
+
+      } else {
+        if (otherVariables[0]) varname = otherVariables[0];
+
+        const param = otherVariables[2] || "tg_selection";
+
+        const innerTxt = otherVariables[1];
+
         innerResult = {
-          selection: innerTxt,
+          [otherVariables.length > 1 ? param : "tg_selection"]:
+            innerTxt,
         };
-        console.warn(
-          "couldn't parse data passed to ",
-          id,
-          {
-            content: innerTxt,
-          },
-          err
-        );
       }
 
-      options.data.root[
-        otherVariables.length > 1 ? "VAR:" + otherVariables[0] : id
-      ] = await self.plugin.textGenerator.templateGen(id, {
-        additionalProps: {
-          ...options.data.root,
-          ...TemplateMetadata,
-          disableProvider: false,
-          ...innerResult,
-        },
-      });
+      lodashSet(options.data.root, otherVariables.length >= 1 ? `vars["${otherVariables[0]}"]` : id, await _runTemplate(id, {
+        ...options.data.root,
+        disableProvider: false,
+        ...TemplateMetadata,
+        ...innerResult
+      }))
 
       return "";
     },
 
-    async get(templateId: string, additionalOptions: { data: { root: any } }) {
+    async get(...vars: any[]) {
+      const additionalOptions = vars.pop();
+      const templateId = vars.shift();
+
+      const clean = vars[0];
+
       const p = additionalOptions.data.root.templatePath?.split("/");
       const parentPackageId = Object.keys(ExtractorSlug).includes(templateId)
         ? "extractions"
@@ -239,58 +421,98 @@ export default function Helpersfn(self: ContextManager) {
 
       const id: string = templateId?.contains("/")
         ? // if it has a slash that means it already have the packageId
-          templateId
+        `["${templateId}"]`
         : // checking for vars
-        Object.keys(additionalOptions.data.root || {}).includes(
-            "VAR:" + templateId
-          )
-        ? "VAR:" + templateId
-        : // make packageId/templateId
-          `${parentPackageId}/${templateId}`;
+        Object.keys(additionalOptions.data.root.vars || {}).includes(
+          templateId
+        )
+          ? `vars["${templateId}"]`
+          : // make packageId/templateId
+          `["${parentPackageId}/${templateId}"]`;
 
-      return additionalOptions.data.root[id];
+      const val = lodashGet(additionalOptions.data.root, id);
+
+      return clean ? JSON.stringify(val) : val
+    },
+
+    async set(...vars: any[]) {
+      const additionalOptions = vars.pop();
+
+
+      const id: string = `vars["${vars[0]}"]`
+
+      let value = vars[1];
+
+      if (additionalOptions.fn) {
+        value = await additionalOptions.fn(this);
+      }
+
+      lodashSet(additionalOptions.data.root, id, value);
+      return "";
     },
 
     async extract(...vars: any[]) {
       const options: { data: { root: any }; fn: any } = vars.pop();
 
-      const p = options.data.root.templatePath?.split("/");
-
       const firstVar = vars.shift();
+
       const id: string = firstVar?.contains("/")
         ? firstVar
         : `extractions/${firstVar}`;
 
       const otherVariables = vars;
+      const templatePath = await self.plugin.textGenerator.getTemplatePath(id)
 
       const TemplateMetadata = self.getFrontmatter(
-        self.getMetaData(self.templatePaths[id])
+        self.getMetaData(templatePath)
       );
 
       if (!(firstVar in ExtractorSlug))
         throw new Error(`Extractor ${firstVar} Not found`);
 
-      const cntn =
-        otherVariables[0] ||
-        (await await options.fn?.({
+      let cntn = "";
+      let varname = id;
+      let other = "";
+      if (options.fn) {
+        cntn = await await options.fn?.({
           ...this,
           ...TemplateMetadata,
-        }));
+        });
+        if (otherVariables[0]) varname = `vars["${otherVariables[0]}"]`;
+        other = otherVariables[1];
+      } else {
+        cntn = otherVariables[0];
+        if (otherVariables[1]) varname = `vars["${otherVariables[1]}"]`;
+        other = otherVariables[2];
+      }
 
-      const ce = new ContentExtractor(self.app, self.plugin);
 
-      ce.setExtractor(
-        ExtractorSlug[
-          firstVar as keyof typeof ExtractorSlug
-        ] as keyof typeof Extractors
-      );
+      const res = await extract(firstVar, cntn, other)
 
-      const res = await ce.convert(cntn);
+      lodashSet(options.data.root, varname, res);
 
-      const ress = JSON.stringify(res);
-      options.data.root[id] = Helpers.escp(ress.substring(1, ress.length - 1));
+      return res;
+    },
 
-      return options.data.root[id];
+    async regex(...vars: any[]) {
+      const options: { data: { root: any }; fn: any } = vars.pop();
+
+      if (!options.fn) throw "you need to provide data to work with";
+
+      const firstVar = vars.shift();
+
+      if (!firstVar) throw "You need to set a variable name for regex";
+
+      const otherVariables = vars;
+
+      const cntn = ((await await options.fn?.(this)) + "") as string;
+
+      const reg = new RegExp(otherVariables[0], otherVariables[1]);
+
+      const regexResults = cntn.match(reg);
+
+      lodashSet(options.data.root, `vars["${firstVar}"]`, regexResults)
+      return regexResults;
     },
 
     async runLang(...vars: any[]) {
@@ -316,14 +538,6 @@ export default function Helpersfn(self: ContextManager) {
 
       data.prompt = data.messages[data.messages?.length - 1] || "";
 
-      console.log({
-        data,
-        l: JSON.stringify({
-          // ...inJson,
-          ...data,
-        }),
-      });
-
       switch (whatToGet) {
         case "system":
           return data.system;
@@ -342,6 +556,93 @@ export default function Helpersfn(self: ContextManager) {
     async pullLang(rep: string) {
       return JSON.stringify(await langPull(rep));
     },
+
+    async wait(time: string) {
+      await new Promise((s) => setTimeout(s, +(time || "1") * 1000));
+    },
+
+    async script(...vars: any[]) {
+      if (!self.plugin.settings.allowJavascriptRun) throw new Error("Scripts are not allowed to run, for security reasons. Go to plugin settings and enable it");
+      const options = vars.pop();
+
+      options.data.root.vars ??= {};
+
+      let content = await options?.fn?.(this) as string || ""
+
+      if (!options.data.root.templatePath) {
+        throw new Error("templatePath was not found in run command");
+      }
+
+      const p = options.data.root.templatePath?.split("/");
+      const parentPackageId = p[p.length - 2];
+
+      const gen = async (templateContent: string, metadata: any) => {
+        return await self.plugin.textGenerator.gen(templateContent, {
+          ...options.data.root,
+          disableProvider: false,
+          ...metadata
+        });
+      }
+
+
+      const run = (id: string, metadata?: any) => {
+        let meta: any = {};
+
+        if (content.contains("run(")) {
+          const TemplateMetadata = self.getFrontmatter(
+            self.getMetaData(self.plugin.textGenerator.templatePaths[id])
+          );
+          meta = {
+            ...options.data.root,
+            disableProvider: false,
+            ...TemplateMetadata,
+          }
+        }
+
+        const Id = id?.contains("/")
+          ? id
+          : `${parentPackageId}/${id}`;
+
+        return _runTemplate(Id, {
+          ...meta,
+          ...(typeof metadata == "object" ? metadata : {
+            "tg_selection": metadata
+          })
+        })
+      }
+
+      if (content.startsWith("```")) {
+        let k = content.split("\n");
+        k.pop();
+        k.pop();
+        k.shift();
+        content = k.join("\n");
+      }
+
+      // do not use (0, eval), it will break "this", and the eval wont be able to access context
+      return await eval(`
+        async (plugin, app, pluginApi, run, gen)=>{
+          ${content}
+        }  
+      `).bind(this)(self.plugin, self.app, pluginApi, run, gen);
+    },
+
+    read,
+
+    async write(...vars: any[]) {
+      const options: { data: { root: any }; fn: any } = vars.pop();
+      let data = vars[1];
+      if (options.fn) data = await options.fn(options.data.root)
+      return await Write(vars[0], data)
+    },
+
+    async append(...vars: any[]) {
+      const options: { data: { root: any }; fn: any } = vars.pop();
+      let data = vars[1];
+      if (options.fn) data = await options.fn(options.data.root)
+      return await append(vars[0], data)
+    }
+
   } as const;
 
   return Helpers;
@@ -365,34 +666,19 @@ export async function langPull(rep: string) {
   if (k.kwargs.template_format && k.kwargs.template_format != "f-string")
     throw new Error("only accepts templates with format f-string for now.");
 
-  console.log({
-    k,
-    res:
-      k.kwargs.messages ||
-      (k.kwargs.template
-        ? [
-            {
-              prompt: {
-                template: k.kwargs.template,
-                inputVariables: k.kwargs.input_variables,
-              },
-            },
-          ]
-        : []),
-  });
 
   const data = compileLangMessages(
     k.kwargs.messages ||
-      (k.kwargs.template
-        ? [
-            {
-              prompt: {
-                template: k.kwargs.template,
-                inputVariables: k.kwargs.input_variables,
-              },
-            },
-          ]
-        : [])
+    (k.kwargs.template
+      ? [
+        {
+          prompt: {
+            template: k.kwargs.template,
+            inputVariables: k.kwargs.input_variables,
+          },
+        },
+      ]
+      : [])
   );
 
   return data;

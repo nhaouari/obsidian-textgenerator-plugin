@@ -32,7 +32,6 @@ export default class TemplateInputModalUI extends Modal {
     this.containerEl.createEl("div", { cls: "PackageManager" });
     this.root = createRoot(this.containerEl.children[1]);
 
-    console.log(this);
     this.root.render(
       <React.StrictMode>
         <TemplateInputModalView

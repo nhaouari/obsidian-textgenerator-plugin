@@ -3,51 +3,49 @@ import debug from "debug";
 import React from "react";
 
 import { ChatOpenAI, OpenAIChatInput } from "langchain/chat_models/openai";
-import type { HuggingFaceInference } from "langchain/llms/hf";
-import * as chains from "langchain/chains";
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import type { BaseChatModelParams } from "langchain/dist/chat_models/base";
+import { HuggingFaceInference } from "langchain/llms/hf";
 
 import BaseProvider from "../base";
 import { Message } from "../../types";
-import { mapMessagesToLangchainMessages } from "../../utils";
+import { mapMessagesToLangchainMessages, processPromisesSetteledBatch } from "../../utils";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 
-import { OPENAI_MODELS } from "#/constants";
-import { ContextTemplate } from "#/context-manager";
+import { AI_MODELS } from "#/constants";
+import { ContextTemplate } from "#/scope/context-manager";
 
 import { PromptTemplate } from "langchain/prompts";
 import { TypedPromptInputValues } from "langchain/dist/prompts/base";
+import { chains, splitters } from "#/lib/langchain";
 
 const logger = debug("textgenerator:LangchainProvider");
 
 export default class LangchainProvider
   extends BaseProvider
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   streamable = true;
+  /** generate candidates in parallel instead of sending the variable n */
+  legacyN = false;
   id = "default";
-  static slug = "default";
-  llmClass: any;
+  static slug = "default" as any;
   llmPredict = false;
   provider = "Langchain";
   static provider = "Langchain";
-  getConfig(
-    options: LLMConfig
-  ): Partial<OpenAIChatInput & BaseChatModelParams> {
+  llmClass: any;
+
+  getConfig(options: LLMConfig) {
     return this.cleanConfig({
       openAIApiKey: options.api_key,
 
       // ------------Necessary stuff--------------
-      modelName: options.engine,
-      maxTokens: options.max_tokens,
-      temperature: options.temperature,
-      frequencyPenalty: options.frequency_penalty,
+      modelName: options.model,
+      maxTokens: +options.max_tokens,
+      temperature: +options.temperature,
+      frequencyPenalty: +options.frequency_penalty,
       n: options.n,
       stop: options.stop,
       streaming: options.stream,
       maxRetries: 3,
-    });
+    } as Partial<any>);
   }
 
   async load() {
@@ -55,12 +53,22 @@ export default class LangchainProvider
   }
 
   getLLM(options: LLMConfig) {
-    return new this.llmClass(this.getConfig(options), {
-      basePath: options.otherOptions?.basePath?.length
-        ? options.endpoint
+    console.log({ options: this.getConfig(options) })
+    return new (this.llmClass as typeof ChatOpenAI)(this.getConfig(options), {
+      basePath: options.basePath?.length
+        ? options.basePath.endsWith("/")
+          ? options.basePath.substring(0, options.basePath.length - 1)
+          : options.basePath
         : undefined,
+
+      defaultQuery: {
+        ...options.bodyParams,
+      },
+
       defaultHeaders: {
         "User-Agent": undefined,
+        "HTTP-Referer": location.origin,
+        "X-Title": "obsidian-text-generator",
       },
     }) as any;
   }
@@ -70,14 +78,14 @@ export default class LangchainProvider
       ...this.cleanConfig(this.plugin.settings),
       ...this.cleanConfig(
         this.plugin.settings.LLMProviderOptions[
-          this.id as keyof typeof this.plugin.settings
+        this.id as keyof typeof this.plugin.settings
         ]
       ),
       ...this.cleanConfig(options.otherOptions),
       ...this.cleanConfig(options),
       otherOptions: this.cleanConfig(
         this.plugin.settings.LLMProviderOptions[
-          this.id as keyof typeof this.plugin.settings
+        this.id as keyof typeof this.plugin.settings
         ]
       ),
     };
@@ -107,7 +115,7 @@ export default class LangchainProvider
         // if the model is streamable
         params.stream = params.stream && this.streamable;
 
-        const chat = this.getLLM(params) as HuggingFaceInference;
+        const llm = this.getLLM(params) as HuggingFaceInference;
 
         let first = true;
         let allText = "";
@@ -115,9 +123,9 @@ export default class LangchainProvider
         const llmFuncs: Parameters<
           InstanceType<typeof ChatOpenAI>["predict"]
         >["2"] = [
-          {
-            ...(onToken &&
-              params.stream && {
+            {
+              ...(onToken &&
+                params.stream && {
                 async handleLLMNewToken(token: string) {
                   const d = first;
                   first = false;
@@ -128,14 +136,14 @@ export default class LangchainProvider
                 },
               }),
 
-            handleLLMEnd() {
-              if (params.stream) s(allText);
+              handleLLMEnd() {
+                if (params.stream) s(allText);
+              },
             },
-          },
-        ];
+          ];
 
         if (customConfig?.chain?.type) {
-          const textSplitter = new RecursiveCharacterTextSplitter({
+          const textSplitter = new splitters.RecursiveCharacterTextSplitter({
             chunkSize: 1000,
             ...customConfig?.splitter,
           });
@@ -147,7 +155,7 @@ export default class LangchainProvider
           // This convenience function creates a document chain prompted to summarize a set of documents.
           const chain = getChain(
             customConfig?.chain.loader,
-            chat,
+            llm,
             customConfig.chain
           );
 
@@ -164,43 +172,49 @@ export default class LangchainProvider
           );
 
           result = res.text;
-        } else
-          result =
-            reqParams.llmPredict || this.llmPredict
-              ? await (chat as any as ChatOpenAI).predict(
-                  messages.length > 1
-                    ? // user: test1
-                      // assistant: test2
-                      // ...
-                      messages
-                        .map((msg) => `${msg.role}:${msg.content}`)
-                        .join("\n")
-                    : // test1
-                      messages[0].content,
-                  {
-                    signal: params.requestParams?.signal || undefined,
-                    ...this.getReqOptions(params),
-                  },
-                  llmFuncs
-                )
-              : (
-                  await chat.predictMessages(
-                    mapMessagesToLangchainMessages(messages),
-                    {
-                      signal: params.requestParams?.signal || undefined,
-                    },
-                    llmFuncs
-                  )
-                ).content;
+        } else {
+          if (reqParams.llmPredict || this.llmPredict)
+            result = await (llm as any as ChatOpenAI).predict(
+              messages.length > 1
+                ? // user: test1
+                // assistant: test2
+                // ...
+                messages
+                  .map((msg) => `${msg.role}:${msg.content}`)
+                  .join("\n")
+                : // test1
+                messages[0].content,
+              {
+                signal: params.requestParams?.signal || undefined,
+                ...this.getReqOptions(params),
+                // options: {
+                //   body: params.bodyParams,
+                // },
+              },
+              llmFuncs
+            )
+          else {
+            const res = (
+              await llm.predictMessages(
+                mapMessagesToLangchainMessages(messages),
+                {
+                  signal: params.requestParams?.signal || undefined,
+                },
+                llmFuncs
+              )
+            );
+
+            // @ts-ignore
+            result = res.content;
+          }
+        }
 
         // console.log("used Tokens: ", { allTokens });
         logger("generate end", {
           result,
         });
 
-        if (!params.streaming) {
-          s(result);
-        }
+        s(result);
       } catch (errorRequest: any) {
         logger("generate error", errorRequest);
 
@@ -222,29 +236,53 @@ export default class LangchainProvider
         logger("generateMultiple", reqParams);
 
         const params = this.configMerger(reqParams);
-        const chat = this.getLLM(params);
+        const llm = this.getLLM(params);
+        let requestResults: any[] = [];
+        if (this.legacyN) {
+          await processPromisesSetteledBatch(
+            Array.from({ length: reqParams.n || 1 }).
+              map(async () => {
+                requestResults.push(...(await (llm as HuggingFaceInference).generate(
+                  reqParams.llmPredict || this.llmPredict
+                    ? messages.length > 1
+                      ? // user: test1
+                      // assistant: test2
+                      // ...
+                      [messages.map((msg) => `${msg.role}:${msg.content}`).join("\n")]
+                      : // test1
+                      [messages[0].content]
+                    : [mapMessagesToLangchainMessages(messages) as any as string],
+                  {
+                    signal: params.requestParams?.signal || undefined,
+                    ...this.getReqOptions(params),
+                  }
+                )).generations[0])
+              }),
+            2
+          )
 
-        const requestResults = await (chat as HuggingFaceInference).generate(
-          reqParams.llmPredict || this.llmPredict
-            ? messages.length > 1
-              ? // user: test1
+        } else
+          requestResults = (await (llm as HuggingFaceInference).generate(
+            reqParams.llmPredict || this.llmPredict
+              ? messages.length > 1
+                ? // user: test1
                 // assistant: test2
                 // ...
                 [messages.map((msg) => `${msg.role}:${msg.content}`).join("\n")]
-              : // test1
+                : // test1
                 [messages[0].content]
-            : [mapMessagesToLangchainMessages(messages) as any as string],
-          {
-            signal: params.requestParams?.signal || undefined,
-            ...this.getReqOptions(params),
-          }
-        );
+              : [mapMessagesToLangchainMessages(messages) as any as string],
+            {
+              signal: params.requestParams?.signal || undefined,
+              ...this.getReqOptions(params),
+            }
+          )).generations[0];
 
         logger("generateMultiple end", {
           requestResults,
         });
 
-        s(requestResults.generations[0].map((a: any) => a.text));
+        s(requestResults.map((a: any) => a.text));
       } catch (errorRequest: any) {
         logger("generateMultiple error", errorRequest);
         return r(errorRequest);
@@ -372,10 +410,10 @@ export default class LangchainProvider
     messages: Message[],
     reqParams: Partial<LLMConfig>
   ): ReturnType<LLMProviderInterface["calcTokens"]> {
-    const model = reqParams.engine;
+    const model = reqParams.model;
     const modelInfo =
-      OPENAI_MODELS[model as keyof typeof OPENAI_MODELS] ||
-      OPENAI_MODELS["gpt-3.5-turbo"];
+      AI_MODELS[model as keyof typeof AI_MODELS] ||
+      AI_MODELS["gpt-3.5-turbo"];
 
     if (!modelInfo)
       return {
@@ -425,11 +463,11 @@ export default class LangchainProvider
 function chatToString(messages: Message[] = []) {
   return messages.length > 1
     ? // user: test1
-      // assistant: test2
-      // ...
-      messages.map((msg) => `${msg.role}:${msg.content}`).join("\n")
+    // assistant: test2
+    // ...
+    messages.map((msg) => `${msg.role}:${msg.content}`).join("\n")
     : // test1
-      messages[0].content;
+    messages[0].content;
 }
 
 function getChain(chainName: string, llm: any, config: any) {

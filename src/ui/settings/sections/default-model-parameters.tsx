@@ -29,8 +29,8 @@ export default function DMPSetting(props: { register: Register }) {
     <SettingsSection
       title="Default model parameters"
       className="flex w-full flex-col"
-      collapsed={!props.register.searchTerm.length}
-      hidden={!props.register.activeSections[sectionId]}
+      register={props.register}
+      id={sectionId}
     >
       <h5>You can specify more parameters in the Frontmatter YAML</h5>
       <a
@@ -142,22 +142,6 @@ export default function DMPSetting(props: { register: Register }) {
               `
 `
             );
-            await global.plugin.saveSettings();
-            global.triggerReload();
-          }}
-        />
-      </SettingItem>
-      <SettingItem
-        name="Streaming"
-        description="Enable streaming for commands Generate Text and Generate Text(with metadata)"
-        register={props.register}
-        sectionId={sectionId}
-      >
-        <Input
-          type="checkbox"
-          value={"" + global.plugin.settings.stream}
-          setValue={async (val) => {
-            global.plugin.settings.stream = val == "true";
             await global.plugin.saveSettings();
             global.triggerReload();
           }}

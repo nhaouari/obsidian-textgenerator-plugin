@@ -1,4 +1,4 @@
-import { ItemView, Menu, ViewStateResult, WorkspaceLeaf } from "obsidian";
+import { ItemView, Menu, Platform, ViewStateResult, WorkspaceLeaf } from "obsidian";
 import * as React from "react";
 import Tool from "./tool";
 import { Root, createRoot } from "react-dom/client";
@@ -6,6 +6,17 @@ import TextGeneratorPlugin from "../../main";
 import Contexts from "../context";
 import { trimBy } from "../../utils";
 export const VIEW_TOOL_ID = "tool-view";
+
+
+
+// @ts-ignore
+let electron: Electron;
+
+if (Platform.isDesktop) {
+  // @ts-ignore
+  electron = require("electron")?.remote;
+}
+
 
 export class ToolView extends ItemView {
   root: Root;
@@ -99,7 +110,7 @@ export class ToolView extends ItemView {
   }
 
   // this is just a placeholder for the, do not put code here. edit the tool.tsx file to add more events
-  onEvent(name: string) {}
+  onEvent(name: string) { }
 
   id?: string;
   async setState(state: any, result: ViewStateResult): Promise<void> {
@@ -132,13 +143,13 @@ export class ToolView extends ItemView {
   }
 
   toggleAlwaysOnTop(bool?: boolean) {
-    const win = require("electron").remote.BrowserWindow.getFocusedWindow();
+    const win = electron?.BrowserWindow.getFocusedWindow();
     win.setAlwaysOnTop(bool ?? !win.isAlwaysOnTop());
     return win.isAlwaysOnTop();
   }
 
   isAlwaysOnTop() {
-    const win = require("electron").remote.BrowserWindow.getFocusedWindow();
+    const win = electron?.BrowserWindow.getFocusedWindow();
     return win.isAlwaysOnTop();
   }
 

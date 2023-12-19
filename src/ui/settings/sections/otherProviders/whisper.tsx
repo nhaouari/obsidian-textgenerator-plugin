@@ -26,8 +26,8 @@ export default function WhisperProviderSetting(props: { register: Register }) {
       <SettingsSection
         title="Whisper Settings"
         className="flex w-full flex-col"
-        collapsed={!props.register.searchTerm.length}
-        hidden={!props.register.activeSections[sectionId]}
+        register={props.register}
+        id={sectionId}
       >
         <SettingItem
           name="BasePath"

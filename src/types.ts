@@ -1,24 +1,48 @@
+import { llmSlugType, llmType } from "./LLMProviders";
+
+type Options = Record<
+  | "generate-text"
+  | "generate-text-with-metadata"
+  | "insert-generated-text-From-template"
+  | "create-generated-text-From-template"
+  | "insert-text-From-template"
+  | "create-text-From-template"
+  | "search-results-batch-generate-from-template"
+  | "show-modal-From-template"
+  | "open-template-as-tool"
+  | "set_max_tokens"
+  | "set-llm"
+  | "packageManager"
+  | "create-template"
+  | "get-title"
+  | "generated-text-to-clipboard-From-template"
+  | "calculate-tokens"
+  | "calculate-tokens-for-template"
+  | "modal-suggest"
+  | "text-extractor-tool"
+  | "stop-stream"
+  | "custom-instruct"
+  | "reload"
+  | "open-playground",
+  boolean
+>;
+
 type Context = {
-  includeTitle: boolean;
-  includeStaredBlocks: boolean;
-  includeFrontmatter: boolean;
-  includeHeadings: boolean;
-  includeChildren: boolean;
-  includeMentions: boolean;
-  includeHighlights: boolean;
-  includeExtractions: boolean;
   includeClipboard: boolean;
+  customInstructEnabled: boolean;
+  customInstruct: string;
+  contextTemplate: string;
 };
 
 export type Version = `${number}.${number}.${number}${"" | "-beta"}`;
 
 type TextGeneratorSettings = {
+  allowJavascriptRun?: boolean;
   version: Version;
   endpoint: string;
   api_key: string;
   api_key_encrypted?: Buffer | string;
   encrypt_keys?: boolean;
-  engine: string;
   max_tokens: number;
   temperature: number;
   frequency_penalty: number;
@@ -32,37 +56,25 @@ type TextGeneratorSettings = {
   context: Context;
   requestTimeout: number;
   prefix: string;
+  tgSelectionLimiter: string;
   stream: boolean;
-  options: Record<
-    | "generate-text"
-    | "generate-text-with-metadata"
-    | "insert-generated-text-From-template"
-    | "create-generated-text-From-template"
-    | "insert-text-From-template"
-    | "create-text-From-template"
-    | "search-results-batch-generate-from-template"
-    | "show-modal-From-template"
-    | "open-template-as-tool"
-    | "set_max_tokens"
-    | "set-llm"
-    | "packageManager"
-    | "create-template"
-    | "get-title"
-    | "generated-text-to-clipboard-From-template"
-    | "calculate-tokens"
-    | "calculate-tokens-for-template"
-    | "modal-suggest"
-    | "text-extractor-tool"
-    | "stop-stream",
-    boolean
-  >;
+  options: Options;
+  experiment: boolean;
+  advancedOptions?: {
+    generateTitleInstruct?: string;
+    generateTitleInstructEnabled?: boolean;
+  },
   autoSuggestOptions: {
+    customInstructEnabled: boolean;
+    customInstruct: string;
     isEnabled: boolean;
     delay: number;
     numberOfSuggestions: number;
     triggerPhrase: string;
     stop: string;
     showStatus: boolean;
+    customProvider: boolean;
+    selectedProvider?: string;
   };
   extractorsOptions: {
     PDFExtractor: boolean;
@@ -73,16 +85,33 @@ type TextGeneratorSettings = {
     ImageExtractor: boolean;
   };
 
-  selectedProvider?: string;
+  selectedProvider?: llmType;
   // TODO: FUTURE IMPLEMENTATION
   // reason: it will clean code, and also help with custom llm providers later on
   LLMProviderOptions: Record<string, Record<string, any>>;
   LLMProviderOptionsKeysHashed: Record<string, Buffer | string>;
 };
 
+type Resource = {
+  id: string
+  name: string
+  size: number
+  types: string
+  metadata: Record<string, string>
+  folderName: string
+}
+
+type Subscription = {
+  id: string,
+  name: string,
+  type: string,
+}
+
 type TextGeneratorConfiguration = {
-  packages: PackageTemplate[];
-  installedPackages: InstalledPackage[];
+  packagesHash: Record<string, PackageTemplate>;
+  installedPackagesHash: Record<string, InstalledPackage>;
+  resources: Record<string, Resource>;
+  subscriptions: Subscription[];
 };
 
 type InstalledPackage = {
@@ -109,6 +138,12 @@ type PackageTemplate = {
   repo?: string;
   published_at?: Date;
   downloads?: number;
+  installed?: boolean;
+  type?: "template" | "feature";
+  price?: number;
+  core?: boolean;
+  desktopOnly?: boolean;
+  folderName?: string;
 };
 
 type PromptTemplate = {

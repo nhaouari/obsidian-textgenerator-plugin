@@ -75,7 +75,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
         });
         el.createEl("a", {
           text: " Documentation \u{1F4D6}",
-          href: "https://bit.ly/tg-doc",
+          href: "https://bit.ly/tg_docs",
           cls: "tag",
         });
         el.createEl("a", {

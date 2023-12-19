@@ -4,10 +4,10 @@ import SettingItem from "../components/item";
 import SettingsSection from "../components/section";
 import Input from "../components/input";
 import { useMemo } from "react";
-import { useToggle } from "usehooks-ts";
 import type { Register } from ".";
-
-const contextNotForTemplate = ["includeTitle", "includeStaredBlocks"];
+import { Context } from "#/types";
+import AvailableVars from "#/ui/components/availableVars";
+import { contextVariablesObj } from "#/scope/context-manager";
 
 const extendedInfo: Record<
   string,
@@ -49,7 +49,7 @@ const extendedInfo: Record<
   },
 
   includeClipboard: {
-    description: "Include clipboard content",
+    description: "Make clipboard available for templates",
   },
 };
 
@@ -59,62 +59,178 @@ export default function ConsideredContextSetting(props: {
   const global = useGlobal();
   const sectionId = useId();
 
-  const listOfContexts = useMemo(
-    () => Object.keys(global.plugin.defaultSettings.context),
-    []
-  );
-
   return (
     <>
       <SettingsSection
-        title="Considered Context"
+        title="Custom Instructions"
         className="flex w-full flex-col"
-        collapsed={!props.register.searchTerm.length}
-        hidden={!props.register.activeSections[sectionId]}
+        register={props.register}
+        id={sectionId}
       >
-        {listOfContexts
-          .filter((d) => contextNotForTemplate.contains(d))
-          .map((key) => {
-            const moreData = extendedInfo[key];
-            return (
-              <SettingItem
-                key={moreData?.name || key}
-                name={moreData?.name || key}
-                description={
-                  moreData?.description ||
-                  `Include ${key} in the considered context.`
+        <SettingItem
+          name="Custom default generation prompt"
+          description={"You can customize {{context}} variable"}
+          register={props.register}
+          sectionId={sectionId}
+        >
+          <Input
+            type="checkbox"
+            value={"" + global.plugin.settings.context.customInstructEnabled}
+            setValue={async (val) => {
+              global.plugin.settings.context.customInstructEnabled =
+                val == "true";
+              await global.plugin.saveSettings();
+              global.triggerReload();
+            }}
+          />
+        </SettingItem>
+        {global.plugin.settings.context.customInstructEnabled && (
+          <>
+            <SettingItem
+              name=""
+              description=""
+              register={props.register}
+              sectionId={sectionId}
+              textArea
+            >
+              <textarea
+                placeholder="Textarea will autosize to fit the content"
+                className="resize-y"
+                value={
+                  global.plugin.settings.context.customInstruct ||
+                  global.plugin.defaultSettings.context.customInstruct
                 }
-                register={props.register}
-                sectionId={sectionId}
-              >
-                <Input
-                  type="checkbox"
-                  value={
-                    "" +
-                    global.plugin.settings.context[
-                      key as keyof typeof global.plugin.settings.context
-                    ]
+                onChange={async (e) => {
+                  global.plugin.settings.context.customInstruct =
+                    e.target.value;
+                  global.triggerReload();
+                  await global.plugin.saveSettings();
+                }}
+                spellCheck={false}
+                rows={10}
+              />
+            </SettingItem>
+            <AvailableVars vars={contextVariablesObj} />
+          </>
+        )}
+
+
+        <SettingItem
+          name="Enable generate title instruct"
+          description={"You can customize generate title prompt"}
+          register={props.register}
+          sectionId={sectionId}
+        >
+          <Input
+            type="checkbox"
+            value={"" + global.plugin.settings.advancedOptions?.generateTitleInstructEnabled}
+            setValue={async (val) => {
+              if (!global.plugin.settings.advancedOptions) global.plugin.settings.advancedOptions = {
+                generateTitleInstructEnabled: val == "true",
+              }
+
+              global.plugin.settings.advancedOptions.generateTitleInstructEnabled =
+                val == "true";
+              await global.plugin.saveSettings();
+              global.triggerReload();
+            }}
+          />
+        </SettingItem>
+        {global.plugin.settings.advancedOptions?.generateTitleInstructEnabled && (
+          <>
+            <SettingItem
+              name=""
+              description=""
+              register={props.register}
+              sectionId={sectionId}
+              textArea
+            >
+              <textarea
+                placeholder="Textarea will autosize to fit the content"
+                className="resize-y"
+                value={
+                  global.plugin.settings.advancedOptions?.generateTitleInstruct ||
+                  global.plugin.defaultSettings.advancedOptions?.generateTitleInstruct
+                }
+                onChange={async (e) => {
+                  if (!global.plugin.settings.advancedOptions) global.plugin.settings.advancedOptions = {
+                    generateTitleInstructEnabled: true,
+                    generateTitleInstruct: e.target.value
                   }
-                  setValue={async (val) => {
-                    global.plugin.settings.context[
-                      key as keyof typeof global.plugin.settings.context
-                    ] = val == "true";
-                    await global.plugin.saveSettings();
-                    global.triggerReload();
-                  }}
-                />
-              </SettingItem>
-            );
-          })}
+
+                  global.plugin.settings.advancedOptions.generateTitleInstruct =
+                    e.target.value;
+
+                  global.triggerReload();
+                  await global.plugin.saveSettings();
+                }}
+                spellCheck={false}
+                rows={10}
+              />
+            </SettingItem>
+            <AvailableVars
+              vars={{
+                ...contextVariablesObj,
+                query: {
+                  example: "{{content255}}",
+                  hint: "first 255 letters of trimmed content of the note"
+                }
+              }}
+            />
+          </>
+        )}
+
+
+        <SettingItem
+          name="TG Selection Limiter(regex)"
+          description="tg_selection stopping character. Empty means disabled. Default: ^\*\*\*"
+          register={props.register}
+          sectionId={sectionId}
+        >
+          <Input
+            value={global.plugin.settings.tgSelectionLimiter}
+            setValue={async (val) => {
+              global.plugin.settings.tgSelectionLimiter = val;
+              await global.plugin.saveSettings();
+              global.triggerReload();
+            }}
+          />
+        </SettingItem>
       </SettingsSection>
+
       <SettingsSection
-        title="Considered Context For Templates"
+        title="Template Settings"
         className="flex w-full flex-col"
-        collapsed={!props.register.searchTerm.length}
-        hidden={!props.register.activeSections[sectionId]}
+        register={props.register}
+        id={sectionId}
       >
-        {listOfContexts
-          .filter((d) => !contextNotForTemplate.contains(d))
+        <SettingItem
+          name="{{Context}} Template"
+          description="Template for {{context}} variable"
+          register={props.register}
+          sectionId={sectionId}
+          textArea
+        >
+          <textarea
+            placeholder="Textarea will autosize to fit the content"
+            className="resize-y"
+            value={
+              global.plugin.settings.context.contextTemplate ||
+              global.plugin.defaultSettings.context.contextTemplate
+            }
+            onChange={async (e) => {
+              global.plugin.settings.context.contextTemplate = e.target.value;
+              global.triggerReload();
+              await global.plugin.saveSettings();
+            }}
+            spellCheck={false}
+            rows={10}
+          />
+        </SettingItem>
+        <AvailableVars vars={contextVariablesObj} />
+
+        {(["includeClipboard"] as (keyof Context)[])
+          //   .filter((d) => !contextNotForTemplate.contains(d as any))
           .map((key) => {
             const moreData = extendedInfo[key];
             return (
@@ -133,13 +249,13 @@ export default function ConsideredContextSetting(props: {
                   value={
                     "" +
                     global.plugin.settings.context[
-                      key as keyof typeof global.plugin.settings.context
+                    key as keyof typeof global.plugin.settings.context
                     ]
                   }
                   setValue={async (val) => {
-                    global.plugin.settings.context[
+                    (global.plugin.settings.context[
                       key as keyof typeof global.plugin.settings.context
-                    ] = val == "true";
+                    ] as any) = val == "true";
                     await global.plugin.saveSettings();
                     global.triggerReload();
                   }}
@@ -147,6 +263,23 @@ export default function ConsideredContextSetting(props: {
               </SettingItem>
             );
           })}
+
+        <SettingItem
+          name="Allow scripts"
+          description="Only enable this if you trust the authors of the templates, or know what you're doing."
+          register={props.register}
+          sectionId={sectionId}
+        >
+          <Input
+            type="checkbox"
+            value={"" + global.plugin.settings.allowJavascriptRun}
+            setValue={async (val) => {
+              global.plugin.settings.allowJavascriptRun = val == "true";
+              await global.plugin.saveSettings();
+              global.triggerReload();
+            }}
+          />
+        </SettingItem>
       </SettingsSection>
     </>
   );

@@ -5,19 +5,14 @@ import SettingsSection from "../components/section";
 import Input from "../components/input";
 import type { Register } from ".";
 import Confirm from "#/ui/package-manager/components/confirm";
-export default function GeneralSetting(props: { register: Register }) {
+import { contextVariablesObj } from "#/scope/context-manager";
+import AvailableVars from "#/ui/components/availableVars";
+export default function AdvancedSetting(props: { register: Register }) {
   const global = useGlobal();
 
   const sectionId = useId();
 
-  const reloadPlugin = async () => {
-    // @ts-ignore
-    await app.plugins.disablePlugin("obsidian-textgenerator-plugin");
-    // @ts-ignore
-    await app.plugins.enablePlugin("obsidian-textgenerator-plugin");
-    // @ts-ignore
-    app.setting.openTabById("obsidian-textgenerator-plugin").display();
-  };
+  const reloadPlugin = () => global.plugin.reload();
 
   const resetSettings = async () => {
     if (
@@ -30,13 +25,34 @@ export default function GeneralSetting(props: { register: Register }) {
     await global.plugin.resetSettingsToDefault();
     await reloadPlugin();
   };
+
   return (
     <SettingsSection
-      title="General Settings"
+      title="Advanced Settings"
       className="flex w-full flex-col"
-      collapsed={!props.register.searchTerm.length}
-      hidden={!props.register.activeSections[sectionId]}
+      register={props.register}
+      id={sectionId}
     >
+      <SettingItem
+        name="Streaming"
+        description="Enable streaming if supported by the provider"
+        register={props.register}
+        sectionId={sectionId}
+      >
+        <Input
+          type="checkbox"
+          value={
+            "" +
+            (global.plugin.textGenerator.LLMProvider.streamable &&
+              global.plugin.settings.stream)
+          }
+          setValue={async (val) => {
+            global.plugin.settings.stream = val == "true";
+            await global.plugin.saveSettings();
+            global.triggerReload();
+          }}
+        />
+      </SettingItem>
       <SettingItem
         name="Display errors in the editor"
         description="If you want to see the errors in the editor"
@@ -99,6 +115,22 @@ export default function GeneralSetting(props: { register: Register }) {
           value={"" + global.plugin.settings.freeCursorOnStreaming}
           setValue={async (val) => {
             global.plugin.settings.freeCursorOnStreaming = val == "true";
+            await global.plugin.saveSettings();
+            global.triggerReload();
+          }}
+        />
+      </SettingItem>
+      <SettingItem
+        name="Experimentation Features"
+        description="This adds experiment features, which might not be stable yet"
+        register={props.register}
+        sectionId={sectionId}
+      >
+        <Input
+          type="checkbox"
+          value={"" + global.plugin.settings.experiment}
+          setValue={async (val) => {
+            global.plugin.settings.experiment = val == "true";
             await global.plugin.saveSettings();
             global.triggerReload();
           }}

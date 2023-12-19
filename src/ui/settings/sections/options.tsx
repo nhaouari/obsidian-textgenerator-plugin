@@ -37,7 +37,7 @@ export default function OptionsSetting(props: { register: Register }) {
 
     return () => {
       console.log("exiting settings");
-      (async () => {})();
+      (async () => { })();
     };
   }, [ref, didChangeAnything]);
 
@@ -71,10 +71,10 @@ export default function OptionsSetting(props: { register: Register }) {
         </div>
       )}
       <SettingsSection
-        title="Activate options section"
+        title="Text Generator Options"
         className="flex w-full flex-col"
-        collapsed={!props.register.searchTerm.length}
-        hidden={!props.register.activeSections[sectionId]}
+        register={props.register}
+        id={sectionId}
       >
         <SettingItem
           name="Keys encryption"
@@ -121,7 +121,7 @@ export default function OptionsSetting(props: { register: Register }) {
                 value={
                   "" +
                   global.plugin.settings.options[
-                    key as keyof typeof global.plugin.settings.options
+                  key as keyof typeof global.plugin.settings.options
                   ]
                 }
                 setValue={async (val) => {

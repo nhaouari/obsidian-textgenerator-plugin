@@ -1,34 +1,39 @@
 import pkg from "../package.json";
 import { TextGeneratorSettings } from "./types";
 
-
 const DEFAULT_SETTINGS: TextGeneratorSettings = {
   version: pkg.version as any,
   endpoint: "https://api.openai.com/v1",
   models: [],
   api_key: "",
   encrypt_keys: false,
-  engine: "gpt-3.5-turbo",
+  selectedProvider: "OpenAI Chat (Langchain)",
   max_tokens: 500,
   temperature: 0.7,
   frequency_penalty: 0.5,
   prompt: "",
   showStatusBar: true,
   outputToBlockQuote: false,
-  freeCursorOnStreaming: true,
+  freeCursorOnStreaming: false,
+  allowJavascriptRun: false,
   promptsPath: "textgenerator/prompts",
   prefix: "\n\n",
+  tgSelectionLimiter: "^\\*\\*\\*",
   stream: true,
   context: {
-    includeTitle: false,
-    includeStaredBlocks: true,
-    includeFrontmatter: true,
-    includeHeadings: true,
-    includeChildren: false,
-    includeMentions: false,
-    includeHighlights: true,
-    includeExtractions: false,
+    customInstructEnabled: false,
     includeClipboard: true,
+    customInstruct: `Title: {{title}}
+  
+Starred Blocks: {{starredBlocks}}
+	  
+{{tg_selection}}`,
+
+    contextTemplate: `Title: {{title}}
+	
+Starred Blocks: {{starredBlocks}}
+	  
+{{tg_selection}}`,
   },
   requestTimeout: 300000,
   options: {
@@ -41,6 +46,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
     "create-text-From-template": false,
     "show-modal-From-template": true,
     "open-template-as-tool": true,
+    "open-playground": true,
     set_max_tokens: true,
     "set-llm": true,
     packageManager: true,
@@ -52,15 +58,27 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
     "modal-suggest": false,
     "text-extractor-tool": true,
     "stop-stream": true,
-
+    "custom-instruct": true,
+    reload: true,
   },
+
+  advancedOptions: {
+    generateTitleInstructEnabled: false,
+    generateTitleInstruct: `Generate a title for the current document (do not use * " \\ / < > : | ? .):
+{{substring content 0 255}}`,
+  },
+
   autoSuggestOptions: {
+    customInstructEnabled: false,
+    customInstruct: `continue the follwing text:
+{{query}}`,
     isEnabled: false,
     delay: 300,
     numberOfSuggestions: 5,
     triggerPhrase: "  ",
     stop: ".",
     showStatus: true,
+    customProvider: false,
   },
   extractorsOptions: {
     PDFExtractor: true,

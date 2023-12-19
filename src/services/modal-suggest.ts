@@ -1,4 +1,4 @@
-import { PromptTemplate } from "./types";
+import { PromptTemplate } from "../types";
 import {
   App,
   Editor,
@@ -7,8 +7,9 @@ import {
   MarkdownView,
   Scope,
 } from "obsidian";
-import TextGeneratorPlugin from "./main";
-import { ExampleModal } from "./models/model";
+import TextGeneratorPlugin from "../main";
+import { ExampleModal } from "../models/model";
+import ContentManagerCls from "../content-manager";
 
 export class ModelSuggest extends EditorSuggest<PromptTemplate> {
   app: App;
@@ -41,9 +42,10 @@ export class ModelSuggest extends EditorSuggest<PromptTemplate> {
     const modal = new ExampleModal(
       this.app,
       this.plugin,
-      async (result) => {},
+      async (result) => { },
       "Choose a template"
     );
+
     const suggestions = modal.getSuggestions(query);
     return suggestions.map((s) => ({
       ...s.item,
@@ -69,13 +71,13 @@ export class ModelSuggest extends EditorSuggest<PromptTemplate> {
 
     if (!activeView) return console.warn("couldn't find activeView");
 
-    const editor: Editor = activeView.editor;
+    const CM = ContentManagerCls.compile(activeView, this.plugin)
 
-    editor.replaceRange("", value.context.start, value.context.end);
+    activeView.editor.replaceRange("", value.context.start, value.context.end);
     await this.plugin.textGenerator.tempalteToModal({
       params: {},
       templatePath: value.path,
-      editor,
+      editor: CM,
       filePath: activeView.file?.path,
     });
 

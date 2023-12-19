@@ -1,4 +1,4 @@
-import { loadPdfJs, App, TAbstractFile } from "obsidian";
+import { loadPdfJs, App } from "obsidian";
 import { Extractor } from "./extractor";
 import TextGeneratorPlugin from "src/main";
 import debug from "debug";

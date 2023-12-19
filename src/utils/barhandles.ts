@@ -1,10 +1,18 @@
+import { contextVariablesObj } from "#/scope/context-manager";
+import Helpersfn from "#/helpers/handlebars-helpers";
 import set from "lodash.set";
 
-const ignoredVariables = ["output"];
+const helpers: Record<string, any> = Helpersfn({} as any);
+const helpersArr: string[] = Object.keys(helpers)
+
+const ignoredVariables = ["output", "this", "true", "false", "script"];
+const defaultHelpers = ["if", "unless", "with", "each"];
 
 export const getHBValues = (text: string) => {
-  const re = /{{[{]?(.*?)[}]?}}/g;
-  const tags: any = [];
+  text = removeScriptOccurrences(text);
+
+  const re = /{{[{]?[{]?(.*?)[}]?[}]?}}/g;
+  const tags: string[] = [];
   let matches: any;
   while ((matches = re.exec(text))) {
     if (matches) {
@@ -24,7 +32,25 @@ export const getHBValues = (text: string) => {
     }
   };
 
-  for (const tag of tags) {
+  main: for (const tag of tags) {
+    if (
+      // if its a inside variable
+      tag.startsWith("vars.") ||
+      // if its a string
+      tag.startsWith("'") ||
+      tag.startsWith('"') ||
+      // if its a number
+      "" + +tag == tag ||
+      // if its a helper
+      defaultHelpers.includes(tag) ||
+      // if its a ignored variable name
+      ignoredVariables.includes(tag) ||
+      // if its a helper
+      helpers[tag]
+    ) {
+      continue;
+    }
+
     if (tag.startsWith("/")) {
       // context = stack.pop();
       continue;
@@ -38,108 +64,37 @@ export const getHBValues = (text: string) => {
       continue;
     }
 
-    if (tag.startsWith("get ") || tag.startsWith("#get ")) {
-      //   context = stack.pop();
-      continue;
-    }
-
-    if (tag.startsWith("log ") || tag.startsWith("#log")) {
-      //   context = stack.pop();
-      continue;
-    }
-
-    if (tag.startsWith("error ") || tag.startsWith("#error")) {
-      //   context = stack.pop();
-      continue;
-    }
-
-    if (tag.startsWith("notice ") || tag.startsWith("#notice")) {
-      //   context = stack.pop();
-      continue;
-    }
-
-    if (tag.startsWith("escp ") || tag.startsWith("escp2 ")) {
-      const vars = tag.split(" ").slice(1);
-      for (const v of vars) {
-        setVar(v, true);
+    for (const helper of helpersArr) {
+      if (tag.startsWith(`${helper} `) || tag.startsWith(`#${helper} `)) {
+        const vars = extractVariablesAndStrings(tag).slice(1);
+        tags.push(...vars);
+        continue main;
       }
-      stack.push(context);
+    }
+
+    for (const helper of defaultHelpers) {
+      if (tag.startsWith(`${helper} `) || tag.startsWith(`#${helper} `)) {
+        const vars = extractVariablesAndStrings(tag).slice(1);
+        tags.push(...vars);
+        continue main;
+      }
+    }
+
+    if (tag.includes(".")) {
+      const m = tag.split(".")[0];
+
+      tags.push(m);
+
+      // context = stack.pop();
       continue;
     }
 
     if ("#^".includes(tag[0])) {
-      //   setVar(tag.substr(1), true);
-      //   stack.push(context);
-      continue;
-    }
-
-    if (tag.startsWith("#if")) {
-      const vars = tag.split(" ").slice(1);
-      for (const v of vars) {
-        setVar(v, true);
-      }
-      stack.push(context);
-      continue;
-    }
-
-    if (
-      tag.startsWith("run ") ||
-      tag.startsWith("#run ") ||
-      tag.startsWith("extract ") ||
-      tag.startsWith("#extract ")
-    ) {
-      if (tag.split(" ").length > 2) {
-        const arr = (tag.split(" ") as string[]) || [];
-        arr.shift();
-        arr.shift();
-        const v = arr.join(" ");
-        const newContext = {};
-        context[v] = newContext;
+      if (contextVariablesObj[tag.substring(1)]) {
+        setVar(tag.substring(1), true);
         stack.push(context);
-        context = newContext;
-      }
-      //   context = stack.pop();
-      continue;
-    }
-
-    if (tag.startsWith("#with ")) {
-      const v = tag.split(" ")[1];
-      const newContext = {};
-      context[v] = newContext;
-      stack.push(context);
-      context = newContext;
-      continue;
-    }
-
-    if (tag.startsWith("/with")) {
-      context = stack.pop();
-      continue;
-    }
-
-    if (tag.startsWith("#unless ")) {
-      const v = tag.split(" ")[1];
-      setVar(v, true);
-      stack.push(context);
-      continue;
-    }
-
-    if (tag.startsWith("/unless")) {
-      context = stack.pop();
-      continue;
-    }
-
-    if (tag.startsWith("#each ")) {
-      const v = tag.split(" ")[1];
-      const newContext = {};
-      context[v] = [newContext];
-      stack.push(context);
-      context = newContext;
-      continue;
-    }
-
-    if (tag.startsWith("/each")) {
-      context = stack.pop();
-      continue;
+        continue;
+      } else continue;
     }
 
     if (tag.startsWith("/")) {
@@ -150,7 +105,64 @@ export const getHBValues = (text: string) => {
     setVar(tag, "");
   }
 
-  return Object.keys(root).filter(
-    (v) => !ignoredVariables.includes(v)
-  ) as string[];
+  return Object.keys(root) as string[];
 };
+
+function extractVariableNames(inputString: string) {
+  const pattern = /'([^']*)'|"([^"]*)"/g;
+  const quotedParts = inputString.match(pattern) || [];
+
+  // Replacing quoted parts with empty strings
+  quotedParts.forEach((quotedPart) => {
+    inputString = inputString.replace(quotedPart, "");
+  });
+
+  const variablePattern = /\b[a-zA-Z_][a-zA-Z0-9_]*\b/g;
+  const variableNames = inputString.match(variablePattern) || [];
+
+  return variableNames;
+}
+
+
+function extractVariablesAndStrings(input: string): string[] {
+  const results: string[] = [];
+  let currentToken = '';
+  let withinQuotes = false;
+  let currentQuote = '';
+
+  for (let i = 0; i < input.length; i++) {
+    const char = input[i];
+
+    if (char === '"' || char === "'") {
+      if (withinQuotes && char === currentQuote) {
+        currentToken += char;
+        results.push(currentToken);
+        currentToken = '';
+        withinQuotes = false;
+      } else if (!withinQuotes) {
+        withinQuotes = true;
+        currentQuote = char;
+        currentToken += char;
+      }
+    } else if (char === ' ' && !withinQuotes) {
+      if (currentToken) {
+        results.push(currentToken);
+      }
+      currentToken = '';
+    } else {
+      currentToken += char;
+    }
+  }
+
+  if (currentToken) {
+    results.push(currentToken);
+  }
+
+  return results;
+}
+
+function removeScriptOccurrences(text: string): string {
+  const pattern = /\{\{#script\}\}[\s\S]*?\{\{\/script\}\}/g;
+  const pattern2 = /\{\{\{\{script\}\}\}\}[\s\S]*?\{\{\{\{\/script\}\}\}\}/g;
+  return text.replace(pattern2, "").replace(pattern, "");
+}

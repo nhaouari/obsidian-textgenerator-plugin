@@ -9,12 +9,12 @@ export class Extractor {
     this.plugin = plugin;
   }
   /** Read content as string */
-  async convert(docPath: string): Promise<string> {
+  async convert(docPath: string, otherOptions?: any): Promise<string> {
     throw Error("Function convert is not implemented");
   }
 
   /** extract embedded files in a file as documents */
-  async extract(filePath: string): Promise<string[]> {
+  async extract(filePath: string, fileContent: string): Promise<string[]> {
     throw Error("Function extract is not implemented");
   }
 }

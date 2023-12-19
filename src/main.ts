@@ -5,16 +5,14 @@ import {
   Notice,
   Plugin,
   MarkdownView,
-  Editor,
   MarkdownRenderer,
   MarkdownPostProcessorContext,
   getIcon,
-  Command,
   TFile,
   Platform,
   EditorPosition,
 } from "obsidian";
-import { TextGeneratorSettings } from "./types";
+import type { TextGeneratorSettings } from "./types";
 import { containsInvalidCharacter, numberToKFormat } from "./utils";
 import {
   DecryptKeyPrefix,
@@ -23,15 +21,15 @@ import {
 } from "./constants";
 import TextGeneratorSettingTab from "./ui/settings/settings-page";
 import { SetMaxTokens } from "./ui/settings/components/set-max-tokens";
-import TextGenerator from "./text-generator";
+import TextGenerator from "./services/text-generator";
 import PackageManager from "./ui/package-manager/package-manager";
 import { PackageManagerUI } from "./ui/package-manager/package-manager-ui";
 import { EditorView } from "@codemirror/view";
 import { spinnersPlugin, SpinnersPlugin } from "./cm/plugin";
 import PrettyError from "pretty-error";
 import ansiToHtml from "ansi-to-html";
-import { AutoSuggest } from "./auto-suggest";
-import { ModelSuggest } from "./modal-suggest";
+import { AutoSuggest } from "./services/auto-suggest";
+import { ModelSuggest } from "./services/modal-suggest";
 import debug from "debug";
 
 import DEFAULT_SETTINGS from "./default-settings";
@@ -48,10 +46,15 @@ import { randomUUID } from "crypto";
 import VersionManager from "./scope/versionManager";
 
 import { registerAPI } from "@vanakat/plugin-api";
+import { PlaygroundView, VIEW_Playground_ID } from "./ui/playground";
+import { UnProviderSlugs } from "./LLMProviders";
+import ContentManagerCls from "./content-manager";
 
-let safeStorage: any;
+// @ts-ignore
+let safeStorage: Electron.SafeStorage;
 
 if (Platform.isDesktop) {
+  // @ts-ignore
   safeStorage = require("electron")?.remote?.safeStorage;
 }
 
@@ -77,7 +80,7 @@ export default class TextGeneratorPlugin extends Plugin {
   async onload() {
     try {
       logger("loading textGenerator plugin");
-
+      registerAPI("tg", this.textGenerator, this as any);
       addIcon("GENERATE_ICON", GENERATE_ICON);
       addIcon("GENERATE_META_ICON", GENERATE_META_ICON);
 
@@ -88,6 +91,7 @@ export default class TextGeneratorPlugin extends Plugin {
       await this.versionManager.load();
 
       // This adds a settings tab so the user can configure various aspects of the plugin
+
       const settingTab = new TextGeneratorSettingTab(this.app, this);
       this.addSettingTab(settingTab);
 
@@ -100,6 +104,7 @@ export default class TextGeneratorPlugin extends Plugin {
       await this.tokensScope.setup();
 
       this.registerEditorExtension(spinnersPlugin);
+
       this.app.workspace.updateOptions();
 
       this.textGeneratorIconItem = this.addStatusBarItem();
@@ -159,13 +164,18 @@ export default class TextGeneratorPlugin extends Plugin {
               this.textGenerator.contextManager.splitTemplate(source);
 
             const activeView = this.getActiveView();
+
+            if (!activeView) throw "active view wasn't detected"
+
+            const CM = ContentManagerCls.compile(activeView, this)
+
             const context = {
               ...(activeView
                 ? await this.textGenerator.contextManager.getTemplateContext({
-                    editor: activeView.editor,
-                    filePath: activeView?.file?.path,
-                    content: inputContent,
-                  })
+                  editor: CM,
+                  filePath: activeView?.file?.path,
+                  templateContent: inputContent,
+                })
                 : {}),
             };
 
@@ -176,8 +186,7 @@ export default class TextGeneratorPlugin extends Plugin {
               markdown,
               container,
               path,
-              // @ts-ignore
-              undefined
+              this
             );
             this.addTGMenu(container, markdown, source, outputTemplate);
           } catch (e) {
@@ -187,6 +196,10 @@ export default class TextGeneratorPlugin extends Plugin {
       };
 
       this.registerView(VIEW_TOOL_ID, (leaf) => new ToolView(leaf, this));
+      this.registerView(
+        VIEW_Playground_ID,
+        (leaf) => new PlaygroundView(leaf, this)
+      );
       this.registerMarkdownCodeBlockProcessor("tg", async (source, el, ctx) =>
         blockTgHandler(source, el, ctx)
       );
@@ -204,9 +217,9 @@ export default class TextGeneratorPlugin extends Plugin {
           // const activeFile = this.app.workspace.getActiveFile();
           const activeView = this.getActiveView();
           if (activeView !== null) {
-            const editor = activeView.editor;
+            const CM = ContentManagerCls.compile(activeView, this)
             try {
-              await this.textGenerator.generateInEditor({}, false, editor);
+              await this.textGenerator.generateInEditor({}, false, CM);
             } catch (error) {
               this.handelError(error);
             }
@@ -221,27 +234,40 @@ export default class TextGeneratorPlugin extends Plugin {
           new PackageManagerUI(
             this.app,
             this,
-            async (result: string) => {}
+            async (result: string) => { }
           ).open();
         }
       );
 
       /*const ribbonIconEl3 = this.addRibbonIcon(
-			"square",
-			"Download webpage as markdown",
-			async (evt: MouseEvent) => {
-				console.log(await navigator.clipboard.readText());
-			}
-		);
-		*/
+      "square",
+      "Download webpage as markdown",
+      async (evt: MouseEvent) => {
+        console.log(await navigator.clipboard.readText());
+      }
+    );
+    */
 
       // registers
       this.commands = new Commands(this);
 
       await this.commands.addCommands();
-      await this.packageManager.load();
+      try {
+        await this.packageManager.load();
+      } catch (err: any) {
+        console.trace("error in packageManager", err);
+      }
 
       registerAPI("tg", this.textGenerator, this as any);
+    } catch (err: any) {
+      this.handelError(err);
+    }
+
+    try {
+      this.registerObsidianProtocolHandler(`text-gen`, async (params) => {
+        console.log(params.intent, this.actions, this.actions[params.intent])
+        this.actions[params.intent]?.(params)
+      });
     } catch (err: any) {
       this.handelError(err);
     }
@@ -249,6 +275,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
   async onunload() {
     this.app.workspace.detachLeavesOfType(VIEW_TOOL_ID);
+    this.app.workspace.detachLeavesOfType(VIEW_Playground_ID);
   }
 
   async loadSettings() {
@@ -546,11 +573,13 @@ export default class TextGeneratorPlugin extends Plugin {
     const button = this.createRunButton("Generate Text", generateSVG);
     button.addEventListener("click", async () => {
       const activeView = this.getActiveView();
+      if (!activeView) throw "activeView wasn't detected";
+      const CM = ContentManagerCls.compile(activeView, this)
       if (activeView)
         await this.textGenerator.generatePrompt(
           markdown,
           false,
-          activeView?.editor,
+          CM,
           outputTemplate
         );
 
@@ -626,9 +655,7 @@ export default class TextGeneratorPlugin extends Plugin {
       const keyval = get(
         this.settings?.LLMProviderOptions,
         pth
-      ) as never as string;
-
-      if (!keyval) return;
+      ) as never as string || "";
 
       const encrypted = this.getEncryptedKey(keyval);
       this.settings.LLMProviderOptionsKeysHashed[pth] = encrypted;
@@ -675,7 +702,7 @@ export default class TextGeneratorPlugin extends Plugin {
         ? "**FAILED TO DECRYPT KEYS**"
         : decrypted;
     } catch (err: any) {
-      console.log(err);
+      // console.log(err);
       const [inCaseDecryptionFails, key] =
         keyBuffer?.split?.(DecryptKeyPrefix) || [];
       return inCaseDecryptionFails?.length || containsInvalidCharacter(key)
@@ -692,8 +719,49 @@ export default class TextGeneratorPlugin extends Plugin {
     return safeStorage.encryptString(apiKey) as Buffer;
   }
 
+
+  getApiKeys() {
+    const keys: Record<string, string | undefined> = {};
+    for (const k in this.settings.LLMProviderOptions) {
+      if (Object.prototype.hasOwnProperty.call(this.settings.LLMProviderOptions, k)) {
+        keys[UnProviderSlugs[k]] = this.settings.LLMProviderOptions[k]?.api_key;
+      }
+    }
+    return keys;
+  }
+
   resetSettingsToDefault() {
     this.settings = DEFAULT_SETTINGS;
     this.saveSettings();
+  }
+
+  /** Reloads the plugin */
+  async reload() {
+    // @ts-ignore
+    await this.app.plugins.disablePlugin("obsidian-textgenerator-plugin");
+    // @ts-ignore
+    await this.app.plugins.enablePlugin("obsidian-textgenerator-plugin");
+    // @ts-ignore
+    this.app.setting.openTabById("obsidian-textgenerator-plugin").display();
+  }
+
+  actions: Record<string, any> = {}
+  registerAction<T>(action: `${string}`, cb: (params: T) => void): any {
+    return this.actions[action] = cb;
+  }
+
+  getRelativePathTo(path: string) {
+    let k = this.settings.promptsPath;
+    let d = k.split("/");
+
+    if (k.endsWith("/")) d.pop();
+
+    let basePath: string = "";
+
+    if (d.length > 1) d.pop();
+
+    basePath = d.join("/");
+
+    return `${basePath}/${path}`
   }
 }

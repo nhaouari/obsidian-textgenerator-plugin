@@ -1,6 +1,6 @@
 import LangchainBase from "./base";
 import type { OpenAI, OpenAIInput } from "langchain/llms/openai";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import SettingItem from "#/ui/settings/components/item";
 import Dropdown from "#/ui/settings/components/dropdown";
@@ -9,34 +9,35 @@ import { IconExternalLink, IconReload } from "@tabler/icons-react";
 import { request } from "obsidian";
 import clsx from "clsx";
 import Input from "#/ui/settings/components/input";
-import { OPENAI_MODELS } from "#/constants";
+import { AI_MODELS } from "#/constants";
 import { Message } from "#/types";
 import debug from "debug";
+import { ModelsHandler } from "../utils";
 
 const logger = debug("textgenerator:llmProvider:openaiInstruct");
 
 const default_values = {
   basePath: "https://api.openai.com/v1",
+  model: "gpt-3.5-turbo-instruct",
 };
 
 const id = "OpenAI Instruct (Langchain)" as const;
 export default class LangchainOpenAIInstructProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   id = id;
   provider = "Langchain";
   llmPredict = true;
   static provider = "Langchain";
   static id = id;
-  static slug = "openAIInstruct";
+  static slug = "openAIInstruct" as const;
 
   getConfig(options: LLMConfig) {
     return this.cleanConfig({
       openAIApiKey: options.api_key,
 
       // ------------Necessary stuff--------------
-      modelName: options.engine,
+      modelName: options.model,
       maxTokens: +options.max_tokens,
       temperature: +options.temperature,
       frequencyPenalty: +options.frequency_penalty,
@@ -52,19 +53,6 @@ export default class LangchainOpenAIInstructProvider
     this.llmClass = OpenAI;
   }
 
-  getLLM(options: LLMConfig) {
-    return new this.llmClass(
-      {
-        ...this.getConfig(options),
-      },
-      {
-        basePath: options.otherOptions?.basePath?.length
-          ? options.endpoint
-          : undefined,
-      }
-    );
-  }
-
   async generateMultiple(
     messages: Message[],
     reqParams: Partial<LLMConfig>
@@ -77,14 +65,14 @@ export default class LangchainOpenAIInstructProvider
           ...this.cleanConfig(this.plugin.settings),
           ...this.cleanConfig(
             this.plugin.settings.LLMProviderOptions[
-              this.id as keyof typeof this.plugin.settings
+            this.id as keyof typeof this.plugin.settings
             ]
           ),
           ...this.cleanConfig(reqParams.otherOptions),
           ...this.cleanConfig(reqParams),
           otherOptions: this.cleanConfig(
             this.plugin.settings.LLMProviderOptions[
-              this.id as keyof typeof this.plugin.settings
+            this.id as keyof typeof this.plugin.settings
             ]
           ),
         };
@@ -157,7 +145,12 @@ export default class LangchainOpenAIInstructProvider
             }}
           />
         </SettingItem>
-        <ModelsHandler register={props.register} sectionId={props.sectionId} />
+        <ModelsHandler
+          register={props.register}
+          sectionId={props.sectionId}
+          llmProviderId={id}
+          default_values={default_values}
+        />
         <div className="flex flex-col gap-2">
           <div className="text-lg opacity-70">Useful links</div>
           <a href="https://beta.openai.com/signup/">
@@ -180,9 +173,9 @@ export default class LangchainOpenAIInstructProvider
               <IconExternalLink />
             </SettingItem>
           </a>
-          <a href="https://lmstudio.ai/">
+          <a href="https://discord.com/channels/1083485983879741572/1159894948636799126">
             <SettingItem
-              name="You can use LM Studio +v0.2.3"
+              name="You can use LM Studio"
               className="text-xs opacity-50 hover:opacity-100"
               register={props.register}
               sectionId={props.sectionId}
@@ -209,10 +202,10 @@ export default class LangchainOpenAIInstructProvider
     tokens: number,
     reqParams: Partial<LLMConfig>
   ): Promise<number> {
-    const model = reqParams.engine;
+    const model = reqParams.model;
     const modelInfo =
-      OPENAI_MODELS[model as keyof typeof OPENAI_MODELS] ||
-      OPENAI_MODELS["gpt-3.5-turbo"];
+      AI_MODELS[model as keyof typeof AI_MODELS] ||
+      AI_MODELS["gpt-3.5-turbo"];
 
     console.log(reqParams.max_tokens, modelInfo.prices.completion);
     return (
@@ -226,10 +219,10 @@ export default class LangchainOpenAIInstructProvider
     messages: Message[],
     reqParams: Partial<LLMConfig>
   ): ReturnType<LLMProviderInterface["calcTokens"]> {
-    const model = reqParams.engine;
+    const model = reqParams.model;
     const modelInfo =
-      OPENAI_MODELS[model as keyof typeof OPENAI_MODELS] ||
-      OPENAI_MODELS["gpt-3.5-turbo"];
+      AI_MODELS[model as keyof typeof AI_MODELS] ||
+      AI_MODELS["gpt-3.5-turbo"];
 
     if (!modelInfo)
       return {
@@ -270,101 +263,4 @@ export default class LangchainOpenAIInstructProvider
       maxTokens: modelInfo.maxTokens,
     };
   }
-}
-
-function ModelsHandler(props: {
-  register: Parameters<LLMProviderInterface["RenderSettings"]>[0]["register"];
-  sectionId: Parameters<LLMProviderInterface["RenderSettings"]>[0]["sectionId"];
-}) {
-  const global = useGlobal();
-  const [models, setModels] = useState<Set<string>>(new Set<string>());
-  const [loadingUpdate, setLoadingUpdate] = useState(false);
-
-  const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
-    ...default_values,
-  });
-
-  const updateModels = async () => {
-    setLoadingUpdate(true);
-    try {
-      if (global.plugin.settings.api_key.length > 0) {
-        console.log(`${config.basePath}/models`);
-        const reqParams = {
-          url: `${config.basePath}/models`,
-          method: "GET",
-          body: "",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${global.plugin.settings.api_key}`,
-          },
-        };
-
-        const requestResults: {
-          data: {
-            id: string;
-          }[];
-        } = JSON.parse(await request(reqParams));
-
-        requestResults.data.forEach(async (model) => {
-          models.add(model.id);
-        });
-
-        setModels(new Set(models));
-
-        global.plugin.settings.models = models;
-        await global.plugin.saveSettings();
-      } else {
-        throw "Please provide a valid api key.";
-      }
-    } catch (err: any) {
-      global.plugin.handelError(err);
-    }
-    setLoadingUpdate(false);
-  };
-
-  useEffect(() => {
-    if (global.plugin.settings.models?.length > 0) {
-      setModels(new Set(global.plugin.settings.models));
-    } else {
-      Object.entries(OPENAI_MODELS).forEach(
-        ([e, o]) => o.llm.contains(id) && models.add(e)
-      );
-      global.plugin.settings.models = models;
-      global.plugin.saveSettings();
-      setModels(new Set(models));
-    }
-  }, []);
-
-  return (
-    <>
-      <SettingItem
-        name="Model"
-        register={props.register}
-        sectionId={props.sectionId}
-      >
-        <div className="flex items-center gap-2">
-          <Dropdown
-            value={config.engine}
-            setValue={async (selectedModel) => {
-              config.engine = selectedModel;
-              //   global.plugin.settings.engine = selectedModel;
-              await global.plugin.saveSettings();
-              global.triggerReload();
-            }}
-            values={[...models].sort()}
-          />
-
-          <button
-            className={clsx({
-              "dz-loading": loadingUpdate,
-            })}
-            onClick={updateModels}
-            disabled={loadingUpdate}
-          >
-            <IconReload />
-          </button>
-        </div>
-      </SettingItem>
-    </>
-  );
 }

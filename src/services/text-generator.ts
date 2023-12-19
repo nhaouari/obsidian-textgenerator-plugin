@@ -1,20 +1,33 @@
-import TemplateInputModalUI from "./ui/template-input-modal";
-import { App, Notice, Editor, EditorPosition, TFile } from "obsidian";
-import { TextGeneratorSettings } from "./types";
-import TextGeneratorPlugin from "./main";
-import ReqFormatter from "./api-request-formatter";
-import { SetPath } from "./ui/settings/components/set-path";
-import ContextManager, { InputContext } from "./context-manager";
-import { makeid, createFileWithInput, openFile } from "./utils";
+import TemplateInputModalUI from "../ui/template-input-modal";
+import {
+  App,
+  Notice,
+  EditorPosition,
+  TFile,
+  stringifyYaml,
+} from "obsidian";
+import { TextGeneratorSettings } from "../types";
+import TextGeneratorPlugin from "../main";
+import ReqFormatter from "../utils/api-request-formatter";
+import { SetPath } from "../ui/settings/components/set-path";
+import ContextManager, { InputContext } from "../scope/context-manager";
+import {
+  makeId,
+  createFileWithInput,
+  openFile,
+  removeYAML,
+  removeExtensionFromName,
+} from "../utils";
 import safeAwait from "safe-await";
 import debug from "debug";
-import RequestHandler from "./services/api-service";
+import RequestHandler from "./api-service";
 const logger = debug("textgenerator:TextGenerator");
 const heavyLogger = debug("textgenerator:TextGenerator:heavy");
 
-import EmbeddingScope from "./scope/embeddings";
-import { getHBValues } from "./utils/barhandles";
-import { VIEW_TOOL_ID } from "./ui/tool";
+import EmbeddingScope from "../scope/embeddings";
+import { IGNORE_IN_YAML } from "../constants";
+import merge from "lodash.merge";
+import { ContentManager } from "../content-manager/types";
 
 export default class TextGenerator extends RequestHandler {
   plugin: TextGeneratorPlugin;
@@ -33,9 +46,9 @@ export default class TextGenerator extends RequestHandler {
     this.reqFormatter = new ReqFormatter(app, plugin, this.contextManager);
   }
 
-  getCursor(editor: Editor, mode: "insert" | "replace" | string = "insert") {
+  async getCursor(editor: ContentManager, mode: "insert" | "replace" | string = "insert") {
     logger("getCursor");
-    const cursor = editor.getCursor(mode == "replace" ? "from" : "to");
+    const cursor = await editor.getCursor(mode == "replace" ? "from" : "to");
 
     // let selectedText = editor.getSelection();
     // if (selectedText.length === 0) {
@@ -57,7 +70,7 @@ export default class TextGenerator extends RequestHandler {
     templatePath: string;
     /** defaults to true */
     insertMetadata?: boolean;
-    editor?: Editor;
+    editor?: ContentManager;
     filePath?: string;
     /** defaults to true */
     activeFile?: boolean;
@@ -115,7 +128,7 @@ export default class TextGenerator extends RequestHandler {
     // get files context
     const contexts = (await this.contextManager.getContextFromFiles(
       files,
-      insertMetadata,
+      //   insertMetadata,
       templatePath,
       additionalProps
     )) as InputContext[];
@@ -157,7 +170,7 @@ export default class TextGenerator extends RequestHandler {
   async generateStreamInEditor(
     params: Partial<TextGeneratorSettings>,
     insertMetadata = false,
-    editor: Editor,
+    editor: ContentManager,
     customContext?: InputContext
   ) {
     logger("generateStreamInEditor");
@@ -168,29 +181,10 @@ export default class TextGenerator extends RequestHandler {
 
     const mode = this.getMode(context);
 
-    const startingCursor = this.getCursor(editor, mode);
-
-    const cursor: typeof startingCursor = {
-      ch: startingCursor.ch,
-      line: startingCursor.line,
-    };
-
-    // --- show selected --
-    const selectedRange = this.contextManager.getSelectionRange(editor);
-    const currentSelections = editor.listSelections();
-    editor.setSelections(
-      currentSelections.length > 1
-        ? currentSelections
-        : [
-            {
-              anchor: selectedRange.from,
-              head: selectedRange.to,
-            },
-          ]
-    );
-    // --
+    const startingCursor = await this.getCursor(editor, mode);
 
     try {
+      const streamHandler = await editor.insertStream(startingCursor, mode)
       const strm = await this.streamGenerate(
         context,
         insertMetadata,
@@ -199,35 +193,7 @@ export default class TextGenerator extends RequestHandler {
       );
 
       // last letter before starting, (used to detirmin if we should add space at the begining)
-      const txt = editor.getRange(
-        {
-          ch: startingCursor.ch - 1,
-          line: startingCursor.line,
-        },
-        startingCursor
-      );
-
-      let postingContent = "";
-      let stillPlaying = true;
-      let firstTime = true;
-
-      const writerTimer: any = setInterval(() => {
-        if (!stillPlaying) return clearInterval(writerTimer);
-        const posting = postingContent;
-        if (!posting) return;
-
-        if (firstTime) this.insertGeneratedText(posting, editor, cursor, mode);
-        else this.insertGeneratedText(posting, editor, cursor, "stream");
-        postingContent = postingContent.substring(posting.length);
-        firstTime = false;
-
-        cursor.ch += posting.length;
-
-        if (!this.plugin.settings.freeCursorOnStreaming)
-          editor.setCursor(cursor);
-
-        this.plugin.updateSpinnerPos(cursor);
-      }, 100);
+      const txt = editor.getLastLetterBeforeCursor();
 
       const allText =
         (await strm?.(
@@ -255,10 +221,12 @@ export default class TextGenerator extends RequestHandler {
               if (this.plugin.settings.prefix?.length) {
                 content = this.plugin.settings.prefix + content;
               }
+            }
 
-              postingContent = content;
-            } else postingContent += content;
             logger("generateStreamInEditor message", { content });
+
+            streamHandler.insert(content);
+
             return content;
           },
           (err) => {
@@ -267,38 +235,16 @@ export default class TextGenerator extends RequestHandler {
           }
         )) || "";
 
-      stillPlaying = false;
-
-      editor.replaceRange(
-        mode == "replace" ? allText : "",
-        startingCursor,
-        cursor
-      );
-
-      if (mode !== "replace")
-        this.insertGeneratedText(allText, editor, startingCursor, mode);
-
-      const nc = {
-        ch: startingCursor.ch + allText.length,
-        line: startingCursor.line,
-      };
-
-      editor.replaceRange("", startingCursor, nc);
-
-      await new Promise((s) => setTimeout(s, 500));
-
       this.endLoading(true);
 
-      this.insertGeneratedText(allText, editor, startingCursor, mode);
+      streamHandler.end();
 
-      // here we can do some selecting magic
-      // editor.setSelection(startingCursor, cursor)
+      await streamHandler.replaceAllWith(allText);
 
-      editor.setCursor(nc);
     } catch (err: any) {
       this.plugin.handelError(err);
       // if catched error during or before streaming, it should return to its previews location
-      editor.setCursor(cursor);
+      editor.setCursor(startingCursor);
       this.endLoading(true);
       return Promise.reject(err);
     }
@@ -307,7 +253,7 @@ export default class TextGenerator extends RequestHandler {
   async generateInEditor(
     params: Partial<TextGeneratorSettings>,
     insertMetadata = false,
-    editor: Editor,
+    editor: ContentManager,
     customContext?: InputContext,
     additionnalParams = {
       showSpinner: true,
@@ -315,7 +261,6 @@ export default class TextGenerator extends RequestHandler {
     }
   ) {
     const frontmatter = this.reqFormatter.getFrontmatter("", insertMetadata);
-    console.log({ frontmatter });
     if (
       this.plugin.settings.stream &&
       this.plugin.textGenerator.LLMProvider?.streamable &&
@@ -330,7 +275,7 @@ export default class TextGenerator extends RequestHandler {
     }
 
     logger("generateInEditor");
-    const cursor = this.getCursor(editor);
+    const cursor = await this.getCursor(editor);
 
     const context =
       customContext ||
@@ -354,9 +299,8 @@ export default class TextGenerator extends RequestHandler {
 
     const prefix = this.plugin.settings.prefix;
 
-    this.insertGeneratedText(
+    await editor.insertText(
       prefix.length ? prefix + text : text,
-      editor,
       cursor,
       mode
     );
@@ -368,7 +312,7 @@ export default class TextGenerator extends RequestHandler {
     params: Partial<TextGeneratorSettings>,
     templatePath: string,
     insertMetadata = false,
-    editor: Editor
+    editor: ContentManager
   ) {
     logger("generateToClipboard");
     const [errorContext, context] = await safeAwait(
@@ -404,7 +348,7 @@ export default class TextGenerator extends RequestHandler {
   async generatePrompt(
     promptText: string,
     insertMetadata = false,
-    editor: Editor,
+    editor: ContentManager,
     outputTemplate: HandlebarsTemplateDelegate<any>
   ) {
     logger("generatePrompt");
@@ -416,7 +360,7 @@ export default class TextGenerator extends RequestHandler {
       text = outputTemplate({ output: text });
     }
 
-    if (text) this.insertGeneratedText(text, editor, cursor);
+    if (text) editor.insertText(text, cursor);
 
     logger("generatePrompt end");
   }
@@ -442,7 +386,7 @@ export default class TextGenerator extends RequestHandler {
 
     const title = this.plugin.app.workspace.activeLeaf?.getDisplayText();
     const suggestedPath =
-      "textgenerator/generations/" + title + "-" + makeid(3) + ".md";
+      "textgenerator/generations/" + title + "-" + makeId(3) + ".md";
     new SetPath(
       this.plugin.app,
       suggestedPath,
@@ -474,7 +418,7 @@ export default class TextGenerator extends RequestHandler {
   ) {
     logger("createToFile");
 
-    const suggestedPath = `textgenerator/generations/${makeid(4)}`;
+    const suggestedPath = `textgenerator/generations/${makeId(4)}`;
 
     new SetPath(
       this.plugin.app,
@@ -505,8 +449,8 @@ export default class TextGenerator extends RequestHandler {
               const [errorFile, file] = await safeAwait(
                 createFileWithInput(
                   path +
-                    `/${text?.startsWith("FAILED:") ? "FAILED-" : ""}` +
-                    files[i].path,
+                  `/${text?.startsWith("FAILED:") ? "FAILED-" : ""}` +
+                  files[i].path,
                   text,
                   this.plugin.app
                 )
@@ -520,7 +464,6 @@ export default class TextGenerator extends RequestHandler {
           )
         );
 
-        console.log({ results });
         const failed = results?.filter((r) => r?.startsWith("FAILED:"));
 
         if (failed?.length) {
@@ -543,38 +486,68 @@ export default class TextGenerator extends RequestHandler {
     logger("createToFile end");
   }
 
-  async createTemplateFromEditor(editor: Editor) {
+  async createTemplateFromEditor(editor: ContentManager) {
     logger("createTemplateFromEditor");
     const title = this.plugin.app.workspace.activeLeaf?.getDisplayText();
-    const content = editor.getValue();
+    const content = await editor.getValue();
     await this.createTemplate(content, title);
     logger("createTemplateFromEditor end");
   }
 
-  async createTemplate(content: string, title = "") {
+  async createTemplate(content: string, title = "", options?: { disableProvider?: boolean }) {
     logger("createTemplate");
-    const promptInfo = `promptId: ${title}
-name: 🗞️${title} 
-description: ${title}
-required_values: 
-author: 
-tags: 
-version: 0.0.1`;
 
-    let templateContent = content;
-    const metadata = this.contextManager.getMetaData();
-    // We have three cases: no Front-matter / Frontmatter without PromptInfo/ Frontmatter with PromptInfo
-    if (!metadata?.hasOwnProperty("frontmatter")) {
-      templateContent = `---\n${promptInfo}\n---\n${templateContent}`;
-    } else if (!metadata["frontmatter"]?.hasOwnProperty("PromptInfo")) {
-      if (templateContent.indexOf("---") !== -1) {
-        templateContent = templateContent.replace("---", `---\n${promptInfo}`);
-      } else {
-        templateContent = `---\n${promptInfo}\n---\n${templateContent}`;
-      }
-    }
     const suggestedPath = `${this.plugin.settings.promptsPath}/local/${title}.md`;
     new SetPath(this.plugin.app, suggestedPath, async (path: string) => {
+      const newTitle = removeExtensionFromName(path.split("/").reverse()[0]);
+      const defaultMatter = {
+        promptId: `${newTitle}`,
+        name: `🗞️${newTitle} `,
+        description: `${newTitle}`,
+        author: "",
+        tags: "",
+        version: "0.0.1",
+        disableProvider: !!options?.disableProvider,
+      };
+
+      const metadata = this.contextManager.getMetaData(undefined, true);
+
+      const matter: Record<string, any> = {};
+      Object.entries(metadata?.frontmatter || {}).forEach(([key, content]) => {
+        if (IGNORE_IN_YAML[key]) {
+          matter[key] = content;
+        }
+      });
+
+      const templateContent = options?.disableProvider ?
+        `---
+${stringifyYaml(merge({}, defaultMatter, matter))}
+---
+\`\`\`handlebars
+You can structure your code here and then use the input or output template to retrieve("get" helper) the processed data, enhancing readability.
+\`\`\`
+***
+This input template is currently disabled due to the 'disabledProvider' setting being set to true.
+
+If you wish to utilize this template with a provider, such as Chatbot or another service, please follow these steps:
+- Enable the provider by setting 'disabledProvider' to false.
+- Cut and paste everything from the output template into this section.
+- Replace the content in the output template with '{{output}}'.
+- Remember to delete this instruction text.
+***
+${removeYAML(content)}
+`
+        : `---
+${stringifyYaml(merge({}, defaultMatter, matter))}
+---
+\`\`\`handlebars
+
+\`\`\`
+***
+${removeYAML(content)}
+***
+{{output}}`;
+
       const [errorFile, file] = await safeAwait(
         createFileWithInput(path, templateContent, this.plugin.app)
       );
@@ -584,6 +557,9 @@ version: 0.0.1`;
       }
       openFile(this.plugin.app, file);
     }).open();
+
+    await this.updateTemplatesCache();
+
     logger("createTemplate end");
   }
 
@@ -605,71 +581,12 @@ version: 0.0.1`;
     return "\n> [!ai]+ AI\n>\n" + lines.join("\n").trim() + "\n\n";
   }
 
-  async insertGeneratedText(
-    completion: string,
-    editor: Editor,
-    cur: EditorPosition | null = null,
-    mode = "insert"
-  ) {
-    heavyLogger("insertGeneratedText");
-
-    let text = completion;
-    let cursor = cur || this.getCursor(editor);
-
-    // if (mode !== "stream") {
-    // 	 text = this.plugin.settings.prefix.replace(/\\n/g, "\n") + text;
-    // }
-
-    if (editor.listSelections().length > 0) {
-      const anchor = editor.listSelections()[0].anchor;
-      const head = editor.listSelections()[0].head;
-      if (
-        anchor.line > head.line ||
-        (anchor.line === head.line && anchor.ch > head.ch)
-      ) {
-        cursor = editor.listSelections()[0].anchor;
-      }
-    }
-
-    if (this.plugin.settings.outputToBlockQuote && mode !== "stream") {
-      text = this.outputToBlockQuote(text);
-    }
-
-    if (mode === "insert" || mode === "stream") {
-      editor.replaceRange(text, cursor);
-    } else if (mode === "replace") {
-      editor.replaceSelection(text);
-    } else if (mode === "rename") {
-      const sanitizedTitle = text
-        .replace(/[*\\"/<>:|?\.]/g, "")
-        .replace(/^\n*/g, "");
-      const activeFile = this.plugin.app.workspace.getActiveFile();
-
-      if (activeFile) {
-        const renamedFilePath = activeFile.path.replace(
-          activeFile.name,
-          `${sanitizedTitle}.md`
-        );
-        await this.plugin.app.fileManager.renameFile(
-          activeFile,
-          renamedFilePath
-        );
-      } else {
-        logger("Couldn't find active file");
-      }
-    }
-
-    // editor.setCursor(editor.getCursor());
-
-    heavyLogger("insertGeneratedText end");
-  }
-
   async tempalteToModal(props: {
     params: Partial<TextGeneratorSettings>;
     /** Template path */
     templatePath?: string;
-    /** Editor */
-    editor: Editor;
+    /** ContentManager */
+    editor: ContentManager;
     /** filePath */
     filePath?: string;
     /** defaults to true */
@@ -696,32 +613,21 @@ version: 0.0.1`;
     const { inputContent, outputContent, preRunnerContent } =
       this.contextManager.splitTemplate(templateContent);
 
-    // const variables = this.contextManager
-    //   .extractVariablesFromTemplate(inputContent)
-    //   .filter((variable) => !variable.includes("."));
-
-    const variables = Array.from(
-      new Set([
-        ...(await getHBValues(inputContent)),
-        ...(await getHBValues(outputContent)),
-        ...(await getHBValues(preRunnerContent || "")),
-      ]).values()
-    );
-
-    console.log(
-      { variables },
-      this.contextManager.extractVariablesFromTemplate(inputContent)
+    const variables = this.contextManager.getHBVariablesOfTemplate(
+      preRunnerContent,
+      inputContent,
+      outputContent,
     );
 
     const metadata = this.getMetadata(props.templatePath || "");
-    const tempateContext = await this.contextManager.getTemplateContext(props);
+    const templateContext = await this.contextManager.getTemplateContext(props);
 
     new TemplateInputModalUI(
       this.plugin.app,
       this.plugin,
       variables,
       metadata,
-      tempateContext,
+      templateContext,
       async (results: any) => {
         try {
           await this.generateFromTemplate({
@@ -747,16 +653,16 @@ version: 0.0.1`;
     promptsPath: string = this.plugin.settings.promptsPath
   ) {
     const files = _files || this.plugin.app.vault.getFiles();
-    const paths: string[] = files
+    const paths = files
       .filter(
-        (f) => f.path.includes(promptsPath) && !f.path.includes("/trash/")
-      )
-      .map((f) => f.path);
+        (f) => f.path.startsWith(promptsPath) && !f.path.includes("/trash/")
+      );
     return paths.map((s) => {
       return {
-        title: s.substring(promptsPath.length + 1),
-        path: s,
-        ...this.getMetadata(s),
+        title: s.path.substring(promptsPath.length + 1),
+        ctime: s.stat.ctime,
+        path: s.path,
+        ...this.getMetadata(s.path),
       };
     });
   }
@@ -774,6 +680,7 @@ version: 0.0.1`;
       tags: string[];
       version: string;
       commands: string[];
+      viewTypes?: string[];
     }> = {};
 
     if (metadata?.PromptInfo?.promptId) {
@@ -817,6 +724,14 @@ version: 0.0.1`;
           : metadata.PromptInfo.commands;
     }
 
+    if (metadata?.PromptInfo?.viewTypes) {
+      validedMetaData["viewTypes"] =
+        typeof metadata.PromptInfo.viewTypes == "string"
+          ? metadata.PromptInfo.viewTypes.split(",")
+          : metadata.PromptInfo.viewTypes;
+    }
+
+
     logger("getMetadata end");
     return validedMetaData;
   }
@@ -836,20 +751,22 @@ version: 0.0.1`;
   async templateGen(
     id: string,
     options: {
-      editor?: Editor;
+      editor?: ContentManager;
       filePath?: string;
       insertMetadata?: boolean;
       additionalProps?: any;
     }
   ): Promise<string> {
-    this.plugin.endProcessing(true);
-
+    const templatePath = await await this.getTemplatePath(id)
+    // this.plugin.endProcessing(true);
+    this.plugin.startProcessing();
+    console.log({ templatePath, id })
     const [errorContext, context] = await safeAwait(
       this.contextManager.getContext({
         editor: options.editor,
         filePath: options.filePath,
         insertMetadata: options.insertMetadata,
-        templatePath: this.contextManager.templatePaths[id],
+        templatePath,
         addtionalOpts: options.additionalProps,
       })
     );
@@ -858,14 +775,17 @@ version: 0.0.1`;
       throw errorContext;
     }
 
-    console.log("going with context", { context });
-
     const [errorGeneration, text] = await safeAwait(
       this.generate(
         context,
         options.insertMetadata,
         options.additionalProps,
-        this.contextManager.templatePaths[id]
+        templatePath,
+        {
+          insertMode: false,
+          showSpinner: true,
+          dontCheckProcess: true
+        }
       )
     );
 
@@ -874,5 +794,79 @@ version: 0.0.1`;
     }
 
     return text || "";
+  }
+
+  /** record of template paths, from id */
+  templatePaths: Record<string, string>;
+  lastTemplatePathStats: Record<string, number> = {};
+
+
+  checkTemplatePathsHasChanged() {
+    const nowStats: Record<string, number> = {};
+    // @ts-ignore
+    for (const path in app.vault.adapter.files) {
+      if (!path.startsWith(this.plugin.settings.promptsPath) || path.includes("/trash/")) continue;
+      // @ts-ignore
+      nowStats[path] = app.vault.adapter.files[path].ctime;
+      if (nowStats[path] != this.lastTemplatePathStats[path])
+        return true;
+    }
+
+    return false;
+  }
+
+  async getTemplatePath(id: string) {
+    if (await this.checkTemplatePathsHasChanged()) {
+      await this.updateTemplatesCache();
+    }
+
+    if (this.templatePaths[id]) return this.templatePaths[id];
+
+    const promptsPath = this.plugin.settings.promptsPath
+
+    const guessPath = `${promptsPath}${promptsPath.endsWith("/") ? "" : "/"}${id}.md`;
+
+    // test if the guess is actually a file
+    if (await this.plugin.app.vault.adapter.exists(guessPath)) return guessPath;
+
+    return undefined;
+  }
+
+  async getTemplate(id: string) {
+    const templatePath = await this.getTemplatePath(id)
+    if (!templatePath)
+      throw new Error(`template with id:${id} wasn't found.`);
+
+    return this.contextManager.templateFromPath(
+      templatePath,
+      {
+        ...this.contextManager.getFrontmatter(
+          this.contextManager.getMetaData(
+            templatePath
+          )
+        ),
+      }
+    );
+  }
+
+  async updateTemplatesCache() {
+    const files = await this.plugin.getFilesOnLoad();
+
+    const templates = this.plugin.textGenerator.getTemplates(
+      // get files, it will be empty onLoad, that's why we are using this function
+      files
+    );
+
+    this.templatePaths = {};
+    templates.forEach((template) => {
+      if (template.id) {
+        const ss = template.path.split("/");
+        this.templatePaths[ss[ss.length - 2] + "/" + template.id] =
+          template.path;
+      }
+      this.lastTemplatePathStats[template.path] = template.ctime;
+    });
+
+    return templates;
   }
 }

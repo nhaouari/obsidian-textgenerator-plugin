@@ -18,11 +18,10 @@ const logger = debug("textgenerator:llmProvider:chatanthropic");
 const id = "Chat Anthropic (Langchain)" as const;
 export default class LangchainChatAnthropicProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   id = id;
   static id = id;
-  static slug = "chatAnthropic";
+  static slug = "anthropic" as const;
   provider = "Langchain";
   static provider = "Langchain";
   getConfig(
@@ -34,7 +33,7 @@ export default class LangchainChatAnthropicProvider
       stopSequences: options.stop,
 
       // ------------Necessary stuff--------------
-      modelName: options.engine,
+      modelName: options.model,
       maxTokens: options.max_tokens,
       temperature: options.temperature,
       frequencyPenalty: options.frequency_penalty,
@@ -59,7 +58,9 @@ export default class LangchainChatAnthropicProvider
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
 
-    const config = (global.plugin.settings.LLMProviderOptions[id] ??= {});
+    const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
+      model: "claude-2"
+    });
 
     return (
       <>
@@ -97,7 +98,22 @@ export default class LangchainChatAnthropicProvider
             }}
           />
         </SettingItem>
-        <ModelsHandler register={props.register} sectionId={props.sectionId} />
+        <SettingItem
+          name="model"
+          register={props.register}
+          sectionId={props.sectionId}
+        >
+          <Input
+            value={config.model}
+            placeholder="Enter your Model name"
+            setValue={async (value) => {
+              config.model = value;
+              global.triggerReload();
+              // TODO: it could use a debounce here
+              await global.plugin.saveSettings();
+            }}
+          />
+        </SettingItem>
         <div className="flex flex-col gap-2">
           <div className="text-lg opacity-70">Useful links</div>
           <a href="https://beta.openai.com/signup/">
@@ -134,106 +150,4 @@ export default class LangchainChatAnthropicProvider
       </>
     );
   }
-}
-
-function ModelsHandler(props: {
-  register: Parameters<LLMProviderInterface["RenderSettings"]>[0]["register"];
-  sectionId: Parameters<LLMProviderInterface["RenderSettings"]>[0]["sectionId"];
-}) {
-  const global = useGlobal();
-  const [models, setModels] = useState<Set<string>>(new Set<string>());
-  const [loadingUpdate, setLoadingUpdate] = useState(false);
-
-  const updateModels = async () => {
-    setLoadingUpdate(true);
-    try {
-      if (global.plugin.settings.api_key.length > 0) {
-        const reqParams = {
-          url: `${global.plugin.settings.endpoint}/v1/models`,
-          method: "GET",
-          body: "",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${global.plugin.settings.api_key}`,
-          },
-        };
-
-        const requestResults: {
-          data: {
-            id: string;
-          }[];
-        } = JSON.parse(await request(reqParams));
-
-        requestResults.data.forEach(async (model) => {
-          models.add(model.id);
-        });
-
-        setModels(new Set(models));
-
-        global.plugin.settings.models = models;
-        await global.plugin.saveSettings();
-      } else {
-        throw "Please provide a valid api key.";
-      }
-    } catch (err: any) {
-      global.plugin.handelError(err);
-    }
-    setLoadingUpdate(false);
-  };
-  useEffect(() => {
-    if (global.plugin.settings.models?.length > 0) {
-      setModels(new Set(global.plugin.settings.models));
-    } else {
-      [
-        "gpt-3.5-turbo",
-        "gpt-4",
-        "gpt-3.5-turbo-16k",
-        "gpt-3.5-turbo-16k-0613",
-        "gpt-3.5-turbo-0613",
-        "gpt-4-0314",
-        "gpt-4-0613",
-        "gpt-4-32k-0613",
-        "text-davinci-003",
-        "text-davinci-002",
-        "text-davinci-001",
-        "text-curie-001",
-        "text-babbage-001",
-        "text-ada-001",
-      ].forEach((e) => models.add(e));
-      global.plugin.settings.models = models;
-      global.plugin.saveSettings();
-      setModels(new Set(models));
-    }
-  }, []);
-
-  return (
-    <>
-      <SettingItem
-        name="Model"
-        register={props.register}
-        sectionId={props.sectionId}
-      >
-        <div className="flex items-center gap-2">
-          <Dropdown
-            value={global.plugin.settings.engine}
-            setValue={async (selectedModel) => {
-              global.plugin.settings.engine = selectedModel;
-              await global.plugin.saveSettings();
-            }}
-            values={[...models].sort()}
-          />
-
-          <button
-            className={clsx({
-              "dz-loading": loadingUpdate,
-            })}
-            onClick={updateModels}
-            disabled={loadingUpdate}
-          >
-            <IconReload />
-          </button>
-        </div>
-      </SettingItem>
-    </>
-  );
 }

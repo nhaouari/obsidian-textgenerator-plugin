@@ -1,5 +1,5 @@
 import debug from "debug";
-import { OPENAI_MODELS } from "src/constants";
+import { AI_MODELS } from "src/constants";
 
 import cl100k_base from "@dqbd/tiktoken/encoders/cl100k_base.json";
 import r50k_base from "@dqbd/tiktoken/encoders/r50k_base.json";
@@ -87,7 +87,7 @@ export default class TokensScope {
     );
 
     const result = {
-      // engine: this.plugin.textGenerator.LLMProvider.getSettings().engine || this.plugin.settings.engine || "gpt-3.5-turbo",
+      // model: this.plugin.textGenerator.LLMProvider.getSettings().model || this.plugin.settings.model || "gpt-3.5-turbo",
       maxTokens,
       completionTokens: this.plugin.settings.max_tokens,
       tokens,
@@ -102,11 +102,11 @@ export default class TokensScope {
     tokens: any;
     maxTokens: number;
     cost: number;
-    // engine: string;
+    // model: string;
     completionTokens: number;
     // total: number;
   }) {
-    // <tr><td><strong>Model</strong></td><td>${props.engine}</td></tr>
+    // <tr><td><strong>Model</strong></td><td>${props.model}</td></tr>
     // <tr><td><strong>Prompt tokens</strong></td><td>${props.tokens}</td></tr>
 
     logger("showTokens", props);

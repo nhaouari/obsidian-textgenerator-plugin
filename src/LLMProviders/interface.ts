@@ -1,4 +1,4 @@
-import { ContextTemplate } from "#/context-manager";
+import { ContextTemplate } from "#/scope/context-manager";
 import type { Register } from "#/ui/settings/sections";
 import type { LLMChain } from "langchain/chains";
 import type { Message } from "src/types";
@@ -60,14 +60,16 @@ export default interface LLMProviderInterface {
 export interface LLMConfig {
   api_key: string;
   endpoint?: string;
+  basePath?: string;
   requestParams: RequestInit;
   otherOptions: any;
   stream: boolean;
   stop?: string[];
   n?: number;
-  engine: string;
+  model: string;
   max_tokens: number;
   temperature: number;
   frequency_penalty: number;
   llmPredict: boolean;
+  bodyParams?: any;
 }
