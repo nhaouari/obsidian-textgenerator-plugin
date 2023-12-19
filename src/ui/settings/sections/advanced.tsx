@@ -120,7 +120,22 @@ export default function AdvancedSetting(props: { register: Register }) {
           }}
         />
       </SettingItem>
-
+      <SettingItem
+        name="Experimentation Features"
+        description="This adds experiment features, which might not be stable yet"
+        register={props.register}
+        sectionId={sectionId}
+      >
+        <Input
+          type="checkbox"
+          value={"" + global.plugin.settings.experiment}
+          setValue={async (val) => {
+            global.plugin.settings.experiment = val == "true";
+            await global.plugin.saveSettings();
+            global.triggerReload();
+          }}
+        />
+      </SettingItem>
       <SettingItem
         name="Prompts Templates Path"
         description="Path of Prompts Templates"

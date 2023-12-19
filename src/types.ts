@@ -59,6 +59,7 @@ type TextGeneratorSettings = {
   tgSelectionLimiter: string;
   stream: boolean;
   options: Options;
+  experiment: boolean;
   advancedOptions?: {
     generateTitleInstruct?: string;
     generateTitleInstructEnabled?: boolean;
