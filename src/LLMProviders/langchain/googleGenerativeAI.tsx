@@ -1,7 +1,7 @@
 import LangchainBase from "./base";
 
 import { GoogleGenerativeAIChatInput } from "@langchain/google-genai";
-import React from "react";
+import React, { useId } from "react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import SettingItem from "#/ui/settings/components/item";
 import useGlobal from "#/ui/context/global";
@@ -11,32 +11,36 @@ import debug from "debug";
 
 const logger = debug("textgenerator:llmProvider:gemini");
 
+
 const id = "Google GenerativeAI (Langchain)" as const;
 export default class LangchainChatGoogleGenerativeAIProvider
   extends LangchainBase
   implements LLMProviderInterface {
-  mobileSupport = false;
+  mobileSupport = true;
   streamable = false;
+  legacyN = true
   id = id;
   static id = id;
   provider = "Langchain";
   static provider = "Langchain";
   static slug = "googleGenerativeAI" as const;
+
   getConfig(options: LLMConfig): Partial<GoogleGenerativeAIChatInput> {
     return this.cleanConfig({
       apiKey: options.api_key,
       modelName: options.model,
 
+      // candidateCount is not supported yet by langchain
+      candidateCount: options.n,
+
       // ------------Necessary stuff--------------
       //   modelName: options.model,
-      maxTokens: options.max_tokens,
+      maxOutputTokens: options.max_tokens,
       temperature: options.temperature,
       frequencyPenalty: options.frequency_penalty,
-      n: options.n,
-      stop: options.stop,
+      stopSequences: options.stop,
       streaming: options.stream,
       maxRetries: 3,
-
     });
   }
 
@@ -57,6 +61,8 @@ export default class LangchainChatGoogleGenerativeAIProvider
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
       model: "models/gemini-pro"
     });
+
+    const modelsDatasetId = useId();
 
     return (
       <>
@@ -82,9 +88,14 @@ export default class LangchainChatGoogleGenerativeAIProvider
           register={props.register}
           sectionId={props.sectionId}
         >
+          <datalist id={modelsDatasetId}>
+            <option value="models/gemini-pro" />
+          </datalist>
           <Input
             value={config.model}
+            datalistId={modelsDatasetId}
             placeholder="Enter your Model name"
+
             setValue={async (value) => {
               config.model = value;
               global.triggerReload();

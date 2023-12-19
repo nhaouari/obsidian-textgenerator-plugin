@@ -7,6 +7,7 @@ export default function Input(props: {
   type?: string;
   value: any;
   placeholder?: string;
+  datalistId?: string;
   setValue: (nval: string) => void;
   className?: string;
   validator?: ZodSchema;
@@ -25,8 +26,8 @@ export default function Input(props: {
       onClick={
         props.type == "checkbox"
           ? (e) => {
-              props.setValue(props.value != "true" ? "true" : "false");
-            }
+            props.setValue(props.value != "true" ? "true" : "false");
+          }
           : undefined
       }
       data-tip={error || ""}
@@ -35,10 +36,11 @@ export default function Input(props: {
         type={
           props.type == "password"
             ? showPass
-              ? "text"
+              ? "search"
               : "password"
             : props.type
         }
+        list={props.datalistId}
         placeholder={props.placeholder}
         className={clsx(
           "dz-input bg-[var(--background-modifier-form-field)]",
@@ -55,21 +57,21 @@ export default function Input(props: {
         onChange={
           props.type != "checkbox"
             ? (e) => {
-                try {
-                  setValue(e.target.value);
+              try {
+                setValue(e.target.value);
 
-                  const v =
-                    props.type == "number"
-                      ? e.target.valueAsNumber || 0
-                      : e.target.value;
+                const v =
+                  props.type == "number"
+                    ? e.target.valueAsNumber || 0
+                    : e.target.value;
 
-                  setError("");
-                  props.validator?.parse(v);
-                  props.setValue("" + v);
-                } catch (err: any) {
-                  setError(JSON.parse(err?.message)?.[0]?.message);
-                }
+                setError("");
+                props.validator?.parse(v);
+                props.setValue("" + v);
+              } catch (err: any) {
+                setError(JSON.parse(err?.message)?.[0]?.message);
               }
+            }
             : undefined
         }
       />

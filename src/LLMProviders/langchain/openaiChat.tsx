@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import LangchainBase from "./base";
 import type { OpenAIChatInput } from "langchain/chat_models/openai";
 
@@ -30,22 +30,6 @@ export default class LangchainOpenAIChatProvider
   static provider = "Langchain";
   static id = id;
   static slug = "openAIChat" as const;
-
-  getConfig(options: LLMConfig) {
-    return this.cleanConfig({
-      openAIApiKey: options.api_key,
-
-      // ------------Necessary stuff--------------
-      modelName: options.model,
-      maxTokens: +options.max_tokens,
-      temperature: +options.temperature,
-      frequencyPenalty: +options.frequency_penalty,
-      n: options.n,
-      stop: options.stop,
-      streaming: options.stream,
-      maxRetries: 3,
-    } as Partial<OpenAIChatInput & BaseChatModelParams>);
-  }
 
   async load() {
     const { ChatOpenAI } = await import("langchain/chat_models/openai");
@@ -273,7 +257,7 @@ function ModelsHandler(props: {
     );
     setModels(new Set(models));
   }, []);
-
+  const modelsDatasetId = useId();
   return (
     <>
       <SettingItem
@@ -282,19 +266,45 @@ function ModelsHandler(props: {
         sectionId={props.sectionId}
       >
         <div className="flex items-center gap-2">
-          <Dropdown
-            value={config.model}
-            setValue={async (selectedModel) => {
-              config.model = selectedModel;
-              await global.plugin.saveSettings();
-              global.triggerReload();
-            }}
-            values={[...models]
-              .sort()
-              .sort(
-                (m1: keyof typeof OPENAI_MODELS, m2: keyof typeof OPENAI_MODELS) =>
-                  (OPENAI_MODELS[m2]?.order || 0) - (OPENAI_MODELS[m1]?.order || 0))}
-          />
+          {global.plugin.settings.experiment ? <>
+            <datalist id={modelsDatasetId}>
+              {[...models]
+                .sort()
+                .sort(
+                  (m1: keyof typeof OPENAI_MODELS, m2: keyof typeof OPENAI_MODELS) =>
+                    (OPENAI_MODELS[m2]?.order || 0) - (OPENAI_MODELS[m1]?.order || 0)).map(model =>
+                      <option key={model} value={model} />
+                    )}
+            </datalist>
+
+            <Input
+              value={config.model}
+              datalistId={modelsDatasetId}
+              placeholder="Enter your Model name"
+              setValue={async (value) => {
+                config.model = value;
+                global.triggerReload();
+                // TODO: it could use a debounce here
+                await global.plugin.saveSettings();
+              }}
+            />
+          </>
+            : <Dropdown
+              value={config.model}
+              setValue={async (selectedModel) => {
+                config.model = selectedModel;
+                await global.plugin.saveSettings();
+                global.triggerReload();
+              }}
+              values={
+                [...models]
+                  .sort()
+                  .sort(
+                    (m1: keyof typeof OPENAI_MODELS, m2: keyof typeof OPENAI_MODELS) =>
+                      (OPENAI_MODELS[m2]?.order || 0) - (OPENAI_MODELS[m1]?.order || 0))
+              }
+            />
+          }
 
           <button
             className={clsx({

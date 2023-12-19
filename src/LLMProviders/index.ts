@@ -21,25 +21,28 @@ const providers = [
   LangchainOpenAIChatProvider,
   LangchainOpenAIInstructProvider,
 
-  // azure
-  LangchainAzureOpenAIChatProvider,
-  LangchainAzureOpenAIInstructProvider,
-
-  // palm
-  LangchainPalmProvider,
+  // google
   LangchainChatGoogleGenerativeAIProvider,
-
-  // anthropic
-  ChatanthropicLangchainProvider,
+  LangchainPalmProvider,
 
   // ollama
   OllamaLangchainProvider,
 
+  // huggingface
+  LangchainHFProvider,
+
+  // anthropic
+  ChatanthropicLangchainProvider,
+
+
+  // azure
+  LangchainAzureOpenAIChatProvider,
+  LangchainAzureOpenAIInstructProvider,
+
   // replica (disabled because it doesn't work)
   // "Replica (Langchain)": LangchainReplicaProvider,
 
-  // huggingface
-  LangchainHFProvider,
+
 
   // anthropic custom
   AnthropicCustomProvider,

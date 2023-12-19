@@ -63,7 +63,7 @@
 		"func-cache": "^2.2.62",
 		"handlebars": "^4.7.7",
 		"handlebars-async-helpers": "^1.0.6",
-		"langchain": "^0.0.207",
+		"langchain": "^0.0.209",
 		"lodash.get": "^4.4.2",
 		"lodash.merge": "^4.6.2",
 		"lodash.set": "^4.3.2",

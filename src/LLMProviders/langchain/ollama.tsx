@@ -5,10 +5,10 @@ import SettingItem from "#/ui/settings/components/item";
 import useGlobal from "#/ui/context/global";
 import { IconExternalLink } from "@tabler/icons-react";
 import Input from "#/ui/settings/components/input";
-import { BaseLLMParams } from "langchain/llms/base";
-import type { OllamaInput } from "langchain/dist/util/ollama.d.ts";
+import { BaseLLMParams } from "langchain/llms/base"
 
 import debug from "debug";
+import { OllamaInput } from "langchain/llms/ollama";
 
 const logger = debug("textgenerator:llmProvider:ollama");
 

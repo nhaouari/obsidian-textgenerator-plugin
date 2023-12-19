@@ -1,6 +1,6 @@
 import LangchainBase from "./base";
 import type { OpenAI, OpenAIInput } from "langchain/llms/openai";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import SettingItem from "#/ui/settings/components/item";
 import Dropdown from "#/ui/settings/components/dropdown";
@@ -322,6 +322,8 @@ function ModelsHandler(props: {
     }
   }, []);
 
+  const modelsDatasetId = useId();
+
   return (
     <>
       <SettingItem
@@ -330,20 +332,45 @@ function ModelsHandler(props: {
         sectionId={props.sectionId}
       >
         <div className="flex items-center gap-2">
-          <Dropdown
-            value={config.model}
-            setValue={async (selectedModel) => {
-              config.model = selectedModel;
-              //   global.plugin.settings.model = selectedModel;
-              await global.plugin.saveSettings();
-              global.triggerReload();
-            }}
-            values={[...models]
-              .sort()
-              .sort(
-                (m1: keyof typeof OPENAI_MODELS, m2: keyof typeof OPENAI_MODELS) =>
-                  (OPENAI_MODELS[m2]?.order || 0) - (OPENAI_MODELS[m1]?.order || 0))}
-          />
+          {global.plugin.settings.experiment ? <>
+            <datalist id={modelsDatasetId}>
+              {[...models]
+                .sort()
+                .sort(
+                  (m1: keyof typeof OPENAI_MODELS, m2: keyof typeof OPENAI_MODELS) =>
+                    (OPENAI_MODELS[m2]?.order || 0) - (OPENAI_MODELS[m1]?.order || 0)).map(model =>
+                      <option key={model} value={model} />
+                    )}
+            </datalist>
+
+            <Input
+              value={config.model}
+              datalistId={modelsDatasetId}
+              placeholder="Enter your Model name"
+              setValue={async (value) => {
+                config.model = value;
+                global.triggerReload();
+                // TODO: it could use a debounce here
+                await global.plugin.saveSettings();
+              }}
+            />
+          </>
+            : <Dropdown
+              value={config.model}
+              setValue={async (selectedModel) => {
+                config.model = selectedModel;
+                await global.plugin.saveSettings();
+                global.triggerReload();
+              }}
+              values={
+                [...models]
+                  .sort()
+                  .sort(
+                    (m1: keyof typeof OPENAI_MODELS, m2: keyof typeof OPENAI_MODELS) =>
+                      (OPENAI_MODELS[m2]?.order || 0) - (OPENAI_MODELS[m1]?.order || 0))
+              }
+            />
+          }
 
           <button
             className={clsx({
