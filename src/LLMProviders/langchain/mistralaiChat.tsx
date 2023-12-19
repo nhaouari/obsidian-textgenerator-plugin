@@ -9,7 +9,7 @@ import Input from "#/ui/settings/components/input";
 import debug from "debug";
 import { ModelsHandler } from "../utils";
 
-const logger = debug("textgenerator:llmProvider:ollama");
+const logger = debug("textgenerator:llmProvider:mistralChat");
 
 
 const default_values = {

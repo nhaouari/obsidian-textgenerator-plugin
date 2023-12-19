@@ -34,5 +34,5 @@ There are many benefits to using a Text Generator Plugin, including the followin
 * **Community Templates**: Through this option you can discover new use cases of Generative Artificial Intelligence using the shared templates and you can share your use cases easier.
 * **Highly Flexible Configuration**: Using Frontmatter Configuration, it is possible to use different services such as OpenAI, HugginFace.
 # Demonstration 
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/OergqWCdFKc/0.jpg)](https://www.youtube.com/watch?v=OergqWCdFKc)
+[![Youtube Demonstration](https://img.youtube.com/vi/OergqWCdFKc/0.jpg)](https://www.youtube.com/watch?v=OergqWCdFKc)
 
