@@ -1,5 +1,5 @@
 import debug from "debug";
-import { OPENAI_MODELS } from "src/constants";
+import { AI_MODELS } from "src/constants";
 
 import cl100k_base from "@dqbd/tiktoken/encoders/cl100k_base.json";
 import r50k_base from "@dqbd/tiktoken/encoders/r50k_base.json";

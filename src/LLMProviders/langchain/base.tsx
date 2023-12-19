@@ -5,14 +5,12 @@ import React from "react";
 import { ChatOpenAI, OpenAIChatInput } from "langchain/chat_models/openai";
 import { HuggingFaceInference } from "langchain/llms/hf";
 
-import type { BaseChatModelParams } from "langchain/dist/chat_models/base";
-
 import BaseProvider from "../base";
 import { Message } from "../../types";
 import { mapMessagesToLangchainMessages, processPromisesSetteledBatch } from "../../utils";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 
-import { OPENAI_MODELS } from "#/constants";
+import { AI_MODELS } from "#/constants";
 import { ContextTemplate } from "#/scope/context-manager";
 
 import { PromptTemplate } from "langchain/prompts";
@@ -414,8 +412,8 @@ export default class LangchainProvider
   ): ReturnType<LLMProviderInterface["calcTokens"]> {
     const model = reqParams.model;
     const modelInfo =
-      OPENAI_MODELS[model as keyof typeof OPENAI_MODELS] ||
-      OPENAI_MODELS["gpt-3.5-turbo"];
+      AI_MODELS[model as keyof typeof AI_MODELS] ||
+      AI_MODELS["gpt-3.5-turbo"];
 
     if (!modelInfo)
       return {

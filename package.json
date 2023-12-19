@@ -46,7 +46,7 @@
 		"@dqbd/tiktoken": "^1.0.7",
 		"@google-ai/generativelanguage": "^1.0.0",
 		"@huggingface/inference": "^2.6.1",
-		"@langchain/google-genai": "^0.0.2",
+		"@langchain/google-genai": "^0.0.4",
 		"@mozilla/readability": "^0.4.4",
 		"@tabler/icons-react": "^2.25.0",
 		"@types/lodash.merge": "^4.6.7",

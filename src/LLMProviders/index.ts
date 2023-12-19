@@ -4,6 +4,7 @@ import CustomProvider from "./custom/custom";
 import AnthropicCustomProvider from "./custom/anthropic";
 
 import LangchainOpenAIChatProvider from "./langchain/openaiChat";
+import LangchainMistralAIChatProvider from "./langchain/mistralaiChat";
 import LangchainOpenAIInstructProvider from "./langchain/openaiInstruct";
 import LangchainHFProvider from "./langchain/hf";
 import ChatanthropicLangchainProvider from "./langchain/chatanthropic";
@@ -30,6 +31,9 @@ const providers = [
 
   // huggingface
   LangchainHFProvider,
+
+  // mistralAI
+  LangchainMistralAIChatProvider,
 
   // anthropic
   ChatanthropicLangchainProvider,

@@ -49,12 +49,6 @@ export default class LangchainChatGoogleGenerativeAIProvider
     this.llmClass = ChatGoogleGenerativeAI;
   }
 
-  //   async getLLM(options: LLMConfig) {
-  //     return new ChatGooglePaLM({
-  //       ...this.getConfig(options),
-  //     });
-  //   }
-
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
 

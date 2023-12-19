@@ -1,6 +1,6 @@
 import { LLMProviderType } from "./LLMProviders";
 
-export const OPENAI_MODELS: Record<
+export const AI_MODELS: Record<
   string,
   {
     encoding: string;
@@ -263,6 +263,40 @@ export const OPENAI_MODELS: Record<
     maxTokens: 2049,
     llm: ["OpenAI Instruct (Langchain)"],
     order: -1
+  },
+
+  "mistral-tiny": {
+    // @TODO: prices are not correct
+    encoding: "r50k_base",
+    prices: {
+      prompt: 0.0004,
+      completion: 0.0004,
+    },
+    maxTokens: 2049,
+    llm: ["MistralAI Chat (Langchain)"],
+    // order: -1
+  },
+  "mistral-small": {
+    // @TODO: prices are not correct
+    encoding: "r50k_base",
+    prices: {
+      prompt: 0.0004,
+      completion: 0.0004,
+    },
+    maxTokens: 2049,
+    llm: ["MistralAI Chat (Langchain)"],
+    // order: -1
+  },
+  "mistral-medium": {
+    // @TODO: prices are not correct
+    encoding: "r50k_base",
+    prices: {
+      prompt: 0.0004,
+      completion: 0.0004,
+    },
+    maxTokens: 2049,
+    llm: ["MistralAI Chat (Langchain)"],
+    // order: -1
   },
 };
 

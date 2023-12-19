@@ -9,9 +9,10 @@ import { IconExternalLink, IconReload } from "@tabler/icons-react";
 import { request } from "obsidian";
 import clsx from "clsx";
 import Input from "#/ui/settings/components/input";
-import { OPENAI_MODELS } from "#/constants";
+import { AI_MODELS } from "#/constants";
 import { Message } from "#/types";
 import debug from "debug";
+import { ModelsHandler } from "../utils";
 
 const logger = debug("textgenerator:llmProvider:openaiInstruct");
 
@@ -144,7 +145,12 @@ export default class LangchainOpenAIInstructProvider
             }}
           />
         </SettingItem>
-        <ModelsHandler register={props.register} sectionId={props.sectionId} />
+        <ModelsHandler
+          register={props.register}
+          sectionId={props.sectionId}
+          llmProviderId={id}
+          default_values={default_values}
+        />
         <div className="flex flex-col gap-2">
           <div className="text-lg opacity-70">Useful links</div>
           <a href="https://beta.openai.com/signup/">
@@ -198,8 +204,8 @@ export default class LangchainOpenAIInstructProvider
   ): Promise<number> {
     const model = reqParams.model;
     const modelInfo =
-      OPENAI_MODELS[model as keyof typeof OPENAI_MODELS] ||
-      OPENAI_MODELS["gpt-3.5-turbo"];
+      AI_MODELS[model as keyof typeof AI_MODELS] ||
+      AI_MODELS["gpt-3.5-turbo"];
 
     console.log(reqParams.max_tokens, modelInfo.prices.completion);
     return (
@@ -215,8 +221,8 @@ export default class LangchainOpenAIInstructProvider
   ): ReturnType<LLMProviderInterface["calcTokens"]> {
     const model = reqParams.model;
     const modelInfo =
-      OPENAI_MODELS[model as keyof typeof OPENAI_MODELS] ||
-      OPENAI_MODELS["gpt-3.5-turbo"];
+      AI_MODELS[model as keyof typeof AI_MODELS] ||
+      AI_MODELS["gpt-3.5-turbo"];
 
     if (!modelInfo)
       return {
@@ -257,132 +263,4 @@ export default class LangchainOpenAIInstructProvider
       maxTokens: modelInfo.maxTokens,
     };
   }
-}
-
-function ModelsHandler(props: {
-  register: Parameters<LLMProviderInterface["RenderSettings"]>[0]["register"];
-  sectionId: Parameters<LLMProviderInterface["RenderSettings"]>[0]["sectionId"];
-}) {
-  const global = useGlobal();
-  const [models, setModels] = useState<Set<string>>(new Set<string>());
-  const [loadingUpdate, setLoadingUpdate] = useState(false);
-
-  const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
-    ...default_values,
-  });
-
-  const updateModels = async () => {
-    setLoadingUpdate(true);
-    try {
-      if (global.plugin.settings.api_key.length > 0) {
-        console.log(`${config.basePath}/models`);
-        const reqParams = {
-          url: `${config.basePath}/models`,
-          method: "GET",
-          body: "",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${global.plugin.settings.api_key}`,
-          },
-        };
-
-        const requestResults: {
-          data: {
-            id: string;
-          }[];
-        } = JSON.parse(await request(reqParams));
-
-        requestResults.data.forEach(async (model) => {
-          models.add(model.id);
-        });
-
-        setModels(new Set(models));
-
-        global.plugin.settings.models = models;
-        await global.plugin.saveSettings();
-      } else {
-        throw "Please provide a valid api key.";
-      }
-    } catch (err: any) {
-      global.plugin.handelError(err);
-    }
-    setLoadingUpdate(false);
-  };
-
-  useEffect(() => {
-    if (global.plugin.settings.models?.length > 0) {
-      setModels(new Set(global.plugin.settings.models));
-    } else {
-      Object.entries(OPENAI_MODELS).forEach(
-        ([e, o]) => o.llm.contains(id) && models.add(e)
-      );
-      global.plugin.settings.models = models;
-      global.plugin.saveSettings();
-      setModels(new Set(models));
-    }
-  }, []);
-
-  const modelsDatasetId = useId();
-
-  return (
-    <>
-      <SettingItem
-        name="Model"
-        register={props.register}
-        sectionId={props.sectionId}
-      >
-        <div className="flex items-center gap-2">
-          {global.plugin.settings.experiment ? <>
-            <datalist id={modelsDatasetId}>
-              {[...models]
-                .sort()
-                .sort(
-                  (m1: keyof typeof OPENAI_MODELS, m2: keyof typeof OPENAI_MODELS) =>
-                    (OPENAI_MODELS[m2]?.order || 0) - (OPENAI_MODELS[m1]?.order || 0)).map(model =>
-                      <option key={model} value={model} />
-                    )}
-            </datalist>
-
-            <Input
-              value={config.model}
-              datalistId={modelsDatasetId}
-              placeholder="Enter your Model name"
-              setValue={async (value) => {
-                config.model = value;
-                global.triggerReload();
-                // TODO: it could use a debounce here
-                await global.plugin.saveSettings();
-              }}
-            />
-          </>
-            : <Dropdown
-              value={config.model}
-              setValue={async (selectedModel) => {
-                config.model = selectedModel;
-                await global.plugin.saveSettings();
-                global.triggerReload();
-              }}
-              values={
-                [...models]
-                  .sort()
-                  .sort(
-                    (m1: keyof typeof OPENAI_MODELS, m2: keyof typeof OPENAI_MODELS) =>
-                      (OPENAI_MODELS[m2]?.order || 0) - (OPENAI_MODELS[m1]?.order || 0))
-              }
-            />
-          }
-
-          <button
-            className={clsx({
-              "dz-loading": loadingUpdate,
-            })}
-            onClick={updateModels}
-            disabled={loadingUpdate}
-          >
-            <IconReload />
-          </button>
-        </div>
-      </SettingItem>
-    </>
-  );
 }
