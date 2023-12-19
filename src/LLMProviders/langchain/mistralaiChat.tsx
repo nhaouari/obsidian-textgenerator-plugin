@@ -46,7 +46,10 @@ export default class LangchainMistralAIChatProvider
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
 
-    const config = (global.plugin.settings.LLMProviderOptions[id] ??= {});
+    const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
+      ...default_values
+    });
+
     return (
       <>
         <SettingItem
@@ -84,7 +87,7 @@ export default class LangchainMistralAIChatProvider
             value={config.basePath}
             placeholder="Enter your API basePath"
             setValue={async (value) => {
-              config.basePath = value;
+              config.basePath = value || default_values.basePath;
               global.triggerReload();
               // TODO: it could use a debounce here
               await global.plugin.saveSettings();
