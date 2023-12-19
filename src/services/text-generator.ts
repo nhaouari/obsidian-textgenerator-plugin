@@ -204,7 +204,7 @@ export default class TextGenerator extends RequestHandler {
             //   console.log({ content, first });
 
             if (first) {
-              const alreadyDidnewLine = this.plugin.settings.prefix?.contains(`
+              const alreadyDidnewLine = context.options.this.plugin.settings.prefix?.contains(`
 			`);
 
               // here you can do some addition magic

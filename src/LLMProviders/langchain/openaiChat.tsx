@@ -81,8 +81,8 @@ export default class LangchainOpenAIChatProvider
             value={config.basePath || default_values.basePath}
             placeholder="Enter your API Base Path"
             setValue={async (value) => {
-              config.basePath = value;
-              global.plugin.settings.endpoint = value;
+              config.basePath = value || default_values.basePath;
+              global.plugin.settings.endpoint = value || default_values.basePath;
               global.triggerReload();
               // TODO: it could use a debounce here
               await global.plugin.saveSettings();
