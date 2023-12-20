@@ -69,7 +69,7 @@ export default class LangchainProvider
       defaultHeaders: {
         "User-Agent": undefined,
         "HTTP-Referer": location.origin,
-        "X-Title": "obsidian-text-generator",
+        // "X-Title": "obsidian-text-generator",
       },
     }) as any;
   }

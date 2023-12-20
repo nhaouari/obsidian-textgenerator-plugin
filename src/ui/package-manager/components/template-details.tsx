@@ -284,7 +284,7 @@ export default function TemplateDetails(inProps: {
 		</div>
 		{/* Controls */}
 		<div className="community-modal-button-container">
-			{packageManager.getApikey() ? <>
+			{!props.package?.folderName || packageManager.getApikey() ? <>
 				{!props.ownedOrReq?.allowed ? (
 					<button
 						className="mod-cta cursor-pointer"
