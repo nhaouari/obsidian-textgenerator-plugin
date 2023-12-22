@@ -303,6 +303,7 @@ export default function Helpersfn(self: ContextManager) {
     },
 
     async log(...vars: any[]) {
+      console.log({ ...vars })
       let fnExists = false;
       if (vars[vars.length - 1].fn) {
         fnExists = true;
