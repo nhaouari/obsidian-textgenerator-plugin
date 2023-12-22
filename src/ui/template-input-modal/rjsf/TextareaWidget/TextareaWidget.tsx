@@ -6,6 +6,7 @@ import {
   StrictRJSFSchema,
   WidgetProps,
 } from "@rjsf/utils"
+import clsx from "clsx"
 
 type CustomWidgetProps<
   T = any,
@@ -39,11 +40,14 @@ export default function TextareaWidget<
   const _onFocus = ({ target: { value } }: FocusEvent<HTMLTextAreaElement>) =>
     onFocus(id, value)
 
+  //           "focus-within:ring-red-300 ring-1": props.required && !props.value && !props.label.contains("optional")
+  //         })}
+  // className="dz-textarea focus:border-primary focus:outline-none
+  // border-muted w-full border px-3 py-2"
   return (
     <div className="flex">
       <textarea
-        className="dz-textarea focus:border-primary focus:outline-none
-        border-muted w-full border px-3 py-2"
+        className={clsx("h-24 w-full bg-[var(--background-modifier-form-field)] resize-none rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none")}
         id={id}
         name={id}
         placeholder={placeholder}

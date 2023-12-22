@@ -59,7 +59,7 @@ export default function BaseInputTemplate<
         readOnly={readonly}
         list={schema.examples ? examplesId<T>(id) : undefined}
         {...inputProps}
-        className={clsx(`dz-input focus:border-primary w-full`,
+        className={clsx(`dz-input bg-[var(--background-modifier-form-field)] outline-none w-full`,
           rawErrors.length > 0 ? "dz-input-error" : "",
           inputProps)}
         value={value || value === 0 ? value : ""}

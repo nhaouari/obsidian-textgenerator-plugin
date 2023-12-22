@@ -61,7 +61,7 @@ export default function SelectWidget<
       multiple={multiple}
       disabled={disabled || readonly}
       autoFocus={autofocus}
-      className={`dz-select w-full border p-2 focus:border-primary focus:outline-none
+      className={`w-full h-auto bg-[var(--background-modifier-form-field)] border focus:border-primary focus:outline-none
       ${rawErrors.length > 0 ? "border-red-500" : ""}
       `}
       onBlur={
@@ -93,7 +93,7 @@ export default function SelectWidget<
       aria-describedby={ariaDescribedByIds<T>(id)}
     >
       {!multiple && schema.default === undefined && (
-        <option value="" className="bg-muted">
+        <option value="" className="bg-muted h-full">
           {placeholder}
         </option>
       )}
@@ -107,7 +107,7 @@ export default function SelectWidget<
             id={label}
             value={String(i)}
             disabled={disabled}
-            className="bg-muted"
+            className="bg-muted h-full"
           >
             {label}
           </option>
