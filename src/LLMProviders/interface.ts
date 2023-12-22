@@ -29,8 +29,7 @@ export default interface LLMProviderInterface {
   ): Promise<string[]>;
 
   generateBatch(
-    messages: Message[][],
-    reqParams: Partial<LLMConfig>,
+    batches: { messages: Message[], reqParams: Partial<LLMConfig> }[],
     customConfig?: any,
     onOneFinishs?: (content: string, index: number) => void
   ): Promise<string[]>;

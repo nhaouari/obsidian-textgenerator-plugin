@@ -478,6 +478,10 @@ export default class TextGenerator extends RequestHandler {
           logger("tempalteToModal error", errortext);
           return Promise.reject(errortext);
         }
+
+        await new Promise((s) => setTimeout(s, 500))
+        app.workspace.openLinkText("", `${path}/${contexts[0].options.templatePath}`, true)
+
       },
       {
         title: `${files.length} files`,

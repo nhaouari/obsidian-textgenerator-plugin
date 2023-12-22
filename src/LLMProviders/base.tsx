@@ -70,15 +70,14 @@ export default class ProviderBase implements LLMProviderInterface {
   }
 
   async generateBatch(
-    messages: Message[][],
-    reqParams: Partial<LLMConfig>,
+    batches: { messages: Message[], reqParams: Partial<LLMConfig> }[],
     customConfig?: any,
     onOneFinishs?: ((content: string, index: number) => void) | undefined
   ): Promise<string[]> {
     const k = await processPromisesSetteledBatch(
-      messages.map(async (msgs, i) => {
+      batches.map(async (batch, i) => {
         const [err, res] = await safeAwait(
-          this.generate(msgs, reqParams, undefined, customConfig)
+          this.generate(batch.messages, batch.reqParams, undefined, customConfig)
         );
 
         const content = err ? "fAILED:" + err.message : res;
