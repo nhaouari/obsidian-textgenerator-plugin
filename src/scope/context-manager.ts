@@ -525,6 +525,40 @@ export default class ContextManager {
     return { context: input, ...templates };
   }
 
+  async getTemplateCustomInputConfig(templatePath: string) {
+    const templateFile = await this.app.vault.getAbstractFileByPath(
+      templatePath
+    );
+
+    let templateContent = await this.app.vault.read(templateFile as TFile);
+
+    const templates = this.splitTemplate(templateContent);
+
+    templates.preRunnerContent;
+
+    // Define a regular expression to match JSON code blocks
+    const jsonRegex = /```json([\s\S]+?)```/;
+
+    // Match the JSON code block in the text
+    const match = templates.preRunnerContent?.match(jsonRegex);
+
+    // Check if a match is found
+    if (match && match[1]) {
+      // Extract and return the JSON code block
+      const jsonCodeBlock = match[1].trim();
+      try {
+        return JSON.parse(jsonCodeBlock);
+      } catch (err: any) {
+        new Notice("JSON not parseable check console(CTRL+SHIFT+i) for more info")
+        this.plugin.handelError(err)
+        return null;
+      }
+    } else {
+      // Return null if no match is found
+      return null;
+    }
+  }
+
   getSelections(editor: ContentManager) {
     logger("getSelections", editor);
     const selections = editor

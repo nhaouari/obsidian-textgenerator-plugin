@@ -1,85 +1,89 @@
 import clsx from "clsx";
 import React, { useState, useEffect } from "react";
 
+import validator from '@rjsf/validator-ajv8';
+import { Theme } from '@rjsf/chakra-ui';
+import { FormProps, withTheme } from '@rjsf/core';
+import TextGeneratorPlugin from "#/main";
+
+if (Theme.templates) {
+  Theme.templates.TitleFieldTemplate = function d(props) {
+    return <h1>{props.title}</h1>
+  }
+}
+
+
+if (Theme.widgets) {
+  Theme.widgets.text = function Field(props) {
+    return <div className="flex flex-col gap-1">
+      <label className="mb-2 font-bold text-gray-700">{props.label}</label>
+      <textarea
+        dir="auto"
+        className={clsx("h-24 w-full resize-none rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none", {
+          "focus-within:ring-red-300 ring-1": props.required && !props.value && !props.label.contains("optional")
+        })}
+        value={props.value}
+        required={props.required}
+        onChange={(event) => props.onChange(event.target.value)}
+      />
+    </div>
+  };
+}
+
+const Form = withTheme(Theme);
+
 export default function TemplateInputModalView(props: {
-  p: any;
+  p: { plugin: TextGeneratorPlugin, close?: Function };
   labels: string[];
   templateContext: any;
   onSubmit: any;
   metadata: any;
+  children?: any;
 }) {
-  const [formValues, setFormValues] = useState(() => {
-    const initialValues = props.labels.map(
-      (label) => props.templateContext[label] || ""
-    );
-    return initialValues;
-  });
 
-  const [meta, setMeta] = useState(props.metadata);
-
-  const getFormData = () => {
-    return formValues.reduce((formData, value, index) => {
-      formData[props.labels[index]] = value;
-      return formData;
-    }, {});
-  };
-
-  const allInputsNotFilled = props.templateContext.strict && formValues.some((f, i) => !f && !props.labels[i].contains("optional"))
-
-  const handleSubmit = (event: any) => {
+  const handleSubmit = (data: any, event: any) => {
     event.preventDefault();
-
-    const formData = getFormData();
-
-    if (props.templateContext.strict && allInputsNotFilled) return;
-
-    props.onSubmit(formData);
-    props.p.close();
+    props.onSubmit(data);
+    props.p.close?.();
   };
 
-  const handleChange = (index: number) => (event: any) => {
-    const values = [...formValues];
-    values[index] = event.target?.value;
-    setFormValues(values);
-  };
+  const [schema, setSchema] = useState<FormProps["schema"]>({})
 
-  const firstTextareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    firstTextareaRef.current?.focus();
-  }, [firstTextareaRef]);
+    (async () => {
+      const basicProps: Record<string, FormProps["schema"]> = {};
+      const required: string[] = [];
+
+      props.labels.forEach(l => {
+        basicProps[l] = {
+          type: 'string',
+        }
+        if (props.templateContext.strict && !l.contains("_optional")) required.push(l)
+      })
+
+      const obj = {
+        title: props.metadata.name || props.metadata.id,
+        type: 'object',
+        properties: basicProps,
+        required
+      } as FormProps["schema"];
+
+      setSchema(obj);
+
+      if (props.templateContext.templatePath) {
+        const cschema = await props.p.plugin.textGenerator.contextManager.getTemplateCustomInputConfig(props.templateContext.templatePath)
+        if (cschema)
+          setSchema(cschema);
+      }
+    })()
+  }, [])
 
   return (
-    <form className="" onSubmit={handleSubmit}>
-      <h1 className="mb-4 text-2xl font-bold">{meta.name}</h1>
-      <p className="mb-6 text-gray-600">{meta.description}</p>
-      {props.labels.map((label, index) => (
-        <div key={label} className="mb-6">
-          <div className="flex flex-col gap-1">
-            <label className="mb-2 font-bold text-gray-700">{label}</label>
-            <textarea
-              dir="auto"
-              ref={index === 0 ? firstTextareaRef : null}
-              className={clsx("h-24 w-full resize-none rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none",
-                {
-                  "ring-red-300 ring-1": props.templateContext.strict && !formValues[index] && !label.contains("optional")
-                })}
-              onChange={handleChange(index)}
-              value={formValues[index]}
-            />
-          </div>
-        </div>
-      ))}
-      <button
-        type="submit"
-        disabled={allInputsNotFilled}
-        className={clsx("rounded px-6 py-2 font-semibold", {
-          "dz-disabled opacity-40": allInputsNotFilled,
-          "bg-blue-500 hover:bg-blue-600 focus:ring-blue-300/50 focus:outline-none focus:ring-4": !allInputsNotFilled
-        })}
-      >
-        Generate
-      </button>
-    </form>
+    <Form
+      schema={schema}
+      validator={validator}
+      onSubmit={handleSubmit}
+    >{props.children}</Form>
   );
 }

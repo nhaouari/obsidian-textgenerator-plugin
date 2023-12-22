@@ -7,6 +7,7 @@ import { VIEW_TOOL_ID, ToolView } from ".";
 import CopyButton from "../components/copyButton";
 import useStateView from "../context/useStateView";
 import MarkDownViewer from "../components/Markdown";
+import TemplateInputModalView from "../template-input-modal/view";
 
 export default function ChatComp(props: {
   plugin: TextGeneratorPlugin;
@@ -24,21 +25,14 @@ export default function ChatComp(props: {
     editor?: Editor;
   }>(() => props.view?.getState(), []);
 
-  const [vals, setVals] = useStateView<Record<string, any>>(
-    {},
-    "vals",
-    props.view
-  );
-
-  const vars = Object.keys(vals);
-
   const [answer, setAnswer] = useStateView("", "answer", props.view);
 
   const [loading, setLoading] = useState(false);
+  const [templateContext, setTemplateContext] = useState<any>();
+  const [templates, setTemplates] = useState<any>();
+  const [variables, setVariables] = useState<string[]>([]);
 
   const [abortController, setAbortController] = useState(new AbortController());
-
-  const firstTextareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   const [meta, setMeta] = useStateView<{ name?: string; description?: string }>(
     {},
@@ -143,6 +137,8 @@ export default function ChatComp(props: {
           templateContent
         );
 
+
+
       // const variables = this.contextManager
       //   .extractVariablesFromTemplate(inputContent)
       //   .filter((variable) => !variable.includes("."));
@@ -159,17 +155,13 @@ export default function ChatComp(props: {
           filePath: props.plugin.app.workspace.activeEditor?.file?.path,
         });
 
-      setVals((vs) => {
-        for (const v of variables) {
-          if (typeof vs[v] == "undefined") vs[v] = templateContext[v] || "";
-        }
-        return { ...vs };
-      });
+      setTemplateContext({ ...templateContext, templatePath: config.templatePath });
+      setVariables(variables);
     })();
   }, [selectedTemplatePath]);
 
   const handleSubmit = async (event: any) => {
-    event.preventDefault();
+    const data = event.formData;
     setLoading(true);
     try {
       const context =
@@ -177,7 +169,7 @@ export default function ChatComp(props: {
           insertMetadata: false,
           templatePath: selectedTemplatePath,
           editor: config.editor as any,
-          addtionalOpts: vals,
+          addtionalOpts: data,
         });
 
       const strm = await props.plugin.textGenerator.streamGenerate(
@@ -217,14 +209,6 @@ export default function ChatComp(props: {
     }
   };
 
-  const handleChange = (varName: string) => (event: any) => {
-    setVals((vals) => {
-      const values = { ...vals };
-      vals[varName] = event.target?.value;
-      return values;
-    });
-  };
-
   const stopLoading = (e: any) => {
     e.preventDefault();
     abortController.abort();
@@ -232,52 +216,37 @@ export default function ChatComp(props: {
     setLoading(false);
   };
 
+  if (!templateContext) return;
+
   return (
-    <form className="flex h-full w-full flex-col gap-2" onSubmit={handleSubmit}>
+    <div className="flex h-full w-full flex-col gap-2">
       <div className="min-h-16 flex w-full resize-y flex-col justify-end gap-6 overflow-y-scroll pb-2">
         <div className="flex h-full flex-col gap-2">
           <div className="flex h-full flex-col gap-4">
-            {vars.map((label, index) => (
-              <div key={label} className="">
-                <div className="flex flex-col">
-                  <textarea
-                    dir="auto"
-                    ref={index === 0 ? firstTextareaRef : null}
-                    rows={2}
-                    placeholder={label}
-                    className="markdown-source-view w-full resize-y rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none"
-                    onChange={handleChange(label)}
-                    onKeyDown={(e) => {
-                      if (e.shiftKey) return;
-
-                      if (e.code == "Enter") handleSubmit(e);
-                    }}
-                    value={vals[label]}
-                  />
-                </div>
+            <TemplateInputModalView labels={variables} metadata={meta} templateContext={templateContext} p={{ plugin: props.plugin }} onSubmit={handleSubmit} >
+              <div className="flex justify-end gap-3 pr-3">
+                {loading ? (
+                  <button
+                    onClick={stopLoading}
+                    className="rounded bg-red-500 px-6 py-2 font-semibold hover:bg-red-600 focus:outline-none focus:ring-4 focus:ring-blue-300/50"
+                  >
+                    Stop
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    className="rounded bg-blue-500 px-6 py-2 font-semibold hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300/50"
+                  >
+                    Generate
+                  </button>
+                )}
+                {answer && <CopyButton textToCopy={answer} justAButton />}
               </div>
-            ))}
+            </TemplateInputModalView>
           </div>
         </div>
       </div>
-      <div className="flex justify-end gap-3 pr-3">
-        {loading ? (
-          <button
-            onClick={stopLoading}
-            className="rounded bg-red-500 px-6 py-2 font-semibold hover:bg-red-600 focus:outline-none focus:ring-4 focus:ring-blue-300/50"
-          >
-            Stop
-          </button>
-        ) : (
-          <button
-            type="submit"
-            className="rounded bg-blue-500 px-6 py-2 font-semibold hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300/50"
-          >
-            Generate
-          </button>
-        )}
-        {answer && <CopyButton textToCopy={answer} justAButton />}
-      </div>
+
       <div className="min-h-16 w-full">
         {answer ? (
           <MarkDownViewer className="h-full w-full select-text overflow-y-auto">
@@ -287,6 +256,6 @@ export default function ChatComp(props: {
           <div className="h-full text-sm opacity-50">(empty)</div>
         )}
       </div>
-    </form>
+    </div>
   );
 }
