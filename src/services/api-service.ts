@@ -304,15 +304,42 @@ export default class RequestHandler {
         })
       );
 
-      return await this.LLMProvider.generateBatch(
-        batches.map((batch) => batch.bodyParams.messages),
-        {
-          ...params,
-          stream: false,
-        },
-        context[0].options,
-        onOneFinishs
-      );
+      console.log(batches[0])
+
+      if (batches[0].provider.providerOptions.disableProvider)
+        return await Promise.all(batches.map(async (b, i) => {
+          const conf = {
+            ...context[i].options,
+            output: "",
+            requestResults: ""
+          }
+
+          onOneFinishs?.(await context[0].template?.outputTemplate?.(conf) || "", i)
+        }))
+
+      else
+        return await this.LLMProvider.generateBatch(
+          batches.map((batch) => {
+            return {
+              messages: batch.bodyParams.messages,
+              reqParams: {
+                ...batch.allParams,
+                ...batch.bodyParams,
+                requestParams: {
+                  // body: JSON.stringify(bodyParams),
+                  ...batch.reqParams,
+                  signal: this.signalController?.signal,
+                },
+                otherOptions:
+                  this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
+                stream: false,
+                llmPredict: batch.bodyParams.messages?.length == 1,
+              }
+            }
+          }),
+
+          onOneFinishs
+        );
     } catch (err: any) {
       this.endLoading();
       this.plugin.handelError(err);
@@ -378,6 +405,7 @@ export default class RequestHandler {
 
       this.startLoading(additionnalParams?.showSpinner);
 
+      console.log({ provider, context, params })
       let result =
         provider.providerOptions.estimatingMode ||
           provider.providerOptions.disableProvider
