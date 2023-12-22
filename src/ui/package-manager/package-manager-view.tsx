@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import TemplateItem from "./components/template-item";
 import TemplateDetails from "./components/template-details";
 import { PackageTemplate } from "#/types";
-import useGlobal from "../context/global";
+import useglobal from "../context/global";
 import type { PackageManagerUI } from "./package-manager-ui";
 import attemptLogin, { attemptLogout } from "./login";
 import { useToggle } from "usehooks-ts";
@@ -13,7 +13,7 @@ import { ProviderServer } from "./package-manager";
 
 
 export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
-  const global = useGlobal();
+  const glob = useglobal();
 
   const [_, triggerReload] = useToggle();
 
@@ -55,15 +55,15 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
 
   async function getAllPackages(update = true) {
     let packages: any = [];
-    if (update) packages = await global.plugin.packageManager.updatePackagesList();
+    if (update) packages = await glob.plugin.packageManager.updatePackagesList();
 
-    await global.plugin.packageManager.updatePackagesStats();
+    await glob.plugin.packageManager.updatePackagesStats();
 
     return packages;
   }
 
   async function updateView() {
-    setItems(global.plugin.packageManager.getPackagesList().filter(p => !p.desktopOnly || Platform.isDesktop));
+    setItems(glob.plugin.packageManager.getPackagesList().filter(p => !p.desktopOnly || Platform.isDesktop));
   }
 
   function handleChange(value: string) {
@@ -79,7 +79,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   }
 
   async function checkForUpdates() {
-    setPackagesIdsTOUpdate(await global.plugin.packageManager.checkUpdates());
+    setPackagesIdsTOUpdate(await glob.plugin.packageManager.checkUpdates());
   }
 
   useEffect(() => {
@@ -90,15 +90,15 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
     (async () => {
       await getAllPackages();
       try {
-        await global.plugin.packageManager.updateBoughtResources();
+        await glob.plugin.packageManager.updateBoughtResources();
       } catch (err: any) {
         console.warn("couldn't updateBoughtResources")
       }
-      setItems(global.plugin.packageManager.getPackagesList());
+      setItems(glob.plugin.packageManager.getPackagesList());
     })()
   }, []);
 
-  const userApikey = global.plugin.packageManager.getApikey();
+  const userApikey = glob.plugin.packageManager.getApikey();
   const isLoggedIn = !!userApikey;
 
 
@@ -110,7 +110,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
           data-tip="Logout"
           className="dz-tooltip dz-tooltip-bottom cursor-pointer p-[3px]"
           onClick={async () => {
-            await attemptLogout(global.plugin);
+            await attemptLogout(glob.plugin);
             triggerReload();
           }}>
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
@@ -120,7 +120,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
           data-tip="Login"
           className="dz-tooltip dz-tooltip-bottom cursor-pointer"
           onClick={async () => {
-            await attemptLogin(global.plugin);
+            await attemptLogin(glob.plugin);
             triggerReload();
           }}>
           Login
@@ -227,7 +227,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                             index={i}
                             selected={selectedIndex == i}
                             select={select}
-                            owned={global.plugin.packageManager.simpleCheckOwnership(item.packageId)}
+                            owned={glob.plugin.packageManager.simpleCheckOwnership(item.packageId)}
                             update={
                               pacakgeIdsToUpdateHash[item.packageId]
                             }
@@ -290,7 +290,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                   <TemplateDetails
                     key={items[selectedIndex].packageId || selectedIndex}
                     packageId={items[selectedIndex].packageId}
-                    packageManager={global.plugin.packageManager}
+                    packageManager={glob.plugin.packageManager}
                     checkForUpdates={checkForUpdates}
                     updateView={updateView}
                   />
