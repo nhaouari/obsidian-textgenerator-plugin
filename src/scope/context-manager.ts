@@ -18,7 +18,9 @@ import set from "lodash.set";
 import merge from "lodash.merge";
 import { getHBValues } from "../utils/barhandles";
 
-import type { ContentManager } from "src/content-manager/types"
+import type { ContentManager } from "src/content-manager/types";
+
+import JSON5 from 'json5'
 
 interface CodeBlock {
   type: string;
@@ -537,7 +539,7 @@ export default class ContextManager {
     templates.preRunnerContent;
 
     // Define a regular expression to match JSON code blocks
-    const jsonRegex = /```json([\s\S]+?)```/;
+    const jsonRegex = /```json:form([\s\S]+?)```/;
 
     // Match the JSON code block in the text
     const match = templates.preRunnerContent?.match(jsonRegex);
@@ -547,7 +549,7 @@ export default class ContextManager {
       // Extract and return the JSON code block
       const jsonCodeBlock = match[1].trim();
       try {
-        return JSON.parse(jsonCodeBlock);
+        return JSON5.parse(jsonCodeBlock);
       } catch (err: any) {
         new Notice("JSON not parseable check console(CTRL+SHIFT+i) for more info")
         this.plugin.handelError(err)
