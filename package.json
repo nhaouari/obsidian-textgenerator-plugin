@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-textgenerator-plugin",
-	"version": "0.5.23-beta",
+	"version": "0.5.24-beta",
 	"description": "Text generator is a handy plugin that helps you generate text content using GPT-3 (OpenAI).",
 	"main": "main.js",
 	"scripts": {
@@ -46,7 +46,7 @@
 		"@dqbd/tiktoken": "^1.0.7",
 		"@google-ai/generativelanguage": "^1.0.0",
 		"@huggingface/inference": "^2.6.1",
-		"@langchain/google-genai": "^0.0.4",
+		"@langchain/google-genai": "^0.0.5",
 		"@mozilla/readability": "^0.4.4",
 		"@rjsf/chakra-ui": "^5.15.1",
 		"@rjsf/core": "^5.15.1",
@@ -67,7 +67,7 @@
 		"func-cache": "^2.2.62",
 		"handlebars": "^4.7.7",
 		"handlebars-async-helpers": "^1.0.6",
-		"langchain": "^0.0.209",
+		"langchain": "^0.0.211",
 		"lodash.get": "^4.4.2",
 		"lodash.merge": "^4.6.2",
 		"lodash.set": "^4.3.2",
