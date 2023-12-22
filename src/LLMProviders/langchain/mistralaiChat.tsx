@@ -32,6 +32,17 @@ export default class LangchainMistralAIChatProvider
 
   streamable = true;
 
+  defaultHeaders?: Record<string, string | null> | undefined = {
+    "X-Stainless-OS": null,
+    "X-Stainless-Arch": null,
+    "X-Stainless-Lang": null,
+    "X-Stainless-Runtime": null,
+    "X-Stainless-Runtime-Version": null,
+    "X-Stainless-Package-Version": null,
+    "HTTP-Referer": null,
+    "X-Title": null,
+  }
+
   async load() {
     const { ChatOpenAI } = await import("langchain/chat_models/openai");
     this.llmClass = ChatOpenAI;

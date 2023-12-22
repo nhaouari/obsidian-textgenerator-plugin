@@ -32,6 +32,8 @@ export default class LangchainProvider
   static provider = "Langchain";
   llmClass: any;
 
+  defaultHeaders?: Record<string, string | null>
+
   getConfig(options: LLMConfig) {
     return this.cleanConfig({
       openAIApiKey: options.api_key,
@@ -54,7 +56,6 @@ export default class LangchainProvider
   }
 
   getLLM(options: LLMConfig) {
-    console.log({ options: this.getConfig(options) })
     return new (this.llmClass as typeof ChatOpenAI)(this.getConfig(options), {
       basePath: options.basePath?.length
         ? options.basePath.endsWith("/")
@@ -62,14 +63,13 @@ export default class LangchainProvider
           : options.basePath
         : undefined,
 
-      defaultQuery: {
-        ...options.bodyParams,
-      },
+      defaultQuery: options.bodyParams,
 
       defaultHeaders: {
         "User-Agent": undefined,
         "HTTP-Referer": location.origin,
-        // "X-Title": "obsidian-text-generator",
+        "X-Title": "obsidian-text-generator",
+        ...this.defaultHeaders
       },
     }) as any;
   }
