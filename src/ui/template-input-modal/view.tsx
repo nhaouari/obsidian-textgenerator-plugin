@@ -19,7 +19,7 @@ export default function TemplateInputModalView(props: {
 
   const handleSubmit = (data: any, event: any) => {
     event.preventDefault();
-    props.onSubmit(data);
+    props.onSubmit(data.formData);
     props.p.close?.();
   };
 
