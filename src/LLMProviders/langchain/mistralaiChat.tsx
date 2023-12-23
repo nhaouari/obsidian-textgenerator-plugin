@@ -30,6 +30,8 @@ export default class LangchainMistralAIChatProvider
   static provider = provider;
   static id = id;
 
+  legacyN: boolean = true;
+
   streamable = true;
 
   defaultHeaders?: Record<string, string | null> | undefined = {
