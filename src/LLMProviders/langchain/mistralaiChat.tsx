@@ -24,9 +24,9 @@ export default class LangchainMistralAIChatProvider
   extends LangchainBase
   implements LLMProviderInterface {
   id = id;
-  llmPredict = true;
-  static slug = slug;
+  llmPredict = false;
   provider = provider;
+  static slug = slug;
   static provider = provider;
   static id = id;
 
