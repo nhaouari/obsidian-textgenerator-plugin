@@ -46,7 +46,7 @@ export default class LangchainOpenAIChatProvider extends LangchainBase implement
     });
 
     return (
-      <>
+      <React.Fragment key={id}>
         <SettingItem
           name="API Key"
           register={props.register}
@@ -133,7 +133,7 @@ export default class LangchainOpenAIChatProvider extends LangchainBase implement
             </SettingItem>
           </a>
         </div>
-      </>
+      </React.Fragment>
     );
   }
 

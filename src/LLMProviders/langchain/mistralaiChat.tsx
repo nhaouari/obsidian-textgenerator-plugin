@@ -20,17 +20,13 @@ export default class LangchainMistralAIChatProvider
   extends LangchainBase
   implements LLMProviderInterface {
 
-  llmPredict = false;
-
   static slug = "mistralAIChat" as const;
   static provider = "Langchain" as const;
   static id = "MistralAI Chat (Langchain)" as const;
 
+  llmPredict = false;
   legacyN: boolean = true;
-
   streamable = true;
-
-
   defaultHeaders?: Record<string, string | null> | undefined = {
     "X-Stainless-OS": null,
     "X-Stainless-Arch": null,
