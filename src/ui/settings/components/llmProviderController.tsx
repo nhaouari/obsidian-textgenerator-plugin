@@ -2,7 +2,6 @@ import React, { useEffect, useId, useState } from "react";
 import type { Register } from "../sections";
 import Dropdown from "./dropdown";
 import SettingItem from "./item";
-import { useToggle } from "usehooks-ts";
 import { LLMProviderRegistery } from "../../../LLMProviders";
 import LLMProviderInterface from "../../../LLMProviders/interface";
 import useGlobal from "../../context/global";
@@ -12,6 +11,7 @@ export default function LLMProviderController(props: {
     setSelectedProvider(p: string): void
     getSelectedProvider(): string,
     triggerResize(): void,
+    /** Minimal, aka just select the llm provider */
     mini?: boolean
 }) {
 
@@ -28,8 +28,8 @@ export default function LLMProviderController(props: {
 
     const updateLLm = (selectedLLMName: string | undefined) => {
         if (!selectedLLMName) return;
-
         const llm = LLMProviderRegistery.get(selectedLLMName);
+
         if (llm) {
             props.setSelectedProvider(selectedLLMName as any);
             setSelectedLLM(

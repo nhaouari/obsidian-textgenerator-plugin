@@ -4,7 +4,6 @@ import SettingsSection from "../components/section";
 import type { Register } from ".";
 import { useToggle } from "usehooks-ts";
 import useGlobal from "#/ui/context/global";
-import SettingItem from "../components/item";
 
 export default function ProviderSetting(props: { register: Register }) {
   const global = useGlobal();
