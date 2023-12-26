@@ -16,23 +16,20 @@ const default_values = {
   basePath: "https://api.mistral.ai/v1",
 };
 
-const id = "MistralAI Chat (Langchain)" as const;
-const provider = "Langchain" as const;
-const slug = "mistralAIChat" as const;
-
 export default class LangchainMistralAIChatProvider
   extends LangchainBase
   implements LLMProviderInterface {
-  id = id;
+
   llmPredict = false;
-  provider = provider;
-  static slug = slug;
-  static provider = provider;
-  static id = id;
+
+  static slug = "mistralAIChat" as const;
+  static provider = "Langchain" as const;
+  static id = "MistralAI Chat (Langchain)" as const;
 
   legacyN: boolean = true;
 
   streamable = true;
+
 
   defaultHeaders?: Record<string, string | null> | undefined = {
     "X-Stainless-OS": null,
@@ -45,19 +42,18 @@ export default class LangchainMistralAIChatProvider
     "X-Title": null,
   }
 
-  async load() {
-    const { ChatOpenAI } = await import("langchain/chat_models/openai");
-    this.llmClass = ChatOpenAI;
-  }
-
   //   getLLM(options: LLMConfig) {
   //     return new Ollama({
   //       ...this.getConfig(options),
   //     } as any);
   //   }
 
+  provider = LangchainMistralAIChatProvider.provider;
+  id = LangchainMistralAIChatProvider.id;
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
+
+    const id = props.self.id;
 
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
       ...default_values

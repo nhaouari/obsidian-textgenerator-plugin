@@ -17,6 +17,9 @@ import LangchainChatGoogleGenerativeAIProvider from "./langchain/googleGenerativ
 
 import LLMProviderRegistry from "./registery";
 
+import { LOCClone1, LOCClone2 } from "./langchain/clones";
+
+
 const providers = [
   // openai
   LangchainOpenAIChatProvider,
@@ -50,6 +53,9 @@ const providers = [
 
   // anthropic custom
   AnthropicCustomProvider,
+
+  LOCClone1,
+  LOCClone2,
 
   // custom
   CustomProvider,

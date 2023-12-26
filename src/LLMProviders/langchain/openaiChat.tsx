@@ -1,15 +1,10 @@
-import React, { useEffect, useId, useState } from "react";
+import React from "react";
 import LangchainBase from "./base";
-import type { OpenAIChatInput } from "langchain/chat_models/openai";
 
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import SettingItem from "#/ui/settings/components/item";
-import Dropdown from "#/ui/settings/components/dropdown";
 import useGlobal from "#/ui/context/global";
-import { IconExternalLink, IconReload } from "@tabler/icons-react";
-import { request } from "obsidian";
-import clsx from "clsx";
-import { BaseChatModelParams } from "langchain/dist/chat_models/base";
+import { IconExternalLink } from "@tabler/icons-react";
 import Input from "#/ui/settings/components/input";
 import { ModelsHandler } from "../utils";
 import { AI_MODELS } from "#/constants";
@@ -22,16 +17,14 @@ const default_values = {
   basePath: "https://api.openai.com/v1",
 };
 
-const id = "OpenAI Chat (Langchain)" as const;
-export default class LangchainOpenAIChatProvider
-  extends LangchainBase
-  implements LLMProviderInterface {
-  id = id;
-  provider = "Langchain";
+export default class LangchainOpenAIChatProvider extends LangchainBase implements LLMProviderInterface {
+
   static provider = "Langchain";
-  static id = id;
+  static id = "OpenAI Chat (Langchain)" as const;
   static slug = "openAIChat" as const;
 
+  id = LangchainOpenAIChatProvider.id;
+  provider = LangchainOpenAIChatProvider.provider;
   async load() {
     const { ChatOpenAI } = await import("langchain/chat_models/openai");
     this.llmClass = ChatOpenAI;
@@ -45,6 +38,8 @@ export default class LangchainOpenAIChatProvider
 
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
+
+    const id = props.self.id;
 
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
       ...default_values,
