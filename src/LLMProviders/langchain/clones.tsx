@@ -9,8 +9,8 @@ export class LOCClone1 extends LangchainOpenAIChatProvider {
     static slug = "openAIChatClone1" as any;
 
 
-    id = LangchainOpenAIChatProvider.id;
-    provider = LangchainOpenAIChatProvider.provider;
+    id = LOCClone1.id;
+    provider = LOCClone1.provider;
 }
 
 export class LOCClone2 extends LangchainOpenAIChatProvider {
@@ -20,6 +20,6 @@ export class LOCClone2 extends LangchainOpenAIChatProvider {
     static slug = "openAIChatClone2" as any;
 
 
-    id = LangchainOpenAIChatProvider.id;
-    provider = LangchainOpenAIChatProvider.provider;
+    id = LOCClone2.id;
+    provider = LOCClone2.provider;
 }
