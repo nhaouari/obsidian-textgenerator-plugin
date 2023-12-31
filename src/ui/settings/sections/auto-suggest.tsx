@@ -218,8 +218,8 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           {!!global.plugin.settings.autoSuggestOptions.customProvider &&
             <LLMProviderController
               register={props.register}
-              getSelectedProvider={() => global.plugin.settings.selectedProvider || ""}
-              setSelectedProvider={(newVal) => global.plugin.settings.selectedProvider = newVal as any || ""}
+              getSelectedProvider={() => global.plugin.settings.autoSuggestOptions.selectedProvider || ""}
+              setSelectedProvider={(newVal) => global.plugin.settings.autoSuggestOptions.selectedProvider = newVal as any || ""}
               triggerResize={triggerResize}
               mini
             />}

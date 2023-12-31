@@ -86,45 +86,43 @@ export class AutoSuggest extends EditorSuggest<Completion> {
       this.getSuggestionsDebounced = debounce(
         async (context: EditorSuggestContext): Promise<Completion[]> => {
           logger("updateSettings", { delay: this.delay, context });
-          if (this.process) {
-            const trimmedQuery = context.query.trim();
+          if (!this.process) return [{ label: context.query, value: context.query }];
 
-            const lineContext = context.editor
-              .getRange(
-                {
-                  ch: 0,
-                  line: context.start.line,
-                },
-                context.end
-              )
-              .trim();
+          const trimmedQuery = context.query.trim();
 
-            if (
-              // if its at the begining of a line
-              !context.start.ch ||
-              // if the line has less than 10 characters
-              lineContext.length <= 10 ||
-              // if there are no context
-              trimmedQuery.length <= 5 ||
-              // if its a list item
-              trimmedQuery.endsWith("-") ||
-              trimmedQuery.endsWith("- [ ]")
+          const lineContext = context.editor
+            .getRange(
+              {
+                ch: 0,
+                line: context.start.line,
+              },
+              context.end
             )
-              return [];
+            .trim();
+
+          if (
+            // if its at the begining of a line
+            !context.start.ch ||
+            // if the line has less than 10 characters
+            lineContext.length <= 3 ||
+            // if there are no context
+            trimmedQuery.length <= 5 ||
+            // if its a list item
+            trimmedQuery.endsWith("-") ||
+            trimmedQuery.endsWith("- [ ]")
+          )
+            return [];
 
 
-            const suggestions = await this.getGPTSuggestions(context);
-            return suggestions?.length
-              ? suggestions
-              : [
-                {
-                  label: context.query,
-                  value: context.query,
-                },
-              ];
-          } else {
-            return [{ label: context.query, value: context.query }];
-          }
+          const suggestions = await this.getGPTSuggestions(context);
+          return suggestions?.length
+            ? suggestions
+            : [
+              {
+                label: context.query,
+                value: context.query,
+              },
+            ];
         },
         this.delay
       );
