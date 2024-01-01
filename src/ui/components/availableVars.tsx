@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import CopyButton from "./copyButton";
+import clsx from "clsx";
 
 export default function AvailableVars(props: {
   vars: Record<
@@ -24,7 +25,10 @@ export default function AvailableVars(props: {
               return (
                 <div
                   key={v}
-                  className="text-xs"
+                  className={clsx(
+                    "text-xs",
+                    hovered == v ? "opacity-100" : "opacity-95"
+                  )}
                   onMouseEnter={() => setHovered(v)}
                 >
                   <CopyButton
