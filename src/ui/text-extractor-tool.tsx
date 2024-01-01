@@ -52,8 +52,8 @@ const ContentExtractorComponent = ({
       const contentExtractor = new ContentExtractor(app, plugin);
       const extractedUrls: {
         url: string,
-        file,
-        extractorMethod,
+        file: any,
+        extractorMethod: any,
       }[] = [];
 
       // Iterate through each extractor method and add the extracted URLs to the array.
