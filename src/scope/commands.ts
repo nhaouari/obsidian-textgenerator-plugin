@@ -26,6 +26,7 @@ export default class Commands {
       async callback() {
         const self: Commands = this;
         try {
+          if (self.plugin.processing) return self.plugin.textGenerator.signalController?.abort();
           const activeView = await self.getActiveView();
           const CM = ContentManagerCls.compile(activeView, self.plugin)
           await self.plugin.textGenerator.generateInEditor({}, false, CM);
