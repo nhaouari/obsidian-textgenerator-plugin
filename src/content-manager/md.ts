@@ -269,8 +269,8 @@ export default class MarkdownManager implements ContentManager {
                 );
 
                 const nc = {
-                    ch: startingCursor.ch + allText.length,
-                    line: startingCursor.line + allText.split("\n").length - 1,
+                    ch: startingCursor.ch + allText.length - 1,
+                    line: startingCursor.line,
                 };
 
 
