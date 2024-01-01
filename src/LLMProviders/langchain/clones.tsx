@@ -1,7 +1,7 @@
 import LangchainOpenAIChatProvider from "./openaiChat";
 
 
-
+// added in version 0.5.26-beta 
 export class LOCClone1 extends LangchainOpenAIChatProvider {
     static provider = "Langchain" as any;
     // @ts-ignore
@@ -13,6 +13,7 @@ export class LOCClone1 extends LangchainOpenAIChatProvider {
     provider = LOCClone1.provider;
 }
 
+// added in version 0.5.26-beta 
 export class LOCClone2 extends LangchainOpenAIChatProvider {
     static provider = "Langchain" as any;
     // @ts-ignore

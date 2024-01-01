@@ -18,6 +18,8 @@ const default_values = {
 };
 
 export default class LangchainOpenAIChatProvider extends LangchainBase implements LLMProviderInterface {
+  /** for models to know what provider is that, for example if this class is being extended. and the id changes. */
+  originalId = "OpenAI Chat (Langchain)" as const;
 
   static provider = "Langchain";
   static id = "OpenAI Chat (Langchain)" as const;
@@ -84,12 +86,14 @@ export default class LangchainOpenAIChatProvider extends LangchainBase implement
             }}
           />
         </SettingItem>
+
         <ModelsHandler
           register={props.register}
           sectionId={props.sectionId}
-          llmProviderId={id}
+          llmProviderId={props.self.originalId || id}
           default_values={default_values}
         />
+
         <div className="flex flex-col gap-2">
           <div className="text-lg opacity-70">Useful links</div>
           <a href="https://beta.openai.com/signup/">
