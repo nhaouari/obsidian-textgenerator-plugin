@@ -25,6 +25,9 @@ export interface ContentManager {
 
     getCursor(pos?: "from" | "to"): any;
 
+    getRange(from?: any, to?: any): any;
+    getCurrentLine(): string;
+
     setCursor(pos: any): void;
 
     getActiveFile(): Promise<TFile> | TFile | undefined;

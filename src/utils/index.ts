@@ -382,3 +382,37 @@ const syncWait = (ms: number) => {
   const end = Date.now() + ms
   while (Date.now() < end) continue
 }
+
+
+export function walkUntilTrigger(inputStr: string, triggerStrings: string[], reversedWalk: boolean = false): string {
+  if (reversedWalk) {
+    inputStr = inputStr.split('').reverse().join('');
+  }
+
+  let walkedStr: string = '';
+  let index: number = 0;
+
+  while (index < inputStr.length) {
+    const currentChar: string = inputStr[index];
+    walkedStr += currentChar;
+
+    for (const trigger of triggerStrings) {
+      if (walkedStr.endsWith(trigger)) {
+        if (reversedWalk) {
+          return walkedStr.split('').reverse().join('');
+        } else {
+          return walkedStr;
+        }
+      }
+    }
+
+    index++;
+  }
+
+  // If no trigger string is found, return the entire input string
+  if (reversedWalk) {
+    return inputStr.split('').reverse().join('');
+  } else {
+    return inputStr;
+  }
+}

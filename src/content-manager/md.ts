@@ -13,6 +13,27 @@ export default class MarkdownManager implements ContentManager {
         this.options = options;
     }
 
+    getCurrentLine(): string {
+        return this.editor.getLine(this.editor.getCursor("from").line)
+    }
+
+    async getRange(from?: any, to?: any) {
+        let TO = to;
+
+        if (!TO) {
+            const lastLine = this.editor.lastLine()
+            TO = {
+                ch: this.editor.getLine(lastLine).length,
+                line: lastLine
+            }
+        }
+
+        return this.editor.getRange(from || {
+            ch: 0,
+            line: 0
+        }, TO)
+    }
+
     async getSelections(): Promise<string[]> {
         return this.editor.listSelections().map((r) => this.editor.getRange(minPos(r.anchor, r.head), maxPos(r.anchor, r.head)))
             .filter((text) => text.length > 0)
@@ -78,7 +99,10 @@ export default class MarkdownManager implements ContentManager {
         const lineNumber = this.editor.getCursor().line;
         const line = this.editor.getLine(lineNumber).trimStart();
 
-        if (line.length === 0) {
+        if (line.trim().length <= 5
+            || line.trim() == "-"
+            || line.trim() == "- [ ]"
+        ) {
             fromTo.from = {
                 ch: 0,
                 line: 0,
@@ -112,7 +136,7 @@ export default class MarkdownManager implements ContentManager {
     // DO NOT TURN THIS INTO AN ASYNC FUNCTION, it will break auto suggest
     getTgSelection(tgSelectionLimiter?: string) {
         const range = this.getTgSelectionRange(tgSelectionLimiter);
-        let selectedText = this.editor.getRange(range.from, range.to);
+        const selectedText = this.editor.getRange(range.from, range.to);
         return removeYAML(selectedText);
     }
 

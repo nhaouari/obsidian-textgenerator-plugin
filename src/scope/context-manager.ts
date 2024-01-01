@@ -3,7 +3,7 @@ import { AsyncReturnType, Context } from "../types";
 import TextGeneratorPlugin from "../main";
 import { IGNORE_IN_YAML } from "../constants";
 
-import { escapeRegExp, getContextAsString, removeYAML, replaceScriptBlocksWithMustachBlocks } from "../utils";
+import { escapeRegExp, getContextAsString, removeYAML, replaceScriptBlocksWithMustachBlocks, walkUntilTrigger } from "../utils";
 import debug from "debug";
 const logger = debug("textgenerator:ContextManager");
 import Helpersfn, { Handlebars } from "../helpers/handlebars-helpers";
@@ -348,6 +348,13 @@ export default class ContextManager {
       tg_selection?: string;
       selections?: string[];
       selection?: string;
+      previousWord?: string;
+      nextWord?: string;
+      afterCursor?: string;
+      beforeCursor?: string;
+      inverseSelection?: string;
+      cursorParagraph?: string;
+      cursorSentence?: string;
       frontmatter?: Record<string, any>;
       yaml?: Record<string, any>;
       metadata?: string;
@@ -386,6 +393,29 @@ export default class ContextManager {
 
       context["selection"] = selection || "";
 
+
+      if (vars["previousWord"])
+        context["previousWord"] = await this.getPreviousWord(editor);
+
+      if (vars["nextWord"])
+        context["nextWord"] = await this.getNextWord(editor);
+
+      if (vars["beforeCursor"])
+        context["beforeCursor"] = await this.getBeforeCursor(editor);
+
+      if (vars["afterCursor"])
+        context["afterCursor"] = await this.getAfterCursor(editor);
+
+      if (vars["inverseSelection"])
+        context["inverseSelection"] = await this.getInverseSelection(editor);
+
+
+
+      if (vars["cursorParagraph"])
+        context["cursorParagraph"] = await this.getCursorParagraph(editor);
+
+      if (vars["cursorSentence"])
+        context["cursorSentence"] = await this.getCursorSentence(editor);
 
       if (vars["content"])
         context["content"] = await editor.getValue();
@@ -989,6 +1019,56 @@ export default class ContextManager {
 
     return Array.from(vars.values())
   }
+
+
+  // This function returns all the text before the cursor's current position
+  async getBeforeCursor(editor: ContentManager): Promise<string> {
+    const cursor = await editor.getCursor();
+    const beforeCursor = await editor.getRange(undefined, cursor);
+    return beforeCursor;
+  }
+
+  // This function returns all the text after the cursor's current position
+  async getAfterCursor(editor: ContentManager): Promise<string> {
+    const cursor = await editor.getCursor("to");
+    const afterCursor = await editor.getRange(cursor, undefined);
+    return afterCursor;
+  }
+
+  // This function returns the entire paragraph where the cursor is currently located
+  async getCursorParagraph(editor: ContentManager): Promise<string> {
+    return await editor.getCurrentLine()
+  }
+
+  // This function returns the sentence immediately surrounding the cursor, including sentences that the cursor is in the middle of
+  async getCursorSentence(editor: ContentManager): Promise<string> {
+    const stoppers = ["\n", ".", "?", "!"];
+    const part1 = walkUntilTrigger(await this.getBeforeCursor(editor), stoppers, true)
+    const part2 = walkUntilTrigger(await this.getAfterCursor(editor), stoppers)
+    return part1 + "\n" + part2;
+  }
+
+  // This function returns the next word relative to the cursor's position
+  async getNextWord(editor: ContentManager): Promise<string> {
+    const txts = (await this.getAfterCursor(editor)).split(" ");
+    return txts[0]?.trim() || txts[1]?.trim() || ""
+  }
+
+  // This function returns the previous word relative to the cursor's position
+  async getPreviousWord(editor: ContentManager): Promise<string> {
+    const txts = (await this.getBeforeCursor(editor)).trim().split(" ");
+    return txts[txts.length - 1]?.trim() || txts[txts.length - 2]?.trim() || ""
+  }
+
+  // This function selects everything except the currently selected text
+  async getInverseSelection(editor: ContentManager): Promise<string> {
+    const content = await editor.getValue();
+    const selection = await editor.getSelection();
+    const inverseSelection = content.replace(selection, "");
+    return inverseSelection;
+  }
+
+
 }
 
 export function getOptionsUnder(
@@ -1029,6 +1109,42 @@ export const contextVariablesObj: Record<
     example: "{{tg_selection}}",
     hint: "The text selected using the text generator method.",
   },
+
+  inverseSelection: {
+    example: `{{inverseSelection}}`,
+    hint: "Shows an error notice when the inverse selection (excluding the currently selected text) is empty.",
+  },
+
+  previousWord: {
+    example: `{{previousWord}}`,
+    hint: "Shows an error notice when the previous word relative to the cursor's position is empty.",
+  },
+
+  nextWord: {
+    example: `{{nextWord}}`,
+    hint: "Shows an error notice when the next word relative to the cursor's position is empty.",
+  },
+
+  cursorParagraph: {
+    example: `{{cursorParagraph}}`,
+    hint: "Shows an error notice when the paragraph where the cursor is currently located is empty.",
+  },
+
+  cursorSentence: {
+    example: `{{cursorSentence}}`,
+    hint: "Shows an error notice when the sentence surrounding the cursor is empty.",
+  },
+
+  beforeCursor: {
+    example: `{{beforeCursor}}`,
+    hint: "Shows an error notice when the text before the cursor's current position is empty.",
+  },
+
+  afterCursor: {
+    example: `{{afterCursor}}`,
+    hint: "Shows an error notice when the text after the cursor's current position is empty.",
+  },
+
   starredBlocks: {
     example: "{{starredBlocks}}",
     hint: "Content under headings marked with a star (*) in the note.",
