@@ -16,6 +16,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
   outputToBlockQuote: false,
   freeCursorOnStreaming: false,
   allowJavascriptRun: false,
+  experiment: false,
   promptsPath: "textgenerator/prompts",
   prefix: "\n\n",
   tgSelectionLimiter: "^\\*\\*\\*",
@@ -73,6 +74,7 @@ Starred Blocks: {{starredBlocks}}
     customInstruct: `continue the follwing text:
 {{query}}`,
     isEnabled: false,
+    allowInNewLine: false,
     delay: 300,
     numberOfSuggestions: 5,
     triggerPhrase: "  ",

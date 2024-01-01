@@ -8,7 +8,11 @@ import LLMProviderController from "../components/llmProviderController";
 import { useToggle } from "usehooks-ts";
 import AvailableVars from "#/ui/components/availableVars";
 import { contextVariablesObj } from "#/scope/context-manager";
+import { useReloder } from "../components/reloadPlugin";
+
 export default function AutoSuggestSetting(props: { register: Register }) {
+  const [setReloader] = useReloder();
+
   const global = useGlobal();
   const sectionId = useId();
   const [resized, triggerResize] = useToggle();
@@ -39,6 +43,7 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           setValue={async (val) => {
             global.plugin.settings.autoSuggestOptions.isEnabled = val == "true";
             global.plugin.AutoSuggestStatusBar();
+            setReloader(true);
             await global.plugin.saveSettings();
             global.triggerReload();
           }}
@@ -121,6 +126,24 @@ export default function AutoSuggestSetting(props: { register: Register }) {
             />
           </SettingItem>
 
+          <SettingItem
+            name="Allow Suggest in new Line"
+            description="This will allow it to run at the beggining of a new line"
+            register={props.register}
+            sectionId={sectionId}
+          >
+            <Input
+              type="checkbox"
+              value={"" + global.plugin.settings.autoSuggestOptions.allowInNewLine}
+              setValue={async (val) => {
+                global.plugin.settings.autoSuggestOptions.allowInNewLine =
+                  val == "true";
+                global.plugin.AutoSuggestStatusBar();
+                await global.plugin.saveSettings();
+                global.triggerReload();
+              }}
+            />
+          </SettingItem>
           <SettingItem
             name="Show/Hide Auto-suggest status in Status Bar"
             description=""

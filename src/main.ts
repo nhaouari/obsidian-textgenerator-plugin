@@ -203,7 +203,10 @@ export default class TextGeneratorPlugin extends Plugin {
       this.registerMarkdownCodeBlockProcessor("tg", async (source, el, ctx) =>
         blockTgHandler(source, el, ctx)
       );
-      this.registerEditorSuggest(new AutoSuggest(this.app, this));
+
+      if (this.settings.autoSuggestOptions.isEnabled)
+        this.registerEditorSuggest(new AutoSuggest(this.app, this));
+
       if (this.settings.options["modal-suggest"]) {
         this.registerEditorSuggest(new ModelSuggest(this.app, this) as any);
       }

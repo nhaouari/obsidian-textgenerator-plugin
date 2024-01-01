@@ -68,6 +68,7 @@ type TextGeneratorSettings = {
     customInstructEnabled: boolean;
     customInstruct: string;
     isEnabled: boolean;
+    allowInNewLine: boolean;
     delay: number;
     numberOfSuggestions: number;
     triggerPhrase: string;

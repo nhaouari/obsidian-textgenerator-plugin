@@ -78,11 +78,12 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 
   public updateSettings() {
     logger("updateSettings");
+    const plugin = this.plugin;
     if (
-      this.delay !== this.plugin.settings.autoSuggestOptions.delay ||
+      this.delay !== plugin.settings.autoSuggestOptions.delay ||
       this.getSuggestionsDebounced === undefined
     ) {
-      this.delay = this.plugin.settings.autoSuggestOptions.delay;
+      this.delay = plugin.settings.autoSuggestOptions.delay;
       this.getSuggestionsDebounced = debounce(
         async (context: EditorSuggestContext): Promise<Completion[]> => {
           logger("updateSettings", { delay: this.delay, context });
@@ -90,26 +91,15 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 
           const trimmedQuery = context.query.trim();
 
-          const lineContext = context.editor
-            .getRange(
-              {
-                ch: 0,
-                line: context.start.line,
-              },
-              context.end
-            )
-            .trim();
-
           if (
             // if its at the begining of a line
-            !context.start.ch ||
-            // if the line has less than 10 characters
-            lineContext.length <= 3 ||
+            (!plugin.settings.autoSuggestOptions.allowInNewLine && (
+              !context.start.ch
+              || trimmedQuery.endsWith("-")
+              || trimmedQuery.endsWith("- [ ]")
+            ))
             // if there are no context
-            trimmedQuery.length <= 5 ||
-            // if its a list item
-            trimmedQuery.endsWith("-") ||
-            trimmedQuery.endsWith("- [ ]")
+            || trimmedQuery.length <= 5
           )
             return [];
 
@@ -153,7 +143,7 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 
     const line = editor.getLine(cursor.line).substring(0, cursor.ch);
 
-    if (!line.endsWith(triggerPhrase) || line == triggerPhrase) {
+    if (!line.endsWith(triggerPhrase) || (!this.plugin.settings.autoSuggestOptions.allowInNewLine && line == triggerPhrase)) {
       this.process = false;
       return null;
     }
@@ -170,6 +160,11 @@ export class AutoSuggest extends EditorSuggest<Completion> {
       selection.substring(lastOccurrenceIndex).replace(triggerPhrase, "");
 
     const currentStart = line.lastIndexOf(triggerPhrase);
+
+    if (!selection.trim().length) {
+      this.process = false;
+      return null;
+    }
 
     const result = {
       start: {

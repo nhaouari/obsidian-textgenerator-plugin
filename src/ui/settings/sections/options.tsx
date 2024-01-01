@@ -1,9 +1,9 @@
-import React, { useEffect, useId, useMemo, useRef } from "react";
+import React, { useId, useMemo } from "react";
 import useGlobal from "../../context/global";
+import { useReloder } from "../components/reloadPlugin";
 import SettingItem from "../components/item";
 import SettingsSection from "../components/section";
 import Input from "../components/input";
-import { useLocalStorage, useToggle } from "usehooks-ts";
 import type { Register } from ".";
 // object storing custom name/description of items
 const extendedInfo: Record<
@@ -15,11 +15,7 @@ const extendedInfo: Record<
 > = {};
 
 export default function OptionsSetting(props: { register: Register }) {
-  const ref = useRef<HTMLDivElement>();
-  const [didChangeAnything, setDidChangeAnything] = useLocalStorage(
-    "did-change",
-    false
-  );
+  const [setReloader] = useReloder();
 
   const global = useGlobal();
   const sectionId = useId();
@@ -32,44 +28,8 @@ export default function OptionsSetting(props: { register: Register }) {
     []
   );
 
-  useEffect(() => {
-    // if (!ref.current || !didChangeAnything) return;
-
-    return () => {
-      console.log("exiting settings");
-      (async () => { })();
-    };
-  }, [ref, didChangeAnything]);
-
-  const reloadPlugin = async () => {
-    setDidChangeAnything(false);
-
-    // @ts-ignore
-    await global.plugin.app.plugins.disablePlugin(
-      "obsidian-textgenerator-plugin"
-    );
-
-    // @ts-ignore
-    await global.plugin.app.plugins.enablePlugin(
-      "obsidian-textgenerator-plugin"
-    );
-
-    // @ts-ignore
-    global.plugin.app.setting
-      .openTabById("obsidian-textgenerator-plugin")
-      .display();
-  };
-
   return (
     <>
-      {didChangeAnything && (
-        <div className="absolute bottom-0 right-0 z-20 p-3">
-          <div className="flex items-center gap-2 overflow-hidden rounded-md bg-[var(--interactive-accent)] p-3 font-bold">
-            <div>YOU NEED TO RELOAD THE PLUGIN</div>
-            <button onClick={reloadPlugin}>Reload</button>
-          </div>
-        </div>
-      )}
       <SettingsSection
         title="Text Generator Options"
         className="flex w-full flex-col"
@@ -140,7 +100,7 @@ export default function OptionsSetting(props: { register: Register }) {
                   // );
 
                   document.querySelector(".tg-opts")?.scrollIntoView();
-                  setDidChangeAnything(true);
+                  setReloader(true);
                   await global.plugin.saveSettings();
                   global.triggerReload();
                 }}

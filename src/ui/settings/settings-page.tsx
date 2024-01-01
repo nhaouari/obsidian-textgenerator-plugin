@@ -7,6 +7,7 @@ import React from "react";
 import { GlobalProvider } from "../context/global";
 
 import SectionsMain from "./sections";
+import ReloadPluginPopup from "./components/reloadPlugin";
 
 export default class TextGeneratorSettingTab extends PluginSettingTab {
   plugin: TextGeneratorPlugin;
@@ -97,6 +98,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 
     sections.render(
       <GlobalProvider plugin={this.plugin}>
+        <ReloadPluginPopup />
         <SectionsMain />
       </GlobalProvider>
     );
