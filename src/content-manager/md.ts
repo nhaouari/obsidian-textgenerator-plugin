@@ -263,24 +263,18 @@ export default class MarkdownManager implements ContentManager {
 
 
                 this.replaceRange(
-                    mode == "replace" ? allText : "",
+                    "",
                     startingCursor,
                     cursor
                 );
 
-                if (mode !== "replace")
-                    await this.insertText(allText, startingCursor, mode);
-
                 const nc = {
                     ch: startingCursor.ch + allText.length,
-                    line: startingCursor.line,
+                    line: startingCursor.line + allText.split("\n").length,
                 };
 
-                this.replaceRange("", startingCursor, nc);
 
-                await new Promise((s) => setTimeout(s, 500));
-
-                await this.insertText(allText, startingCursor, "insert");
+                await this.insertText(allText, startingCursor, mode);
 
                 console.log(allText)
 
