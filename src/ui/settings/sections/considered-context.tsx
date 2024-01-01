@@ -95,7 +95,7 @@ export default function ConsideredContextSetting(props: {
             >
               <textarea
                 placeholder="Textarea will autosize to fit the content"
-                className="resize-y"
+                className="resize-y dz-input bg-[var(--background-modifier-form-field)] outline-none h-fit w-full"
                 value={
                   global.plugin.settings.context.customInstruct ||
                   global.plugin.defaultSettings.context.customInstruct
@@ -147,7 +147,7 @@ export default function ConsideredContextSetting(props: {
             >
               <textarea
                 placeholder="Textarea will autosize to fit the content"
-                className="resize-y"
+                className="resize-y dz-input bg-[var(--background-modifier-form-field)] outline-none h-fit w-full"
                 value={
                   global.plugin.settings.advancedOptions?.generateTitleInstruct ||
                   global.plugin.defaultSettings.advancedOptions?.generateTitleInstruct
@@ -213,7 +213,7 @@ export default function ConsideredContextSetting(props: {
         >
           <textarea
             placeholder="Textarea will autosize to fit the content"
-            className="resize-y"
+            className="resize-y dz-input bg-[var(--background-modifier-form-field)] outline-none h-fit w-full"
             value={
               global.plugin.settings.context.contextTemplate ||
               global.plugin.defaultSettings.context.contextTemplate

@@ -191,7 +191,7 @@ export default function AutoSuggestSetting(props: { register: Register }) {
               >
                 <textarea
                   placeholder="Textarea will autosize to fit the content"
-                  className="resize-y"
+                  className="resize-y dz-input bg-[var(--background-modifier-form-field)] outline-none h-fit w-full"
                   value={
                     global.plugin.settings.autoSuggestOptions.customInstruct ||
                     global.plugin.defaultSettings.autoSuggestOptions.customInstruct

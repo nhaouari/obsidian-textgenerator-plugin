@@ -163,6 +163,7 @@ export default function ChatComp(props: {
           placeholder="Template"
           className={clsx(
             "markdown-source-view min-h-16 h-full w-full resize-y rounded border border-gray-300 p-2 outline-2 focus:border-blue-500 focus:outline-none",
+            "dz-input bg-[var(--background-modifier-form-field)] outline-none w-full",
             {
               "focus:border-yellow-400": warn,
             }
