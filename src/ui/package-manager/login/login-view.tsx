@@ -70,7 +70,7 @@ export const LoginView = (p: { parent: LoginUI }) => {
         <div className="modal mod-community-modal mod-sidebar-layout mod-community-plugin">
           <div className="modal-close-button" onClick={handleClose}></div>
           <div className="modal-title">Community Templates</div>
-          <div className="modal-content w-full h-full flex items-center justify-center">
+          <div className="modal-content plug-tg-w-full plug-tg-h-full plug-tg-flex plug-tg-items-center plug-tg-justify-center">
             {failed ?
               <div>Failed to login</div>
               : <div>

@@ -29,7 +29,7 @@ export default function AdvancedSetting(props: { register: Register }) {
   return (
     <SettingsSection
       title="Advanced Settings"
-      className="flex w-full flex-col"
+      className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
       register={props.register}
       id={sectionId}
     >
@@ -167,7 +167,7 @@ export default function AdvancedSetting(props: { register: Register }) {
         register={props.register}
         sectionId={sectionId}
       >
-        <button className="dz-btn-danger" onClick={resetSettings}>
+        <button className="plug-tg-btn-danger" onClick={resetSettings}>
           Reset
         </button>
       </SettingItem>

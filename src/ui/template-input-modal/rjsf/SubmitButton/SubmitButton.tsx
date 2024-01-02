@@ -1,3 +1,4 @@
+import React from "react";
 import {
   FormContextType,
   getSubmitButtonOptions,
@@ -25,7 +26,7 @@ export default function SubmitButton<
     <div>
       <button
         type="submit"
-        className="bg-primary px-4 py-2 text-base font-normal text-primary-foreground hover:bg-primary/90"
+        className="plug-tg-bg-primary plug-tg-px-4 plug-tg-py-2 plug-tg-text-base plug-tg-font-normal plug-tg-text-primary-foreground hover:plug-tg-bg-primary/90"
         {...submitButtonProps}
       >
         {submitText}

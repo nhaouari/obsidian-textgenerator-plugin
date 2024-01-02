@@ -26,7 +26,7 @@ export default function AutoSuggestSetting(props: { register: Register }) {
   return (
     <SettingsSection
       title="Auto-Suggest Options"
-      className="flex w-full flex-col"
+      className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
       register={props.register}
       triggerResize={resized}
       id={sectionId}
@@ -75,7 +75,7 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           >
             <input
               type="range"
-              className="dz-tooltip"
+              className="plug-tg-tooltip"
               min={0}
               max={2000}
               data-tip={global.plugin.settings.autoSuggestOptions.delay + "ms"}
@@ -191,7 +191,7 @@ export default function AutoSuggestSetting(props: { register: Register }) {
               >
                 <textarea
                   placeholder="Textarea will autosize to fit the content"
-                  className="resize-y dz-input bg-[var(--background-modifier-form-field)] outline-none h-fit w-full"
+                  className="plug-tg-resize-y plug-tg-input plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none plug-tg-h-fit plug-tg-w-full"
                   value={
                     global.plugin.settings.autoSuggestOptions.customInstruct ||
                     global.plugin.defaultSettings.autoSuggestOptions.customInstruct

@@ -38,7 +38,7 @@ export default function Dropdown<T extends string>(props: {
     <>
       <select
         className={clsx(
-          "dz-select cursor-pointer bg-[var(--background-modifier-form-field)] px-4",
+          "plug-tg-select plug-tg-cursor-pointer plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-px-4",
           props.className
         )}
         value={props.value}
@@ -48,7 +48,7 @@ export default function Dropdown<T extends string>(props: {
         {props.value || props.defaultValue}
       </option> */}
         {props.values?.map((val, i) => (
-          <option value={val} key={i} className="z-20 w-full">
+          <option value={val} key={i} className="plug-tg-z-20 plug-tg-w-full">
             {slugs[i]}
           </option>
         ))}

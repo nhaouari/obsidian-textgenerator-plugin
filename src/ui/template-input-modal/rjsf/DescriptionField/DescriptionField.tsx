@@ -1,3 +1,4 @@
+import React from "react";
 import {
   DescriptionFieldProps,
   FormContextType,
@@ -13,7 +14,7 @@ export default function DescriptionField<
   if (description) {
     return (
       <div>
-        <div id={id} className="mb-4">
+        <div id={id} className="plug-tg-mb-4">
           {description}
         </div>
       </div>

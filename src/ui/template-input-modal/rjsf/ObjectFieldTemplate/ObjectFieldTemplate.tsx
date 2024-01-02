@@ -1,3 +1,4 @@
+import React from "react";
 import {
   canExpand,
   descriptionId,
@@ -66,22 +67,22 @@ export default function ObjectFieldTemplate<
           registry={registry}
         />
       )}
-      <div className="p-0">
+      <div className="plug-tg-p-0">
         {properties.map((element: any, index: number) => (
           <div
             key={index}
-            className={`${element.hidden ? "hidden" : ""} mb-2.5 flex`}
+            className={`${element.hidden ? "plug-tg-hidden" : ""} plug-tg-mb-2.5 plug-tg-flex`}
           >
-            <div className="w-full"> {element.content}</div>
+            <div className="plug-tg-w-full"> {element.content}</div>
           </div>
         ))}
         {canExpand(schema, uiSchema, formData) ? (
-          <div className="flex">
-            <div className="ml-auto w-1/4 py-4">
+          <div className="plug-tg-flex">
+            <div className="plug-tg-ml-auto plug-tg-w-1/4 plug-tg-py-4">
               <AddButton
                 onClick={onAddClick(schema)}
                 disabled={disabled || readonly}
-                className="object-property-expand"
+                className="plug-tg-object-property-expand"
                 uiSchema={uiSchema}
                 registry={registry}
               />

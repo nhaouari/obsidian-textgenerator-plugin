@@ -23,7 +23,7 @@ export default function AccountSetting(props: { register: Register }) {
     <>
       <SettingsSection
         title="Account Settings"
-        className="flex w-full flex-col"
+        className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
         register={props.register}
         id={sectionId}
       >
@@ -36,17 +36,17 @@ export default function AccountSetting(props: { register: Register }) {
 
         {loggedIn && <Profile apiKey={apiKey} />}
 
-        <div className="flex justify-end w-full">
+        <div className="plug-tg-flex plug-tg-justify-end plug-tg-w-full">
           {loggedIn ?
-            <div className="flex gap-2">
-              <button className="cursor-pointer"
+            <div className="plug-tg-flex plug-tg-gap-2">
+              <button className="plug-tg-cursor-pointer"
                 onClick={async () => {
                   await attemptLogout(global.plugin);
                   triggerReload()
                 }}
               >Logout</button>
 
-              <button className="cursor-pointer"
+              <button className="plug-tg-cursor-pointer"
                 onClick={async () => {
                   window.open(new URL("/dashboard/settings", ProviderServer).href)
                 }}>Manage Account</button>
@@ -61,14 +61,14 @@ export default function AccountSetting(props: { register: Register }) {
         </div>
 
         {loggedIn && <>
-          <div className="w-full flex gap-2 flex-col">
+          <div className="plug-tg-w-full plug-tg-flex plug-tg-gap-2 plug-tg-flex-col">
             <h3>Subscriptions:</h3>
             {
               global.plugin.packageManager.configuration.subscriptions?.map(s => <div key={s.id}>{s.name} ({s.type})</div>)
             }
           </div>
-          <div className="flex justify-end w-full">
-            <button className="cursor-pointer" onClick={async () => {
+          <div className="plug-tg-flex plug-tg-justify-end plug-tg-w-full">
+            <button className="plug-tg-cursor-pointer" onClick={async () => {
               window.open(new URL("/dashboard/subscriptions", ProviderServer).href)
             }}>Manage Subscriptions</button>
           </div>

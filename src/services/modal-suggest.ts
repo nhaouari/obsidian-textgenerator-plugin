@@ -57,7 +57,7 @@ export class ModelSuggest extends EditorSuggest<PromptTemplate> {
     el.createEl("h5", { text: template.name });
     el.createEl("small", {
       text: template.description?.substring(0, 150),
-      cls: "desc",
+      cls: "plug-tg-text-sm plug-tg-ml-6",
     });
     el.createEl("div", {});
     el.createEl("small", { text: template.path, cls: "path" });

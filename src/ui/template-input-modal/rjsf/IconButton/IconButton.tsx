@@ -1,3 +1,4 @@
+import React from "react";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown"
 import { AiOutlineArrowUp } from "@react-icons/all-files/ai/AiOutlineArrowUp"
 import { IoIosCopy } from "@react-icons/all-files/io/IoIosCopy"
@@ -24,18 +25,18 @@ export default function IconButton<
     disabled,
     ...otherProps
   } = props
-  const buttonClass = iconType === "block" ? "w-full" : ""
+  const buttonClass = iconType === "block" ? "plug-tg-w-full" : ""
   const variantClass =
     // @ts-expect-error incomplete type from rjsf
     props.variant === "danger"
-      ? "bg-red-500 hover:bg-red-700 text-white"
+      ? "plug-tg-bg-red-500 hover:plug-tg-bg-red-700 plug-tg-text-white"
       : disabled
-      ? "bg-gray-100 text-gray-300"
-      : "bg-gray-200 hover:bg-gray-500 text-gray-700"
+        ? "plug-tg-bg-gray-100 plug-tg-text-gray-300"
+        : "plug-tg-bg-gray-200 hover:plug-tg-bg-gray-500 plug-tg-text-gray-700"
 
   return (
     <button
-      className={`grid justify-items-center px-4 py-2 text-base font-normal ${buttonClass} ${variantClass} ${className}`}
+      className={`plug-tg-grid plug-tg-justify-items-center plug-tg-px-4 plug-tg-py-2 plug-tg-text-base plug-tg-font-normal ${buttonClass} ${variantClass} ${className}`}
       {...otherProps}
     >
       {icon}

@@ -1,3 +1,4 @@
+import React from "react";
 import {
   FieldHelpProps,
   FormContextType,
@@ -22,7 +23,7 @@ export default function FieldHelpTemplate<
   const id = helpId<T>(idSchema)
   return (
     <span
-      className={hasErrors ? "text-red-500" : "text-muted-foreground"}
+      className={hasErrors ? "plug-tg-text-red-500" : "plug-tg-text-muted-foreground"}
       id={id}
     >
       {help}

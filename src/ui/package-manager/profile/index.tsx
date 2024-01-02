@@ -26,10 +26,10 @@ export default function Profile(props: { apiKey: string, mini?: boolean }) {
         })()
     }, [props.apiKey])
 
-    return <div className="flex items-center gap-2 dz-tooltip dz-tooltip-bottom" data-tip={user?.name || user?.email}>
-        <img src={user?.image} width={props.mini ? 24 : 64} height={props.mini ? 24 : 64} className="rounded-md overflow-hidden" />
+    return <div className="plug-tg-flex plug-tg-items-center plug-tg-gap-2 plug-tg-tooltip plug-tg-tooltip-bottom" data-tip={user?.name || user?.email}>
+        <img src={user?.image} width={props.mini ? 24 : 64} height={props.mini ? 24 : 64} className="plug-tg-rounded-md plug-tg-overflow-hidden" />
         {!props.mini && <div className={clsx({
-            "text-xl": !props.mini
+            "plug-tg-text-xl": !props.mini
         })}>
             {user?.name || user.email}
         </div>}

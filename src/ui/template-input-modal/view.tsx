@@ -80,7 +80,7 @@ export default function TemplateInputModalView(props: {
 
   return (
     <Form
-      className="w-full"
+      className="plug-tg-w-full"
       schema={JSONSchema}
       uiSchema={UISchema}
       formData={formData}

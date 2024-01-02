@@ -90,7 +90,7 @@ export function ModelsHandler(props: {
                 register={props.register}
                 sectionId={props.sectionId}
             >
-                <div className="flex items-center gap-2">
+                <div className="plug-tg-flex plug-tg-items-center plug-tg-gap-2">
                     {global.plugin.settings.experiment ? <>
                         <datalist id={modelsDatasetId}>
                             {[...models].map(model => <option key={model} value={model} />)}
@@ -127,7 +127,7 @@ export function ModelsHandler(props: {
 
                     <button
                         className={clsx({
-                            "dz-loading": loadingUpdate,
+                            "plug-tg-loading": loadingUpdate,
                         })}
                         onClick={updateModels}
                         disabled={loadingUpdate}

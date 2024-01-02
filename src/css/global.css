@@ -14,36 +14,21 @@
 	margin-left: 25px;
 }
 
-.desc {
-	font-size: small;
-	margin-left: 25px;
+.plug-tg-packageManager {
+	@apply plug-tg-w-[800px];
 }
 
-.modelTitle {
-	text-align: center;
-	font-size: x-large;
-	font-weight: bolder;
-}
-
-.linkMoreInfo {
-	font-size: xx-small;
-}
-
-.packageManager {
-	width: 800px;
-}
-
-.model {
+/* .model {
 	width: auto;
-}
+} */
 
-.tg-update {
+.plug-tg-update {
 	background-color: var(--background-modifier-success) !important;
 }
 
 /* --- Basics --- */
 
-.loading {
+.plug-tg-loading {
 	display: inline-block;
 	overflow: hidden;
 	height: 1.3em;
@@ -52,7 +37,7 @@
 	vertical-align: text-bottom;
 }
 
-.loading::after {
+.plug-tg-loading::after {
 	display: inline-table;
 	white-space: pre;
 	text-align: left;
@@ -61,182 +46,182 @@
 /* --- Types --- */
 
 /* default loading is ellip */
-.loading::after {
+.plug-tg-loading::after {
 	content: "\A.\A..\A...";
 	animation: spin4 2s steps(4) infinite;
 }
 
-.loading.line::after {
+.plug-tg-loading.line::after {
 	content: "/\A–\A\\\A|";
 	text-align: center;
 	animation: spin4 1s steps(4) infinite;
 }
 
-.loading.line2::after {
+.plug-tg-loading.line2::after {
 	content: "╲\A│\A╱\A─";
 	text-align: center;
 	animation: spin4 1s steps(4) infinite;
 }
 
-.loading.plus::after {
+.plug-tg-loading.plus::after {
 	content: "┽\A╀\A┾\A╁";
 	animation: spin4 1s steps(4) infinite;
 }
 
-.loading.dots::after {
+.plug-tg-loading.dots::after {
 	content: "⠋\A⠙\A⠹\A⠸\A⠼\A⠴\A⠦\A⠧\A⠇\A⠏";
 	animation: spin10 1s steps(10) infinite;
 }
 
-.loading.dots2::after {
+.plug-tg-loading.dots2::after {
 	content: "⠋\A⠙\A⠚\A⠞\A⠖\A⠦\A⠴\A⠲\A⠳";
 	animation: spin9 1s steps(9) infinite;
 }
 
-.loading.dots3::after {
+.plug-tg-loading.dots3::after {
 	content: "⋮\A⋰\A⋯\A⋱";
 	text-align: center;
 	animation: spin4 1s steps(4) infinite;
 }
 
-.loading.lifting::after {
+.plug-tg-loading.lifting::after {
 	content: "꜈꜍\A꜉꜎\A꜊꜏\A꜋꜐\A꜌꜑";
 	animation: spin5 0.5s steps(5) infinite alternate;
 }
 
-.loading.hamburger::after {
+.plug-tg-loading.hamburger::after {
 	content: "☱\A☲\A☴";
 	animation: spin3 0.3s steps(3) infinite alternate;
 }
 
-.loading.bar::after {
+.plug-tg-loading.bar::after {
 	content: "▏\A▎\A▍\A▌\A▋\A▊\A▉";
 	animation: spin7 1s steps(7) infinite alternate;
 }
 
-.loading.bar2::after {
+.plug-tg-loading.bar2::after {
 	content: "▁\A▂\A▃\A▄\A▅\A▆\A▇\A█";
 	animation: spin8 2s steps(8) infinite alternate;
 }
 
-.loading.circle::after {
+.plug-tg-loading.circle::after {
 	content: "◴\A◷\A◶\A◵";
 	animation: spin4 1s steps(4) infinite;
 }
 
-.loading.open-circle::after {
+.plug-tg-loading.open-circle::after {
 	content: "◜\A◠\A◝\A◞\A◡\A◟";
 	animation: spin6 0.6s steps(6) infinite;
 }
 
-.loading.arrow::after {
+.plug-tg-loading.arrow::after {
 	content: "←\A↖\A↑\A↗\A→\A↘\A↓\A↙";
 	animation: spin8 1s steps(8) infinite;
 }
 
-.loading.triangle::after {
+.plug-tg-loading.triangle::after {
 	content: "◢\A◣\A◤\A◥";
 	animation: spin4 1s steps(4) infinite;
 }
 
-.loading.triangles::after {
+.plug-tg-loading.triangles::after {
 	content: "▹▹▹▹▹\A ▸▹▹▹▹\A ▹▸▹▹▹\A ▹▹▸▹▹\A ▹▹▹▸▹\A ▹▹▹▹▸";
 	animation: spin6 1s steps(6) infinite;
 }
 
-.loading.beam::after {
+.plug-tg-loading.beam::after {
 	content: "\A=   \A ==  \A === \A ====\A  ===\A   ==\A    =\A";
 	animation: spin9 1.2s steps(9) infinite;
 	font-family: monospace;
 }
 
-.loading.bullet::after {
+.plug-tg-loading.bullet::after {
 	content: " ●    \A   ●   \A    ●  \A     ● \A      ●\A     ● \A    ●  \A   ●   \A  ●    \A ●     ";
 	animation: spin10 1s steps(10) infinite;
 }
 
-.loading.bullseye::after {
+.plug-tg-loading.bullseye::after {
 	content: "◎◎◎\A◉◎◎\A◎◉◎\A◎◎◉";
 	animation: spin4 1s steps(4) infinite;
 }
 
-.loading.rhomb::after {
+.plug-tg-loading.rhomb::after {
 	content: "◇◇◇\A◈◇◇\A◇◈◇\A◇◇◈";
 	animation: spin4 1s steps(4) infinite;
 }
 
-.loading.fish::after {
+.plug-tg-loading.fish::after {
 	content: ">))'>\A  >))'>\A   >))'>\A    >))'>\A     >))'>\A     <'((<\A    <'((<\A   <'((<\A  <'((<\A <'((<\A";
 	animation: spin10 5s steps(10) infinite;
 }
 
-.loading.toggle::after {
+.plug-tg-loading.toggle::after {
 	content: "⊶\A⊷";
 	animation: spin2 1s steps(2) infinite;
 }
 
-.loading.countdown::after {
+.plug-tg-loading.countdown::after {
 	content: "0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9";
 	animation: spin10 10s steps(10) reverse;
 }
 
-.loading.time::after {
+.plug-tg-loading.time::after {
 	content: "🕐\A🕑\A🕒\A🕓\A🕔\A🕕\A🕖\A🕗\A🕘\A🕙\A🕚\A🕛";
 	animation: spin12 3s steps(12) infinite;
 	width: 1.3em;
 }
 
-.loading.hearts::after {
+.plug-tg-loading.hearts::after {
 	content: "💛\A💙\A💜\A💚";
 	animation: spin4 2s steps(4) infinite;
 	width: 1.3em;
 }
 
-.loading.earth::after {
+.plug-tg-loading.earth::after {
 	content: "🌍\A🌎\A🌏";
 	animation: spin3 1s steps(3) infinite;
 	width: 1.3em;
 }
 
-.loading.moon::after {
+.plug-tg-loading.moon::after {
 	content: "🌑\A🌒\A🌓\A🌔\A🌕\A🌖\A🌗\A🌘";
 	animation: spin8 2s steps(8) infinite;
 	width: 1.3em;
 }
 
-.loading.monkey::after {
+.plug-tg-loading.monkey::after {
 	content: "🙈\A🙉\A🙊";
 	animation: spin3 1.5s steps(3) infinite;
 	width: 1.3em;
 }
 
-.loading.runner::after {
+.plug-tg-loading.runner::after {
 	content: "🚶\A🏃";
 	animation: spin2 1s steps(2) infinite;
 	width: 1.3em;
 }
 
-.loading.box-bounce::after {
+.plug-tg-loading.box-bounce::after {
 	content: "▖\A▘\A▝\A▗";
 	animation: spin4 1s steps(4) infinite;
 }
 
-.loading.star::after {
+.plug-tg-loading.star::after {
 	content: "✶\A✸\A✹\A✺\A✹\A✷";
 	animation: spin6 1s steps(6) infinite;
 }
 
-.loading.matrix::after {
+.plug-tg-loading.matrix::after {
 	content: "░ ░░░░\A░░ ░░░\A░░░ ░░\A░░░░ ░";
 	animation: spin4 0.5s steps(4) infinite alternate;
 }
 
-.loading.square::after {
+.plug-tg-loading.square::after {
 	content: "◰\A◳\A◲\A◱";
 	animation: spin4 1s steps(4) infinite;
 }
 
-.loading.words::after {
+.plug-tg-loading.words::after {
 	content: "Loading\A Still loading\A Mostly done\A A bit more \A Almost done\A Ready-ish";
 	animation: spin6 12s steps(6) infinite;
 }
@@ -370,20 +355,20 @@
 /* ---- other ---- */
 
 .small {
-	@apply text-sm;
+	@apply plug-tg-text-sm;
 }
 
 
 .gapper {
-	@apply flex flex-col gap-4;
+	@apply plug-tg-flex plug-tg-flex-col plug-tg-gap-4;
 }
 
 .tags {
-	@apply flex items-center gap-4;
+	@apply plug-tg-flex plug-tg-items-center plug-tg-gap-4;
 }
 
 .tag {
-	@apply border-l border-white;
+	@apply plug-tg-border-l plug-tg-border-white;
 }
 
 ::-webkit-scrollbar-track {
@@ -428,7 +413,7 @@ pre:has(div.codeblock) {
 }
 
 /* fallback, until https://github.com/CompuIves/codesandbox-client/issues/174 is resolved */
-@font-face {
+/* @font-face {
 	font-family: "Material Icons";
 	font-style: normal;
 	font-weight: 400;
@@ -473,45 +458,10 @@ pre:has(div.codeblock) {
 	cursor: pointer;
 	content: "\E5CE";
 	vertical-align: middle;
-}
-
-/* checkbox styles */
-.mdl-demo .checkbox-item {
-	position: relative;
-	width: 1rem;
-	height: 1rem;
-	margin-right: 0.75rem;
-	cursor: pointer;
-	-webkit-appearance: none;
-	-moz-appearance: none;
-	appearance: none;
-	outline: 0;
-	vertical-align: middle;
-}
-
-.mdl-demo .checkbox-item:before {
-	content: "";
-	position: absolute;
-	left: 0;
-	top: 0;
-	z-index: 1;
-	width: 100%;
-	height: 100%;
-	border: 2px solid #aaa;
-	transition: all 0.3s ease-in-out;
-}
-
-.mdl-demo .checkbox-item:checked:before {
-	height: 50%;
-	-webkit-transform: rotate(-45deg);
-	transform: rotate(-45deg);
-	border-top-style: none;
-	border-right-style: none;
-	border-color: #2196f3;
-}
-
+} */
+/* 
 h1 {
-	@apply pb-2;
+	@apply plug-tg-pb-2;
 }
 
 .below-the-fold {
@@ -520,16 +470,16 @@ h1 {
 }
 
 .block-language-tg {
-	@apply p-2;
-}
+	@apply plug-tg-p-2;
+} */
 
 /* -------------------- React json input css ---------------------------- */
 .mantine-1fzet7j {
-	@apply text-black dark:text-white;
+	@apply plug-tg-text-black dark:plug-tg-text-white;
 }
 
 .mantine-hgcj3k {
-	@apply text-black dark:text-white bg-[var(--background-modifier-form-field)];
+	@apply plug-tg-text-black dark:plug-tg-text-white plug-tg-bg-[var(--background-modifier-form-field)];
 }
 
 /* -------------------- React confirm css ---------------------------- */

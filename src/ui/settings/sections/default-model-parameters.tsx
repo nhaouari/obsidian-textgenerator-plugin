@@ -28,13 +28,13 @@ export default function DMPSetting(props: { register: Register }) {
   return (
     <SettingsSection
       title="Default model parameters"
-      className="flex w-full flex-col"
+      className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
       register={props.register}
       id={sectionId}
     >
       <h5>You can specify more parameters in the Frontmatter YAML</h5>
       <a
-        className="linkMoreInfo"
+        className="text-xs"
         href="https://beta.openai.com/docs/api-reference/completions"
       >
         API documentation

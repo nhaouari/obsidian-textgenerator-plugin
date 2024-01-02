@@ -15,11 +15,11 @@ export default function TitleField<
   const uiOptions = getUiOptions<T, S, F>(uiSchema)
 
   return (
-    <div id={id} className="my-1">
-      <h5 className="mb-2 text-xl font-medium leading-tight">
+    <div id={id} className="plug-tg-my-1">
+      <h5 className="plug-tg-mb-2 plug-tg-text-xl plug-tg-font-medium plug-tg-leading-tight">
         {uiOptions.title || title}
       </h5>
-      <hr className="my-4 border-t border-muted" />
+      <hr className="plug-tg-my-4 plug-tg-border-t plug-tg-border-muted" />
     </div>
   )
 }

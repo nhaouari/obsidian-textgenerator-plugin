@@ -38,7 +38,7 @@ export default function RadioWidget<
   const inline = Boolean(options && options.inline)
 
   return (
-    <div className="flex flex-col gap-2 pb-2">
+    <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2 plug-tg-pb-2">
       {Array.isArray(enumOptions) &&
         enumOptions.map((option, index) => {
           const itemDisabled =
@@ -49,7 +49,7 @@ export default function RadioWidget<
           const radio = (
             <label
               key={index}
-              className={`block ${inline ? "mr-3 inline-flex items-center" : ""
+              className={`plug-tg-block ${inline ? "plug-tg-mr-3 plug-tg-inline-flex plug-tg-items-center" : ""
                 }`}
             >
               <input
@@ -64,9 +64,9 @@ export default function RadioWidget<
                 onBlur={_onBlur}
                 onFocus={_onFocus}
                 aria-describedby={ariaDescribedByIds<T>(id)}
-                className="dz-radio"
+                className="plug-tg-radio"
               />
-              <span className="ml-2">{option.label}</span>
+              <span className="plug-tg-ml-2">{option.label}</span>
             </label>
           )
           return radio

@@ -61,8 +61,8 @@ export default function SelectWidget<
       multiple={multiple}
       disabled={disabled || readonly}
       autoFocus={autofocus}
-      className={`w-full h-auto bg-[var(--background-modifier-form-field)] border focus:border-primary focus:outline-none
-      ${rawErrors.length > 0 ? "border-red-500" : ""}
+      className={`plug-tg-w-full plug-tg-h-auto plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-border focus:plug-tg-border-primary focus:plug-tg-outline-none
+      ${rawErrors.length > 0 ? "plug-tg-border-red-500" : ""}
       `}
       onBlur={
         onBlur &&
@@ -93,7 +93,7 @@ export default function SelectWidget<
       aria-describedby={ariaDescribedByIds<T>(id)}
     >
       {!multiple && schema.default === undefined && (
-        <option value="" className="bg-muted h-full">
+        <option value="" className="plug-tg-bg-muted plug-tg-h-full">
           {placeholder}
         </option>
       )}
@@ -107,7 +107,7 @@ export default function SelectWidget<
             id={label}
             value={String(i)}
             disabled={disabled}
-            className="bg-muted h-full"
+            className="plug-tg-bg-muted plug-tg-h-full"
           >
             {label}
           </option>

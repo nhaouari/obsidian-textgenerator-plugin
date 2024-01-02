@@ -18,10 +18,10 @@ export default function Input(props: {
 
   return (
     <div
-      className={clsx("flex items-center gap-2 ", {
-        "checkbox-container cursor-pointer": props.type == "checkbox",
-        "is-enabled": props.type == "checkbox" && props.value == "true",
-        "dz-tooltip": error,
+      className={clsx("plug-tg-flex plug-tg-items-center plug-tg-gap-2 ", {
+        "checkbox-container plug-tg-cursor-pointer": props.type == "checkbox",
+        "plug-tg-is-enabled": props.type == "checkbox" && props.value == "true",
+        "plug-tg-tooltip": error,
       })}
       onClick={
         props.type == "checkbox"
@@ -43,10 +43,10 @@ export default function Input(props: {
         list={props.datalistId}
         placeholder={props.placeholder}
         className={clsx(
-          "dz-input bg-[var(--background-modifier-form-field)]",
+          "plug-tg-input plug-tg-bg-[var(--background-modifier-form-field)]",
           {
-            "dz-toggle": props.type == "checkbox",
-            "outline outline-red-400 text-red-300": error,
+            "plug-tg-toggle": props.type == "checkbox",
+            "plug-tg-outline plug-tg-outline-red-400 plug-tg-text-red-300": error,
           },
           props.className
         )}

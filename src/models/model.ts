@@ -20,7 +20,7 @@ export class ExampleModal extends FuzzySuggestModal<PromptTemplate & { id: strin
     this.plugin = plugin;
     this.title = title;
     this.modalEl.insertBefore(
-      createEl("div", { text: title, cls: "modelTitle" }),
+      createEl("div", { text: title, cls: "plug-tg-text-center plug-tg-text-xl plug-tg-font-bold" }),
       this.modalEl.children[0]
     );
   }
@@ -36,7 +36,7 @@ export class ExampleModal extends FuzzySuggestModal<PromptTemplate & { id: strin
     el.createEl("div", { text: template.item.name });
     el.createEl("small", {
       text: template.item.description?.substring(0, 150),
-      cls: "desc",
+      cls: "plug-tg-text-sm plug-tg-ml-6",
     });
     el.createEl("div", {});
     el.createEl("small", { text: template.item.path, cls: "path" });

@@ -214,7 +214,7 @@ export default function TemplateDetails(inProps: {
 	}, []);
 
 	return (<>
-		<div className="flex flex-col gap-2">
+		<div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">
 			<div className="community-modal-info-name">
 				{props.package?.name}
 
@@ -222,9 +222,9 @@ export default function TemplateDetails(inProps: {
 					<span className="flair mod-pop">Installed</span>
 				)}
 			</div>
-			<div className="flex flex-col gap-1">
+			<div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
 				{props.package?.core ? <>
-					<div className="flex gap-2 items-center">
+					<div className="plug-tg-flex plug-tg-gap-2 plug-tg-items-center">
 						<BadgeCheckSVG />
 						<span> Made By Text-Gen</span>
 					</div>
@@ -237,7 +237,7 @@ export default function TemplateDetails(inProps: {
 					</span>
 				</div>}
 
-				<div className="community-modal-info-version flex items-center gap-2">
+				<div className="community-modal-info-version plug-tg-flex plug-tg-items-center plug-tg-gap-2">
 					<span>
 						Version:
 					</span>
@@ -247,7 +247,7 @@ export default function TemplateDetails(inProps: {
 							`(currently installed: ${props.installed.version})`}
 					</span>
 				</div>
-				<div className="community-modal-info-repo flex items-center gap-2">
+				<div className="community-modal-info-repo plug-tg-flex plug-tg-items-center plug-tg-gap-2">
 					<span>
 						Platforms:
 					</span>
@@ -255,7 +255,7 @@ export default function TemplateDetails(inProps: {
 						{props.package?.desktopOnly ? "Only Desktop" : "All"}
 					</span>
 				</div>
-				{!props.package?.folderName && <div className="community-modal-info-repo flex items-center gap-2">
+				{!props.package?.folderName && <div className="community-modal-info-repo plug-tg-flex plug-tg-items-center plug-tg-gap-2">
 					<span>
 						Repository:
 					</span>
@@ -268,7 +268,7 @@ export default function TemplateDetails(inProps: {
 				</div>}
 
 
-				<div className="community-modal-info-author flex items-center gap-2">
+				<div className="community-modal-info-author plug-tg-flex plug-tg-items-center plug-tg-gap-2">
 					<span>
 						By
 					</span>
@@ -277,7 +277,7 @@ export default function TemplateDetails(inProps: {
 					</a>
 				</div>
 
-				<div className="community-modal-info-desc select-text">
+				<div className="community-modal-info-desc plug-tg-select-text">
 					{props.package?.description}
 				</div>
 			</div>
@@ -287,7 +287,7 @@ export default function TemplateDetails(inProps: {
 			{!props.package?.folderName || packageManager.getApikey() ? <>
 				{!props.ownedOrReq?.allowed ? (
 					<button
-						className="mod-cta cursor-pointer"
+						className="mod-cta plug-tg-cursor-pointer"
 						onClick={() => buy()}
 					>
 						Buy
@@ -298,29 +298,29 @@ export default function TemplateDetails(inProps: {
 						{
 							props.package?.type == "feature" &&
 							(!enabledFeature ?
-								<button className="bg-red-300 cursor-pointer" onClick={() => !enabling && enable()}>
+								<button className="plug-tg-bg-red-300 plug-tg-cursor-pointer" onClick={() => !enabling && enable()}>
 									Enabl{enabling ? "ing..." : "e"}
 								</button>
 								:
-								<button className="bg-red-300 cursor-pointer" onClick={() => !enabling && disable()}>
+								<button className="plug-tg-bg-red-300 plug-tg-cursor-pointer" onClick={() => !enabling && disable()}>
 									Disabl{enabling ? "ing..." : "e"}
 								</button>
 							)
 						}
 
-						<button className="bg-red-300 cursor-pointer" onClick={() => !installing && uninstall()}>
+						<button className="plug-tg-bg-red-300 plug-tg-cursor-pointer" onClick={() => !installing && uninstall()}>
 							Uninstall{installing ? "ing..." : ""}
 						</button>
 						{props.installed.version !== props.package?.version && (
 							<button
-								className="mod-cta cursor-pointer"
+								className="mod-cta plug-tg-cursor-pointer"
 								onClick={() => update()}
 							>
 								Update
 							</button>
 						)}
 					</>) : (
-						<button className={installing ? "dz-btn-disabled" : "mod-cta cursor-pointer"} onClick={() => !installing && install()} disabled={installing}>
+						<button className={installing ? "plug-tg-btn-disabled" : "mod-cta plug-tg-cursor-pointer"} onClick={() => !installing && install()} disabled={installing}>
 							Install{installing ? "ing..." : ""}
 						</button>
 					)
@@ -329,14 +329,14 @@ export default function TemplateDetails(inProps: {
 
 			</> :
 				<button
-					className="mod-cta cursor-pointer"
+					className="mod-cta plug-tg-cursor-pointer"
 					onClick={() => attemptLogin(packageManager.plugin)}
 				>
 					Login
 				</button>
 			}
 			{!props.package?.core && <button
-				className="mod-cta cursor-pointer"
+				className="mod-cta plug-tg-cursor-pointer"
 				onClick={() =>
 					(window.location.href = `${props.package?.authorUrl}`)
 				}

@@ -10,11 +10,11 @@ export default async function Confirm(
 			customUI: ({ onClose }) => {
 				return (
 					//absolute mx-auto w-72 left-0 right-0
-					<div className="flex flex-col gap-5 overflow-hidden rounded-md bg-[var(--background-primary)] p-4">
+					<div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-5 plug-tg-overflow-hidden plug-tg-rounded-md plug-tg-bg-[var(--background-primary)] plug-tg-p-4">
 						<h3>{title}</h3>
-						<div className="flex flex-col gap-3">
+						<div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-3">
 							<p>{description}</p>
-							<div className="flex items-center justify-end gap-3">
+							<div className="plug-tg-flex plug-tg-items-center plug-tg-justify-end plug-tg-gap-3">
 								<button
 									onClick={() => {
 										solve(false);

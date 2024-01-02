@@ -1,10 +1,10 @@
+import React, { CSSProperties } from "react"
 import {
   ArrayFieldTemplateItemType,
   FormContextType,
   RJSFSchema,
   StrictRJSFSchema,
 } from "@rjsf/utils"
-import { CSSProperties } from "react"
 
 export default function ArrayFieldItemTemplate<
   T = any,
@@ -39,13 +39,13 @@ export default function ArrayFieldItemTemplate<
 
   return (
     <div>
-      <div className="mb-2 flex items-center">
-        <div className="w-3/4 flex-none lg:w-3/4">{children}</div>
-        <div className="w-1/4 flex-none px-4 py-6 lg:w-1/4">
+      <div className="plug-tg-mb-2 plug-tg-flex plug-tg-items-center">
+        <div className="plug-tg-w-3/4 plug-tg-flex-none lg:plug-tg-w-3/4">{children}</div>
+        <div className="plug-tg-w-1/4 plug-tg-flex-none plug-tg-px-4 plug-tg-py-6 lg:plug-tg-w-1/4">
           {hasToolbar && (
-            <div className="flex ">
+            <div className="plug-tg-flex">
               {(hasMoveUp || hasMoveDown) && (
-                <div className="m-0 p-0">
+                <div className="plug-tg-m-0 plug-tg-p-0">
                   <MoveUpButton
                     className="array-item-move-up"
                     style={btnStyle}
@@ -57,7 +57,7 @@ export default function ArrayFieldItemTemplate<
                 </div>
               )}
               {(hasMoveUp || hasMoveDown) && (
-                <div className="m-0 p-0">
+                <div className="plug-tg-m-0 plug-tg-p-0">
                   <MoveDownButton
                     style={btnStyle}
                     disabled={disabled || readonly || !hasMoveDown}
@@ -68,7 +68,7 @@ export default function ArrayFieldItemTemplate<
                 </div>
               )}
               {hasCopy && (
-                <div className="m-0 p-0">
+                <div className="plug-tg-m-0 plug-tg-p-0">
                   <CopyButton
                     style={btnStyle}
                     disabled={disabled || readonly}
@@ -79,7 +79,7 @@ export default function ArrayFieldItemTemplate<
                 </div>
               )}
               {hasRemove && (
-                <div className="m-0 p-0">
+                <div className="plug-tg-m-0 plug-tg-p-0">
                   <RemoveButton
                     style={btnStyle}
                     disabled={disabled || readonly}

@@ -17,7 +17,7 @@ const logger = debug("cm:SpinnersPlugin");
 class Spinners extends WidgetType {
 	toDOM() {
 		const span = document.createElement("span");
-		span.addClasses(["loading", "dots"]);
+		span.addClasses(["plug-tg-loading", "dots"]);
 		span.setAttribute("id", "tg-loading");
 		return span;
 	}
@@ -69,7 +69,7 @@ export class SpinnersPlugin implements PluginValue {
 		return this.listOfPositions;
 	}
 
-	destroy() {}
+	destroy() { }
 
 	buildDecorations(view: EditorView): DecorationSet {
 		logger("  buildDecorations", view);

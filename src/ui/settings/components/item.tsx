@@ -28,21 +28,21 @@ export default function SettingItem(props: {
     <div
       data-tip={props.tip}
       className={clsx(
-        "flex w-full gap-2 py-2",
+        "plug-tg-flex plug-tg-w-full plug-tg-gap-2 plug-tg-py-2",
         {
-          "items-center justify-between": !props.textArea,
-          "flex-col": props.textArea,
+          "plug-tg-items-center plug-tg-justify-between": !props.textArea,
+          "plug-tg-flex-col": props.textArea,
         },
         props.className,
         {
           hidden: props.register && !props.register.listOfAllowed.contains(id),
-          "dz-tooltip": props.tip?.length,
+          "plug-tg-tooltip": props.tip?.length,
         }
       )}
     >
-      <div className="flex flex-col gap-1">
+      <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
         <div>{props.name}</div>
-        <div className="text-xs opacity-70">{props.description}</div>
+        <div className="plug-tg-text-xs plug-tg-opacity-70">{props.description}</div>
       </div>
       {props.children}
     </div>

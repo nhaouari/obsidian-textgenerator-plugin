@@ -90,12 +90,12 @@ export default class LangchainPalmProvider
             }}
           />
         </SettingItem>
-        <div className="flex flex-col gap-2">
-          <div className="text-lg opacity-70">Useful links</div>
+        <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">
+          <div className="plug-tg-text-lg plug-tg-opacity-70">Useful links</div>
           <a href="https://beta.openai.com/signup/">
             <SettingItem
               name="Create account OpenAI"
-              className="text-xs opacity-50 hover:opacity-100"
+              className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
               register={props.register}
               sectionId={props.sectionId}
             >
@@ -105,7 +105,7 @@ export default class LangchainPalmProvider
           <a href="https://beta.openai.com/docs/api-reference/introduction">
             <SettingItem
               name="API documentation"
-              className="text-xs opacity-50 hover:opacity-100"
+              className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
               register={props.register}
               sectionId={props.sectionId}
             >
@@ -115,7 +115,7 @@ export default class LangchainPalmProvider
           <a href="https://beta.openai.com/docs/models/overview">
             <SettingItem
               name="more information"
-              className="text-xs opacity-50 hover:opacity-100"
+              className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
               register={props.register}
               sectionId={props.sectionId}
             >

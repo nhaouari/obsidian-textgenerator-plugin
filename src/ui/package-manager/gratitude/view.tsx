@@ -17,8 +17,8 @@ export default function GratitudeView(p: { parent: GratitudeUI, data: any }) {
         <div className="modal mod-community-modal mod-sidebar-layout mod-community-plugin">
           <div className="modal-close-button" onClick={handleClose}></div>
           <div className="modal-title">Community Templates</div>
-          <div className="modal-content w-full h-full flex flex-col items-center justify-center gap-10 p-3">
-            <div className="text-xl">
+          <div className="modal-content plug-tg-w-full plug-tg-h-full plug-tg-flex plug-tg-flex-col plug-tg-items-center plug-tg-justify-center plug-tg-gap-10 plug-tg-p-3">
+            <div className="plug-tg-text-xl">
               Thank you soo much ❤️
             </div>
             <div>

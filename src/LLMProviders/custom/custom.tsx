@@ -139,11 +139,11 @@ export default class DefaultCustomProvider
           />
         </SettingItem>
 
-        <div className="flex flex-col gap-1">
-          <div className="font-bold">Headers:</div>
+        <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
+          <div className="plug-tg-font-bold">Headers:</div>
           <textarea
             placeholder="Headers"
-            className="resize-none"
+            className="plug-tg-resize-none"
             defaultValue={
               config.handlebars_headers_in ||
               default_values.handlebars_headers_in
@@ -176,11 +176,11 @@ export default class DefaultCustomProvider
           />
         </div>
 
-        <div className="flex flex-col gap-1">
-          <div className="font-bold">Body:</div>
+        <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
+          <div className="plug-tg-font-bold">Body:</div>
           <textarea
             placeholder="Textarea will autosize to fit the content"
-            className="resize-none"
+            className="plug-tg-resize-none"
             defaultValue={
               config.handlebars_body_in || default_values.handlebars_body_in
             }
@@ -211,7 +211,7 @@ export default class DefaultCustomProvider
           />
         </div>
 
-        <div className="opacity-70">Variables</div>
+        <div className="plug-tg-opacity-70">Variables</div>
         {vars.map((v: string) => (
           <SettingItem
             key={v}
@@ -235,7 +235,7 @@ export default class DefaultCustomProvider
           </SettingItem>
         ))}
 
-        <div className="w-full pb-8"></div>
+        <div className="plug-tg-w-full plug-tg-pb-8"></div>
 
         <SettingItem
           name="Path to choices(Array) from response"
@@ -253,7 +253,7 @@ export default class DefaultCustomProvider
             }}
           />
         </SettingItem>
-        <div className="opacity-70">
+        <div className="plug-tg-opacity-70">
           Path to the choices Array that has the messages
         </div>
         <SettingItem
@@ -275,7 +275,7 @@ export default class DefaultCustomProvider
             }}
           />
         </SettingItem>
-        <div className="opacity-70">
+        <div className="plug-tg-opacity-70">
           Path from one of the choices to the content(if left empty it will
           assume that the choices is an array of strings)
         </div>
@@ -297,7 +297,7 @@ export default class DefaultCustomProvider
             }}
           />
         </SettingItem>
-        <div className="opacity-70">
+        <div className="plug-tg-opacity-70">
           Path to Error message from body object, incase of error, it will show it properly
         </div>
 
@@ -327,7 +327,7 @@ export default class DefaultCustomProvider
           register={props.register}
           sectionId={props.sectionId}
           className={clsx({
-            "cursor-not-allowed pointer-events-none opacity-60":
+            "plug-tg-cursor-not-allowed plug-tg-pointer-events-none plug-tg-opacity-60":
               config.CORSBypass,
           })}
         >
@@ -345,8 +345,8 @@ export default class DefaultCustomProvider
         </SettingItem>
         {!config.CORSBypass && config.streamable && (
           <>
-            <div className="flex flex-col gap-1">
-              <div className="font-bold">Sanatization(Streaming) function:</div>
+            <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
+              <div className="plug-tg-font-bold">Sanatization(Streaming) function:</div>
               <textarea
                 placeholder="Textarea will autosize to fit the content"
                 value={

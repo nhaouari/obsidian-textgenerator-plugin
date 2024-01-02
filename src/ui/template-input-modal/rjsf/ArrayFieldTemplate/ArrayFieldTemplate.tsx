@@ -1,3 +1,4 @@
+import React from "react";
 import {
   ArrayFieldTemplateItemType,
   ArrayFieldTemplateProps,
@@ -51,8 +52,8 @@ export default function ArrayFieldTemplate<
 
   return (
     <div>
-      <div className="m-0 flex p-0">
-        <div className="m-0 w-full p-0">
+      <div className="plug-tg-m-0 plug-tg-flex plug-tg-p-0">
+        <div className="plug-tg-m-0 plug-tg-w-full plug-tg-p-0">
           <ArrayFieldTitleTemplate
             idSchema={idSchema}
             title={uiOptions.title || title}
@@ -68,7 +69,7 @@ export default function ArrayFieldTemplate<
             uiSchema={uiSchema}
             registry={registry}
           />
-          <div className="m-0 w-full p-0">
+          <div className="plug-tg-m-0 plug-tg-w-full plug-tg-p-0">
             {items &&
               items.map(
                 ({
@@ -79,10 +80,10 @@ export default function ArrayFieldTemplate<
                 ),
               )}
             {canAdd && (
-              <div className="">
-                <div className="mt-2 flex">
-                  <div className="w-3/4"></div>
-                  <div className="w-1/4 px-4 py-6">
+              <div>
+                <div className="plug-tg-mt-2 plug-tg-flex">
+                  <div className="plug-tg-w-3/4"></div>
+                  <div className="plug-tg-w-1/4 plug-tg-px-4 plug-tg-py-6">
                     <AddButton
                       className="array-item-add"
                       onClick={onAddClick}

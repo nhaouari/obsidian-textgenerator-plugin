@@ -52,7 +52,7 @@ export default function CheckboxesWidget<
     onFocus(id, enumOptionsValueForIndex<S>(value, enumOptions, emptyValue))
 
   return (
-    <div className="space-y-4">
+    <div className="plug-tg-space-y-4">
       {Array.isArray(enumOptions) &&
         enumOptions.map((option, index: number) => {
           const checked = enumOptionsIsSelected<S>(
@@ -66,13 +66,13 @@ export default function CheckboxesWidget<
           return (
             <div
               key={option.value}
-              className={`flex items-center ${inline ? "space-x-2" : ""}`}
+              className={`plug-tg-flex plug-tg-items-center ${inline ? "plug-tg-space-x-2" : ""}`}
             >
               <input
                 type="checkbox"
                 id={optionId(id, index)}
                 name={id}
-                className="dz-checkbox dz-checkbox-primary border-0 bg-transparent"
+                className="plug-tg-checkbox plug-tg-checkbox-primary plug-tg-border-0 plug-tg-bg-transparent"
                 required={required}
                 checked={checked}
                 autoFocus={autofocus && index === 0}
@@ -82,7 +82,7 @@ export default function CheckboxesWidget<
                 disabled={disabled || itemDisabled || readonly}
                 aria-describedby={ariaDescribedByIds<T>(id)}
               />
-              <label htmlFor={optionId(id, index)} className="cursor-pointer">
+              <label htmlFor={optionId(id, index)} className="plug-tg-cursor-pointer">
                 {option.label}
               </label>
             </div>

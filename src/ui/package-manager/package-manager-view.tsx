@@ -103,12 +103,12 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
 
 
   const loginComponent = ProviderServer ? (
-    <div className="flex gap-2 items-center pr-9">
+    <div className="plug-tg-flex plug-tg-gap-2 plug-tg-items-center plug-tg-pr-9">
       {isLoggedIn ? <>
         <Profile key={userApikey} apiKey={userApikey} mini />
         <button
           data-tip="Logout"
-          className="dz-tooltip dz-tooltip-bottom cursor-pointer p-[3px]"
+          className="plug-tg-tooltip plug-tg-tooltip-bottom plug-tg-cursor-pointer plug-tg-p-[3px]"
           onClick={async () => {
             await attemptLogout(glob.plugin);
             triggerReload();
@@ -118,7 +118,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
       </> :
         <button
           data-tip="Login"
-          className="dz-tooltip dz-tooltip-bottom cursor-pointer"
+          className="plug-tg-tooltip plug-tg-tooltip-bottom plug-tg-cursor-pointer"
           onClick={async () => {
             await attemptLogin(glob.plugin);
             triggerReload();
@@ -143,7 +143,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
           <div className="modal-content">
             <div className="modal-sidebar community-modal-sidebar">
               <div className="community-modal-controls">
-                <div className="flex w-full justify-between items-center px-3 pb-3 max-w-full">
+                <div className="plug-tg-flex plug-tg-w-full plug-tg-justify-between plug-tg-items-center plug-tg-px-3 plug-tg-pb-3 plug-tg-max-w-full">
                   <div>
                     <div className="setting-item-info">
                       <div className="setting-item-name"></div>
@@ -209,15 +209,15 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                 <div className="community-modal-search-summary u-muted">
                   Showing {items.length} Packages Templates:
                 </div>
-                <div className="flex w-full justify-end">
-                  <div className="px-4 py-1">Find more community templates on our <a href="https://discord.gg/GvTBgzBz7n">discord server!</a></div>
+                <div className="plug-tg-flex plug-tg-w-full plug-tg-justify-end">
+                  <div className="plug-tg-px-4 plug-tg-py-1">Find more community templates on our <a href="https://discord.gg/GvTBgzBz7n">discord server!</a></div>
                 </div>
               </div>
               <div className="community-modal-search-results-wrapper">
-                <div className="p-3">
+                <div className="plug-tg-p-3">
                   {!!ProviderServer && premiumFeatures?.length ? <>
                     <h2>Featured Items</h2>
-                    <div className="w-full flex gap-2 flex-wrap">
+                    <div className="plug-tg-w-full plug-tg-flex plug-tg-gap-2 plug-tg-flex-wrap">
                       {premiumFeatures.map((item) => {
                         const i = items.findIndex(it => it.packageId == item.packageId);
                         return (
@@ -238,7 +238,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                   </> : null}
                   {premiumFeatures?.length ? <>
                     <h2>Community Templates</h2>
-                    <div className="community-modal-search-results pl-0">
+                    <div className="community-modal-search-results plug-tg-pl-0">
                       {communityTemplates.map((item) => {
                         const i = items.findIndex(it => it.packageId == item.packageId)
                         return (
@@ -262,7 +262,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
             </div>
             {selectedIndex !== -1 && items[selectedIndex] && (
               <div className="community-modal-details">
-                <div className="modal-setting-nav-bar flex w-full justify-between items-center">
+                <div className="modal-setting-nav-bar plug-tg-flex plug-tg-w-full plug-tg-justify-between plug-tg-items-center">
                   <div
                     className="clickable-icon"
                     aria-label="Back"

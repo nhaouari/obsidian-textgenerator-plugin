@@ -42,7 +42,7 @@ export default function FieldTemplate<
     F
   >("WrapIfAdditionalTemplate", registry, uiOptions)
   if (hidden) {
-    return <div className="hidden">{children}</div>
+    return <div className="plug-tg-hidden">{children}</div>
   }
   return (
     <WrapIfAdditionalTemplate
@@ -59,11 +59,11 @@ export default function FieldTemplate<
       uiSchema={uiSchema}
       registry={registry}
     >
-      <div className="mb-4 block">
+      <div className="plug-tg-mb-4 plug-tg-block">
         {displayLabel && (
           <label
             htmlFor={id}
-            className={`mb-2 inline-block ${rawErrors.length > 0 ? "text-red-500" : ""
+            className={`plug-tg-mb-2 plug-tg-inline-block ${rawErrors.length > 0 ? "plug-tg-text-red-500" : ""
               }`}
           >
             {label}
@@ -72,9 +72,9 @@ export default function FieldTemplate<
         )}
         {children}
         {displayLabel && rawDescription && (
-          <small className="mt-1 block">
+          <small className="plug-tg-mt-1 plug-tg-block">
             <div
-              className={`${rawErrors.length > 0 ? "text-red-500" : "text-muted-foreground"
+              className={`${rawErrors.length > 0 ? "plug-tg-text-red-500" : "plug-tg-text-muted-foreground"
                 }`}
             >
               {description}

@@ -1,3 +1,4 @@
+import React from "react"
 import {
   FormContextType,
   getTemplate,
@@ -23,7 +24,7 @@ export default function RangeWidget<
       {...props}
       extraProps={{ label: labelValue(label || undefined, hideLabel) }}
     >
-      <span className="range-view">{value}</span>
+      <span className="plug-tg-range-view">{value}</span>
     </BaseInputTemplate>
   )
 }

@@ -59,8 +59,8 @@ export default function BaseInputTemplate<
         readOnly={readonly}
         list={schema.examples ? examplesId<T>(id) : undefined}
         {...inputProps}
-        className={clsx(`dz-input bg-[var(--background-modifier-form-field)] outline-none w-full`,
-          rawErrors.length > 0 ? "dz-input-error" : "",
+        className={clsx(`plug-tg-input plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none plug-tg-w-full`,
+          rawErrors.length > 0 ? "plug-tg-input-error" : "",
           inputProps)}
         value={value || value === 0 ? value : ""}
         onChange={onChangeOverride || _onChange}

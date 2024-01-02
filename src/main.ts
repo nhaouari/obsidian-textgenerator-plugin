@@ -345,7 +345,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
       if (processing) {
         const span = document.createElement("span");
-        span.addClasses(["loading", "dots"]);
+        span.addClasses(["plug-tg-loading", "dots"]);
         span.setAttribute("id", "tg-loading");
         span.style.width = "16px";
         span.style.alignContent = "center";

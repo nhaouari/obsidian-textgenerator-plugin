@@ -20,17 +20,17 @@ export default function OpenSettingsDropdown(props: { children?: any }) {
   }, [isOpen]);
 
   return (
-    <div className="dz-dropdown dz-dropdown-end dz-dropdown-open relative select-none">
-      <label tabIndex={0} className="cursor-pointer" onClick={toggle}>
+    <div className="plug-tg-dropdown plug-tg-dropdown-end plug-tg-dropdown-open plug-tg-relative plug-tg-select-none">
+      <label tabIndex={0} className="plug-tg-cursor-pointer" onClick={toggle}>
         <IconDotsVertical
           size={24}
-          className={clsx("hover:text-blue-300", {
-            "text-blue-700 dark:text-blue-300": isOpen,
+          className={clsx("hover:plug-tg-text-blue-300", {
+            "plug-tg-text-blue-700 dark:plug-tg-text-blue-300": isOpen,
           })}
         />
       </label>
       {isOpen && (
-        <div className="w-38 border-faint bg-accent-light dz-menu absolute right-0 top-full rounded-lg bg-[var(--background-primary)] p-2 shadow">
+        <div className="plug-tg-w-38 plug-tg-border-faint plug-tg-bg-accent-light plug-tg-menu plug-tg-absolute plug-tg-right-0 plug-tg-top-full plug-tg-rounded-lg plug-tg-bg-[var(--background-primary)] plug-tg-p-2 plug-tg-shadow">
           {props.children}
         </div>
       )}

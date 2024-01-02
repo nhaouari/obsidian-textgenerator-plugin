@@ -13,7 +13,7 @@ export default function ProviderSetting(props: { register: Register }) {
     <>
       <SettingsSection
         title="LLM Settings"
-        className="flex w-full flex-col"
+        className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
         register={props.register}
         id={sectionId}
         triggerResize={resized}

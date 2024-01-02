@@ -46,8 +46,8 @@ export default function CopyButton(props: {
       title={copyStatus}
       className={clsx(
         props.justAButton
-          ? "text-gray cursor-pointer rounded-none bg-gray-300 px-2 py-1 text-xs font-semibold hover:bg-blue-600 focus:outline-none focus:ring-0"
-          : "text-gray absolute bottom-[calc(-30px)] right-0 mb-1 mr-1 cursor-pointer rounded-none bg-gray-300 px-2 py-1 text-xs font-semibold hover:bg-blue-600 focus:outline-none focus:ring-0",
+          ? "plug-tg-text-gray plug-tg-cursor-pointer plug-tg-rounded-none plug-tg-bg-gray-300 plug-tg-px-2 plug-tg-py-1 plug-tg-text-xs plug-tg-font-semibold hover:plug-tg-bg-blue-600 focus:plug-tg-outline-none focus:plug-tg-ring-0"
+          : "plug-tg-text-gray plug-tg-absolute plug-tg-bottom-[calc(-30px)] plug-tg-right-0 plug-tg-mb-1 plug-tg-mr-1 plug-tg-cursor-pointer plug-tg-rounded-none plug-tg-bg-gray-300 plug-tg-px-2 plug-tg-py-1 plug-tg-text-xs plug-tg-font-semibold hover:plug-tg-bg-blue-600 focus:plug-tg-outline-none focus:plug-tg-ring-0",
         props.className
       )}
     >

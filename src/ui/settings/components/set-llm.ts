@@ -23,7 +23,7 @@ export class SetLLM extends FuzzySuggestModal<LLM> {
 		this.plugin = plugin;
 		this.title = title;
 		this.modalEl.insertBefore(
-			createEl("div", { text: title, cls: "modelTitle" }),
+			createEl("div", { text: title, cls: "plug-tg-text-center plug-tg-text-xl plug-tg-font-bold" }),
 			this.modalEl.children[0]
 		);
 	}

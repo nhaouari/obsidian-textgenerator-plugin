@@ -39,8 +39,8 @@ export default function ReloadPluginPopup(props: {}) {
     };
 
     return didChangeAnything && (
-        <div className="absolute bottom-0 right-0 z-20 p-3">
-            <div className="flex items-center gap-2 overflow-hidden rounded-md bg-[var(--interactive-accent)] p-3 font-bold">
+        <div className="plug-tg-absolute plug-tg-bottom-0 plug-tg-right-0 plug-tg-z-20 plug-tg-p-3">
+            <div className="plug-tg-flex plug-tg-items-center plug-tg-gap-2 plug-tg-overflow-hidden plug-tg-rounded-md plug-tg-bg-[var(--interactive-accent)] plug-tg-p-3 plug-tg-font-bold">
                 <div>YOU NEED TO RELOAD THE PLUGIN</div>
                 <button onClick={reloadPlugin}>Reload</button>
             </div>

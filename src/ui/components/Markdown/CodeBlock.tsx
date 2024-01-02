@@ -51,20 +51,20 @@ export const CodeBlock: FC<Props> = memo(({ language, value }) => {
     URL.revokeObjectURL(url);
   };
   return (
-    <div className="codeblock relative font-sans text-[16px]">
-      <div className="flex items-center justify-between px-4 py-1.5">
-        <span className="text-xs lowercase text-white">{language}</span>
+    <div className="codeblock plug-tg-relative plug-tg-font-sans plug-tg-text-[16px]">
+      <div className="plug-tg-flex plug-tg-items-center plug-tg-justify-between plug-tg-px-4 plug-tg-py-1.5">
+        <span className="plug-tg-text-xs plug-tg-lowercase plug-tg-text-white">{language}</span>
 
-        <div className="flex items-center">
+        <div className="plug-tg-flex plug-tg-items-center">
           <button
-            className="flex items-center gap-1.5 rounded bg-none p-1 text-xs text-white"
+            className="plug-tg-flex plug-tg-items-center plug-tg-gap-1.5 plug-tg-rounded plug-tg-bg-none plug-tg-p-1 plug-tg-text-xs plug-tg-text-white"
             onClick={copyToClipboard}
           >
             {isCopied ? <IconCheck size={18} /> : <IconClipboard size={18} />}
             {isCopied ? "Copied!" : "Copy code"}sdfsdf
           </button>
           <button
-            className="flex items-center rounded bg-none p-1 text-xs text-white"
+            className="plug-tg-flex plug-tg-items-center plug-tg-rounded plug-tg-bg-none plug-tg-p-1 plug-tg-text-xs plug-tg-text-white"
             onClick={downloadAsFile}
           >
             <IconDownload size={18} />

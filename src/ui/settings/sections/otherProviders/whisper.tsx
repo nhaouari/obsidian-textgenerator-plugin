@@ -25,7 +25,7 @@ export default function WhisperProviderSetting(props: { register: Register }) {
     <>
       <SettingsSection
         title="Whisper Settings"
-        className="flex w-full flex-col"
+        className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
         register={props.register}
         id={sectionId}
       >

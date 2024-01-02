@@ -219,23 +219,23 @@ export default function ChatComp(props: {
   if (!templateContext) return;
 
   return (
-    <div className="flex h-full w-full flex-col gap-2">
-      <div className="min-h-16 flex w-full resize-y flex-col justify-end gap-6 overflow-y-scroll pb-2">
-        <div className="flex h-full flex-col gap-2">
-          <div className="flex h-full flex-col gap-4">
+    <div className="plug-tg-flex plug-tg-h-full plug-tg-w-full plug-tg-flex-col plug-tg-gap-2">
+      <div className="plug-tg-min-h-16 plug-tg-flex plug-tg-w-full plug-tg-resize-y plug-tg-flex-col plug-tg-justify-end plug-tg-gap-6 plug-tg-overflow-y-scroll plug-tg-pb-2">
+        <div className="plug-tg-flex plug-tg-h-full plug-tg-flex-col plug-tg-gap-2">
+          <div className="plug-tg-flex plug-tg-h-full plug-tg-flex-col plug-tg-gap-4">
             <TemplateInputModalView labels={variables} metadata={meta} templateContext={templateContext} p={{ plugin: props.plugin }} onSubmit={handleSubmit} >
-              <div className="flex justify-end gap-3 pr-3">
+              <div className="plug-tg-flex plug-tg-justify-end plug-tg-gap-3 plug-tg-pr-3">
                 {loading ? (
                   <button
                     onClick={stopLoading}
-                    className="rounded bg-red-500 px-6 py-2 font-semibold hover:bg-red-600 focus:outline-none focus:ring-4 focus:ring-blue-300/50"
+                    className="plug-tg-rounded plug-tg-bg-red-500 plug-tg-px-6 plug-tg-py-2 plug-tg-font-semibold hover:plug-tg-bg-red-600 focus:plug-tg-outline-none focus:plug-tg-ring-4 focus:plug-tg-ring-blue-300/50"
                   >
                     Stop
                   </button>
                 ) : (
                   <button
                     type="submit"
-                    className="rounded bg-blue-500 px-6 py-2 font-semibold hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300/50"
+                    className="plug-tg-rounded plug-tg-bg-blue-500 plug-tg-px-6 plug-tg-py-2 plug-tg-font-semibold hover:plug-tg-bg-blue-600 focus:plug-tg-outline-none focus:plug-tg-ring-4 focus:plug-tg-ring-blue-300/50"
                   >
                     Generate
                   </button>
@@ -247,13 +247,13 @@ export default function ChatComp(props: {
         </div>
       </div>
 
-      <div className="min-h-16 w-full">
+      <div className="plug-tg-min-h-16 plug-tg-w-full">
         {answer ? (
-          <MarkDownViewer className="h-full w-full select-text overflow-y-auto">
+          <MarkDownViewer className="plug-tg-h-full plug-tg-w-full plug-tg-select-text plug-tg-overflow-y-auto">
             {answer}
           </MarkDownViewer>
         ) : (
-          <div className="h-full text-sm opacity-50">(empty)</div>
+          <div className="plug-tg-h-full plug-tg-text-sm plug-tg-opacity-50">(empty)</div>
         )}
       </div>
     </div>

@@ -1,3 +1,4 @@
+import React from "react";
 import {
   errorId,
   FieldErrorProps,
@@ -22,11 +23,11 @@ export default function FieldErrorTemplate<
   const id = errorId<T>(idSchema)
 
   return (
-    <ul className="list-inside list-none" id={id}>
+    <ul className="plug-tg-list-inside plug-tg-list-none" id={id}>
       {errors.map((error, i) => {
         return (
-          <li key={i} className="m-0 border-0 p-0">
-            <small className="m-0 text-red-500">{error}</small>{" "}
+          <li key={i} className="plug-tg-m-0 plug-tg-border-0 plug-tg-p-0">
+            <small className="plug-tg-m-0 plug-tg-text-red-500">{error}</small>{" "}
           </li>
         )
       })}

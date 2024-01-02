@@ -26,16 +26,16 @@ export default function SettingsSection(props: {
 
   return (
     <div
-      className={clsx("dz-collapse", props.className, {
-        "opacity-50 max-h-16": collapsed,
-        "dz-collapse-open": !collapsed,
+      className={clsx("plug-tg-collapse", props.className, {
+        "plug-tg-opacity-50 plug-tg-max-h-16": collapsed,
+        "plug-tg-collapse-open": !collapsed,
         hidden: props.hidden || !props.register.activeSections[props.id],
       })}
     >
       {!props.hideTitle && (
-        <div className="dz-collapse-title cursor-pointer">
+        <div className="plug-tg-collapse-title plug-tg-cursor-pointer">
           <div
-            className="flex w-full flex-wrap items-center justify-between text-left font-medium "
+            className="plug-tg-flex plug-tg-w-full plug-tg-flex-wrap plug-tg-items-center plug-tg-justify-between plug-tg-text-left plug-tg-font-medium"
             data-accordion-target="#accordion-flush-body-1"
             aria-expanded="true"
             aria-controls="accordion-flush-body-1"
@@ -45,9 +45,9 @@ export default function SettingsSection(props: {
             {!props.alwaysOpen && (
               <svg
                 data-accordion-icon
-                className={clsx("h-3 w-3 shrink-0 transition-transform", {
-                  "-rotate-180": !collapsed,
-                  "-rotate-90": collapsed,
+                className={clsx("plug-tg-h-3 plug-tg-w-3 plug-tg-shrink-0 plug-tg-transition-transform", {
+                  "-plug-tg-rotate-180": !collapsed,
+                  "-plug-tg-rotate-90": collapsed,
                 })}
                 aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"
@@ -67,7 +67,7 @@ export default function SettingsSection(props: {
         </div>
       )}
 
-      <div className={clsx("dz-collapse-content h-full w-full")}>
+      <div className={clsx("plug-tg-collapse-content plug-tg-h-full plug-tg-w-full")}>
         {props.children}
       </div>
     </div>

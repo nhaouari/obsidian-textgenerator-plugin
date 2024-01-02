@@ -47,11 +47,11 @@ export default function WrapIfAdditionalTemplate<
   const keyId = `${id}-key`
 
   return (
-    <div className={`flex ${classNames}`} style={style}>
-      <div className="w-1/2 flex-none p-2">
+    <div className={`plug-tg-flex ${classNames}`} style={style}>
+      <div className="plug-tg-w-1/2 plug-tg-flex-none plug-tg-p-2">
         <label
           htmlFor={keyId}
-          className="block text-sm font-medium text-muted-foreground"
+          className="plug-tg-block plug-tg-text-sm plug-tg-font-medium plug-tg-text-muted-foreground"
         >
           {keyLabel}
         </label>
@@ -63,14 +63,14 @@ export default function WrapIfAdditionalTemplate<
           name={keyId}
           onBlur={!readonly ? handleBlur : undefined}
           type="text"
-          className="dz-input mt-1 w-full border p-2 shadow-sm"
+          className="plug-tg-input plug-tg-mt-1 plug-tg-w-full plug-tg-border plug-tg-p-2 plug-tg-shadow-sm"
         />
       </div>
-      <div className="w-1/2 flex-none p-2">{children}</div>
-      <div className="w-1/4 flex-none p-2">
+      <div className="plug-tg-w-1/2 plug-tg-flex-none plug-tg-p-2">{children}</div>
+      <div className="plug-tg-w-1/4 plug-tg-flex-none plug-tg-p-2">
         <RemoveButton
           iconType="block"
-          className="w-full"
+          className="plug-tg-w-full"
           disabled={disabled || readonly}
           onClick={onDropPropertyClick(label)}
           uiSchema={uiSchema}

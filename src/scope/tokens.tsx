@@ -118,42 +118,42 @@ export default class TokensScope {
     const provider = createRoot(summaryEl);
 
     provider.render(
-      <div className="flow-root">
+      <div className="plug-tg-flow-root">
         <ul
           role="list"
-          className="divide-y divide-gray-200 dark:divide-gray-700"
+          className="plug-tg-divide-y plug-tg-divide-gray-200 dark:plug-tg-divide-gray-700"
         >
-          <li className="py-3 sm:py-4">
-            <div className="flex items-center justify-between space-x-4">
+          <li className="plug-tg-py-3 sm:plug-tg-py-4">
+            <div className="plug-tg-flex plug-tg-items-center plug-tg-justify-between plug-tg-space-x-4">
               <div>Total tokens</div>
-              <div className="inline-flex items-center pr-3 text-base font-semibold text-gray-900 dark:text-white">
+              <div className="plug-tg-inline-flex plug-tg-items-center plug-tg-pr-3 plug-tg-text-base plug-tg-font-semibold plug-tg-text-gray-900 dark:plug-tg-text-white">
                 {props.tokens}
               </div>
             </div>
           </li>
 
-          <li className="py-3 sm:py-4">
-            <div className="flex items-center justify-between space-x-4">
+          <li className="plug-tg-py-3 sm:plug-tg-py-4">
+            <div className="plug-tg-flex plug-tg-items-center plug-tg-justify-between plug-tg-space-x-4">
               <div>Completion tokens</div>
-              <div className="inline-flex items-center pr-3 text-base font-semibold text-gray-900 dark:text-white">
+              <div className="plug-tg-inline-flex plug-tg-items-center plug-tg-pr-3 plug-tg-text-base plug-tg-font-semibold plug-tg-text-gray-900 dark:plug-tg-text-white">
                 {props.completionTokens}
               </div>
             </div>
           </li>
 
-          <li className="py-3 sm:py-4">
-            <div className="flex items-center justify-between space-x-4">
+          <li className="plug-tg-py-3 sm:plug-tg-py-4">
+            <div className="plug-tg-flex plug-tg-items-center plug-tg-justify-between plug-tg-space-x-4">
               <div>Max Tokens</div>
-              <div className="inline-flex items-center pr-3 text-base font-semibold text-gray-900 dark:text-white">
+              <div className="plug-tg-inline-flex plug-tg-items-center plug-tg-pr-3 plug-tg-text-base plug-tg-font-semibold plug-tg-text-gray-900 dark:plug-tg-text-white">
                 {props.maxTokens}
               </div>
             </div>
           </li>
 
-          <li className="py-3 sm:py-4">
-            <div className="flex items-center justify-between space-x-4">
+          <li className="plug-tg-py-3 sm:plug-tg-py-4">
+            <div className="plug-tg-flex plug-tg-items-center plug-tg-justify-between plug-tg-space-x-4">
               <div>Estimated Price</div>
-              <div className="inline-flex items-center pr-3 text-base font-semibold text-gray-900 dark:text-white">
+              <div className="plug-tg-inline-flex plug-tg-items-center plug-tg-pr-3 plug-tg-text-base plug-tg-font-semibold plug-tg-text-gray-900 dark:plug-tg-text-white">
                 ${props.cost.toLocaleString()}
               </div>
             </div>

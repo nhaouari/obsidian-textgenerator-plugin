@@ -90,8 +90,6 @@ export default function ChatComp(props: {
       const selection = await props.plugin.textGenerator.contextManager.getSelection(editor)
       const selections = await props.plugin.textGenerator.contextManager.getSelections(editor)
 
-      console.log({ selections, val: editor.getValue() })
-
       const context =
         await props.plugin.textGenerator.contextManager.getContext({
           insertMetadata: false,
@@ -147,12 +145,12 @@ export default function ChatComp(props: {
   };
 
   return (
-    <form className="flex h-full w-full flex-col gap-2" onSubmit={handleSubmit}>
+    <form className="plug-tg-flex plug-tg-h-full plug-tg-w-full plug-tg-flex-col plug-tg-gap-2" onSubmit={handleSubmit}>
       <div
         className={clsx(
-          "min-h-[200px] flex w-full resize-y flex-col justify-end gap-2 overflow-x-hidden overflow-y-scroll pb-2",
+          "plug-tg-min-h-[200px] plug-tg-flex plug-tg-w-full plug-tg-resize-y plug-tg-flex-col plug-tg-justify-end plug-tg-gap-2 plug-tg-overflow-x-hidden plug-tg-overflow-y-scroll plug-tg-pb-2",
           {
-            "dz-tooltip dz-tooltip-bottom": warn,
+            "plug-tg-tooltip plug-tg-tooltip-bottom": warn,
           }
         )}
       >
@@ -162,8 +160,8 @@ export default function ChatComp(props: {
           rows={2}
           placeholder="Template"
           className={clsx(
-            "markdown-source-view min-h-16 h-full w-full resize-y rounded border border-gray-300 p-2 outline-2 focus:border-blue-500 focus:outline-none",
-            "dz-input bg-[var(--background-modifier-form-field)] outline-none w-full",
+            "markdown-source-view plug-tg-min-h-16 plug-tg-h-full plug-tg-w-full plug-tg-resize-y plug-tg-rounded plug-tg-border plug-tg-border-gray-300 plug-tg-p-2 plug-tg-outline-2 focus:plug-tg-border-blue-500 focus:plug-tg-outline-none",
+            "plug-tg-input plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none plug-tg-w-full",
             {
               "focus:border-yellow-400": warn,
             }
@@ -175,15 +173,15 @@ export default function ChatComp(props: {
           value={input}
         />
       </div>
-      <div className="">
+      <div>
         <AvailableVars vars={contextVariablesObj} />
       </div>
-      <div className="flex justify-end gap-3 pr-3">
-        <span className="text-xs opacity-50">{warn}</span>
+      <div className="plug-tg-flex plug-tg-justify-end plug-tg-gap-3 plug-tg-pr-3">
+        <span className="plug-tg-text-xs plug-tg-opacity-50">{warn}</span>
         {loading ? (
           <button
             onClick={stopLoading}
-            className="rounded bg-red-500 px-6 py-2 font-semibold hover:bg-red-600 focus:outline-none focus:ring-4 focus:ring-blue-300/50"
+            className="plug-tg-rounded plug-tg-bg-red-500 plug-tg-px-6 plug-tg-py-2 plug-tg-font-semibold hover:plug-tg-bg-red-600 focus:plug-tg-outline-none focus:plug-tg-ring-4 focus:plug-tg-ring-blue-300/50"
           >
             Stop
           </button>
@@ -192,27 +190,27 @@ export default function ChatComp(props: {
             <button
               type="submit"
               data-tip="unhold ctrl to use preview"
-              className="rounded dz-tooltip dz-tooltip-bottom bg-blue-500 px-6 py-2 font-semibold hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300/50"
+              className="plug-tg-rounded plug-tg-tooltip plug-tg-tooltip-bottom plug-tg-bg-blue-500 plug-tg-px-6 plug-tg-py-2 plug-tg-font-semibold hover:plug-tg-bg-blue-600 focus:plug-tg-outline-none focus:plug-tg-ring-4 focus:plug-tg-ring-blue-300/50"
             >
               Run
             </button> :
             <button
               type="submit"
               data-tip="hold ctrl to use run"
-              className="rounded dz-tooltip dz-tooltip-bottom bg-blue-500 px-6 py-2 font-semibold hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300/50"
+              className="plug-tg-rounded plug-tg-tooltip plug-tg-tooltip-bottom plug-tg-bg-blue-500 plug-tg-px-6 plug-tg-py-2 plug-tg-font-semibold hover:plug-tg-bg-blue-600 focus:plug-tg-outline-none focus:plug-tg-ring-4 focus:plug-tg-ring-blue-300/50"
             >
               Preview
             </button>
         )}
         {answer && <CopyButton textToCopy={answer} justAButton />}
       </div>
-      <div className="min-h-16 w-full">
+      <div className="plug-tg-min-h-16 plug-tg-w-full">
         {answer ? (
-          <MarkDownViewer className="h-full w-full select-text overflow-y-auto" editable>
+          <MarkDownViewer className="plug-tg-h-full plug-tg-w-full plug-tg-select-text plug-tg-overflow-y-auto" editable>
             {answer}
           </MarkDownViewer>
         ) : (
-          <div className="h-full text-sm opacity-50">(empty)</div>
+          <div className="plug-tg-h-full plug-tg-text-sm plug-tg-opacity-50">(empty)</div>
         )}
       </div>
     </form>

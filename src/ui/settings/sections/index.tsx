@@ -85,8 +85,8 @@ export default function SectionsMain() {
   };
 
   return (
-    <div className="flex w-full flex-col gap-3">
-      <div className="flex w-full justify-between p-2">
+    <div className="plug-tg-flex plug-tg-w-full plug-tg-flex-col plug-tg-gap-3">
+      <div className="plug-tg-flex plug-tg-w-full plug-tg-justify-between plug-tg-p-2">
         <div></div>
         <Input
           setValue={(val) => setSearchTerm(val.toLocaleLowerCase())}

@@ -63,7 +63,7 @@ export default function ConsideredContextSetting(props: {
     <>
       <SettingsSection
         title="Custom Instructions"
-        className="flex w-full flex-col"
+        className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
         register={props.register}
         id={sectionId}
       >
@@ -95,7 +95,7 @@ export default function ConsideredContextSetting(props: {
             >
               <textarea
                 placeholder="Textarea will autosize to fit the content"
-                className="resize-y dz-input bg-[var(--background-modifier-form-field)] outline-none h-fit w-full"
+                className="plug-tg-resize-y plug-tg-input plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none plug-tg-h-fit plug-tg-w-full"
                 value={
                   global.plugin.settings.context.customInstruct ||
                   global.plugin.defaultSettings.context.customInstruct
@@ -147,7 +147,7 @@ export default function ConsideredContextSetting(props: {
             >
               <textarea
                 placeholder="Textarea will autosize to fit the content"
-                className="resize-y dz-input bg-[var(--background-modifier-form-field)] outline-none h-fit w-full"
+                className="plug-tg-resize-y plug-tg-input plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none plug-tg-h-fit plug-tg-w-full"
                 value={
                   global.plugin.settings.advancedOptions?.generateTitleInstruct ||
                   global.plugin.defaultSettings.advancedOptions?.generateTitleInstruct
@@ -200,7 +200,7 @@ export default function ConsideredContextSetting(props: {
 
       <SettingsSection
         title="Template Settings"
-        className="flex w-full flex-col"
+        className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
         register={props.register}
         id={sectionId}
       >
@@ -213,7 +213,7 @@ export default function ConsideredContextSetting(props: {
         >
           <textarea
             placeholder="Textarea will autosize to fit the content"
-            className="resize-y dz-input bg-[var(--background-modifier-form-field)] outline-none h-fit w-full"
+            className="plug-tg-resize-y plug-tg-input plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none plug-tg-h-fit plug-tg-w-full"
             value={
               global.plugin.settings.context.contextTemplate ||
               global.plugin.defaultSettings.context.contextTemplate

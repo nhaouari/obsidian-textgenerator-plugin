@@ -54,7 +54,7 @@ export default function CheckboxWidget<
   const description = options.description || schema.description
   return (
     <div
-      className={`relative ${disabled || readonly ? "cursor-not-allowed opacity-50" : ""
+      className={`plug-tg-relative ${disabled || readonly ? "plug-tg-cursor-not-allowed plug-tg-opacity-50" : ""
         }`}
       aria-describedby={ariaDescribedByIds<T>(id)}
     >
@@ -67,7 +67,7 @@ export default function CheckboxWidget<
           registry={registry}
         />
       )}
-      <label className="mt-4 block">
+      <label className="plug-tg-mt-4 plug-tg-block">
         <input
           id={id}
           name={id}
@@ -79,9 +79,9 @@ export default function CheckboxWidget<
           onChange={_onChange}
           onBlur={_onBlur}
           onFocus={_onFocus}
-          className="form-checkbox text-primary"
+          className="plug-tg-form-checkbox plug-tg-text-primary"
         />
-        <span className="ml-2">{labelValue(label, hideLabel || !label)}</span>
+        <span className="plug-tg-ml-2">{labelValue(label, hideLabel || !label)}</span>
       </label>
     </div>
   )

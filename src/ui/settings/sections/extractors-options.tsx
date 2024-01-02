@@ -62,7 +62,7 @@ export default function ExtractorsOptionsSetting(props: {
   return (
     <SettingsSection
       title="Extractors Options"
-      className="flex w-full flex-col"
+      className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
       register={props.register}
       id={sectionId}
     >
@@ -86,7 +86,7 @@ export default function ExtractorsOptionsSetting(props: {
                 value={
                   "" +
                   global.plugin.settings.extractorsOptions[
-                    key as keyof typeof global.plugin.settings.extractorsOptions
+                  key as keyof typeof global.plugin.settings.extractorsOptions
                   ]
                 }
                 setValue={async (val) => {

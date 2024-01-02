@@ -40,14 +40,14 @@ export default function TextareaWidget<
   const _onFocus = ({ target: { value } }: FocusEvent<HTMLTextAreaElement>) =>
     onFocus(id, value)
 
-  //           "focus-within:ring-red-300 ring-1": props.required && !props.value && !props.label.contains("optional")
+  //           "focus-within:plug-tg-ring-red-300 plug-tg-ring-1": props.required && !props.value && !props.label.contains("optional")
   //         })}
-  // className="dz-textarea focus:border-primary focus:outline-none
-  // border-muted w-full border px-3 py-2"
+  // className="plug-tg-textarea focus:plug-tg-border-primary focus:plug-tg-outline-none
+  // plug-tg-border-muted plug-tg-w-full plug-tg-border plug-tg-px-3 plug-tg-py-2"
   return (
-    <div className="flex">
+    <div className="plug-tg-flex">
       <textarea
-        className={clsx("h-24 w-full bg-[var(--background-modifier-form-field)] resize-none rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none")}
+        className={clsx("plug-tg-h-24 plug-tg-w-full plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-resize-none plug-tg-rounded plug-tg-border plug-tg-border-gray-300 plug-tg-p-2 focus:plug-tg-border-blue-500 focus:plug-tg-outline-none")}
         id={id}
         name={id}
         placeholder={placeholder}
