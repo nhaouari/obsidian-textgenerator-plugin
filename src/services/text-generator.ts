@@ -177,7 +177,9 @@ export default class TextGenerator extends RequestHandler {
     const context =
       customContext ||
       (await this.contextManager.getContext({ editor, insertMetadata }));
-    const prefix = context.options?.prefix ?? this.plugin.settings.prefix
+
+    // if its a template don't bother with adding prefix
+    const prefix = context.template?.inputTemplate ? "" : this.plugin.settings.prefix
     const mode = this.getMode(context);
 
     const startingCursor = await this.getCursor(editor, mode);
@@ -296,7 +298,8 @@ export default class TextGenerator extends RequestHandler {
 
     const mode = this.getMode(context);
 
-    const prefix = context.options?.prefix ?? this.plugin.settings.prefix;
+    // if its a template don't bother with adding prefix
+    const prefix = context.template?.inputTemplate ? "" : this.plugin.settings.prefix;
 
     await editor.insertText(
       prefix.length ? prefix + text : text,
