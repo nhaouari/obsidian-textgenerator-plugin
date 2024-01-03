@@ -17,7 +17,7 @@ export default class LangchainChatGoogleGenerativeAIProvider
   extends LangchainBase
   implements LLMProviderInterface {
   mobileSupport = true;
-  streamable = false;
+  streamable = true;
   legacyN = true
   id = id;
   static id = id;
