@@ -60,6 +60,7 @@ Starred Blocks: {{starredBlocks}}
     "text-extractor-tool": true,
     "stop-stream": true,
     "custom-instruct": true,
+    "generate-in-right-click-menu": false,
     reload: true,
   },
 

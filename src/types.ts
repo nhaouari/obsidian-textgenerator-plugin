@@ -22,6 +22,7 @@ type Options = Record<
   | "text-extractor-tool"
   | "stop-stream"
   | "custom-instruct"
+  | "generate-in-right-click-menu"
   | "reload"
   | "open-playground",
   boolean

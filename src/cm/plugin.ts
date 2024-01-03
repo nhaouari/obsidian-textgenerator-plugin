@@ -17,8 +17,8 @@ const logger = debug("cm:SpinnersPlugin");
 class Spinners extends WidgetType {
 	toDOM() {
 		const span = document.createElement("span");
-		span.addClasses(["plug-tg-loading", "dots"]);
-		span.setAttribute("id", "tg-loading");
+		span.addClasses(["loading", "dots"]);
+		span.setAttribute("id", "plug-tg-loading");
 		return span;
 	}
 }

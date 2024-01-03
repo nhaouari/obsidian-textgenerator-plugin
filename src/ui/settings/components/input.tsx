@@ -20,7 +20,7 @@ export default function Input(props: {
     <div
       className={clsx("plug-tg-flex plug-tg-items-center plug-tg-gap-2 ", {
         "checkbox-container plug-tg-cursor-pointer": props.type == "checkbox",
-        "plug-tg-is-enabled": props.type == "checkbox" && props.value == "true",
+        "is-enabled": props.type == "checkbox" && props.value == "true",
         "plug-tg-tooltip": error,
       })}
       onClick={

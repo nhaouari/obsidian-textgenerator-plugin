@@ -268,20 +268,25 @@ export default class MarkdownManager implements ContentManager {
                     cursor
                 );
 
-                const nc = {
-                    ch: startingCursor.ch + allText.length - 1,
-                    line: startingCursor.line,
-                };
 
 
                 await this.insertText(allText, startingCursor, mode);
 
                 console.log(allText)
-
                 // here we can do some selecting magic
                 // editor.setSelection(startingCursor, cursor)
 
-                this.setCursor(nc);
+                try {
+                    this.setCursor({
+                        ch: startingCursor.ch + allText.length,
+                        line: startingCursor.line,
+                    });
+                } catch {
+                    this.setCursor({
+                        ch: startingCursor.ch + allText.length - 1,
+                        line: startingCursor.line,
+                    });
+                }
             }
         }
     }

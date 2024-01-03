@@ -117,6 +117,29 @@ export default class TextGeneratorPlugin extends Plugin {
         this.AddAutoSuggestStatusBar();
       }
 
+      if (this.settings.options["generate-in-right-click-menu"])
+        this.registerEvent(
+          this.app.workspace.on(
+            "editor-menu",
+            async (menu) => {
+              menu.addItem((item) => {
+                item.setIcon("GENERATE_META_ICON");
+                item.setTitle("Generate");
+                item.onClick(async () => {
+                  try {
+                    if (this.processing) return this.textGenerator.signalController?.abort();
+                    const activeView = await this.commands.getActiveView();
+                    const CM = ContentManagerCls.compile(activeView, this)
+                    await this.textGenerator.generateInEditor({}, false, CM);
+                  } catch (error) {
+                    this.handelError(error);
+                  }
+                });
+              });
+            }
+          )
+        );
+
       this.registerEvent(
         this.app.workspace.on(
           "files-menu",
