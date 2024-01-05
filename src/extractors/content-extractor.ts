@@ -14,7 +14,7 @@ const logger = debug("textgenerator:Extractor");
 
 
 export const listOfUsableExtractors = [
-  "PDFExtractor", "WebPageExtractor", "YoutubeExtractor", "AudioExtractor", "ImageExtractor", "RssExtractor"
+  "PDFExtractor", "WebPageExtractor", "YoutubeExtractor", "AudioExtractor", "ImageExtractor", "ImageExtractorEmbded", "RssExtractor"
 ]
 
 
