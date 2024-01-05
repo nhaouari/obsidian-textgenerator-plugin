@@ -186,7 +186,7 @@ export class TextExtractorTool extends Modal {
   }
 
   async onOpen() {
-    this.containerEl.createEl("div", { cls: "plug-tg-packageManager" });
+    // this.containerEl.createEl("div", { cls: "plug-tg-packageManager" });
     this.root = createRoot(this.containerEl.children[1]);
     this.root.render(
       <React.StrictMode>
