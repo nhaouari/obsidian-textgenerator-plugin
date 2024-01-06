@@ -106,7 +106,7 @@
 }
 
 /* ---- other ---- */
-
+/* 
 .small {
 	@apply plug-tg-text-sm;
 }
@@ -122,8 +122,8 @@
 
 .tag {
 	@apply plug-tg-border-l plug-tg-border-white;
-}
-
+} */
+/* 
 ::-webkit-scrollbar-track {
 	background-color: transparent;
 }
@@ -148,7 +148,7 @@
 ::-webkit-scrollbar {
 	width: 6px;
 	height: 6px;
-}
+} */
 
 /* 
 html {
