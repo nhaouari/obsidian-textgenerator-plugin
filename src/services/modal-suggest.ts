@@ -25,8 +25,9 @@ export class ModelSuggest extends EditorSuggest<PromptTemplate> {
   }
 
   public onTrigger(cursor: EditorPosition, editor: Editor) {
-    const line: string = editor.getLine(cursor.line).substring(0, cursor.ch);
-    if (!line.startsWith("/")) return null;
+    const _line: string = editor.getLine(cursor.line);
+    if (!_line.startsWith("/")) return null;
+    const line = _line.substring(0, cursor.ch);
     const currentPart = line.substring(1, cursor.ch);
     const currentStart = currentPart.lastIndexOf("/");
     return {

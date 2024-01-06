@@ -126,14 +126,14 @@ export class AutoSuggest extends EditorSuggest<Completion> {
   ): EditorSuggestTriggerInfo | null {
     logger("onTrigger", cursor, editor, file);
     if (
+      this.isOpen ||
       !this.plugin.settings?.autoSuggestOptions?.isEnabled ||
       !this.plugin.settings.autoSuggestOptions.triggerPhrase ||
       // @ts-ignore
       (this.app.workspace.activeEditor?.editor?.cm?.state?.vim?.mode &&
         // @ts-ignore
         this.app.workspace.activeEditor.editor.cm.state.vim.mode !==
-        "insert") ||
-      this.isOpen
+        "insert")
     ) {
       this.process = false;
       return null;
@@ -143,7 +143,7 @@ export class AutoSuggest extends EditorSuggest<Completion> {
 
     const line = editor.getLine(cursor.line).substring(0, cursor.ch);
 
-    if (!line.endsWith(triggerPhrase) || (!this.plugin.settings.autoSuggestOptions.allowInNewLine && line == triggerPhrase)) {
+    if ((!this.plugin.settings.autoSuggestOptions.allowInNewLine && line == triggerPhrase) || !line.endsWith(triggerPhrase)) {
       this.process = false;
       return null;
     }
