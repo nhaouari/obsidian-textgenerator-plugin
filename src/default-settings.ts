@@ -61,6 +61,8 @@ Starred Blocks: {{starredBlocks}}
     "stop-stream": true,
     "custom-instruct": true,
     "generate-in-right-click-menu": false,
+    "batch-generate-in-right-click-files-menu": true,
+    "tg-block-processor": true,
     reload: true,
   },
 

@@ -112,6 +112,16 @@ export default class TextGeneratorPlugin extends Plugin {
       this.statusBarItemEl = this.addStatusBarItem();
 
       this.updateStatusBar(``);
+
+
+      this.registerView(VIEW_TOOL_ID, (leaf) => new ToolView(leaf, this));
+
+      this.registerView(
+        VIEW_Playground_ID,
+        (leaf) => new PlaygroundView(leaf, this)
+      );
+
+
       if (this.settings.autoSuggestOptions.showStatus) {
         this.AddAutoSuggestStatusBar();
       }
@@ -139,92 +149,90 @@ export default class TextGeneratorPlugin extends Plugin {
           )
         );
 
-      this.registerEvent(
-        this.app.workspace.on(
-          "files-menu",
-          async (menu, files, source, leaf) => {
-            menu.addItem((item) => {
-              item.setIcon("GENERATE_META_ICON");
-              item.setTitle("Generate");
-              item.onClick(() => {
-                try {
-                  new ExampleModal(
-                    this.app,
-                    this,
-                    async (result) => {
-                      if (!result.path)
-                        return this.handelError("couldn't find path");
-                      await this.textGenerator.generateBatchFromTemplate(
-                        files.filter(
-                          // @ts-ignore
-                          (f) => !f.children && f.path.endsWith(".md")
-                        ) as TFile[],
-                        {},
-                        result.path,
-                        true
-                      );
-                    },
-                    "Generate and Create a New Note From Template"
-                  ).open();
-                } catch (error) {
-                  this.handelError(error);
-                }
+      if (this.settings.options["batch-generate-in-right-click-files-menu"])
+        this.registerEvent(
+          this.app.workspace.on(
+            "files-menu",
+            async (menu, files, source, leaf) => {
+              menu.addItem((item) => {
+                item.setIcon("GENERATE_META_ICON");
+                item.setTitle("Generate");
+                item.onClick(() => {
+                  try {
+                    new ExampleModal(
+                      this.app,
+                      this,
+                      async (result) => {
+                        if (!result.path)
+                          return this.handelError("couldn't find path");
+                        await this.textGenerator.generateBatchFromTemplate(
+                          files.filter(
+                            // @ts-ignore
+                            (f) => !f.children && f.path.endsWith(".md")
+                          ) as TFile[],
+                          {},
+                          result.path,
+                          true
+                        );
+                      },
+                      "Generate and Create a New Note From Template"
+                    ).open();
+                  } catch (error) {
+                    this.handelError(error);
+                  }
+                });
               });
-            });
-          }
-        )
-      );
+            }
+          )
+        );
 
-      const blockTgHandler = async (
-        source: string,
-        container: HTMLElement,
-        { sourcePath: path }: MarkdownPostProcessorContext
-      ) => {
-        setTimeout(async () => {
-          try {
-            const { inputTemplate, outputTemplate, inputContent } =
-              this.textGenerator.contextManager.splitTemplate(source);
 
-            const activeView = this.getActiveView();
+      if (this.settings.options["tg-block-processor"]) {
+        const blockTgHandler = async (
+          source: string,
+          container: HTMLElement,
+          { sourcePath: path }: MarkdownPostProcessorContext
+        ) => {
+          setTimeout(async () => {
+            try {
+              const { inputTemplate, outputTemplate, inputContent } =
+                this.textGenerator.contextManager.splitTemplate(source);
 
-            if (!activeView) throw "active view wasn't detected"
+              const activeView = this.getActiveView();
 
-            const CM = ContentManagerCls.compile(activeView, this)
+              if (!activeView) throw "active view wasn't detected"
 
-            const context = {
-              ...(activeView
-                ? await this.textGenerator.contextManager.getTemplateContext({
-                  editor: CM,
-                  filePath: activeView?.file?.path,
-                  templateContent: inputContent,
-                })
-                : {}),
-            };
+              const CM = ContentManagerCls.compile(activeView, this)
 
-            const markdown = await inputTemplate(context);
+              const context = {
+                ...(activeView
+                  ? await this.textGenerator.contextManager.getTemplateContext({
+                    editor: CM,
+                    filePath: activeView?.file?.path,
+                    templateContent: inputContent,
+                  })
+                  : {}),
+              };
 
-            await MarkdownRenderer.render(
-              this.app,
-              markdown,
-              container,
-              path,
-              this
-            );
-            this.addTGMenu(container, markdown, source, outputTemplate);
-          } catch (e) {
-            console.warn(e);
-          }
-        }, 100);
-      };
+              const markdown = await inputTemplate(context);
 
-      this.registerView(VIEW_TOOL_ID, (leaf) => new ToolView(leaf, this));
-      this.registerView(
-        VIEW_Playground_ID,
-        (leaf) => new PlaygroundView(leaf, this)
-      );
-      this.registerMarkdownCodeBlockProcessor("tg", async (source, el, ctx) =>
-        blockTgHandler(source, el, ctx)
-      );
+              await MarkdownRenderer.render(
+                this.app,
+                markdown,
+                container,
+                path,
+                this
+              );
+              this.addTGMenu(container, markdown, source, outputTemplate);
+            } catch (e) {
+              console.warn(e);
+            }
+          }, 100);
+        };
+        this.registerMarkdownCodeBlockProcessor("tg", async (source, el, ctx) =>
+          blockTgHandler(source, el, ctx)
+        );
+      }
 
       if (this.settings.autoSuggestOptions.isEnabled)
         this.registerEditorSuggest(new AutoSuggest(this.app, this));

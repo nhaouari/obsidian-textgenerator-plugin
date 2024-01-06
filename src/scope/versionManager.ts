@@ -23,6 +23,11 @@ export default class VersionManager {
     if (this.compare(this.plugin.settings.version, "0.3.999-beta") <= 0) {
       await this.updateFromV0_3To0_4();
     }
+
+    // check if settings's version is older or equal to 0.5.26
+    if (this.compare(this.plugin.settings.version, "0.5.26-beta") <= 0) {
+      await this.updateFromV5_27To5_28();
+    }
   }
 
   async updateFromV0_3To0_4() {
@@ -55,6 +60,11 @@ export default class VersionManager {
 
 
     await this.plugin.saveSettings();
+  }
+  async updateFromV5_27To5_28() {
+    this.plugin.settings.version = this.currentVersion;
+    this.plugin.settings.options["batch-generate-in-right-click-files-menu"] = this.plugin.defaultSettings.options["batch-generate-in-right-click-files-menu"]
+    this.plugin.settings.options["tg-block-processor"] = this.plugin.defaultSettings.options["tg-block-processor"]
   }
 
   isOldVersion(version: Version) {

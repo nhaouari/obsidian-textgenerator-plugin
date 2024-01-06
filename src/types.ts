@@ -24,7 +24,9 @@ type Options = Record<
   | "custom-instruct"
   | "generate-in-right-click-menu"
   | "reload"
-  | "open-playground",
+  | "open-playground"
+  | "batch-generate-in-right-click-files-menu"
+  | "tg-block-processor",
   boolean
 >;
 
