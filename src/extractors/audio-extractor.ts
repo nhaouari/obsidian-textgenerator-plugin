@@ -39,11 +39,12 @@ export default class AudioExtractor extends Extractor {
       "m4a",
       "wav",
       "webm",
+      "ogg"
     ];
     const embeds = this.app.metadataCache
       .getCache(filePath)
       ?.embeds?.filter((embed) =>
-        supportedAudioExtensions.some((ext) => embed.link.endsWith(`.${ext}`))
+        supportedAudioExtensions.some((ext) => embed.link.toLowerCase().endsWith(`.${ext}`))
       );
     if (!embeds) {
       return [];
