@@ -80,7 +80,6 @@ export default class TextGeneratorPlugin extends Plugin {
   async onload() {
     try {
       logger("loading textGenerator plugin");
-      registerAPI("tg", this.textGenerator, this as any);
       addIcon("GENERATE_ICON", GENERATE_ICON);
       addIcon("GENERATE_META_ICON", GENERATE_META_ICON);
 
@@ -231,7 +230,7 @@ export default class TextGeneratorPlugin extends Plugin {
         this.registerEditorSuggest(new AutoSuggest(this.app, this));
 
       if (this.settings.options["modal-suggest"]) {
-        this.registerEditorSuggest(new ModelSuggest(this.app, this) as any);
+        this.registerEditorSuggest(new ModelSuggest(this.app, this));
       }
 
       // This creates an icon in the left ribbon.
