@@ -55,23 +55,17 @@ export default class MarkdownManager implements ContentManager {
         return this.editor.getSelection();
     }
 
-    protected wrapInBlockQuote(text: string) {
+    protected wrapInBlockQuote(text: string, stream?: boolean) {
         let lines = text
             .split("\n")
             .map((line) => line.trim())
             .filter((line) => line !== "" && line !== ">");
 
         lines = lines
-            .map((line, index) => {
-                if (line.includes("[!ai]+ AI")) {
-                    return ">";
-                }
-
-                return line.startsWith(">") ? line : "> " + line;
-            })
+            .map(line => line.startsWith("> ") ? line : "> " + line)
             .filter((line) => line !== "");
 
-        return "\n> [!ai]+ AI\n>\n" + lines.join("\n").trim() + "\n\n";
+        return (stream ? "" : "\n> [!ai]+ AI\n>\n") + lines.join("\n").trim() + "\n";
     }
 
     protected setSelections(poses: { anchor: { ch: number; line: number; }; head: { ch: number; line: number; }; }[]): void {
@@ -195,28 +189,30 @@ export default class MarkdownManager implements ContentManager {
         switch (mode) {
             case "replace":
                 this.replaceSelection(text);
-                break;
-
-            case "insert":
-                console.log({
-                    cursor
-                })
-                if (this.options.wrapInBlockQuote)
-                    text = this.wrapInBlockQuote(text)
+                return text;
 
             case "stream":
-            default:
-                this.replaceRange(text,
-                    {
-                        ch: cursor.ch,
-                        line: cursor.line
-                    }
-                );
+                if (this.options.wrapInBlockQuote)
+                    text = this.wrapInBlockQuote(text, true)
                 break;
+            case "insert":
+                if (this.options.wrapInBlockQuote)
+                    text = this.wrapInBlockQuote(text)
+                break;
+
         }
+
+        this.replaceRange(text,
+            {
+                ch: cursor.ch,
+                line: cursor.line
+            }
+        );
+
+        return text;
     }
 
-    async insertStream(pos: { ch: number; line: number; }, mode?: "insert" | "replace"): Promise<{
+    async insertStream(pos: { ch: number; line: number; }, mode?: "insert" | "replace" | "stream"): Promise<{
         insert(data: string): void,
         end(): void,
         replaceAllWith(newData: string): void
@@ -233,16 +229,17 @@ export default class MarkdownManager implements ContentManager {
         let firstTime = true;
 
         const writerTimer: any = setInterval(async () => {
+
             if (!stillPlaying) return clearInterval(writerTimer);
-            const posting = postingContent;
+            let posting = postingContent;
+            postingContent = postingContent.substring(posting.length);
+
             if (!posting) return;
 
-            if (firstTime) await this.insertText(posting, cursor, mode);
-            else await this.insertText(posting, cursor, "stream");
+            if (firstTime) posting = await this.insertText(posting, cursor, mode == "stream" ? "insert" : mode);
+            else posting = await this.insertText(posting, cursor, "stream");
 
-            postingContent = postingContent.substring(posting.length);
             firstTime = false;
-
             cursor.ch += posting.length;
 
             // if (!this.plugin.settings.freeCursorOnStreaming)
@@ -258,8 +255,9 @@ export default class MarkdownManager implements ContentManager {
             },
 
             replaceAllWith: async (allText) => {
-                if (this.options.wrapInBlockQuote)
-                    allText = this.wrapInBlockQuote(allText)
+                console.log("calling for replaceAll", allText)
+                // if (this.options.wrapInBlockQuote)
+                //     allText = this.wrapInBlockQuote(allText)
 
 
                 this.replaceRange(
