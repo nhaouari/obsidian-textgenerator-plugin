@@ -122,9 +122,9 @@ export default class TextGeneratorPlugin extends Plugin {
       );
 
 
-      if (this.settings.autoSuggestOptions.showStatus) {
+      if (this.settings.autoSuggestOptions.showStatus)
         this.AddAutoSuggestStatusBar();
-      }
+
 
       if (this.settings.options["generate-in-right-click-menu"])
         this.registerEvent(
