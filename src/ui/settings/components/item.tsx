@@ -35,7 +35,7 @@ export default function SettingItem(props: {
         },
         props.className,
         {
-          hidden: props.register && !props.register.listOfAllowed.contains(id),
+          "plug-tg-hidden": props.register && !props.register.listOfAllowed.contains(id),
           "plug-tg-tooltip": props.tip?.length,
         }
       )}

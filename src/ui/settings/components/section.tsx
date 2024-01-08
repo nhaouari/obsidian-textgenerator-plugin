@@ -29,7 +29,7 @@ export default function SettingsSection(props: {
       className={clsx("plug-tg-collapse", props.className, {
         "plug-tg-opacity-50 plug-tg-max-h-16": collapsed,
         "plug-tg-collapse-open": !collapsed,
-        hidden: props.hidden || !props.register.activeSections[props.id],
+        "plug-tg-hidden": props.hidden || !props.register.activeSections[props.id],
       })}
     >
       {!props.hideTitle && (
