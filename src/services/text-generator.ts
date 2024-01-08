@@ -349,20 +349,24 @@ export default class TextGenerator extends RequestHandler {
 
   async generatePrompt(
     promptText: string,
-    insertMetadata = false,
     editor: ContentManager,
     outputTemplate: HandlebarsTemplateDelegate<any>
   ) {
     logger("generatePrompt");
     const cursor = this.getCursor(editor);
 
-    let text = await this.generate({ context: promptText }, insertMetadata);
+    let text = await this.LLMProvider.generate([{
+      role: "user",
+      content: promptText
+    }], { ...this.LLMProvider.getSettings(), stream: false })
 
     if (outputTemplate) {
       text = outputTemplate({ output: text });
     }
 
-    if (text) editor.insertText(text, cursor);
+    // @TODO: hotfix, improve code later.
+    // @ts-ignore
+    if (text) editor?.editor?.insertText(text, cursor);
 
     logger("generatePrompt end");
   }

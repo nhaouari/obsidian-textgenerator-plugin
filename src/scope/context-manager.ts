@@ -496,20 +496,20 @@ export default class ContextManager {
       outputContent = this.overProcessTemplate("");
     }
 
-    const inputTemplate = Handlebars.compile(inputContent, {
+    const inputTemplate = this.handlebarsMiddleware(Handlebars.compile(inputContent, {
       noEscape: true,
-    });
+    }));
 
     const preRunnerTemplate = preRunnerContent
-      ? Handlebars.compile(preRunnerContent, {
+      ? this.handlebarsMiddleware(Handlebars.compile(preRunnerContent, {
         noEscape: true,
-      })
+      }))
       : null;
 
     const outputTemplate = outputContent
-      ? Handlebars.compile(outputContent, {
+      ? this.handlebarsMiddleware(Handlebars.compile(outputContent, {
         noEscape: true,
-      })
+      }))
       : null;
 
     return {
@@ -542,8 +542,6 @@ export default class ContextManager {
     if (!templateFile) throw `Template ${templatePath} couldn't be found`;
 
     let templateContent = _templateContent || await this.app.vault.read(templateFile as TFile);
-
-    templateContent = await this.execDataview(templateContent)
 
     const templates = this.splitTemplate(templateContent);
 
@@ -1082,6 +1080,15 @@ export default class ContextManager {
   }
 
 
+  handlebarsMiddleware(hb: HandlebarsTemplateDelegate<any>): HandlebarsTemplateDelegate<any> {
+    return (async (context: any, options?: Handlebars.RuntimeOptions | undefined) => {
+      let hbd = await hb(context, options);
+
+      hbd = await this.execDataview(context);
+
+      return hbd;
+    }) as any
+  }
 }
 
 export function getOptionsUnder(
