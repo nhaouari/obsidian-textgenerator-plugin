@@ -382,6 +382,8 @@ export default class ContextManager {
 
     const activeDocCache = this.getMetaData(filePath || "");
 
+
+
     if (editor) {
       //   context["line"] = this.getConsideredContext(editor);
       context["tg_selection"] = await this.getTGSelection(editor);
@@ -393,6 +395,9 @@ export default class ContextManager {
 
       context["selection"] = selection || "";
 
+      context["title"] = title
+
+      context["frontmatter"] = this.getFrontmatter(activeDocCache) || "";
 
       if (vars["previousWord"])
         context["previousWord"] = await this.getPreviousWord(editor);
@@ -420,22 +425,17 @@ export default class ContextManager {
       if (vars["content"])
         context["content"] = await editor.getValue();
 
+
       if (vars["highlights"])
         context["highlights"] = editor
           ? await this.getHighlights(editor)
           : [];
     }
 
-    if (vars["title"])
-      context["title"] = title
-
 
     if (vars["starredBlocks"])
       context["starredBlocks"] =
         (await this.getStarredBlocks(filePath || "")) || "";
-
-
-    context["frontmatter"] = this.getFrontmatter(activeDocCache) || "";
 
     if (vars["yaml"])
       context["yaml"] = this.clearFrontMatterFromIgnored(this.getFrontmatter(activeDocCache) || "");
@@ -458,6 +458,14 @@ export default class ContextManager {
 
     if (vars["extractions"])
       context["extractions"] = await this.getExtractions(filePath, editor);
+
+
+    // // execute dataview
+    const _dVCache: any = {};
+    for (const key in context)
+      if (!["frontmatter", "title", "yaml"].includes(key))
+        context[key as keyof typeof context] = this.execDataview(context[key as keyof typeof context], _dVCache)
+
 
     logger("getDefaultContext", { context });
     return context;
@@ -535,7 +543,7 @@ export default class ContextManager {
 
     let templateContent = _templateContent || await this.app.vault.read(templateFile as TFile);
 
-    templateContent = await this.executeTemplateDataviewQueries(templateContent)
+    templateContent = await this.execDataview(templateContent)
 
     const templates = this.splitTemplate(templateContent);
 
@@ -966,35 +974,40 @@ export default class ContextManager {
     return output;
   }
 
-  async executeTemplateDataviewQueries(templateMD: string): Promise<string> {
+  private _dataviewApi: any;
+  async execDataview(md: string, _cache: Record<string, string | undefined> = {}): Promise<string> {
+    if (!md || typeof md != "string") return md;
+
     const parsedTemplateMD: string = await this.processCodeBlocks(
-      templateMD,
+      md,
       async ({ type, content, full }) => {
         try {
           switch (type.trim()) {
             case "dataview": {
-              const res = await getDataviewApi(this.app)?.queryMarkdown(content);
+              const api = this._dataviewApi = this._dataviewApi || await getDataviewApi(this.app);
+              const res = await api?.queryMarkdown(content);
 
               if (!res) throw new Error("Couln't find DataViewApi");
 
               if (res?.successful) {
-                return res.value;
+                return _cache[content] = _cache[content] || res.value;
               }
 
               throw new Error(((res || []) as unknown as string[])?.join(", "));
             }
             case "dataviewjs": {
+              const api = this._dataviewApi = this._dataviewApi || await getDataviewApi(this.app);
               const container = document.createElement("div");
               const component = new Component();
 
-              await getDataviewApi()?.executeJs(
+              api?.executeJs(
                 content,
                 container,
                 component,
                 ""
               );
 
-              return container.innerHTML;
+              return _cache[content] = _cache[content] || container.innerHTML;
             }
             default:
               return full;
