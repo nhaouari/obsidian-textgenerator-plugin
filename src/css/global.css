@@ -52,16 +52,12 @@
 
 /* ---  --- */
 
-
-.block-language-tg {
-	padding: 10px;
-}
-
-.cm-embed-block:hover>.tgmenu {
+.cm-embed-block:hover>.plug-tg-tgmenu {
 	opacity: 1;
 }
 
-.tgmenu {
+
+.plug-tg-tgmenu {
 	opacity: 0;
 	display: flex;
 	gap: 5px;
@@ -71,6 +67,11 @@
 	z-index: 100;
 }
 
+.block-language-tg {
+	padding: 10px;
+}
+
+/* TG BLOCK */
 .callout[data-callout="ai"] {
 	--callout-icon: bot;
 }
@@ -83,7 +84,7 @@
 	margin-left: 2rem;
 }
 
-.summary {
+.plug-tg-summary {
 	padding: 10px;
 	font-family: Arial;
 	display: flex;
@@ -91,140 +92,20 @@
 	background-color: var(--background-primary);
 }
 
-.summary table {
+.plug-tg-summary table {
 	width: 100%;
 }
 
-.summary td {
+.plug-tg-summary td {
 	color: var(--text-normal);
 }
 
-.summary .price {
+.plug-tg-summary .price {
 	background-color: var(--text-highlight-bg);
 	color: var(--text-normal);
 	font-size: 18px;
 }
 
-/* ---- other ---- */
-/* 
-.small {
-	@apply plug-tg-text-sm;
-}
-
-
-.gapper {
-	@apply plug-tg-flex plug-tg-flex-col plug-tg-gap-4;
-}
-
-.tags {
-	@apply plug-tg-flex plug-tg-items-center plug-tg-gap-4;
-}
-
-.tag {
-	@apply plug-tg-border-l plug-tg-border-white;
-} */
-/* 
-::-webkit-scrollbar-track {
-	background-color: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-	background-color: #ccc;
-	border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-	background-color: #aaa;
-}
-
-::-webkit-scrollbar-track:hover {
-	background-color: #f2f2f2;
-}
-
-::-webkit-scrollbar-corner {
-	background-color: transparent;
-}
-
-::-webkit-scrollbar {
-	width: 6px;
-	height: 6px;
-} */
-
-/* 
-html {
-	background: #202123;
-} */
-
-@media (max-width: 720px) {
-	pre {
-		width: calc(100vw - 110px);
-	}
-}
-
-pre:has(div.codeblock) {
-	padding: 0;
-}
-
-/* fallback, until https://github.com/CompuIves/codesandbox-client/issues/174 is resolved */
-/* @font-face {
-	font-family: "Material Icons";
-	font-style: normal;
-	font-weight: 400;
-	src: url(https://fonts.gstatic.com/s/materialicons/v36/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format("woff2");
-}
-
-.material-icons {
-	font-family: "Material Icons";
-	font-weight: normal;
-	font-style: normal;
-	font-size: 24px;
-	line-height: 1;
-	letter-spacing: normal;
-	text-transform: none;
-	display: inline-block;
-	white-space: nowrap;
-	word-wrap: normal;
-	direction: ltr;
-	-webkit-font-feature-settings: "liga";
-	-webkit-font-smoothing: antialiased;
-}
-
-.mdl-demo .dropdown-trigger>span:after {
-	font-size: 12px;
-	color: #555;
-}
-
-.mdl-demo .toggle {
-	font: normal normal normal 18px/1 "Material Icons";
-	color: #555;
-	white-space: pre;
-	margin-right: 4px;
-}
-
-.mdl-demo .toggle.collapsed::after {
-	cursor: pointer;
-	content: "\E5CF";
-	vertical-align: middle;
-}
-
-.mdl-demo .toggle.expanded::after {
-	cursor: pointer;
-	content: "\E5CE";
-	vertical-align: middle;
-} */
-/* 
-h1 {
-	@apply plug-tg-pb-2;
-}
-
-.below-the-fold {
-	content-visibility: auto;
-	contain-intrinsic-size: 1000px;
-}
-
-.block-language-tg {
-	@apply plug-tg-p-2;
-} */
 
 /* -------------------- React json input css ---------------------------- */
 .mantine-1fzet7j {

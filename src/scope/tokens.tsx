@@ -112,7 +112,7 @@ export default class TokensScope {
     logger("showTokens", props);
 
     const summaryEl = document.createElement("div");
-    summaryEl.classList.add("summary");
+    summaryEl.classList.add("plug-tg-summary");
     // summaryEl.innerHTML =  as any;
 
     const provider = createRoot(summaryEl);
