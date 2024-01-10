@@ -1083,9 +1083,7 @@ export default class ContextManager {
   handlebarsMiddleware(hb: HandlebarsTemplateDelegate<any>): HandlebarsTemplateDelegate<any> {
     return (async (context: any, options?: Handlebars.RuntimeOptions | undefined) => {
       let hbd = await hb(context, options);
-
-      hbd = await this.execDataview(context);
-
+      hbd = await this.execDataview(hbd);
       return hbd;
     }) as any
   }
