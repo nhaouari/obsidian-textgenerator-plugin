@@ -9,7 +9,7 @@ import useStateView from "../context/useStateView";
 import MarkDownViewer from "../components/Markdown";
 import TemplateInputModalView from "../template-input-modal/view";
 
-export default function ChatComp(props: {
+export default function Tool(props: {
   plugin: TextGeneratorPlugin;
   setCommands: (commands: Command[]) => void;
   view: ToolView;

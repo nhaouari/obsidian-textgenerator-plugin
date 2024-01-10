@@ -668,12 +668,15 @@ ${removeYAML(content)}
         (f) => f.path.startsWith(promptsPath) && !f.path.includes("/trash/")
       );
     return paths.map((s) => {
-      return {
-        title: s.path.substring(promptsPath.length + 1),
-        ctime: s.stat.ctime,
-        path: s.path,
-        ...this.getMetadata(s.path),
-      };
+      const conf = this.getMetadata(s.path) as {
+        title: string,
+        ctime: number,
+        path: string
+      } & ReturnType<typeof this.getMetadata>
+      conf.title = s.path.substring(promptsPath.length + 1);
+      conf.ctime = s.stat.ctime
+      conf.path = s.path
+      return conf;
     });
   }
 
@@ -860,10 +863,10 @@ ${removeYAML(content)}
   }
 
   async updateTemplatesCache() {
+    // get files, it will be empty onLoad, that's why we are using the getFilesOnLoad function
     const files = await this.plugin.getFilesOnLoad();
 
     const templates = this.plugin.textGenerator.getTemplates(
-      // get files, it will be empty onLoad, that's why we are using this function
       files
     );
 

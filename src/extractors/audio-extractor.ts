@@ -6,6 +6,18 @@ import debug from "debug";
 const logger = debug("textgenerator:Extractor:AudioExtractor");
 
 import { WhisperProviderName } from "../ui/settings/sections/otherProviders/whisper";
+
+export const supportedAudioExtensions = [
+  "mp3",
+  "mp4",
+  "mpeg",
+  "mpga",
+  "m4a",
+  "wav",
+  "webm",
+  "ogg"
+];
+
 export default class AudioExtractor extends Extractor {
   constructor(app: App, plugin: TextGeneratorPlugin) {
     super(app, plugin);
@@ -31,16 +43,7 @@ export default class AudioExtractor extends Extractor {
   }
 
   async extract(filePath: string) {
-    const supportedAudioExtensions = [
-      "mp3",
-      "mp4",
-      "mpeg",
-      "mpga",
-      "m4a",
-      "wav",
-      "webm",
-      "ogg"
-    ];
+
     const embeds = this.app.metadataCache
       .getCache(filePath)
       ?.embeds?.filter((embed) =>

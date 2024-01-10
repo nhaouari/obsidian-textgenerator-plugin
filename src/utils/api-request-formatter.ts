@@ -71,7 +71,7 @@ export default class ReqFormatter {
 
     if (
       !params.messages?.length &&
-      params.prompt?.replaceAll("\n", "").trim().length
+      params.prompt?.replaceAll?.("\n", "").trim().length
     ) {
       bodyParams.messages.push({ role: "user", content: params.prompt || "" });
     }

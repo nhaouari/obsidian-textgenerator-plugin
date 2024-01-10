@@ -566,6 +566,7 @@ export default class TextGeneratorPlugin extends Plugin {
       if (testFiles.length === 0) {
         let retryTimes = 30;
         const timer = setInterval(() => {
+          console.log("attempting to get files", retryTimes)
           testFiles = app.vault.getFiles();
           retryTimes--;
 

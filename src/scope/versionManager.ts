@@ -1,5 +1,4 @@
 import set from "lodash.set";
-import pkg from "../../package.json";
 import TextGeneratorPlugin from "../main";
 import { Version } from "../types";
 export default class VersionManager {
@@ -11,11 +10,13 @@ export default class VersionManager {
   }
 
   async load() {
-    // check if the version compatible with the format
-    if (!/\d+\.\d+\.\d+(-beta)?/.test(pkg.version))
-      return console.warn("version", pkg.version, "is not valid");
+    const version = this.plugin.manifest.version;
 
-    this.currentVersion = pkg.version as Version;
+    // check if the version compatible with the format
+    if (!/\d+\.\d+\.\d+(-beta)?/.test(version))
+      return console.warn("version", version, "is not valid");
+
+    this.currentVersion = version as Version;
 
     if (!this.isOldVersion(this.plugin.settings.version)) return;
 

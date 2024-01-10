@@ -66,7 +66,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
       .createDiv("el", (el) => {
         el.addClass("tags");
         el.createEl("a", {
-          text: `Version ${packageJson.version}`,
+          text: `Version ${this.plugin.manifest.version}`,
           cls: "tag",
         });
         el.createEl("a", {

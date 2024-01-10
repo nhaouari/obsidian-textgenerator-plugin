@@ -1,5 +1,6 @@
 import { ContentExtractor } from "./content-extractor";
 import TextGeneratorPlugin from "#/main";
+import { supportedAudioExtensions } from "./audio-extractor";
 
 export default async function read(path: string, plugin: TextGeneratorPlugin, otherOptions?: any) {
     if (!app.vault.adapter.exists(path)) throw "file doesn't exist";
@@ -7,6 +8,9 @@ export default async function read(path: string, plugin: TextGeneratorPlugin, ot
     const extension = path.split(".").reverse()[0].toLowerCase();
 
     const extractor = new ContentExtractor(plugin.app, plugin);
+
+    if (supportedAudioExtensions.includes(extension?.toLowerCase()))
+        extractor.setExtractor("AudioExtractor")
 
     switch (extension) {
         // pdf
@@ -20,14 +24,6 @@ export default async function read(path: string, plugin: TextGeneratorPlugin, ot
             break;
         case "jpeg":
             extractor.setExtractor("ImageExtractor")
-            break;
-
-        // audio
-        case "mp3":
-            extractor.setExtractor("AudioExtractor")
-            break;
-        case "webm":
-            extractor.setExtractor("AudioExtractor")
             break;
 
         default:
