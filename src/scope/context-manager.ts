@@ -464,7 +464,7 @@ export default class ContextManager {
     const _dVCache: any = {};
     for (const key in context)
       if (!["frontmatter", "title", "yaml"].includes(key))
-        context[key as keyof typeof context] = this.execDataview(context[key as keyof typeof context], _dVCache)
+        context[key as keyof typeof context] = await this.execDataview(context[key as keyof typeof context], _dVCache)
 
 
     logger("getDefaultContext", { context });

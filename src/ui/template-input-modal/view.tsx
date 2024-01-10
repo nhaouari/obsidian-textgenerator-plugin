@@ -27,13 +27,12 @@ export default function TemplateInputModalView(props: {
   const [UISchema, setUISchema] = useState<FormProps["uiSchema"]>({})
   const [formData, setFormData] = useState<FormProps["formData"]>({})
 
-
   useEffect(() => {
     (async () => {
       const basicProps: Record<string, FormProps["schema"]> = {};
       const basicUi: Record<string, FormProps["uiSchema"]> = {};
       const required: string[] = [];
-
+      const formData: FormProps["formData"] = {}
       props.labels.forEach(l => {
         basicProps[l] = {
           type: 'string',
@@ -45,6 +44,7 @@ export default function TemplateInputModalView(props: {
             className: "w-full"
           }
         }
+        formData[l] = props.templateContext[l];
         if (props.templateContext.strict && !l.contains("_optional")) required.push(l)
       })
 
@@ -57,6 +57,7 @@ export default function TemplateInputModalView(props: {
 
       setJSONSchema(obj);
       setUISchema(basicUi);
+      setFormData(formData);
 
       if (props.templateContext.templatePath) {
         const cschema = await props.p.plugin.textGenerator.contextManager.getTemplateCustomInputConfig(props.templateContext.templatePath)
