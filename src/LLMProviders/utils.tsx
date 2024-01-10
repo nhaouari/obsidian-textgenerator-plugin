@@ -13,7 +13,8 @@ export function ModelsHandler(props: {
     register: Parameters<LLMProviderInterface["RenderSettings"]>[0]["register"];
     sectionId: Parameters<LLMProviderInterface["RenderSettings"]>[0]["sectionId"];
     default_values: any;
-    llmProviderId: string
+    llmProviderId: string,
+    config?: any
 }) {
     const default_values = props.default_values;
     const id = props.llmProviderId;
@@ -22,7 +23,7 @@ export function ModelsHandler(props: {
     const [models, setModels] = useState<string[]>([]);
     const [loadingUpdate, setLoadingUpdate] = useState(false);
 
-    const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
+    const config = props.config || (global.plugin.settings.LLMProviderOptions[id] ??= {
         ...default_values,
     });
 

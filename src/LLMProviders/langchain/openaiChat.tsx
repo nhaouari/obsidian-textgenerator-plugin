@@ -92,6 +92,7 @@ export default class LangchainOpenAIChatProvider extends LangchainBase implement
           sectionId={props.sectionId}
           llmProviderId={props.self.originalId || id}
           default_values={default_values}
+          config={config}
         />
 
         <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">
