@@ -67,6 +67,7 @@ export default class TextGeneratorPlugin extends Plugin {
   packageManager: PackageManager;
   versionManager: VersionManager;
   contextManager: ContextManager;
+  contentManager: ContentManagerCls = ContentManagerCls;
   tokensScope: TokensScope;
   processing: boolean;
   defaultSettings: TextGeneratorSettings;
