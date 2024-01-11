@@ -133,7 +133,7 @@ export default function Tool(props: {
       }
 
       const { inputContent, outputContent, preRunnerContent } =
-        props.plugin.textGenerator.contextManager.splitTemplate(
+        props.plugin.contextManager.splitTemplate(
           templateContent
         );
 
@@ -145,11 +145,11 @@ export default function Tool(props: {
 
 
 
-      const variables = props.plugin.textGenerator.contextManager.getHBVariablesOfTemplate(
+      const variables = props.plugin.contextManager.getHBVariablesOfTemplate(
         preRunnerContent, inputContent, outputContent)
 
       const templateContext =
-        await props.plugin.textGenerator.contextManager.getTemplateContext({
+        await props.plugin.contextManager.getTemplateContext({
           editor: config.editor as any,
           templatePath: config.templatePath,
           filePath: props.plugin.app.workspace.activeEditor?.file?.path,
@@ -165,7 +165,7 @@ export default function Tool(props: {
     setLoading(true);
     try {
       const context =
-        await props.plugin.textGenerator.contextManager.getContext({
+        await props.plugin.contextManager.getContext({
           insertMetadata: false,
           templatePath: selectedTemplatePath,
           editor: config.editor as any,

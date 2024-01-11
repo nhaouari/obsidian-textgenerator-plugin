@@ -15,15 +15,13 @@ const logger = debug("textgenerator:TextGenerator");
 export default class RequestHandler {
   plugin: TextGeneratorPlugin;
   reqFormatter: ReqFormatter;
-  contextManager: ContextManager;
   signalController?: AbortController;
 
   LLMProvider: LLMProviderInterface;
 
   constructor(plugin: TextGeneratorPlugin) {
     this.plugin = plugin;
-    this.contextManager = new ContextManager(app, plugin);
-    this.reqFormatter = new ReqFormatter(app, plugin, this.contextManager);
+    this.reqFormatter = new ReqFormatter(app, plugin, this.plugin.contextManager);
 
     this.setup();
   }
@@ -67,7 +65,7 @@ export default class RequestHandler {
       settings,
     });
 
-    const comp = await Handlebars.compile(this.contextManager.overProcessTemplate(prompt))({
+    const comp = await Handlebars.compile(this.plugin.contextManager.overProcessTemplate(prompt))({
       ...settings,
       templatePath: "default/default"
     });

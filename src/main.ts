@@ -49,6 +49,7 @@ import { registerAPI } from "@vanakat/plugin-api";
 import { PlaygroundView, VIEW_Playground_ID } from "./ui/playground";
 import { UnProviderSlugs } from "./LLMProviders";
 import ContentManagerCls from "./content-manager";
+import ContextManager from "./scope/context-manager";
 
 // @ts-ignore
 let safeStorage: Electron.SafeStorage;
@@ -63,9 +64,10 @@ const logger = debug("textgenerator:main");
 export default class TextGeneratorPlugin extends Plugin {
   settings: TextGeneratorSettings;
   textGenerator: TextGenerator;
-  tokensScope: TokensScope;
   packageManager: PackageManager;
   versionManager: VersionManager;
+  contextManager: ContextManager;
+  tokensScope: TokensScope;
   processing: boolean;
   defaultSettings: TextGeneratorSettings;
   textGeneratorIconItem: HTMLElement;
@@ -86,26 +88,42 @@ export default class TextGeneratorPlugin extends Plugin {
       this.defaultSettings = DEFAULT_SETTINGS;
       await this.loadSettings();
 
+      // register managers
       this.versionManager = new VersionManager(this);
       await this.versionManager.load();
 
-      // This adds a settings tab so the user can configure various aspects of the plugin
-
-      const settingTab = new TextGeneratorSettingTab(this.app, this);
-      this.addSettingTab(settingTab);
-
+      this.contextManager = new ContextManager(app, this);
       this.packageManager = new PackageManager(this.app, this);
 
+      // Register Services
+      // text generator
       this.textGenerator = new TextGenerator(this.app, this);
       await this.textGenerator.setup();
 
+      // auto suggest
+      if (this.settings.autoSuggestOptions.isEnabled)
+        this.registerEditorSuggest(new AutoSuggest(this.app, this));
+
+      // modal suggest
+      if (this.settings.options["modal-suggest"]) {
+        this.registerEditorSuggest(new ModelSuggest(this.app, this));
+      }
+
+
+      // This adds a settings tab so the user can configure various aspects of the plugin
+      this.addSettingTab(new TextGeneratorSettingTab(this.app, this));
+
+      // register scopes
+      this.commands = new Commands(this);
       this.tokensScope = new TokensScope(this);
       await this.tokensScope.setup();
 
+      // add loading spinner
       this.registerEditorExtension(spinnersPlugin);
 
       this.app.workspace.updateOptions();
 
+      // add status bar items
       this.textGeneratorIconItem = this.addStatusBarItem();
       this.statusBarTokens = this.addStatusBarItem();
       this.autoSuggestItem = this.addStatusBarItem();
@@ -113,19 +131,21 @@ export default class TextGeneratorPlugin extends Plugin {
 
       this.updateStatusBar(``);
 
+      if (this.settings.autoSuggestOptions.showStatus)
+        this.AddAutoSuggestStatusBar();
 
-      this.registerView(VIEW_TOOL_ID, (leaf) => new ToolView(leaf, this));
 
+      // registering different views
+      // Playground view
       this.registerView(
         VIEW_Playground_ID,
         (leaf) => new PlaygroundView(leaf, this)
       );
 
+      // "open template as tool" view
+      this.registerView(VIEW_TOOL_ID, (leaf) => new ToolView(leaf, this));
 
-      if (this.settings.autoSuggestOptions.showStatus)
-        this.AddAutoSuggestStatusBar();
-
-
+      // register events such as right click
       if (this.settings.options["generate-in-right-click-menu"])
         this.registerEvent(
           this.app.workspace.on(
@@ -137,7 +157,7 @@ export default class TextGeneratorPlugin extends Plugin {
                 item.onClick(async () => {
                   try {
                     if (this.processing) return this.textGenerator.signalController?.abort();
-                    const activeView = await this.commands.getActiveView();
+                    const activeView = await this.getActiveView();
                     const CM = ContentManagerCls.compile(activeView, this)
                     await this.textGenerator.generateInEditor({}, false, CM);
                   } catch (error) {
@@ -186,7 +206,7 @@ export default class TextGeneratorPlugin extends Plugin {
           )
         );
 
-
+      // tg codeblock
       if (this.settings.options["tg-block-processor"]) {
         const blockTgHandler = async (
           source: string,
@@ -196,9 +216,9 @@ export default class TextGeneratorPlugin extends Plugin {
           setTimeout(async () => {
             try {
               const { inputTemplate, outputTemplate, inputContent } =
-                this.textGenerator.contextManager.splitTemplate(source);
+                this.contextManager.splitTemplate(source);
 
-              const activeView = this.getActiveView();
+              const activeView = this.getActiveViewMD();
 
               if (!activeView) throw "active view wasn't detected"
 
@@ -206,7 +226,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
               const context = {
                 ...(activeView
-                  ? await this.textGenerator.contextManager.getTemplateContext({
+                  ? await this.contextManager.getTemplateContext({
                     editor: CM,
                     filePath: activeView?.file?.path,
                     templateContent: inputContent,
@@ -234,12 +254,6 @@ export default class TextGeneratorPlugin extends Plugin {
         });
       }
 
-      if (this.settings.autoSuggestOptions.isEnabled)
-        this.registerEditorSuggest(new AutoSuggest(this.app, this));
-
-      if (this.settings.options["modal-suggest"]) {
-        this.registerEditorSuggest(new ModelSuggest(this.app, this));
-      }
 
       // This creates an icon in the left ribbon.
       this.addRibbonIcon(
@@ -248,7 +262,7 @@ export default class TextGeneratorPlugin extends Plugin {
         async (evt: MouseEvent) => {
           // Called when the user clicks the icon.
           // const activeFile = this.app.workspace.getActiveFile();
-          const activeView = this.getActiveView();
+          const activeView = this.getActiveViewMD();
           if (activeView !== null) {
             const CM = ContentManagerCls.compile(activeView, this)
             try {
@@ -272,18 +286,7 @@ export default class TextGeneratorPlugin extends Plugin {
         }
       );
 
-      /*const ribbonIconEl3 = this.addRibbonIcon(
-      "square",
-      "Download webpage as markdown",
-      async (evt: MouseEvent) => {
-        console.log(await navigator.clipboard.readText());
-      }
-    );
-    */
-
-      // registers
-      this.commands = new Commands(this);
-
+      // add commands
       await this.commands.addCommands();
       try {
         await this.packageManager.load();
@@ -429,7 +432,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
   updateSpinnerPos(cur?: EditorPosition) {
     if (!this.spinner) return;
-    const activeView = this.getActiveView(false);
+    const activeView = this.getActiveViewMD(false);
     if (!activeView) return;
     const editor = activeView.editor;
     // @ts-expect-error, not typed
@@ -448,7 +451,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
     if (!showSpinner) return;
 
-    const activeView = this.getActiveView(false);
+    const activeView = this.getActiveViewMD(false);
     if (!activeView) return;
 
     // @ts-expect-error, not typed
@@ -463,7 +466,7 @@ export default class TextGeneratorPlugin extends Plugin {
     this.processing = false;
 
     if (!showSpinner || !this.spinner) return;
-    const activeView = this.getActiveView(false);
+    const activeView = this.getActiveViewMD(false);
     if (!activeView) return;
 
     const editor = activeView.editor;
@@ -503,7 +506,7 @@ export default class TextGeneratorPlugin extends Plugin {
     try {
       //this.updateStatusBar(`Error check console`);
       if (this.settings.displayErrorInEditor) {
-        const activeView = this.getActiveView(false);
+        const activeView = this.getActiveViewMD(false);
         if (activeView) {
           // @ts-ignore
           activeView.editor.cm.contentDOM.appendChild(this.formatError(error));
@@ -517,16 +520,6 @@ export default class TextGeneratorPlugin extends Plugin {
     setTimeout(() => this.updateStatusBar(``), 5000);
   }
 
-  getActiveView(makeNotice = true) {
-    const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-
-    if (activeView) return activeView;
-
-    if (makeNotice && !this.app.workspace.getActiveViewOfType(ToolView))
-      new Notice("The file type should be Markdown!");
-
-    return null;
-  }
 
   AutoSuggestStatusBar() {
     this.autoSuggestItem.innerHTML = "";
@@ -606,7 +599,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
     const button = this.createRunButton("Generate Text", generateSVG);
     button.addEventListener("click", async () => {
-      const activeView = this.getActiveView();
+      const activeView = this.getActiveViewMD();
       if (!activeView) throw "activeView wasn't detected";
       const CM = ContentManagerCls.compile(activeView, this)
       console.log(markdown)
@@ -798,5 +791,26 @@ export default class TextGeneratorPlugin extends Plugin {
     basePath = d.join("/");
 
     return `${basePath}/${path}`
+  }
+
+  async getActiveView() {
+    if (!this.app.workspace.activeLeaf) throw "activeLeaf not found";
+    const activeView = this.app.workspace.activeLeaf.view;
+
+    if (!activeView) {
+      throw 'No active view.'
+    }
+    return activeView;
+  }
+
+  getActiveViewMD(makeNotice = true) {
+    const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+
+    if (activeView) return activeView;
+
+    if (makeNotice && !this.app.workspace.getActiveViewOfType(ToolView))
+      new Notice("The file type should be Markdown!");
+
+    return null;
   }
 }

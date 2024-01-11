@@ -60,7 +60,7 @@ export default function TemplateInputModalView(props: {
       setFormData(formData);
 
       if (props.templateContext.templatePath) {
-        const cschema = await props.p.plugin.textGenerator.contextManager.getTemplateCustomInputConfig(props.templateContext.templatePath)
+        const cschema = await props.p.plugin.contextManager.getTemplateCustomInputConfig(props.templateContext.templatePath)
         console.log({ cschema })
         if (cschema) {
           setJSONSchema({

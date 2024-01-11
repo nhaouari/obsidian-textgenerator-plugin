@@ -27,7 +27,7 @@ export default class Commands {
         const self: Commands = this;
         try {
           if (self.plugin.processing) return self.plugin.textGenerator.signalController?.abort();
-          const activeView = await self.getActiveView();
+          const activeView = await self.plugin.getActiveView();
           const CM = ContentManagerCls.compile(activeView, self.plugin)
           await self.plugin.textGenerator.generateInEditor({}, false, CM);
         } catch (error) {
@@ -44,7 +44,7 @@ export default class Commands {
       async callback() {
         const self: Commands = this;
         try {
-          const activeView = await self.getActiveView();
+          const activeView = await self.plugin.getActiveView();
           const CM = ContentManagerCls.compile(activeView, self.plugin)
           await self.plugin.textGenerator.generateInEditor({}, true, CM);
         } catch (error) {
@@ -69,7 +69,7 @@ export default class Commands {
 
               const self: Commands = this;
               try {
-                const activeView = await self.getActiveView();
+                const activeView = await self.plugin.getActiveView();
                 const CM = ContentManagerCls.compile(activeView, self.plugin);
 
                 await self.plugin.textGenerator.generateFromTemplate({
@@ -105,7 +105,7 @@ export default class Commands {
             async (result) => {
               const self: Commands = this;
               try {
-                const activeView = await self.getActiveView();
+                const activeView = await self.plugin.getActiveView();
                 const CM = ContentManagerCls.compile(activeView, self.plugin);
 
                 await this.plugin.textGenerator.generateToClipboard(
@@ -141,7 +141,7 @@ export default class Commands {
               if (!result.path) throw "Nothing was selected";
 
               try {
-                const activeView = await self.getActiveView();
+                const activeView = await self.plugin.getActiveView();
                 const CM = ContentManagerCls.compile(activeView, self.plugin);
 
                 await self.plugin.textGenerator.generateFromTemplate({
@@ -216,7 +216,7 @@ export default class Commands {
               if (!result.path) throw "Nothing was selected";
 
               try {
-                const activeView = await self.getActiveView();
+                const activeView = await self.plugin.getActiveView();
                 const CM = ContentManagerCls.compile(activeView, self.plugin);
 
                 await self.plugin.textGenerator.generateFromTemplate({
@@ -257,7 +257,7 @@ export default class Commands {
 
 
               try {
-                const activeView = await self.getActiveView();
+                const activeView = await self.plugin.getActiveView();
                 const CM = ContentManagerCls.compile(activeView, self.plugin);
 
                 await self.plugin.textGenerator.generateFromTemplate({
@@ -296,7 +296,7 @@ export default class Commands {
             async (result) => {
 
               try {
-                const activeView = await self.getActiveView();
+                const activeView = await self.plugin.getActiveView();
                 const CM = ContentManagerCls.compile(activeView, self.plugin);
 
                 await self.plugin.textGenerator.tempalteToModal({
@@ -436,7 +436,7 @@ export default class Commands {
         const self: Commands = this;
 
         try {
-          const activeView = await self.getActiveView();
+          const activeView = await self.plugin.getActiveView();
           const CM = ContentManagerCls.compile(activeView, self.plugin);
 
           await self.plugin.textGenerator.createTemplateFromEditor(CM);
@@ -455,7 +455,7 @@ export default class Commands {
         const self: Commands = this;
 
         try {
-          const CM = ContentManagerCls.compile(await self.getActiveView(), self.plugin);
+          const CM = ContentManagerCls.compile(await self.plugin.getActiveView(), self.plugin);
           const file = await CM.getActiveFile()
 
           let prompt = ``;
@@ -468,15 +468,15 @@ export default class Commands {
                 || self.plugin.defaultSettings.advancedOptions?.generateTitleInstruct
             }
 
-            const templateContext = await self.plugin.textGenerator.contextManager.getTemplateContext({
-              editor: ContentManagerCls.compile(await self.plugin.commands.getActiveView(), self.plugin),
+            const templateContext = await self.plugin.contextManager.getTemplateContext({
+              editor: ContentManagerCls.compile(await self.plugin.getActiveView(), self.plugin),
               templateContent,
               filePath: file?.path,
             });
 
             templateContext.content = (await CM.getValue()).trim()
 
-            const splittedTemplate = this.plugin.textGenerator.contextManager.splitTemplate(templateContent)
+            const splittedTemplate = this.plugin.contextManager.splitTemplate(templateContent)
 
             prompt = await splittedTemplate.inputTemplate?.(templateContext);
           } catch (err: any) { logger(err) }
@@ -539,11 +539,11 @@ export default class Commands {
         const self: Commands = this;
 
         try {
-          const activeView = await self.getActiveView();
+          const activeView = await self.plugin.getActiveView();
           const CM = ContentManagerCls.compile(activeView, self.plugin);
 
           const context =
-            await self.plugin.textGenerator.contextManager.getContext({
+            await self.plugin.contextManager.getContext({
               editor: CM,
               filePath: (await CM.getActiveFile())?.path,
               insertMetadata: true,
@@ -574,11 +574,11 @@ export default class Commands {
             self.plugin,
             async (result) => {
               try {
-                const activeView = await self.getActiveView();
+                const activeView = await self.plugin.getActiveView();
                 const CM = ContentManagerCls.compile(activeView, self.plugin);
 
                 const context =
-                  await self.plugin.textGenerator.contextManager.getContext({
+                  await self.plugin.contextManager.getContext({
                     editor: CM,
                     filePath: (await CM.getActiveFile())?.path,
                     insertMetadata: true,
@@ -674,7 +674,7 @@ export default class Commands {
           callback: async () => {
             const self: Commands = this;
 
-            const activeView = await self.getActiveView();
+            const activeView = await self.plugin.getActiveView();
 
             const CM = ContentManagerCls.compile(activeView, self.plugin)
 
@@ -738,7 +738,7 @@ export default class Commands {
                 case "estimate":
                   {
                     const context =
-                      await this.plugin.textGenerator.contextManager.getContext(
+                      await this.plugin.contextManager.getContext(
                         {
                           editor: CM,
                           filePath,
@@ -787,15 +787,5 @@ export default class Commands {
         callback: command.callback?.bind(this),
       });
     });
-  }
-
-  async getActiveView() {
-    if (!this.plugin.app.workspace.activeLeaf) throw "activeLeaf not found";
-    const activeView = this.plugin.app.workspace.activeLeaf.view;
-
-    if (!activeView) {
-      throw 'No active view to trigger the command.'
-    }
-    return activeView;
   }
 }

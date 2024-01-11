@@ -42,7 +42,7 @@ export default function Helpersfn(self: ContextManager) {
     })
   }
 
-  const Write = async (path: string, data: string) => {
+  const write = async (path: string, data: string) => {
     return await createFileWithInput(path, data, self.plugin.app)
   }
 
@@ -61,12 +61,12 @@ export default function Helpersfn(self: ContextManager) {
     return await self.plugin.app.vault.adapter.append(path, `\n${data}`)
   }
 
-  const error = async function (context: any) {
+  const error = async (context: any) => {
     await self.plugin.handelError(context);
     throw new Error(context);
   }
 
-  const notice = function (context: any, duration: any) {
+  const notice = (context: any, duration: any) => {
     new Notice(context, typeof duration == "object" ? undefined : +duration);
   }
 
@@ -294,8 +294,7 @@ export default function Helpersfn(self: ContextManager) {
     },
 
     error: async function (context: any) {
-      await self.plugin.handelError(context);
-      throw new Error(context);
+      await error(context)
     },
 
     notice: function (context: any, duration: any) {
@@ -622,10 +621,10 @@ export default function Helpersfn(self: ContextManager) {
 
       // do not use (0, eval), it will break "this", and the eval wont be able to access context
       return await eval(`
-        async (plugin, app, pluginApi, run, gen)=>{
+        async (plugin, app, pluginApi, run, gen, error)=>{
           ${content}
         }  
-      `).bind(this)(self.plugin, self.app, pluginApi, run, gen);
+      `).bind(this)(self.plugin, self.app, pluginApi, run, gen, error);
     },
 
     read,
@@ -634,7 +633,7 @@ export default function Helpersfn(self: ContextManager) {
       const options: { data: { root: any }; fn: any } = vars.pop();
       let data = vars[1];
       if (options.fn) data = await options.fn(options.data.root)
-      return await Write(vars[0], data)
+      return await write(vars[0], data)
     },
 
     async append(...vars: any[]) {

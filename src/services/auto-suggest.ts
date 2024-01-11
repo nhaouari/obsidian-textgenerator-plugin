@@ -153,7 +153,7 @@ export class AutoSuggest extends EditorSuggest<Completion> {
     // @ts-ignore
     const CM = ContentManagerCls.compile(this.plugin.app.workspace.activeLeaf?.view, this.plugin)
 
-    const selection = this.plugin.textGenerator.contextManager.getTGSelection(CM) as unknown as string
+    const selection = this.plugin.contextManager.getTGSelection(CM) as unknown as string
     const lastOccurrenceIndex = selection.lastIndexOf(triggerPhrase);
     const currentPart =
       selection.substring(0, lastOccurrenceIndex) +
@@ -259,15 +259,15 @@ ${context.query}`;
           const templateContent = this.plugin.settings.autoSuggestOptions.customInstruct
             || this.plugin.defaultSettings.autoSuggestOptions.customInstruct;
 
-          const templateContext = await this.plugin.textGenerator.contextManager.getTemplateContext({
-            editor: ContentManagerCls.compile(await this.plugin.commands.getActiveView(), this.plugin),
+          const templateContext = await this.plugin.contextManager.getTemplateContext({
+            editor: ContentManagerCls.compile(await this.plugin.getActiveView(), this.plugin),
             templateContent,
             filePath: context.file?.path,
           })
 
           templateContext.query = context.query
 
-          const splittedTemplate = this.plugin.textGenerator.contextManager.splitTemplate(templateContent)
+          const splittedTemplate = this.plugin.contextManager.splitTemplate(templateContent)
 
           prompt = await splittedTemplate.inputTemplate?.(templateContext);
         }

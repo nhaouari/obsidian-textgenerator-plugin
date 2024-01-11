@@ -87,11 +87,11 @@ export default function ChatComp(props: {
     setLoading(true);
     try {
       const editor = ContentManagerCls.compile(app.workspace.getLeaf().view, props.plugin)
-      const selection = await props.plugin.textGenerator.contextManager.getSelection(editor)
-      const selections = await props.plugin.textGenerator.contextManager.getSelections(editor)
+      const selection = await props.plugin.contextManager.getSelection(editor)
+      const selections = await props.plugin.contextManager.getSelections(editor)
       const templateContent = input
       const context =
-        await props.plugin.textGenerator.contextManager.getContext({
+        await props.plugin.contextManager.getContext({
           insertMetadata: false,
           editor: editor,
           templateContent,
@@ -102,7 +102,7 @@ export default function ChatComp(props: {
           },
         });
 
-      const result = await props.plugin.textGenerator.contextManager.execDataview(await Handlebars.compile(props.plugin.textGenerator.contextManager.overProcessTemplate(templateContent))({
+      const result = await props.plugin.contextManager.execDataview(await Handlebars.compile(props.plugin.contextManager.overProcessTemplate(templateContent))({
         ...context.options,
         templatePath: "default/default"
       }));

@@ -10,7 +10,7 @@ import { TextGeneratorSettings } from "../types";
 import TextGeneratorPlugin from "../main";
 import ReqFormatter from "../utils/api-request-formatter";
 import { SetPath } from "../ui/settings/components/set-path";
-import ContextManager, { InputContext } from "../scope/context-manager";
+import type { InputContext } from "../scope/context-manager";
 import {
   makeId,
   createFileWithInput,
@@ -32,7 +32,6 @@ import { ContentManager } from "../content-manager/types";
 export default class TextGenerator extends RequestHandler {
   plugin: TextGeneratorPlugin;
   reqFormatter: ReqFormatter;
-  contextManager: ContextManager;
   signal: AbortSignal;
 
   embeddingsScope: EmbeddingScope;
@@ -42,8 +41,7 @@ export default class TextGenerator extends RequestHandler {
     this.plugin = plugin;
 
     this.embeddingsScope = new EmbeddingScope();
-    this.contextManager = new ContextManager(app, plugin);
-    this.reqFormatter = new ReqFormatter(app, plugin, this.contextManager);
+    this.reqFormatter = new ReqFormatter(app, plugin, this.plugin.contextManager);
   }
 
   async getCursor(editor: ContentManager, mode: "insert" | "replace" | string = "insert") {
@@ -81,7 +79,7 @@ export default class TextGenerator extends RequestHandler {
     const activeFile = props.activeFile ?? true;
 
     const [errorContext, context] = await safeAwait(
-      this.contextManager.getContext({
+      this.plugin.contextManager.getContext({
         filePath: props.filePath,
         editor: props.editor,
         insertMetadata,
@@ -126,7 +124,7 @@ export default class TextGenerator extends RequestHandler {
     insertMode = false
   ) {
     // get files context
-    const contexts = (await this.contextManager.getContextFromFiles(
+    const contexts = (await this.plugin.contextManager.getContextFromFiles(
       files,
       //   insertMetadata,
       templatePath,
@@ -176,7 +174,7 @@ export default class TextGenerator extends RequestHandler {
     logger("generateStreamInEditor");
     const context =
       customContext ||
-      (await this.contextManager.getContext({ editor, insertMetadata }));
+      (await this.plugin.contextManager.getContext({ editor, insertMetadata }));
 
     // if its a template don't bother with adding prefix
     const prefix = context.template?.outputTemplate ? "" : this.plugin.settings.prefix
@@ -280,7 +278,7 @@ export default class TextGenerator extends RequestHandler {
 
     const context =
       customContext ||
-      (await this.contextManager.getContext({ editor, insertMetadata }));
+      (await this.plugin.contextManager.getContext({ editor, insertMetadata }));
 
     const [errorGeneration, text] = await safeAwait(
       this.generate(
@@ -318,7 +316,7 @@ export default class TextGenerator extends RequestHandler {
   ) {
     logger("generateToClipboard");
     const [errorContext, context] = await safeAwait(
-      this.contextManager.getContext({ editor, insertMetadata, templatePath })
+      this.plugin.contextManager.getContext({ editor, insertMetadata, templatePath })
     );
 
     if (!context) {
@@ -520,7 +518,7 @@ export default class TextGenerator extends RequestHandler {
         disableProvider: !!options?.disableProvider,
       };
 
-      const metadata = this.contextManager.getMetaData(undefined, true);
+      const metadata = this.plugin.contextManager.getMetaData(undefined, true);
 
       const matter: Record<string, any> = {};
       Object.entries(metadata?.frontmatter || {}).forEach(([key, content]) => {
@@ -621,16 +619,16 @@ ${removeYAML(content)}
     }
 
     const { inputContent, outputContent, preRunnerContent } =
-      this.contextManager.splitTemplate(templateContent);
+      this.plugin.contextManager.splitTemplate(templateContent);
 
-    const variables = this.contextManager.getHBVariablesOfTemplate(
+    const variables = this.plugin.contextManager.getHBVariablesOfTemplate(
       preRunnerContent,
       inputContent,
       outputContent,
     );
 
     const metadata = this.getMetadata(props.templatePath || "");
-    const templateContext = await this.contextManager.getTemplateContext(props);
+    const templateContext = await this.plugin.contextManager.getTemplateContext(props);
 
     new TemplateInputModalUI(
       this.plugin.app,
@@ -753,8 +751,8 @@ ${removeYAML(content)}
     logger("getFrontmatter");
 
     const frontMatter =
-      this.contextManager.getFrontmatter(
-        this.contextManager.getMetaData(path)
+      this.plugin.contextManager.getFrontmatter(
+        this.plugin.contextManager.getMetaData(path)
       ) || null;
 
     logger("getFrontmatter end", frontMatter);
@@ -775,7 +773,7 @@ ${removeYAML(content)}
     this.plugin.startProcessing();
     console.log({ templatePath, id })
     const [errorContext, context] = await safeAwait(
-      this.contextManager.getContext({
+      this.plugin.contextManager.getContext({
         editor: options.editor,
         filePath: options.filePath,
         insertMetadata: options.insertMetadata,
@@ -850,11 +848,11 @@ ${removeYAML(content)}
     if (!templatePath)
       throw new Error(`template with id:${id} wasn't found.`);
 
-    return this.contextManager.templateFromPath(
+    return this.plugin.contextManager.templateFromPath(
       templatePath,
       {
-        ...this.contextManager.getFrontmatter(
-          this.contextManager.getMetaData(
+        ...this.plugin.contextManager.getFrontmatter(
+          this.plugin.contextManager.getMetaData(
             templatePath
           )
         ),
