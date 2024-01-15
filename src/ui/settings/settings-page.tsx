@@ -52,49 +52,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 
   display(): void {
     const { containerEl } = this;
-
-    containerEl.empty();
-    containerEl.addClass("gapper");
-
-    // title
-    containerEl.createEl("h1", {
-      text: "Text Generator",
-    });
-
-    // tags
-    containerEl
-      .createDiv("el", (el) => {
-        el.addClass("tags");
-        el.createEl("a", {
-          text: `Version ${this.plugin.manifest.version}`,
-          cls: "tag",
-        });
-        el.createEl("a", {
-          text: "Discord \u{1F44B}",
-          href: "https://bit.ly/Tg-discord",
-          cls: "tag",
-        });
-        el.createEl("a", {
-          text: " Documentation \u{1F4D6}",
-          href: "https://bit.ly/tg_docs",
-          cls: "tag",
-        });
-        el.createEl("a", {
-          text: " Twitter \u{1F426}",
-          href: "https://bit.ly/tg-twitter2",
-          cls: "tag",
-        });
-        el.createEl("a", {
-          text: " YouTube \u{1F3A5}",
-          href: "https://bit.ly/tg-youtube2",
-          cls: "tag",
-        });
-      })
-      .addClass("pb-4");
-
-    const el = containerEl.createDiv("div");
-
-    const sections = createRoot(el);
+    const sections = createRoot(containerEl);
 
     sections.render(
       <GlobalProvider plugin={this.plugin}>

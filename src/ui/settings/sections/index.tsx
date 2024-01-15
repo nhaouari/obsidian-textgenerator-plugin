@@ -11,6 +11,7 @@ import OptionsSetting from "./options";
 import Input from "../components/input";
 import OtherProvidersSetting from "./otherProviders";
 import { ProviderServer } from "#/ui/package-manager/package-manager";
+import useGlobal from "#/ui/context/global";
 // ------------------------------
 
 export type Register = {
@@ -23,6 +24,7 @@ export type Register = {
 };
 
 export default function SectionsMain() {
+  const global = useGlobal();
   const [items, setItems] = useState<
     Record<
       string,
@@ -84,13 +86,25 @@ export default function SectionsMain() {
     },
   };
 
-  return (
+  return (<>
     <div className="plug-tg-flex plug-tg-w-full plug-tg-flex-col plug-tg-gap-3">
-      <div className="plug-tg-flex plug-tg-w-full plug-tg-justify-between plug-tg-p-2">
-        <div></div>
+      <div className="flex flex-col gap-2">
+        <h1>Text Generator</h1>
+        <div className="tags plug-tg-flex plug-tg-flex-wrap plug-tg-gap-2">
+          <a className="tag" href={`https://github.com/nhaouari/obsidian-textgenerator-plugin/releases/tag/${global.plugin.manifest.version}`}>V{global.plugin.manifest.version}</a>
+          <a className="tag" href="https://bit.ly/tg_docs">{"\u{1F4D6}"} Documentation</a>
+          <a className="tag" href="https://bit.ly/Tg-discord">{"\u{1F44B}"} Discord</a>
+          <a className="tag" href="https://bit.ly/tg-twitter2">{"\u{1F3A5}"} YouTube</a>
+          <a className="tag" href="https://bit.ly/tg-twitter2">{"\u{1F426}"} Twitter</a>
+        </div>
+      </div>
+
+      <div className="lg:plug-tg-flex plug-tg-w-full lg:plug-tg-justify-between">
+        <div className="plug-tg-hidden lg:plug-tg-block"></div>
         <Input
           setValue={(val) => setSearchTerm(val.toLocaleLowerCase())}
           value={searchTerm}
+          className="plug-tg-w-full lg:plug-tg-w-auto"
           placeholder="Search For Option"
         />
       </div>
@@ -108,5 +122,6 @@ export default function SectionsMain() {
       <OtherProvidersSetting register={register} />
       <OptionsSetting register={register} />
     </div>
+  </>
   );
 }

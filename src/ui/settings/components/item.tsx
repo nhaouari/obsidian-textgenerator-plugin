@@ -42,7 +42,7 @@ export default function SettingItem(props: {
     >
       <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
         <div>{props.name}</div>
-        <div className="plug-tg-text-xs plug-tg-opacity-70">{props.description}</div>
+        <div className="plug-tg-text-[8px] md:plug-tg-text-xs plug-tg-opacity-70">{props.description}</div>
       </div>
       {props.children}
     </div>
