@@ -52,7 +52,9 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
 
   display(): void {
     const { containerEl } = this;
-    const sections = createRoot(containerEl);
+    containerEl.empty();
+    const div = containerEl.createDiv("div")
+    const sections = createRoot(div);
 
     sections.render(
       <GlobalProvider plugin={this.plugin}>
