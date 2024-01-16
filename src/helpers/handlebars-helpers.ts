@@ -18,6 +18,7 @@ import { isMap, isSet } from "util/types";
 import Read from "#/extractors";
 import lodashSet from "lodash.set";
 import lodashGet from "lodash.get";
+import JSON5 from "json5";
 
 import * as langchain from "#/lib/langchain";
 
@@ -621,10 +622,10 @@ export default function Helpersfn(self: ContextManager) {
 
       // do not use (0, eval), it will break "this", and the eval wont be able to access context
       return await eval(`
-        async (plugin, app, pluginApi, run, gen, error)=>{
+        async (plugin, app, pluginApi, run, gen, error, JSON5)=>{
           ${content}
         }  
-      `).bind(this)(self.plugin, self.app, pluginApi, run, gen, error);
+      `).bind(this)(self.plugin, self.app, pluginApi, run, gen, error, JSON5);
     },
 
     read,
