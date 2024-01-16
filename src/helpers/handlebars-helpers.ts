@@ -585,6 +585,12 @@ export default function Helpersfn(self: ContextManager) {
         });
       }
 
+      const genJSON = async (templateContent: string, metadata: any) => {
+        return JSON.parse(await gen(templateContent, {
+          ...metadata,
+          modelKwargs: { "response_format": { "type": "json_object" } }
+        }));
+      }
 
       const run = (id: string, metadata?: any) => {
         let meta: any = {};
@@ -622,10 +628,10 @@ export default function Helpersfn(self: ContextManager) {
 
       // do not use (0, eval), it will break "this", and the eval wont be able to access context
       return await eval(`
-        async (plugin, app, pluginApi, run, gen, error, JSON5)=>{
+        async (plugin, app, pluginApi, run, gen, genJSON, error, JSON5)=>{
           ${content}
         }  
-      `).bind(this)(self.plugin, self.app, pluginApi, run, gen, error, JSON5);
+      `).bind(this)(self.plugin, self.app, pluginApi, run, gen, genJSON, error, JSON5);
     },
 
     read,
