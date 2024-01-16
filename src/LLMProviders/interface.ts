@@ -72,4 +72,5 @@ export interface LLMConfig {
   presence_penalty: number;
   llmPredict: boolean;
   bodyParams?: any;
+  modelKwargs?: any;
 }

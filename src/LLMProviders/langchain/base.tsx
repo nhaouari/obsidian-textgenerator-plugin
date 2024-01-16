@@ -38,12 +38,14 @@ export default class LangchainProvider
     return this.cleanConfig({
       openAIApiKey: options.api_key,
 
+
       // ------------Necessary stuff--------------
+      modelKwargs: options.modelKwargs,
       modelName: options.model,
       maxTokens: +options.max_tokens,
       temperature: +options.temperature,
       frequencyPenalty: +options.frequency_penalty,
-      presencePenalty: +options.presence_penalty,
+      presencePenalty: +options.presence_penalty || undefined,
       n: options.n,
       stop: options.stop,
       streaming: options.stream,

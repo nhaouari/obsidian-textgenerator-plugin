@@ -34,6 +34,7 @@ export default class LangchainChatGoogleGenerativeAIProvider
       candidateCount: options.n,
 
       // ------------Necessary stuff--------------
+      modelKwargs: options.modelKwargs,
       //   modelName: options.model,
       maxOutputTokens: options.max_tokens,
       temperature: options.temperature,

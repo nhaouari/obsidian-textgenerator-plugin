@@ -29,7 +29,7 @@ export default class LangchainHFProvider
       apiKey: options.otherOptions.api_key,
       // ------------Necessary stuff--------------
       model: options.model || options.otherOptions.model as any,
-
+      modelKwargs: options.modelKwargs,
       maxTokens: options.max_tokens,
       temperature: options.temperature,
       frequencyPenalty: options.frequency_penalty,

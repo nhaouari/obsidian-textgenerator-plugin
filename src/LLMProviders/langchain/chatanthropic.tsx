@@ -33,6 +33,7 @@ export default class LangchainChatAnthropicProvider
       stopSequences: options.stop,
 
       // ------------Necessary stuff--------------
+      modelKwargs: options.modelKwargs,
       modelName: options.model,
       maxTokens: options.max_tokens,
       temperature: options.temperature,

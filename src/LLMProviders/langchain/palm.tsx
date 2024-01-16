@@ -28,6 +28,7 @@ export default class LangchainPalmProvider
 
 
       // ------------Necessary stuff--------------
+      modelKwargs: options.modelKwargs,
       //   modelName: options.model,
       maxTokens: options.max_tokens,
       temperature: options.temperature,

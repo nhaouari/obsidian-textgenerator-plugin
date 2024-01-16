@@ -1,6 +1,6 @@
 import LangchainBase from "./base";
 import React from "react";
-import LLMProviderInterface from "../interface";
+import LLMProviderInterface, { LLMConfig } from "../interface";
 import SettingItem from "#/ui/settings/components/item";
 import useGlobal from "#/ui/context/global";
 import { IconExternalLink } from "@tabler/icons-react";
@@ -8,6 +8,7 @@ import Input from "#/ui/settings/components/input";
 
 import debug from "debug";
 import { ModelsHandler } from "../utils";
+import { OpenAIChatInput } from "langchain/chat_models/openai";
 
 const logger = debug("textgenerator:llmProvider:mistralChat");
 
@@ -43,6 +44,31 @@ export default class LangchainMistralAIChatProvider
   //       ...this.getConfig(options),
   //     } as any);
   //   }
+
+  getConfig(options: LLMConfig) {
+    return this.cleanConfig({
+      openAIApiKey: options.api_key,
+
+
+      // ------------Necessary stuff--------------
+      modelKwargs: {
+        ...options.modelKwargs,
+        response_format: undefined,
+        frequency_penalty: undefined,
+        presence_penalty: undefined,
+        n: undefined
+      },
+      modelName: options.model,
+      maxTokens: +options.max_tokens,
+      temperature: +options.temperature,
+      frequencyPenalty: +options.frequency_penalty,
+      presencePenalty: +options.presence_penalty || undefined,
+      n: options.n,
+      stop: options.stop,
+      streaming: options.stream,
+      maxRetries: 3,
+    } as Partial<OpenAIChatInput>);
+  }
 
   provider = LangchainMistralAIChatProvider.provider;
   id = LangchainMistralAIChatProvider.id;

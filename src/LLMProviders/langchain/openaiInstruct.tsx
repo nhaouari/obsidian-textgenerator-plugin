@@ -37,6 +37,7 @@ export default class LangchainOpenAIInstructProvider
       openAIApiKey: options.api_key,
 
       // ------------Necessary stuff--------------
+      modelKwargs: options.modelKwargs,
       modelName: options.model,
       maxTokens: +options.max_tokens,
       temperature: +options.temperature,

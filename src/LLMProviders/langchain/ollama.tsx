@@ -29,6 +29,7 @@ export default class LangchainOllamaProvider
       baseUrl: options.basePath,
 
       // ------------Necessary stuff--------------
+      modelKwargs: options.modelKwargs,
       model: options.model as any,
       maxTokens: options.max_tokens,
       temperature: options.temperature,
