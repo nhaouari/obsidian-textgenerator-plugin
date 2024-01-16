@@ -255,11 +255,11 @@ export default function Helpersfn(self: ContextManager) {
     },
 
     stringify: function (context: any) {
-      return JSON.stringify(context);
+      return JSON5.stringify(context);
     },
 
     parse: function (context: any) {
-      return JSON.parse(context);
+      return JSON5.parse(context);
     },
 
     escp: async function (context: any) {
@@ -303,7 +303,6 @@ export default function Helpersfn(self: ContextManager) {
     },
 
     async log(...vars: any[]) {
-      console.log({ ...vars })
       let fnExists = false;
       if (vars[vars.length - 1].fn) {
         fnExists = true;
@@ -314,14 +313,14 @@ export default function Helpersfn(self: ContextManager) {
       // try to json parse them
       vars.forEach((v, i) => {
         try {
-          vars[i] = JSON.parse(v);
+          vars[i] = JSON5.parse(v);
         } catch {
           // empty
         }
       });
 
-      if (fnExists && !vars[vars.length - 1]) vars.pop();
-
+      if (!fnExists && !vars[vars.length - 1]) vars.pop();
+      console.log(...vars)
       return "";
     },
 
@@ -368,7 +367,7 @@ export default function Helpersfn(self: ContextManager) {
 
         try {
           innerResult = innerTxt.trim().startsWith("{")
-            ? JSON.parse(innerTxt)
+            ? JSON5.parse(innerTxt)
             : {
               [param]: innerTxt,
             };
@@ -525,7 +524,7 @@ export default function Helpersfn(self: ContextManager) {
 
       const inJson = {
         ...options.data.root,
-        ...JSON.parse(await options.fn(this)),
+        ...JSON5.parse(await options.fn(this)),
       };
 
       const data: { system: string; messages: string[]; prompt?: string } =
@@ -586,7 +585,7 @@ export default function Helpersfn(self: ContextManager) {
       }
 
       const genJSON = async (templateContent: string, metadata: any) => {
-        return JSON.parse(await gen(templateContent, {
+        return JSON5.parse(await gen(templateContent, {
           ...metadata,
           modelKwargs: { "response_format": { "type": "json_object" } }
         }));
