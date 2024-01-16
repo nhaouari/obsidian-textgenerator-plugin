@@ -34,14 +34,16 @@ export default function TemplateInputModalView(props: {
       const required: string[] = [];
       const formData: FormProps["formData"] = {}
       props.labels.forEach(l => {
-        basicProps[l] = {
-          type: 'string',
-          title: l
-        }
-        basicUi[l] = {
-          "ui:widget": "textarea",
-          props: {
-            className: "w-full"
+        if (typeof props.templateContext[l] !== "object") {
+          basicProps[l] = {
+            type: 'string',
+            title: l
+          }
+          basicUi[l] = {
+            "ui:widget": "textarea",
+            props: {
+              className: "w-full"
+            }
           }
         }
         formData[l] = props.templateContext[l];
