@@ -405,7 +405,7 @@ export default class PackageManager {
   }
 
   getPackageById(packageId: string): PackageTemplate | null {
-    return this.configuration.packagesHash?.[packageId] || null;
+    return this.configuration?.packagesHash?.[packageId] || null;
   }
 
   getPackagesList() {
