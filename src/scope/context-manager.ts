@@ -1227,7 +1227,10 @@ export const contextVariablesObj: Record<
 {{/extract}}
 
 Or
-{{extract "pdf" "test.pdf"}}`,
+
+{{extract "pdf" "test.pdf"}}
+{{extract "youtube" ytUrl}}
+{{extract "web" "https://example.com"}}`,
     hint: "Extracts content from various sources like PDFs, images, audio files, web pages, and YouTube URLs. possible values: web_md, web_html, pdf, yt, img, audio",
   },
 
