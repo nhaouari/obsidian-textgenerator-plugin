@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import CopyButton from "./copyButton";
 import clsx from "clsx";
 
+/** This is the component for Available Examples */
 export default function AvailableVars(props: {
   vars: Record<
     string,
@@ -42,6 +43,9 @@ export default function AvailableVars(props: {
                 </div>
               );
             })}
+          </div>
+          <div className="plug-tg-flex plug-tg-justify-end plug-tg-items-center plug-tg-w-full">
+            <a className="text-xs" href="https://docs.text-gen.com/_notes/3-+Templates/subpages/Handlebar+Templates">Learn More</a>
           </div>
         </div>
         {hovered && (
