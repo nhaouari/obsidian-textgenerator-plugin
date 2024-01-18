@@ -807,8 +807,8 @@ ${removeYAML(content)}
     return text || "";
   }
 
-  /** record of template paths, from id */
-  templatePaths: Record<string, string>;
+  /** record of template paths, from packageId, templateId */
+  templatePaths: Record<string, Record<string, string>>;
   lastTemplatePathStats: Record<string, number> = {};
 
 
@@ -826,12 +826,22 @@ ${removeYAML(content)}
     return false;
   }
 
+  async packageExists(packageId: string) {
+    if (await this.checkTemplatePathsHasChanged()) {
+      await this.updateTemplatesCache();
+    }
+
+    return !!Object.keys(this.templatePaths[packageId] || {}).length
+  }
+
   async getTemplatePath(id: string) {
     if (await this.checkTemplatePathsHasChanged()) {
       await this.updateTemplatesCache();
     }
 
-    if (this.templatePaths[id]) return this.templatePaths[id];
+    const [packageId, templateId] = id.split("/")
+
+    if (this.templatePaths[packageId][templateId]) return this.templatePaths[packageId][templateId];
 
     const promptsPath = this.plugin.settings.promptsPath
 
@@ -872,7 +882,8 @@ ${removeYAML(content)}
     templates.forEach((template) => {
       if (template.id) {
         const ss = template.path.split("/");
-        this.templatePaths[ss[ss.length - 2] + "/" + template.id] =
+        this.templatePaths[ss[ss.length - 2]] ??= {};
+        this.templatePaths[ss[ss.length - 2]][template.id] =
           template.path;
       }
       this.lastTemplatePathStats[template.path] = template.ctime;

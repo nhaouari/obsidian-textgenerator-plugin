@@ -6,7 +6,7 @@ const helpers: Record<string, any> = Helpersfn({} as any);
 const helpersArr: string[] = Object.keys(helpers)
 
 const ignoredVariables = ["output", "this", "true", "false", "script"];
-const defaultHelpers = ["if", "unless", "with", "each"];
+const defaultHelpers = ["if", "unless", "with", "each", "package"];
 
 export const getHBValues = (text: string) => {
   text = removeScriptOccurrences(text);

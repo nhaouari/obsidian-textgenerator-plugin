@@ -1,5 +1,5 @@
 import { Notice, Plugin, normalizePath, request, requestUrl } from "obsidian";
-import handlebars, { Exception, createFrame } from "handlebars";
+import handlebars, { Exception, createFrame, template } from "handlebars";
 import { pull } from "langchain/hub";
 
 import asyncHelpers from "../lib/async-handlebars-helper";
@@ -324,6 +324,14 @@ export default function Helpersfn(self: ContextManager) {
       return "";
     },
 
+    async package(packageId: string, version?: string) {
+      if (!await self.plugin.textGenerator.packageExists(packageId))
+        throw new Error(
+          `package ${packageId} was not found.`
+        );
+      return true;
+    },
+
     async run(...vars: any[]) {
       const options: { data: { root: any }; fn: any } = vars.pop();
 
@@ -595,8 +603,9 @@ export default function Helpersfn(self: ContextManager) {
         let meta: any = {};
 
         if (content.contains("run(")) {
+          const [packageId, templateId] = id.split("/")
           const TemplateMetadata = self.getFrontmatter(
-            self.getMetaData(self.plugin.textGenerator.templatePaths[id])
+            self.getMetaData(self.plugin.textGenerator.templatePaths[packageId][templateId])
           );
           meta = {
             ...options.data.root,
