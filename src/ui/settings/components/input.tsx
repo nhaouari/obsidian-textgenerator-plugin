@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { IconEyeClosed, IconEye } from "@tabler/icons-react";
 import clsx from "clsx";
 import { ZodSchema } from "zod";
+import JSON5 from "json5";
 
 export default function Input(props: {
   type?: string;
@@ -69,7 +70,7 @@ export default function Input(props: {
                 props.validator?.parse(v);
                 props.setValue("" + v);
               } catch (err: any) {
-                setError(JSON.parse(err?.message)?.[0]?.message);
+                setError(JSON5.parse(err?.message)?.[0]?.message);
               }
             }
             : undefined

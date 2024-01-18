@@ -1,18 +1,15 @@
-import BaseProvider from "../base";
 import { cleanConfig } from "../../utils";
-import { AsyncReturnType, Message } from "../../types";
 import debug from "debug";
 import React, { useMemo } from "react";
-import LLMProviderInterface, { LLMConfig } from "../interface";
+import LLMProviderInterface from "../interface";
 import useGlobal from "#/ui/context/global";
 import { getHBValues } from "#/utils/barhandles";
 import SettingItem from "#/ui/settings/components/item";
 import Input from "#/ui/settings/components/input";
-import { RequestUrlParam, requestUrl } from "obsidian";
-import get from "lodash.get";
 import { Handlebars } from "../../helpers/handlebars-helpers";
 import clsx from "clsx";
 import CustomProvider from "./base";
+import JSON5 from "json5";
 
 const logger = debug("textgenerator:CustomProvider");
 
@@ -74,7 +71,7 @@ const default_values = {
     const parsedLines = lines
       .map((line) => line.replace(/^data: /, "").trim()) // Remove the "data: " prefix
       .filter((line) => line !== "" && line !== "[DONE]") // Remove empty lines and "[DONE]"
-      .map((line) => JSON.parse(line)); // Parse the JSON string
+      .map((line) => JSON5.parse(line)); // Parse the JSON string
   
     for (const parsedLine of parsedLines) {
       const { choices } = parsedLine;
@@ -163,7 +160,7 @@ export default class DefaultCustomProvider
 
               console.log(compiled);
               try {
-                console.log(JSON.parse(compiled));
+                console.log(JSON5.parse(compiled));
               } catch (err: any) {
                 console.warn(err);
               }
@@ -198,7 +195,7 @@ export default class DefaultCustomProvider
 
               console.log(compiled);
               try {
-                console.log(JSON.parse(compiled));
+                console.log(JSON5.parse(compiled));
               } catch (err: any) {
                 console.warn(err);
               }

@@ -7,6 +7,7 @@ import LLMProviderInterface, { LLMConfig } from "../interface";
 import { RequestUrlParam, requestUrl } from "obsidian";
 import get from "lodash.get";
 import { Handlebars } from "../../helpers/handlebars-helpers";
+import JSON5 from "json5";
 
 const logger = debug("textgenerator:CustomProvider");
 
@@ -69,7 +70,7 @@ const default_values = {
     const parsedLines = lines
       .map((line) => line.replace(/^data: /, "").trim()) // Remove the "data: " prefix
       .filter((line) => line !== "" && line !== "[DONE]") // Remove empty lines and "[DONE]"
-      .map((line) => JSON.parse(line)); // Parse the JSON string
+      .map((line) => JSON5.parse(line)); // Parse the JSON string
   
     for (const parsedLine of parsedLines) {
       const { choices } = parsedLine;
@@ -129,7 +130,7 @@ export default class CustomProvider
             typeof requestOptions.headers == "object"
               ? (requestOptions.headers as any)
               : requestOptions.headers
-                ? JSON.parse(requestOptions.headers)
+                ? JSON5.parse(requestOptions.headers)
                 : undefined,
 
         })
@@ -180,7 +181,7 @@ export default class CustomProvider
       let resJson = {};
 
       try {
-        resJson = JSON.parse(resText as any);
+        resJson = JSON5.parse(resText as any);
       } catch (err: any) {
         resJson = resText;
       }
@@ -247,7 +248,7 @@ export default class CustomProvider
           )(handlebarData),
           signal: handlebarData.requestParams?.signal || undefined,
           stream: handlebarData.stream,
-          headers: JSON.parse(
+          headers: JSON5.parse(
             "" +
             (await Handlebars.compile(
               handlebarData.handlebars_headers_in ||
@@ -256,7 +257,7 @@ export default class CustomProvider
           ) as any,
 
           body: JSON.stringify(
-            JSON.parse(
+            JSON5.parse(
               "" +
               (await Handlebars.compile(
                 handlebarData.handlebars_body_in ||
@@ -332,7 +333,7 @@ export default class CustomProvider
           )(handlebarData),
           signal: handlebarData.requestParams?.signal || undefined,
           stream: handlebarData.stream,
-          headers: JSON.parse(
+          headers: JSON5.parse(
             await Handlebars.compile(
               handlebarData.handlebars_headers_in ||
               default_values.handlebars_headers_in
@@ -341,7 +342,7 @@ export default class CustomProvider
 
           body: JSON.stringify(
             this.cleanConfig(
-              JSON.parse(
+              JSON5.parse(
                 await Handlebars.compile(
                   handlebarData.handlebars_body_in ||
                   default_values.handlebars_body_in

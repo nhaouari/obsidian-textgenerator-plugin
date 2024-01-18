@@ -7,6 +7,7 @@ import { PackageTemplate } from "#/types";
 import { PluginManifest } from "obsidian";
 import { useToggle } from "usehooks-ts";
 import attemptLogin from "../login";
+import JSON5 from "json5";
 
 export default function TemplateDetails(inProps: {
 	packageId: any,
@@ -123,7 +124,7 @@ export default function TemplateDetails(inProps: {
 
 		if (!await packageManager.app.vault.adapter.exists(manifestJson)) throw "manifest.json doesn't exist to read the packageid";
 
-		const manifest: PluginManifest = JSON.parse(await packageManager.app.vault.adapter.read(manifestJson))
+		const manifest: PluginManifest = JSON5.parse(await packageManager.app.vault.adapter.read(manifestJson))
 		return manifest.id
 	}
 

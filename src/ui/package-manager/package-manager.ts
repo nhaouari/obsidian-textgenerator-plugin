@@ -17,7 +17,7 @@ import debug from "debug";
 import Confirm from "./components/confirm";
 import { createFolder } from "#/utils";
 import set from "lodash.set";
-
+import JSON5 from "json5";
 import showGratitude from "./gratitude"
 
 const logger = debug("textgenerator:PackageManager");
@@ -57,7 +57,7 @@ export default class PackageManager {
 
     if (await adapter.exists(configPath)) {
       try {
-        this.configuration = JSON.parse(await adapter.read(configPath)) as any;
+        this.configuration = JSON5.parse(await adapter.read(configPath)) as any;
       } catch (err: any) {
         console.warn("packageManager: couldn't parse the config file ", configPath);
         await this.initConfigFlie();
@@ -440,7 +440,7 @@ export default class PackageManager {
         //const release = await this.getReleaseByRepo(repo);
         //const manifest= await this.getAsset(release,'manifest.json');
         const url = `https://raw.githubusercontent.com/${repo}/master/manifest.json`;
-        manifest = JSON.parse(await request({ url: url })) as any;
+        manifest = JSON5.parse(await request({ url: url })) as any;
         // console.log(manifest);
         this.setPackageInfo(packageId, (manifest as any));
       } catch (err: any) {
@@ -490,7 +490,7 @@ export default class PackageManager {
 
   async getReleaseByRepo(repo: string) {
     logger("getReleaseByRepo", { repo });
-    const rawReleases = JSON.parse(
+    const rawReleases = JSON5.parse(
       await request({
         url: `https://api.github.com/repos/${repo}/releases`,
       })
@@ -532,7 +532,7 @@ export default class PackageManager {
     const txt = await request({
       url: asset.url,
     })
-    return JSON.parse(
+    return JSON5.parse(
       txt
     ) as {
       packageId: string;
@@ -736,14 +736,14 @@ export default class PackageManager {
   async updatePackagesList() {
     logger("updatePackagesList");
     const remotePackagesList: PackageTemplate[] = [
-      ...((JSON.parse(
+      ...((JSON5.parse(
         await request({ url: packageRegistry })
       ) || []) as any)
         // to exclude any community features or labled as core
         .filter((p: PackageTemplate) => p.type !== "feature" && !p.core),
 
       // core packages can be templates or features 
-      ...(JSON.parse(
+      ...(JSON5.parse(
         await request({ url: corePackageRegistry })
       ) || []) as any
     ];
@@ -793,7 +793,7 @@ export default class PackageManager {
   async getStats() {
     logger("getStats");
     const remotePackagesListUrl = `https://raw.githubusercontent.com/text-gen/text-generator-packages/master/community-packages-stats.json`;
-    const stats: any[] = JSON.parse(
+    const stats: any[] = JSON5.parse(
       await request({ url: remotePackagesListUrl })
     ) as any;
     logger("getStats end");

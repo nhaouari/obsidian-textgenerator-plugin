@@ -2,6 +2,7 @@ import { App, request, Platform } from "obsidian";
 import { Extractor } from "../extractor";
 import TextGeneratorPlugin from "src/main";
 import debug from "debug";
+import JSON5 from "json5";
 
 let remote: typeof import("electron");
 
@@ -64,7 +65,7 @@ export default class WebPageExtractor extends Extractor {
 
     // try to parse it
     try {
-      selector = JSON.parse(selector as any);
+      selector = JSON5.parse(selector as any);
     } catch {
       // empty
     }

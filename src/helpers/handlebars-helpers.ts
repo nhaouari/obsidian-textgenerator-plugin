@@ -255,7 +255,7 @@ export default function Helpersfn(self: ContextManager) {
     },
 
     stringify: function (context: any) {
-      return JSON5.stringify(context);
+      return JSON.stringify(context);
     },
 
     parse: function (context: any) {

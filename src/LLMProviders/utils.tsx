@@ -8,6 +8,7 @@ import clsx from "clsx";
 import { request } from "obsidian";
 import React, { useState, useEffect, useId } from "react";
 import LLMProviderInterface from "./interface";
+import JSON5 from "json5";
 
 export function ModelsHandler(props: {
     register: Parameters<LLMProviderInterface["RenderSettings"]>[0]["register"];
@@ -46,7 +47,7 @@ export function ModelsHandler(props: {
                     data: {
                         id: string;
                     }[];
-                } = JSON.parse(await request(reqParams));
+                } = JSON5.parse(await request(reqParams));
 
                 requestResults.data.forEach(async (model) => {
                     models.push(model.id);

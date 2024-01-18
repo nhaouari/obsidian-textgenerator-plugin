@@ -1,5 +1,6 @@
 //source: https://github.com/Kakulukian/youtube-transcript
 import { request } from "obsidian";
+import JSON5 from "json5";
 
 const RE_YOUTUBE =
 	/^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|&v(?:i)?=))([^#&?]*).*/im;
@@ -52,7 +53,7 @@ export class YoutubeTranscript {
 					headers: {
 						"Content-Type": "application/json",
 					},
-				}).then((r) => JSON.parse(r));
+				}).then((r) => JSON5.parse(r));
 
 				if (body.responseContext) {
 					if (!body.actions) {
