@@ -33,8 +33,8 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   }, [packagesIdsToUpdate])
 
   const items = useMemo(() => {
-    let itms = justInstalled
-      ? _items.filter((p: any) => p.installed === true)
+    let itms = justInstalled ?
+      _items.filter(i => !!i.installed)
       : _items;
 
     if (searchInput.length)
@@ -44,6 +44,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
           .toLowerCase()
           .includes(searchInput.toLowerCase())
       );
+
     return itms
   },
     [_items, justInstalled, packagesIdsToUpdate, searchInput]
@@ -129,9 +130,10 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
     </div>
   ) : "";
 
-  const premiumFeatures = items.filter(i => i.core);
+  const premiumFeatures = items.filter(i => !!i.core);
   const communityTemplates = items.filter(i => !i.core);
 
+  console.log({ items })
 
   return (
     <>
@@ -207,57 +209,65 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                 </div>
 
                 <div className="community-modal-search-summary u-muted">
-                  Showing {items.length} Packages Templates:
+                  Showing {items.length} Packages
                 </div>
                 <div className="plug-tg-flex plug-tg-w-full plug-tg-justify-end">
                   <div className="plug-tg-px-4 plug-tg-py-1">Find more community templates on our <a href="https://discord.gg/GvTBgzBz7n">discord server!</a></div>
                 </div>
               </div>
               <div className="community-modal-search-results-wrapper">
-                <div className="plug-tg-p-3">
-                  {!!ProviderServer && premiumFeatures?.length ? <>
-                    <h2>Featured Items</h2>
-                    <div className="plug-tg-w-full plug-tg-flex plug-tg-gap-2 plug-tg-flex-wrap">
-                      {premiumFeatures.map((item) => {
-                        const i = items.findIndex(it => it.packageId == item.packageId);
-                        return (
-                          <TemplateItem
-                            key={item.packageId + "premium"}
-                            item={item}
-                            index={i}
-                            selected={selectedIndex == i}
-                            select={select}
-                            owned={glob.plugin.packageManager.simpleCheckOwnership(item.packageId)}
-                            update={
-                              pacakgeIdsToUpdateHash[item.packageId]
-                            }
-                          />
-                        )
-                      })}
-                    </div>
-                  </> : null}
-                  {premiumFeatures?.length ? <>
-                    <h2>Community Templates</h2>
-                    <div className="community-modal-search-results plug-tg-pl-0">
-                      {communityTemplates.map((item) => {
-                        const i = items.findIndex(it => it.packageId == item.packageId)
-                        return (
-                          <TemplateItem
-                            key={item.packageId + "community"}
-                            item={item}
-                            index={i}
-                            selected={selectedIndex == i}
-                            select={select}
-                            update={
-                              pacakgeIdsToUpdateHash[item.packageId]
-                            }
-                          />
-                        )
-                      })}
-                    </div>
-                  </> : null}
-                </div>
+                <div className="plug-tg-flex plug-tg-flex-col">
+                  {!!ProviderServer && !!premiumFeatures?.length && <>
+                    <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2 plug-tg-p-3">
+                      <div className="plug-tg-text-xl plug-tg-font-bold">Featured Items</div>
+                      <div className="plug-tg-w-full plug-tg-flex plug-tg-gap-2 plug-tg-flex-wrap">
+                        {premiumFeatures.map((item) => {
 
+                          const i = items.findIndex(it => it.packageId == item.packageId);
+                          return (
+                            <TemplateItem
+                              key={item.packageId + "premium"}
+                              item={item}
+                              index={i}
+                              selected={selectedIndex == i}
+                              select={select}
+                              owned={glob.plugin.packageManager.simpleCheckOwnership(item.packageId)}
+                              update={
+                                pacakgeIdsToUpdateHash[item.packageId]
+                              }
+                            />
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    <hr className="plug-tg-h-px plug-tg-my-2 plug-tg-bg-gray-200/25 plug-tg-border-0" />
+                  </>}
+
+                  <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2 plug-tg-p-3 plug-tg-pr-0">
+                    {communityTemplates?.length ? <>
+                      <div className="plug-tg-text-xl plug-tg-font-bold">Community Templates</div>
+                      <div className="community-modal-search-results plug-tg-pl-0">
+                        {communityTemplates.map((item) => {
+
+                          const i = items.findIndex(it => it.packageId == item.packageId)
+                          return (
+                            <TemplateItem
+                              key={item.packageId + "community"}
+                              item={item}
+                              index={i}
+                              selected={selectedIndex == i}
+                              select={select}
+                              update={
+                                pacakgeIdsToUpdateHash[item.packageId]
+                              }
+                            />
+                          )
+                        })}
+                      </div>
+                    </> : null}
+                  </div>
+                </div>
               </div>
             </div>
             {selectedIndex !== -1 && items[selectedIndex] && (
