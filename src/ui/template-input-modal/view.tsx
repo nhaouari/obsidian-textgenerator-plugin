@@ -75,7 +75,10 @@ export default function TemplateInputModalView(props: {
             setUISchema(cschema.uiSchema);
 
           if (cschema.formData)
-            setFormData(cschema.formData);
+            setFormData({
+              ...formData,
+              ...cschema.formData
+            });
         }
       }
     })()
@@ -88,6 +91,10 @@ export default function TemplateInputModalView(props: {
       uiSchema={UISchema}
       formData={formData}
       validator={validator}
+      onChange={d => {
+        console.log({ d })
+        if (d.formData) setFormData(formData)
+      }}
       onSubmit={handleSubmit}
     >{props.children}</Form>
   );
