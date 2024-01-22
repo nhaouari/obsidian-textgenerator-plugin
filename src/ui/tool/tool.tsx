@@ -23,13 +23,12 @@ export default function Tool(props: {
     templatePath: string;
     context: InputContext;
     editor?: Editor;
-  }>(() => props.view?.getState(), []);
+  }>(() => props.view?.getState(), [selectedTemplatePath]);
 
   const [answer, setAnswer] = useStateView("", "answer", props.view);
 
   const [loading, setLoading] = useState(false);
   const [templateContext, setTemplateContext] = useState<any>();
-  const [templates, setTemplates] = useState<any>();
   const [variables, setVariables] = useState<string[]>([]);
 
   const [abortController, setAbortController] = useState(new AbortController());
@@ -98,6 +97,7 @@ export default function Tool(props: {
   }, []);
 
   useEffect(() => {
+
     if (!selectedTemplatePath) return;
     (async () => {
       await props.view.leaf.setViewState({
@@ -149,16 +149,18 @@ export default function Tool(props: {
         preRunnerContent, inputContent, outputContent)
 
       const templateContext =
-        await props.plugin.contextManager.getTemplateContext({
+        await props.plugin.contextManager.getContext({
           editor: config.editor as any,
           templatePath: config.templatePath,
           filePath: props.plugin.app.workspace.activeEditor?.file?.path,
         });
+      templateContext.options.templatePath = config.templatePath
+      console.log({ templateContext, config })
 
-      setTemplateContext({ ...templateContext, templatePath: config.templatePath });
+      setTemplateContext(templateContext.options);
       setVariables(variables);
     })();
-  }, [selectedTemplatePath]);
+  }, [selectedTemplatePath, config]);
 
   const handleSubmit = async (event: any) => {
     const data = event.formData;

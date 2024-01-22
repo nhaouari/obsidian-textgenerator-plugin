@@ -327,6 +327,8 @@ export default class Commands {
       async callback() {
         const self: Commands = this;
         try {
+          const activeView = await self.plugin.getActiveView();
+          const CM = ContentManagerCls.compile(activeView, self.plugin);
           new ExampleModal(
             this.plugin.app,
             this.plugin,
@@ -334,7 +336,7 @@ export default class Commands {
               self.plugin.activateView(VIEW_TOOL_ID, {
                 templatePath: result.path,
                 title: result.name,
-                editor: self.plugin.app.workspace.activeEditor?.editor,
+                editor: CM,
                 openInPopout: true,
               });
             },
@@ -759,7 +761,7 @@ export default class Commands {
                     templatePath: template.path,
                     title: template.id || template.name,
                     openInPopout: true,
-                    editor: self.plugin.app.workspace.activeEditor?.editor,
+                    editor: CM,
                   });
                   break;
 

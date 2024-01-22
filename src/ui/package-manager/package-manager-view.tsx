@@ -133,8 +133,6 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   const premiumFeatures = items.filter(i => !!i.core);
   const communityTemplates = items.filter(i => !i.core);
 
-  console.log({ items })
-
   return (
     <>
       <div className="modal-container">

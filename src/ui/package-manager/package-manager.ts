@@ -15,7 +15,7 @@ import TextGeneratorPlugin from "src/main";
 import { gt } from "semver";
 import debug from "debug";
 import Confirm from "./components/confirm";
-import { createFolder } from "#/utils";
+import { createFolder, processPromisesSetteledBatch } from "#/utils";
 import set from "lodash.set";
 import JSON5 from "json5";
 import showGratitude from "./gratitude"
@@ -27,7 +27,7 @@ const corePackageRegistry = `https://raw.githubusercontent.com/text-gen/text-gen
 
 export const PackageProviderid = "package-provider"
 
-export const ProviderServer = ""
+export const ProviderServer = "https://app.text-gen.com/"
 
 
 export default class PackageManager {
@@ -283,12 +283,13 @@ export default class PackageManager {
         this.configuration.installedPackagesHash[packageId] = obj
 
         if (installAllPrompts) {
-          await Promise.all(
+          await processPromisesSetteledBatch(
             data.prompts.map((promptId) =>
               p.folderName
                 ? this.installPromptExternal(packageId, promptId, true)
                 : this.installPrompt(packageId, promptId, true)
-            )
+            ),
+            1
           );
           new Notice(`Package ${packageId} installed`);
         }
@@ -614,11 +615,12 @@ export default class PackageManager {
         throw: false
       })
 
+      console.log({ resource, res, url: new URL(`/api/content/${id}`, ProviderServer).href })
+
       if (res.status >= 300) {
         throw res.text;
       }
 
-      console.log(resource.name)
       await this.writePrompt(packageId, resource.name, await res.text, true);
 
       this.configuration.installedPackagesHash[packageId]
@@ -805,6 +807,7 @@ export default class PackageManager {
 import FC from "func-cache"
 
 export const validateOwnership = FC(async (packageId: string, apikey: string) => {
+  console.log("validating ownership of ", packageId, new URL(`/api/content/package/${packageId}/verify`, ProviderServer).href)
   const res = await requestUrl({
     url: new URL(`/api/content/package/${packageId}/verify`, ProviderServer).href,
     headers: {
@@ -826,6 +829,7 @@ export const validateOwnership = FC(async (packageId: string, apikey: string) =>
 
 
 const getBoughtResources = FC(async (apikey: string) => {
+  console.log("getting bought resources")
   const res = await requestUrl({
     url: new URL(`/api/v2/resources`, ProviderServer).href, headers: {
       "Authorization": `Bearer ${apikey}`,
@@ -854,10 +858,10 @@ const getBoughtResources = FC(async (apikey: string) => {
   return data;
 }, {
   // (1 sec) in miliseconds
-  lifeTime: 1000,
+  lifeTime: 5000,
 
   /** debounce time wait to call onDataUpdate, default 1000ms */
-  // debounceTimer: 1000,
+  debounceTimer: 100,
 
   /** incase the call is async, (sometimes the script doesn't detect it's async and wont run the await for it) default: false */
   async: true,
