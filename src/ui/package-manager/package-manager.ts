@@ -27,7 +27,7 @@ const corePackageRegistry = `https://raw.githubusercontent.com/text-gen/text-gen
 
 export const PackageProviderid = "package-provider"
 
-export const ProviderServer = "https://app.text-gen.com/"
+export const ProviderServer = ""
 
 
 export default class PackageManager {
