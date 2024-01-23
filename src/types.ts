@@ -18,7 +18,6 @@ type Options = Record<
   | "generated-text-to-clipboard-From-template"
   | "calculate-tokens"
   | "calculate-tokens-for-template"
-  | "modal-suggest"
   | "text-extractor-tool"
   | "stop-stream"
   | "custom-instruct"
@@ -79,6 +78,10 @@ type TextGeneratorSettings = {
     showStatus: boolean;
     customProvider: boolean;
     selectedProvider?: string;
+  };
+  slashSuggestOptions: {
+    isEnabled: boolean;
+    triggerPhrase: string;
   };
   extractorsOptions: {
     PDFExtractor: boolean;

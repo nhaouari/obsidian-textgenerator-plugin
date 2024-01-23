@@ -56,7 +56,6 @@ Starred Blocks: {{starredBlocks}}
     "generated-text-to-clipboard-From-template": false,
     "calculate-tokens": true,
     "calculate-tokens-for-template": true,
-    "modal-suggest": false,
     "text-extractor-tool": true,
     "stop-stream": true,
     "custom-instruct": true,
@@ -85,6 +84,12 @@ Starred Blocks: {{starredBlocks}}
     showStatus: true,
     customProvider: false,
   },
+
+  slashSuggestOptions: {
+    isEnabled: false,
+    triggerPhrase: "/",
+  },
+
   extractorsOptions: {
     PDFExtractor: true,
     WebPageExtractor: true,

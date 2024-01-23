@@ -11,7 +11,7 @@ import TextGeneratorPlugin from "../main";
 import { ExampleModal } from "../models/model";
 import ContentManagerCls from "../content-manager";
 
-export class ModelSuggest extends EditorSuggest<PromptTemplate> {
+export class SlashSuggest extends EditorSuggest<PromptTemplate> {
   app: App;
   private plugin: TextGeneratorPlugin;
   scope: Scope;
@@ -26,7 +26,7 @@ export class ModelSuggest extends EditorSuggest<PromptTemplate> {
 
   public onTrigger(cursor: EditorPosition, editor: Editor) {
     const _line: string = editor.getLine(cursor.line);
-    if (!_line.startsWith("/")) return null;
+    if (!_line.trimStart().startsWith(this.plugin.settings.slashSuggestOptions?.triggerPhrase || this.plugin.defaultSettings.slashSuggestOptions.triggerPhrase)) return null;
     const line = _line.substring(0, cursor.ch);
     const currentPart = line.substring(1, cursor.ch);
     const currentStart = currentPart.lastIndexOf("/");

@@ -7,6 +7,7 @@ import DMPSetting from "./default-model-parameters";
 import ConsideredContextSetting from "./considered-context";
 import ExtractorOptionsSetting from "./extractors-options";
 import AutoSuggestSetting from "./auto-suggest";
+import SlashSuggestSetting from "./slash-suggest";
 import OptionsSetting from "./options";
 import Input from "../components/input";
 import OtherProvidersSetting from "./otherProviders";
@@ -117,6 +118,7 @@ export default function SectionsMain() {
 
       <DMPSetting register={register} />
       <AutoSuggestSetting register={register} />
+      <SlashSuggestSetting register={register} />
       <ConsideredContextSetting register={register} />
       <ExtractorOptionsSetting register={register} />
       <OtherProvidersSetting register={register} />

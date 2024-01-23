@@ -12,7 +12,12 @@ const extendedInfo: Record<
     description?: string;
     name?: string;
   }
-> = {};
+> = {
+  "modal-suggest": {
+    name: "Slash suggestions",
+    description: "modal-suggest"
+  }
+};
 
 export default function OptionsSetting(props: { register: Register }) {
   const [setReloader] = useReloder();
@@ -23,7 +28,7 @@ export default function OptionsSetting(props: { register: Register }) {
     () =>
       Object.keys({
         ...global.plugin.defaultSettings.options,
-        ...global.plugin.settings.options,
+        // ...global.plugin.settings.options,
       }),
     []
   );
@@ -59,7 +64,6 @@ export default function OptionsSetting(props: { register: Register }) {
         </SettingItem>
         {ops.map((key) => {
           const moreData = extendedInfo[key];
-
           return (
             <SettingItem
               key={key}

@@ -29,7 +29,7 @@ import { spinnersPlugin, SpinnersPlugin } from "./cm/plugin";
 import PrettyError from "pretty-error";
 import ansiToHtml from "ansi-to-html";
 import { AutoSuggest } from "./services/auto-suggest";
-import { ModelSuggest } from "./services/modal-suggest";
+import { SlashSuggest } from "./services/slash-suggest";
 import debug from "debug";
 
 import DEFAULT_SETTINGS from "./default-settings";
@@ -103,12 +103,12 @@ export default class TextGeneratorPlugin extends Plugin {
       await this.textGenerator.setup();
 
       // auto suggest
-      if (this.settings.autoSuggestOptions.isEnabled)
+      if (this.settings.autoSuggestOptions?.isEnabled)
         this.registerEditorSuggest(new AutoSuggest(this.app, this));
 
       // modal suggest
-      if (this.settings.options["modal-suggest"]) {
-        this.registerEditorSuggest(new ModelSuggest(this.app, this));
+      if (this.settings.slashSuggestOptions?.isEnabled) {
+        this.registerEditorSuggest(new SlashSuggest(this.app, this));
       }
 
 
