@@ -30,8 +30,7 @@ export default class GratitudeUI extends Modal {
   }
 
   async onOpen() {
-    this.containerEl.createEl("div", { cls: "plug-tg-packageManager" });
-    this.root = createRoot(this.containerEl.children[1]);
+    this.root = createRoot(this.containerEl);
     this.root.render(
       <React.StrictMode>
         <GlobalProvider plugin={this.plugin}>
