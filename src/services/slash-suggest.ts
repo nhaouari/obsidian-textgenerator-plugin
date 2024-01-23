@@ -26,9 +26,14 @@ export class SlashSuggest extends EditorSuggest<PromptTemplate> {
 
   public onTrigger(cursor: EditorPosition, editor: Editor) {
     const _line: string = editor.getLine(cursor.line);
-    if (!_line.trimStart().startsWith(this.plugin.settings.slashSuggestOptions?.triggerPhrase || this.plugin.defaultSettings.slashSuggestOptions.triggerPhrase)) return null;
+    const trigger = this.plugin.settings.slashSuggestOptions?.triggerPhrase || this.plugin.defaultSettings.slashSuggestOptions.triggerPhrase;
+    const start = _line.trimStart();
+
+    const startAfterTriggerPhrase = start.substring(trigger.length, cursor.ch)
+
+    if (!start.startsWith(trigger)) return null;
     const line = _line.substring(0, cursor.ch);
-    const currentPart = line.substring(1, cursor.ch);
+    const currentPart = startAfterTriggerPhrase
     const currentStart = currentPart.lastIndexOf("/");
     return {
       start: { ch: 0, line: cursor.line },

@@ -50,7 +50,7 @@ export default function SlashSuggestSetting(props: { register: Register }) {
         <>
           <SettingItem
             name="Trigger Phrase"
-            description="Trigger Phrase (default: *double space*)"
+            description="Trigger Phrase (default: */*)"
             register={props.register}
             sectionId={sectionId}
           >
