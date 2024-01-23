@@ -42,15 +42,36 @@ export default function TemplateDetails(inProps: {
 	useEffect(() => {
 		(async () => {
 			const pkg = packageManager.getPackageById(packageId);
+			console.log({
+				package: pkg,
+				installed: await packageManager.getInstalledPackageById(packageId),
+				ownedOrReq: pkg?.price || !pkg?.packageId ? {
+					allowed: true,
+					oneRequired: []
+				} : await packageManager.validateOwnership(pkg?.packageId)
+			})
+
+
+			packageManager.getInstalledPackageById(packageId).then((installed) => {
+				setProps(p => ({ ...p, installed }))
+			})
 
 			setProps({
 				package: pkg,
-				installed: await packageManager.getInstalledPackageById(packageId),
-				ownedOrReq: {
-					allowed: !pkg?.price || !!packageManager.simpleCheckOwnership(pkg?.packageId),
+				ownedOrReq: (pkg?.price || !pkg?.packageId) ? {
+					allowed: true,
+					oneRequired: []
+				} : {
+					allowed: false,
 					oneRequired: []
 				}
 			});
+
+			if (!(pkg?.price || !pkg?.packageId))
+				packageManager.validateOwnership(packageId).then((installed) => {
+					setProps(p => ({ ...p, installed }))
+				})
+
 		})()
 	}, [packageId, installing, enabling, _]);
 

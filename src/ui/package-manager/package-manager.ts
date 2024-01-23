@@ -213,6 +213,11 @@ export default class PackageManager {
     return Object.values(this.configuration.resources || {}).filter(r => r.folderName == folderName)
   }
 
+  getPackageById(packageId: string): PackageTemplate | null {
+    return this.configuration?.packagesHash?.[packageId] || null;
+  }
+
+
   async validateOwnership(packageId: string): Promise<{
     allowed: boolean,
     oneRequired?: string[],
@@ -230,6 +235,7 @@ export default class PackageManager {
     const pkg = this.getPackageById(packageId);
 
     if (!pkg || !pkg.price) return true;
+
     const resources = this.getResourcesOfFolder(pkg.folderName);
 
     return !!resources.length
@@ -289,7 +295,8 @@ export default class PackageManager {
                 ? this.installPromptExternal(packageId, promptId, true)
                 : this.installPrompt(packageId, promptId, true)
             ),
-            1
+            3,
+            1000
           );
           new Notice(`Package ${packageId} installed`);
         }
@@ -403,10 +410,6 @@ export default class PackageManager {
     await this.save();
     new Notice(`Package ${packageId} updated`);
     logger("updatePackage end", { packageId });
-  }
-
-  getPackageById(packageId: string): PackageTemplate | null {
-    return this.configuration?.packagesHash?.[packageId] || null;
   }
 
   getPackagesList() {
@@ -805,8 +808,12 @@ export default class PackageManager {
 
 
 import FC from "func-cache"
+import funCache, { localStorageCacher } from "#/lib/func-cache"
 
-export const validateOwnership = FC(async (packageId: string, apikey: string) => {
+const validateOwnership = funCache(async (packageId: string, apikey: string) => {
+  console.log({
+    validateOwnership
+  })
   console.log("validating ownership of ", packageId, new URL(`/api/content/package/${packageId}/verify`, ProviderServer).href)
   const res = await requestUrl({
     url: new URL(`/api/content/package/${packageId}/verify`, ProviderServer).href,
@@ -825,6 +832,16 @@ export const validateOwnership = FC(async (packageId: string, apikey: string) =>
   if (res.status > 300)
     throw d.details;
   return d;
+}, {
+  // in miliseconds
+  lifeTime: 10000,
+
+  /** debounce time wait to call onDataUpdate, default 1000ms */
+  debounceTimer: 1000,
+
+  /** incase the call is async, (sometimes the script doesn't detect it's async and wont run the await for it) default: false */
+  async: true,
+  ...localStorageCacher("tg-cache-pm-")
 })
 
 
@@ -857,11 +874,10 @@ const getBoughtResources = FC(async (apikey: string) => {
 
   return data;
 }, {
-  // (1 sec) in miliseconds
   lifeTime: 5000,
 
   /** debounce time wait to call onDataUpdate, default 1000ms */
-  debounceTimer: 100,
+  // debounceTimer: 100,
 
   /** incase the call is async, (sometimes the script doesn't detect it's async and wont run the await for it) default: false */
   async: true,

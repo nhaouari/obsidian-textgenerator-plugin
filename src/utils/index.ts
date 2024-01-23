@@ -239,7 +239,8 @@ export async function processPromisesSetteledBatch<
   T extends () => Promise<any>
 >(
   items: Array<AsyncReturnType<T>>,
-  limit: number
+  limit: number,
+  waitingBetween: number = 10,
 ): Promise<PromiseSettledResult<any>[]> {
   let results: PromiseSettledResult<Awaited<AsyncReturnType<T>>>[] = [];
   for (let batchNum = 0; batchNum < items.length; batchNum += limit) {
@@ -247,6 +248,8 @@ export async function processPromisesSetteledBatch<
       batchNum + limit > items.length ? items.length : batchNum + limit;
 
     const slicedResults = await Promise.allSettled(items.slice(batchNum, end));
+
+    await new Promise((s) => setTimeout(s, waitingBetween))
 
     results = [...results, ...slicedResults];
   }
