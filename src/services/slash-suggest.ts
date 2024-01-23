@@ -32,9 +32,7 @@ export class SlashSuggest extends EditorSuggest<PromptTemplate> {
     const startAfterTriggerPhrase = start.substring(trigger.length, cursor.ch)
 
     if (!start.startsWith(trigger)) return null;
-    const line = _line.substring(0, cursor.ch);
     const currentPart = startAfterTriggerPhrase
-    const currentStart = currentPart.lastIndexOf("/");
     return {
       start: { ch: 0, line: cursor.line },
       end: cursor,
