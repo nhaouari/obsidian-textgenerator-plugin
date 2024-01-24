@@ -40,25 +40,19 @@ const default_values = {
   endpoint: "https://api.openai.com/v1/chat/completions",
   handlebars_headers_in: `{
       "Content-Type": "application/json",
-      "authorization": "Bearer {{api_key}}"
+      authorization: "Bearer {{api_key}}"
 }`,
   handlebars_body_in: `{
-    "model": "{{model}}",
-    "temperature": {{temperature}},
-    "top_p": {{top_p}},
-    "frequency_penalty": {{frequency_penalty}},
-    "presence_penalty": {{presence_penalty}},
-    "max_tokens": {{max_tokens}},
-    "n": {{n}},
-    "stream": {{stream}},
-	"stop": "{{stop}}",
-    "messages": [
-      {{#each messages}}{{#if @index}},{{/if}}
-      {
-        "role": "{{role}}",
-        "content": "{{escp content}}"
-      }{{/each}}
-    ]
+    model: "{{model}}",
+    temperature: {{temperature}},
+    top_p: {{top_p}},
+    frequency_penalty: {{frequency_penalty}},
+    presence_penalty: {{presence_penalty}},
+    max_tokens: {{max_tokens}},
+    n: {{n}},
+    stream: {{stream}},
+	stop: "{{stop}}",
+    messages: {{stringify messages}}
   }`,
   path_to_choices: "choices",
   path_to_message_content: "message.content",
