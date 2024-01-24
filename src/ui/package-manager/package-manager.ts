@@ -224,11 +224,11 @@ export default class PackageManager {
   }> {
     const pkg = this.getPackageById(packageId);
 
-    if (!pkg || !pkg.price || !pkg.folderName) return {
+    if (!pkg || !pkg.price || !pkg.packageId) return {
       allowed: true,
     };
 
-    return await validateOwnership(pkg.folderName, this.getApikey())
+    return await validateOwnership(pkg.packageId, this.getApikey())
   }
 
   simpleCheckOwnership(packageId: string) {
@@ -236,12 +236,12 @@ export default class PackageManager {
 
     if (!pkg || !pkg.price) return true;
 
-    const resources = this.getResourcesOfFolder(pkg.folderName);
+    const resources = this.getResourcesOfFolder(pkg.packageId);
 
     return !!resources.length
   }
 
-  async installPackage(packageId: string, installAllPrompts = true) {
+  async installPackage(packageId: string, installAllPrompts = true, progress?: (progress: { installed: number, total: number }) => void) {
     console.log("trying to install package", packageId)
     logger("installPackage", { packageId, installAllPrompts });
     const p = await this.getPackageById(packageId);
@@ -261,8 +261,8 @@ export default class PackageManager {
       } | null = null;
 
       // if its from an external source
-      if (p.folderName) {
-        const resources = await this.getResourcesOfFolder(p.folderName);
+      if (p.price) {
+        const resources = await this.getResourcesOfFolder(p.packageId);
         data = {
           packageId: p.packageId,
           prompts: resources.map(r => r.id)
@@ -273,6 +273,11 @@ export default class PackageManager {
       }
 
       if (!data) throw "couldn't get assets";
+
+      progress?.({
+        installed: 0,
+        total: data?.prompts.length || 0
+      })
 
       // this.configuration.installedPackages {packageId,prompts,installedPrompts=empty}
       const installedPrompts: string[] = [];
@@ -287,14 +292,20 @@ export default class PackageManager {
         }
 
         this.configuration.installedPackagesHash[packageId] = obj
-
+        let finished = 0;
         if (installAllPrompts) {
+          await new Promise(s => setTimeout(s, 1000))
           await processPromisesSetteledBatch(
-            data.prompts.map((promptId) =>
-              p.folderName
-                ? this.installPromptExternal(packageId, promptId, true)
-                : this.installPrompt(packageId, promptId, true)
-            ),
+            data.prompts.map(async (promptId) => {
+              p.price
+                ? await this.installPromptExternal(packageId, promptId, true)
+                : await this.installPrompt(packageId, promptId, true);
+              finished++;
+              progress?.({
+                installed: finished,
+                total: data?.prompts.length || 0
+              })
+            }),
             3,
             1000
           );
@@ -631,7 +642,7 @@ export default class PackageManager {
     } catch (error) {
       logger("installPromptExternal error", error);
       console.error(error);
-      Promise.reject(error);
+      return Promise.reject(error);
     }
     logger("installPromptExternal end", { packageId, id, overwrite });
   }
@@ -649,7 +660,7 @@ export default class PackageManager {
     if (!(await app.vault.adapter.exists(dirPath)))
       await createFolder(dirPath, app);
 
-    const files = this.getResourcesOfFolder(p.folderName)
+    const files = this.getResourcesOfFolder(p.packageId)
 
     // get manifest.json
     await Promise.all(
@@ -811,10 +822,6 @@ import FC from "func-cache"
 import funCache, { localStorageCacher } from "#/lib/func-cache"
 
 const validateOwnership = funCache(async (packageId: string, apikey: string) => {
-  console.log({
-    validateOwnership
-  })
-  console.log("validating ownership of ", packageId, new URL(`/api/content/package/${packageId}/verify`, ProviderServer).href)
   const res = await requestUrl({
     url: new URL(`/api/content/package/${packageId}/verify`, ProviderServer).href,
     headers: {

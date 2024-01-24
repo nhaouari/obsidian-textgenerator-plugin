@@ -8,6 +8,7 @@ import { PluginManifest } from "obsidian";
 import { useToggle } from "usehooks-ts";
 import attemptLogin from "../login";
 import JSON5 from "json5";
+import useGlobal from "#/ui/context/global";
 
 export default function TemplateDetails(inProps: {
 	packageId: any,
@@ -16,6 +17,7 @@ export default function TemplateDetails(inProps: {
 	checkForUpdates: any,
 	mini?: boolean
 }) {
+	const glob = useGlobal();
 
 	const {
 		packageId,
@@ -25,6 +27,7 @@ export default function TemplateDetails(inProps: {
 	} = inProps
 
 	const [installing, setInstalling] = useState(false);
+	const [progress, setProgress] = useState("0/0");
 	const [enabling, setEnabling] = useState(false);
 	const [error, setError] = useState("");
 	const [_, triggerReload] = useToggle();
@@ -87,7 +90,14 @@ export default function TemplateDetails(inProps: {
 				ownedOrReq
 			}));
 		} catch (err: any) {
-			console.error(err);
+			setProps((props) => ({
+				...props,
+				ownedOrReq: {
+					allowed: false,
+					oneRequired: []
+				}
+			}));
+			console.error("failed to validate ownership", err);
 		}
 	}
 
@@ -105,7 +115,10 @@ export default function TemplateDetails(inProps: {
 		setError("");
 		setInstalling(true);
 		try {
-			await packageManager.installPackage(packageId);
+			await packageManager.installPackage(packageId, true, (progress) => {
+				setProgress(`${progress.installed}/${progress.total}`)
+			});
+
 			updateLocalView();
 			updateView();
 			setInstalling(false);
@@ -277,7 +290,7 @@ export default function TemplateDetails(inProps: {
 						{props.package?.desktopOnly ? "Only Desktop" : "All"}
 					</span>
 				</div>
-				{!props.package?.folderName && <div className="community-modal-info-repo plug-tg-flex plug-tg-items-center plug-tg-gap-2">
+				{!props.package?.price && <div className="community-modal-info-repo plug-tg-flex plug-tg-items-center plug-tg-gap-2">
 					<span>
 						Repository:
 					</span>
@@ -306,7 +319,7 @@ export default function TemplateDetails(inProps: {
 		</div>
 		{/* Controls */}
 		<div className="community-modal-button-container">
-			{!props.package?.folderName || packageManager.getApikey() ? <>
+			{!props.package?.price || packageManager.getApikey() ? <>
 				{!props.ownedOrReq?.allowed ? (
 					<button
 						className="mod-cta plug-tg-cursor-pointer"
@@ -343,16 +356,18 @@ export default function TemplateDetails(inProps: {
 						)}
 					</>) : (
 						<button className={installing ? "plug-tg-btn-disabled" : "mod-cta plug-tg-cursor-pointer"} onClick={() => !installing && install()} disabled={installing}>
-							Install{installing ? "ing..." : ""}
+							Install{installing ? `ing...${progress}` : ""}
 						</button>
 					)
 				}
 
-
 			</> :
 				<button
 					className="mod-cta plug-tg-cursor-pointer"
-					onClick={() => attemptLogin(packageManager.plugin)}
+					onClick={async () => {
+						await attemptLogin(packageManager.plugin);
+						glob.triggerReload();
+					}}
 				>
 					Login
 				</button>

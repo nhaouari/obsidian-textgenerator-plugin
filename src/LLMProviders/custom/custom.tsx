@@ -1,6 +1,6 @@
 import { cleanConfig } from "../../utils";
 import debug from "debug";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import LLMProviderInterface from "../interface";
 import useGlobal from "#/ui/context/global";
 import { getHBValues } from "#/utils/barhandles";
@@ -40,27 +40,30 @@ test4`,
 const default_values = {
   endpoint: "https://api.openai.com/v1/chat/completions",
   handlebars_headers_in: `{
-      "Content-Type": "application/json",
-      "authorization": "Bearer {{api_key}}"
+    "Content-Type": "application/json",
+    authorization: "Bearer {{api_key}}"
 }`,
   handlebars_body_in: `{
-    "model": "{{model}}",
-    "temperature": {{temperature}},
-    "top_p": {{top_p}},
-    "frequency_penalty": {{frequency_penalty}},
-    "presence_penalty": {{presence_penalty}},
-    "max_tokens": {{max_tokens}},
-    "n": {{n}},
-    "stream": {{stream}},
-	"stop": "{{stop}}",
-    "messages": [
-      {{#each messages}}{{#if @index}},{{/if}}
-      {
-        "role": "{{role}}",
-        "content": "{{escp content}}"
-      }{{/each}}
-    ]
-  }`,
+    model: "{{model}}",
+    temperature: {{temperature}},
+    top_p: {{top_p}},
+    frequency_penalty: {{frequency_penalty}},
+    presence_penalty: {{presence_penalty}},
+    max_tokens: {{max_tokens}},
+    n: {{n}},
+    stream: {{stream}},
+    stop: "{{stop}}",
+    messages: {{stringify messages}}
+}`,
+  frequency_penalty: 0,
+  model: "gpt-3.5-turbo-16k",
+  presence_penalty: 0.5,
+  top_p: 1,
+  max_tokens: 400,
+  n: 1,
+  stream: false,
+  temperature: 0.7,
+
   path_to_choices: "choices",
   path_to_message_content: "message.content",
   path_to_error_message: "error.message",
@@ -83,7 +86,7 @@ const default_values = {
       }
     }
     return resultText;
-  }`,
+}`,
 };
 
 export type CustomConfig = Record<keyof typeof default_values, string>;
@@ -101,13 +104,13 @@ export default class DefaultCustomProvider
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
 
+    const [bodyValidityError, setBodyValidityError] = useState("");
+    const [headerValidityError, setHeaderValidityError] = useState("");
+
     const config = (global.plugin.settings.LLMProviderOptions[
       props.self.id || "default"
     ] ??= {
       ...default_values,
-      model: "gpt-3.5-turbo-16k",
-      presence_penalty: 0.5,
-      top_p: 1,
     });
 
     const vars = useMemo(() => {
@@ -138,6 +141,8 @@ export default class DefaultCustomProvider
 
         <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
           <div className="plug-tg-font-bold">Headers:</div>
+          <div className="plug-tg-text-[8px]">Check console in the devtools to see a preview of the body with example values</div>
+
           <textarea
             placeholder="Headers"
             className="plug-tg-resize-none"
@@ -158,10 +163,12 @@ export default class DefaultCustomProvider
                 messages: testMessages,
               });
 
-              console.log(compiled);
+              console.log("------ PREVIEW OF HEADER ------\n", compiled);
+              setHeaderValidityError("")
               try {
-                console.log(JSON5.parse(compiled));
+                console.log("------ PREVIEW OF HEADER COMPILED ------\n", JSON5.parse(compiled));
               } catch (err: any) {
+                setHeaderValidityError(err.message || err)
                 console.warn(err);
               }
 
@@ -171,12 +178,15 @@ export default class DefaultCustomProvider
             spellCheck={false}
             rows={5}
           />
+          <div className="plug-tg-text-red-300">{headerValidityError}</div>
+
         </div>
 
         <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
           <div className="plug-tg-font-bold">Body:</div>
+          <div className="plug-tg-text-[8px]">Check console in the devtools to see a preview of the body with example values</div>
           <textarea
-            placeholder="Textarea will autosize to fit the content"
+            placeholder="Body as JSON5 content"
             className="plug-tg-resize-none"
             defaultValue={
               config.handlebars_body_in || default_values.handlebars_body_in
@@ -193,11 +203,13 @@ export default class DefaultCustomProvider
                 messages: testMessages,
               });
 
-              console.log(compiled);
+              console.log("------ PREVIEW OF BODY ------\n", compiled);
+              setBodyValidityError("")
               try {
-                console.log(JSON5.parse(compiled));
+                console.log("------ PREVIEW OF BODY COMPILED ------\n", JSON5.parse(compiled));
               } catch (err: any) {
-                console.warn(err);
+                setBodyValidityError(err.message || err)
+                console.warn("this error could be cause of one of the variables being undefined which breaks the json5 format, check the preview above", err);
               }
 
               global.triggerReload();
@@ -206,6 +218,7 @@ export default class DefaultCustomProvider
             spellCheck={false}
             rows={20}
           />
+          <div className="plug-tg-text-red-300">{bodyValidityError}</div>
         </div>
 
         <div className="plug-tg-opacity-70">Variables</div>

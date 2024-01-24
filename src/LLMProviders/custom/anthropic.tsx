@@ -42,11 +42,11 @@ const default_values = {
     "x-api-key":  "{{api_key}}"
 }`,
   handlebars_body_in: `{
-    "model": "{{model}}",
-    "stream": {{stream}},
-    "max_tokens_to_sample": {{max_tokens}},
-    "prompt": "Human:{{escp2 messages.[0].content}}\\n\\nAssistant:"
- }`,
+    model: "{{model}}",
+    stream: {{stream}},
+    max_tokens_to_sample: {{max_tokens}},
+    prompt: "Human:{{escp messages.[0].content}}\\n\\nAssistant:"
+}`,
   path_to_choices: "completion",
   path_to_message_content: "",
   path_to_error_message: "",

@@ -5,7 +5,6 @@ import { PackageTemplate } from "#/types";
 import useglobal from "../context/global";
 import type { PackageManagerUI } from "./package-manager-ui";
 import attemptLogin, { attemptLogout } from "./login";
-import { useToggle } from "usehooks-ts";
 import Profile from "./profile";
 import { Platform } from "obsidian";
 import { ProviderServer } from "./package-manager";
@@ -14,8 +13,6 @@ import { ProviderServer } from "./package-manager";
 
 export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   const glob = useglobal();
-
-  const [_, triggerReload] = useToggle();
 
   const [_items, setItems] = useState<(PackageTemplate & { selected?: boolean })[]>([]);
 
@@ -99,7 +96,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
     })()
   }, []);
 
-  const userApikey = glob.plugin.packageManager.getApikey();
+  const userApikey = useMemo(() => glob.plugin.packageManager.getApikey(), [glob.trg]);
   const isLoggedIn = !!userApikey;
 
 
@@ -112,7 +109,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
           className="plug-tg-tooltip plug-tg-tooltip-bottom plug-tg-cursor-pointer plug-tg-p-[3px]"
           onClick={async () => {
             await attemptLogout(glob.plugin);
-            triggerReload();
+            glob.triggerReload();
           }}>
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
         </button>
@@ -122,7 +119,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
           className="plug-tg-tooltip plug-tg-tooltip-bottom plug-tg-cursor-pointer"
           onClick={async () => {
             await attemptLogin(glob.plugin);
-            triggerReload();
+            glob.triggerReload();
           }}>
           Login
         </button>

@@ -150,7 +150,6 @@ type PackageTemplate = {
   price?: number;
   core?: boolean;
   desktopOnly?: boolean;
-  folderName?: string;
 };
 
 type PromptTemplate = {

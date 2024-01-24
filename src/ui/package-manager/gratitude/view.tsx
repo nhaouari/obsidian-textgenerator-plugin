@@ -1,6 +1,7 @@
 import React from "react";
 import useGlobal from "../../context/global";
 import type GratitudeUI from "./ui";
+import GratitudeSvg from "../components/svgs/gratitude";
 import TemplateDetails from "../components/template-details";
 
 export default function GratitudeView(p: { parent: GratitudeUI, data: any }) {
@@ -17,7 +18,8 @@ export default function GratitudeView(p: { parent: GratitudeUI, data: any }) {
         <div className="modal mod-community-modal mod-sidebar-layout mod-community-plugin">
           <div className="modal-close-button" onClick={handleClose}></div>
           <div className="modal-title">Community Templates</div>
-          <div className="modal-content plug-tg-w-full plug-tg-h-full plug-tg-flex plug-tg-flex-col plug-tg-items-center plug-tg-justify-center plug-tg-gap-10 plug-tg-p-3">
+
+          <GratitudeSvg className="modal-content plug-tg-w-full plug-tg-h-full plug-tg-flex plug-tg-flex-col plug-tg-items-center plug-tg-justify-center plug-tg-gap-10 plug-tg-p-3">
             <div className="plug-tg-text-xl">
               Thank you soo much ❤️
             </div>
@@ -30,7 +32,7 @@ export default function GratitudeView(p: { parent: GratitudeUI, data: any }) {
                 mini
               />
             </div>
-          </div>
+          </GratitudeSvg>
         </div>
       </div>
     </>

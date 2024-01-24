@@ -51,9 +51,9 @@ const default_values = {
     max_tokens: {{max_tokens}},
     n: {{n}},
     stream: {{stream}},
-	stop: "{{stop}}",
+	  stop: "{{stop}}",
     messages: {{stringify messages}}
-  }`,
+}`,
   path_to_choices: "choices",
   path_to_message_content: "message.content",
   path_to_error_message: "error.message",
