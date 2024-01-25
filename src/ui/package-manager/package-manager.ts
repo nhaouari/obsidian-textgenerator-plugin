@@ -331,6 +331,7 @@ export default class PackageManager {
     delete this.configuration.installedPackagesHash[packageId];
 
     new Notice(`Package ${packageId} uninstalled`);
+
     await this.save();
     logger("uninstallPackage end", { packageId });
   }
@@ -436,12 +437,13 @@ export default class PackageManager {
   }
 
   async getInstalledPackageById(packageId: string) {
+    console.log("checking installed package", packageId)
     if (this.configuration.packagesHash[packageId]?.type == "feature") {
       return await this.app.vault.adapter.exists(`.obsidian/plugins/${this.configuration.packagesHash[packageId].packageId}`) ?
         this.configuration.installedPackagesHash[packageId]
         : null
     }
-    return this.configuration.installedPackagesHash[packageId] || null;
+    return !!this.configuration.installedPackagesHash[packageId];
   }
 
   async updatePackageInfoById(packageId: string) {

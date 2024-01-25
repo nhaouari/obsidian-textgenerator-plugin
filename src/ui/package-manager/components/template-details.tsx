@@ -32,6 +32,7 @@ export default function TemplateDetails(inProps: {
 	const [error, setError] = useState("");
 	const [_, triggerReload] = useToggle();
 	const [htmlVar, setHtmlVar] = useState("");
+	const [serviceUnavailable, setServiceUnavailable] = useState(false);
 
 	const [props, setProps] = useState<{
 		package?: PackageTemplate | null,
@@ -55,12 +56,9 @@ export default function TemplateDetails(inProps: {
 			})
 
 
-			packageManager.getInstalledPackageById(packageId).then((installed) => {
-				setProps(p => ({ ...p, installed }))
-			})
-
 			setProps({
 				package: pkg,
+				installed: false,
 				ownedOrReq: (pkg?.price || !pkg?.packageId) ? {
 					allowed: true,
 					oneRequired: []
@@ -70,9 +68,15 @@ export default function TemplateDetails(inProps: {
 				}
 			});
 
+			packageManager.getInstalledPackageById(packageId).then((installed) => {
+				console.log({ installed })
+				setProps(p => ({ ...p, installed }))
+			})
+
+
 			if (!(pkg?.price || !pkg?.packageId))
-				packageManager.validateOwnership(packageId).then((installed) => {
-					setProps(p => ({ ...p, installed }))
+				packageManager.validateOwnership(packageId).then((ownedOrReq) => {
+					setProps(p => ({ ...p, ownedOrReq }))
 				})
 
 		})()
@@ -97,6 +101,7 @@ export default function TemplateDetails(inProps: {
 					oneRequired: []
 				}
 			}));
+			setServiceUnavailable((err.message || err).includes("<html>"))
 			console.error("failed to validate ownership", err);
 		}
 	}
@@ -247,6 +252,13 @@ export default function TemplateDetails(inProps: {
 			window.removeEventListener("focus", onFocus)
 		}
 	}, []);
+
+	if (serviceUnavailable) return <div className="plug-tg-w-full plug-tg-h-full plug-tg-flex plug-tg-flex-col plug-tg-justify-center plug-tg-items-center">
+		<div className="plug-tg-flex plug-tg-flex-col plug-tg-justify-center plug-tg-gap-8">
+			<h1>Service Unavailable</h1>
+			<button onClick={triggerReload}>Retry</button>
+		</div>
+	</div>
 
 	return (<>
 		<div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">
