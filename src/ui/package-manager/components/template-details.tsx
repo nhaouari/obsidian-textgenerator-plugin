@@ -9,6 +9,7 @@ import { useToggle } from "usehooks-ts";
 import attemptLogin from "../login";
 import JSON5 from "json5";
 import useGlobal from "#/ui/context/global";
+import { sanitize } from 'dompurify';
 
 export default function TemplateDetails(inProps: {
 	packageId: any,
@@ -395,13 +396,23 @@ export default function TemplateDetails(inProps: {
 		</div>
 		{error && <span> ERROR: {error}</span>}
 		<hr />
-		{!inProps.mini && <div
+		{/* @ts-ignore */}
+		{!(htmlVar.innerHTML || htmlVar) && <div role="status" className="plug-tg-max-w-sm plug-tg-animate-pulse">
+			<div className="plug-tg-h-8 plug-tg-max-w-[800px] plug-tg-rounded-full dark:plug-tg-bg-gray-300/30 plug-tg-w-48 plug-tg-mb-4"></div>
+			<div className="plug-tg-h-2  plug-tg-rounded-full dark:plug-tg-bg-gray-300/25 plug-tg-max-w-[360px] plug-tg-mb-2.5"></div>
+			<div className="plug-tg-h-2  plug-tg-rounded-full dark:plug-tg-bg-gray-300/25 plug-tg-max-w-[330px] plug-tg-mb-2.5"></div>
+			<div className="plug-tg-h-2  plug-tg-rounded-full dark:plug-tg-bg-gray-300/25 plug-tg-max-w-[300px] plug-tg-mb-2.5"></div>
+			<span className="plug-tg-sr-only">Loading...</span>
+		</div>}
+
+
+		{!inProps.mini && (<div
 			dangerouslySetInnerHTML={{
 				// @ts-ignore
-				__html: htmlVar.innerHTML || htmlVar || "",
+				__html: sanitize(htmlVar.innerHTML || htmlVar || ""),
 			}}
 			className="community-modal-readme markdown-rendered"
-		></div>}
+		></div>)}
 	</>
 	);
 }
