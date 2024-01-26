@@ -22,6 +22,15 @@ export const AI_MODELS: Record<
     maxTokens: 8192,
     llm: ["OpenAI Chat (Langchain)"],
   },
+  "gpt-4-turbo-preview": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.01,
+      completion: 0.03,
+    },
+    maxTokens: 128000,
+    llm: ["OpenAI Chat (Langchain)"],
+  },
   "gpt-4-1106-preview": {
     encoding: "cl100k_base",
     prices: {
@@ -101,8 +110,8 @@ export const AI_MODELS: Record<
   "gpt-3.5-turbo": {
     encoding: "cl100k_base",
     prices: {
-      prompt: 0.0015,
-      completion: 0.002,
+      prompt: 0.0005,
+      completion: 0.0015,
     },
     maxTokens: 4097,
     llm: ["OpenAI Chat (Langchain)"],
@@ -151,6 +160,15 @@ export const AI_MODELS: Record<
     prices: {
       prompt: 0.0010,
       completion: 0.0020,
+    },
+    maxTokens: 4097,
+    llm: ["OpenAI Chat (Langchain)"],
+  },
+  "gpt-3.5-turbo-0125": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.0005,
+      completion: 0.0015,
     },
     maxTokens: 4097,
     llm: ["OpenAI Chat (Langchain)"],
