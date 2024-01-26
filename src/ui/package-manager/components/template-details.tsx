@@ -273,7 +273,7 @@ export default function TemplateDetails(inProps: {
 				{props.package?.core ? <>
 					<div className="plug-tg-flex plug-tg-gap-2 plug-tg-items-center">
 						<BadgeCheckSVG />
-						<span> Made By Text-Gen</span>
+						<span>Made By Text-Gen</span>
 					</div>
 				</> : <div className="community-modal-info-downloads">
 					<span>
@@ -331,8 +331,8 @@ export default function TemplateDetails(inProps: {
 		</div>
 		{/* Controls */}
 		<div className="community-modal-button-container">
-			{!props.package?.price || packageManager.getApikey() ? <>
-				{!props.ownedOrReq?.allowed ? (
+			{!props.package?.price ? <>
+				{!(props.ownedOrReq?.allowed && !props.package?.price) ? (
 					<button
 						className="mod-cta plug-tg-cursor-pointer"
 						onClick={() => buy()}

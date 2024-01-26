@@ -396,12 +396,15 @@ export default class PackageManager {
       return;
     }
 
+    console.log({ p, packageId })
+
     if (p?.repo) {
       const repo = p.repo;
       const release = await this.getReleaseByRepo(repo);
       const data = await this.getAsset(release, "data.json");
 
       if (!data) throw "Couldn't get assets";
+      console.log({ release })
 
       let installedPrompts: string[] = [];
       await Promise.all(
@@ -419,6 +422,7 @@ export default class PackageManager {
         version: release.version,
       };
     }
+
     await this.save();
     new Notice(`Package ${packageId} updated`);
     logger("updatePackage end", { packageId });
@@ -443,7 +447,7 @@ export default class PackageManager {
         this.configuration.installedPackagesHash[packageId]
         : null
     }
-    return !!this.configuration.installedPackagesHash[packageId];
+    return this.configuration.installedPackagesHash[packageId];
   }
 
   async updatePackageInfoById(packageId: string) {
