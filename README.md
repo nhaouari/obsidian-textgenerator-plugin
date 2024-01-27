@@ -37,7 +37,7 @@ There are many benefits to using a Text Generator Plugin, including the followin
 
 * **Community Templates**: Through this option you can discover new use cases of Generative Artificial Intelligence using the shared templates and you can share your use cases easier.
 
-* **Highly Flexible Configuration**: Using Frontmatter Configuration, it is possible to use different services such as Gemini-Pro(under `Google Generative AI` LLM provider), OpenAI, HuggingFace ...etc.
+* **Highly Flexible Configuration**: Using Frontmatter Configuration, it is possible to use different services such as Google Generative AI(contains `Gemini-Pro`), OpenAI, HuggingFace ...etc.
 
 
 ## Demonstration 
