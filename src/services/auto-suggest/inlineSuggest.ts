@@ -143,6 +143,14 @@ export class InlineSuggest {
                         },
                     },
                     {
+                        key: "Enter",
+                        run: () => {
+                            const d = !!self.currentSuggestions?.length;
+                            self.onSelect();
+                            return d
+                        },
+                    },
+                    {
                         key: "ArrowRight",
                         run: () => {
                             const d = !!self.currentSuggestions?.length;
