@@ -82,7 +82,7 @@ for (const pvrd of providers) {
   }
 }
 
-export type LLMProviderType = keyof typeof DefaultProviders;
+export type LLMProviderType = llmType
 
 export const LLMProviderRegistery = new LLMProviderRegistry<ProviderBase>(
   DefaultProviders as any,

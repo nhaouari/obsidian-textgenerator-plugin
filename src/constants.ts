@@ -283,6 +283,27 @@ export const AI_MODELS: Record<
     order: -1
   },
 
+  "models/gemini-pro": {
+    encoding: "r50k_base",
+    prices: {
+      prompt: 0,
+      completion: 0,
+    },
+    maxTokens: 2048,
+    llm: ["Google GenerativeAI (Langchain)"],
+  },
+
+  "models/gemini-pro-vision": {
+    encoding: "r50k_base",
+    prices: {
+      prompt: 0,
+      completion: 0,
+    },
+    maxTokens: 2048,
+    llm: ["Google GenerativeAI (Langchain)"],
+    order: -1
+  },
+
   "mistral-tiny": {
     // @TODO: prices are not correct
     encoding: "r50k_base",

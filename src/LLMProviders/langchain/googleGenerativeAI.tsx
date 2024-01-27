@@ -8,8 +8,13 @@ import useGlobal from "#/ui/context/global";
 import { IconExternalLink } from "@tabler/icons-react";
 import Input from "#/ui/settings/components/input";
 import debug from "debug";
+import { ModelsHandler } from "../utils";
 
 const logger = debug("textgenerator:llmProvider:gemini");
+
+const default_values = {
+  model: "models/gemini-pro"
+}
 
 
 const id = "Google GenerativeAI (Langchain)" as const;
@@ -54,10 +59,9 @@ export default class LangchainChatGoogleGenerativeAIProvider
     const global = useGlobal();
 
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
-      model: "models/gemini-pro"
+      ...default_values
     });
 
-    const modelsDatasetId = useId();
 
     return (
       <>
@@ -78,27 +82,12 @@ export default class LangchainChatGoogleGenerativeAIProvider
             }}
           />
         </SettingItem>
-        <SettingItem
-          name="model"
+        <ModelsHandler
           register={props.register}
           sectionId={props.sectionId}
-        >
-          <datalist id={modelsDatasetId}>
-            <option value="models/gemini-pro" />
-          </datalist>
-          <Input
-            value={config.model}
-            datalistId={modelsDatasetId}
-            placeholder="Enter your Model name"
-
-            setValue={async (value) => {
-              config.model = value;
-              global.triggerReload();
-              // TODO: it could use a debounce here
-              await global.plugin.saveSettings();
-            }}
-          />
-        </SettingItem>
+          llmProviderId={id}
+          default_values={default_values}
+        />
         <SettingItem
           name="Base Path"
           register={props.register}

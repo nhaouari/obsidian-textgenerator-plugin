@@ -4,8 +4,8 @@ import LangchainOpenAIChatProvider from "./openaiChat";
 // added in version 0.5.26-beta 
 export class LOCClone1 extends LangchainOpenAIChatProvider {
     static provider = "Langchain" as any;
-    // @ts-ignore
-    static id = "OpenAI Chat 1 (Langchain)" as any;
+
+    static id = "OpenAI Chat 1 (Langchain)" as "OpenAI Chat (Langchain)";
     static slug = "openAIChatClone1" as any;
 
 
@@ -16,8 +16,8 @@ export class LOCClone1 extends LangchainOpenAIChatProvider {
 // added in version 0.5.26-beta 
 export class LOCClone2 extends LangchainOpenAIChatProvider {
     static provider = "Langchain" as any;
-    // @ts-ignore
-    static id = "OpenAI Chat 2 (Langchain)" as any;
+
+    static id = "OpenAI Chat 2 (Langchain)" as "OpenAI Chat (Langchain)";
     static slug = "openAIChatClone2" as any;
 
 
