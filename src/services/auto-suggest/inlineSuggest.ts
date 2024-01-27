@@ -8,7 +8,7 @@ import {
     keymap,
 } from "@codemirror/view";
 import { Prec } from "@codemirror/state";
-import { AutoSuggest, Completion } from ".";
+import { AutoSuggest } from ".";
 import TextGeneratorPlugin from "#/main";
 import { Scope, App, EditorSuggestTriggerInfo, Editor, TFile, MarkdownView } from "obsidian";
 import debug from "debug";
