@@ -419,3 +419,30 @@ export function walkUntilTrigger(inputStr: string, triggerStrings: string[], rev
     return inputStr;
   }
 }
+
+
+export function debounce<T extends unknown[], R>(
+  func: (...args: T) => Promise<R>,
+  wait: number
+): (...args: T) => Promise<R> {
+  let timeout: NodeJS.Timeout | null;
+
+  logger("debounce", func, wait);
+  return function debouncedFunction(...args: T): Promise<R> {
+    const context = this;
+
+    return new Promise((resolve, reject) => {
+      if (timeout !== null) {
+        clearTimeout(timeout);
+      }
+
+      timeout = setTimeout(() => {
+        logger("debouncedFunction", args);
+        func
+          .apply(context, args)
+          .then((result: any) => resolve(result))
+          .catch((error: any) => reject(error));
+      }, wait);
+    });
+  };
+}

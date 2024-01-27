@@ -70,10 +70,11 @@ export default class TextGeneratorPlugin extends Plugin {
   contextManager: ContextManager;
   contentManager: typeof ContentManagerCls = ContentManagerCls;
   tokensScope: TokensScope;
+  autoSuggest?: AutoSuggest;
   processing: boolean;
   defaultSettings: TextGeneratorSettings;
   textGeneratorIconItem: HTMLElement;
-  autoSuggestItem: HTMLElement;
+
   statusBarTokens: HTMLElement;
   notice: Notice;
   commands: Commands;
@@ -104,7 +105,8 @@ export default class TextGeneratorPlugin extends Plugin {
 
       // auto suggest
       if (this.settings.autoSuggestOptions?.isEnabled)
-        this.registerEditorSuggest(new AutoSuggest(this.app, this));
+        this.autoSuggest = new AutoSuggest(this.app, this);
+
 
       // modal suggest
       if (this.settings.slashSuggestOptions?.isEnabled) {
@@ -128,13 +130,12 @@ export default class TextGeneratorPlugin extends Plugin {
       // add status bar items
       this.textGeneratorIconItem = this.addStatusBarItem();
       this.statusBarTokens = this.addStatusBarItem();
-      this.autoSuggestItem = this.addStatusBarItem();
       this.statusBarItemEl = this.addStatusBarItem();
 
       this.updateStatusBar(``);
 
       if (this.settings.autoSuggestOptions.showStatus)
-        this.AddAutoSuggestStatusBar();
+        this.autoSuggest?.AddStatusBar();
 
 
       // registering different views
@@ -479,38 +480,6 @@ export default class TextGeneratorPlugin extends Plugin {
     setTimeout(() => this.updateStatusBar(``), 5000);
   }
 
-
-  AutoSuggestStatusBar() {
-    this.autoSuggestItem.innerHTML = "";
-    if (!this.settings.autoSuggestOptions.showStatus) return;
-
-    const languageIcon = this.settings.autoSuggestOptions.isEnabled
-      ? getIcon("zap")
-      : getIcon("zap-off");
-
-    if (languageIcon) this.autoSuggestItem.append(languageIcon);
-
-    this.autoSuggestItem.title =
-      "Text Generator Enable or disable Auto-suggest";
-
-    this.autoSuggestItem.addClass("mod-clickable");
-  }
-
-  AddAutoSuggestStatusBar() {
-    this.AutoSuggestStatusBar();
-
-    this.autoSuggestItem.addEventListener("click", (event) => {
-      this.settings.autoSuggestOptions.isEnabled =
-        !this.settings.autoSuggestOptions.isEnabled;
-      this.saveSettings();
-      this.AutoSuggestStatusBar();
-      if (this.settings.autoSuggestOptions.isEnabled) {
-        new Notice(`Auto Suggestion is on!`);
-      } else {
-        new Notice(`Auto Suggestion is off!`);
-      }
-    });
-  }
 
   getFilesOnLoad(): Promise<TFile[]> {
     return new Promise(async (resolve, reject) => {

@@ -42,7 +42,25 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           value={"" + global.plugin.settings.autoSuggestOptions.isEnabled}
           setValue={async (val) => {
             global.plugin.settings.autoSuggestOptions.isEnabled = val == "true";
-            global.plugin.AutoSuggestStatusBar();
+            global.plugin.autoSuggest?.renderStatusBar();
+            setReloader(true);
+            await global.plugin.saveSettings();
+            global.triggerReload();
+          }}
+        />
+      </SettingItem>
+
+      <SettingItem
+        name="Inline Suggestions"
+        description="Shows the suggestions text in the editor (EXPERIMENTAL)"
+        register={props.register}
+        sectionId={sectionId}
+      >
+        <Input
+          type="checkbox"
+          value={"" + global.plugin.settings.autoSuggestOptions.inlineSuggestions}
+          setValue={async (val) => {
+            global.plugin.settings.autoSuggestOptions.inlineSuggestions = val == "true";
             setReloader(true);
             await global.plugin.saveSettings();
             global.triggerReload();
@@ -138,7 +156,7 @@ export default function AutoSuggestSetting(props: { register: Register }) {
               setValue={async (val) => {
                 global.plugin.settings.autoSuggestOptions.allowInNewLine =
                   val == "true";
-                global.plugin.AutoSuggestStatusBar();
+                global.plugin.autoSuggest?.renderStatusBar();
                 await global.plugin.saveSettings();
                 global.triggerReload();
               }}
@@ -156,7 +174,7 @@ export default function AutoSuggestSetting(props: { register: Register }) {
               setValue={async (val) => {
                 global.plugin.settings.autoSuggestOptions.showStatus =
                   val == "true";
-                global.plugin.AutoSuggestStatusBar();
+                global.plugin.autoSuggest?.renderStatusBar();
                 await global.plugin.saveSettings();
                 global.triggerReload();
               }}
@@ -231,7 +249,7 @@ export default function AutoSuggestSetting(props: { register: Register }) {
               value={"" + global.plugin.settings.autoSuggestOptions.customProvider}
               setValue={async (val) => {
                 global.plugin.settings.autoSuggestOptions.customProvider = val == "true";
-                global.plugin.AutoSuggestStatusBar();
+                global.plugin.autoSuggest?.renderStatusBar();
                 await global.plugin.saveSettings();
                 global.triggerReload();
               }}

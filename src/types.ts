@@ -78,6 +78,7 @@ type TextGeneratorSettings = {
     showStatus: boolean;
     customProvider: boolean;
     selectedProvider?: string;
+    inlineSuggestions?: boolean;
   };
   slashSuggestOptions: {
     isEnabled: boolean;

@@ -518,11 +518,12 @@ export default class Commands {
       icon: "heading",
       //hotkeys: [{ modifiers: ["Alt"], key: "c"}],
       async editorCallback(editor: Editor) {
-        this.plugin.settings.autoSuggestOptions.isEnabled =
-          !this.plugin.settings.autoSuggestOptions.isEnabled;
-        await this.plugin.saveSettings();
+        const self: Commands = this;
+        self.plugin.settings.autoSuggestOptions.isEnabled =
+          !self.plugin.settings.autoSuggestOptions.isEnabled;
+        await self.plugin.saveSettings();
 
-        this.plugin.AutoSuggestStatusBar();
+        self.plugin.autoSuggest?.renderStatusBar();
 
         if (this.plugin.settings.autoSuggestOptions.isEnabled) {
           new Notice(`Auto Suggestion is on!`);

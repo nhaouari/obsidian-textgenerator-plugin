@@ -39,7 +39,7 @@ export default function SlashSuggestSetting(props: { register: Register }) {
           value={"" + global.plugin.settings.slashSuggestOptions.isEnabled}
           setValue={async (val) => {
             global.plugin.settings.slashSuggestOptions.isEnabled = val == "true";
-            global.plugin.AutoSuggestStatusBar();
+            global.plugin.autoSuggest?.renderStatusBar();
             setReloader(true);
             await global.plugin.saveSettings();
             global.triggerReload();
