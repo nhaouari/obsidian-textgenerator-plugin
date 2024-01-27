@@ -16,7 +16,7 @@ import {
 import debug from "debug";
 import ContentManagerCls from "../../content-manager";
 import { InlineSuggest } from "./inlineSuggest";
-import { OutlineSuggest } from "./outlineSuggest";
+import { ListSuggest } from "./listSuggest";
 const logger = debug("textgenerator:AutoSuggest");
 
 export interface Completion {
@@ -229,7 +229,7 @@ ${context.query}`;
     if (this.plugin.settings.autoSuggestOptions.inlineSuggestions)
       return InlineSuggest.setup(this.app, this.plugin, this)
 
-    OutlineSuggest.setup(this.app, this.plugin, this)
+    ListSuggest.setup(this.app, this.plugin, this)
   }
 }
 

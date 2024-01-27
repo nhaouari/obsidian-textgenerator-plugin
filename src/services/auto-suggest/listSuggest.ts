@@ -21,7 +21,7 @@ const logger = debug("textgenerator:AutoSuggest");
 
 
 
-export class OutlineSuggest extends EditorSuggest<Completion> {
+export class ListSuggest extends EditorSuggest<Completion> {
     plugin: TextGeneratorPlugin;
     autoSuggest: AutoSuggest;
     process = true;
@@ -274,7 +274,7 @@ export class OutlineSuggest extends EditorSuggest<Completion> {
 
 
     static setup(app: App, plugin: TextGeneratorPlugin, autoSuggest: AutoSuggest) {
-        const suggest = new OutlineSuggest(app, plugin, autoSuggest);
+        const suggest = new ListSuggest(app, plugin, autoSuggest);
         plugin.registerEditorSuggest(suggest);
         return suggest;
     }
