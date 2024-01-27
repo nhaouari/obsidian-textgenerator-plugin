@@ -9,7 +9,7 @@ import { useToggle } from "usehooks-ts";
 import attemptLogin from "../login";
 import JSON5 from "json5";
 import useGlobal from "#/ui/context/global";
-import { sanitize } from 'dompurify';
+import MarkDownViewer from "#/ui/components/Markdown";
 
 export default function TemplateDetails(inProps: {
 	packageId: any,
@@ -406,13 +406,10 @@ export default function TemplateDetails(inProps: {
 		</div>}
 
 
-		{!inProps.mini && (<div
-			dangerouslySetInnerHTML={{
-				// @ts-ignore
-				__html: sanitize(htmlVar.innerHTML || htmlVar || ""),
-			}}
-			className="community-modal-readme markdown-rendered"
-		></div>)}
+		{!inProps.mini && (<MarkDownViewer>
+			{/* @ts-ignore */}
+			{htmlVar.innerHTML || htmlVar || ""}
+		</MarkDownViewer>)}
 	</>
 	);
 }
