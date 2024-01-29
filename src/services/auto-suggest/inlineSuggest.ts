@@ -152,7 +152,7 @@ export class InlineSuggest {
                     },
                     {
                         key: "Enter",
-                        run: (evt) => {
+                        run: () => {
                             const d = !!self.currentSuggestions?.length;
                             if (!d) return false;
 
