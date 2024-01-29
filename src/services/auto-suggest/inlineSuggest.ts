@@ -32,10 +32,12 @@ export class InlineSuggest {
     isOpen: boolean;
     static delay: number = 200;
     static getSuggestionsDebounced: any;
+
     constructor(app: App, plugin: TextGeneratorPlugin, autoSuggest: AutoSuggest) {
         logger("AutoSuggest", app, plugin);
         this.plugin = plugin;
         this.autoSuggest = autoSuggest;
+
     }
 
     onSelect() {
@@ -207,13 +209,14 @@ export class InlineSuggest {
                 ])
             ),
             self.getInlineSuggestionsExtension(self,
-                () => self.onSelect()
+                () => self.onSelect(),
+                () => self.clear()
             )
         ])
         return self;
     }
 
-    getInlineSuggestionsExtension(autoSuggest: InlineSuggest, onSelect: Function) {
+    getInlineSuggestionsExtension(autoSuggest: InlineSuggest, onSelect: Function, onExit: Function,) {
         return Prec.lowest(
             // must be lowest else you get infinite loop with state changes by our plugin
             ViewPlugin.fromClass(
@@ -227,19 +230,15 @@ export class InlineSuggest {
 
                     async update(update: ViewUpdate) {
                         this.decorations = this.inlineSuggestionDecoration(
-                            autoSuggest.currentSuggestions,
-                            onSelect,
                             update.view
                         );
                     }
 
                     inlineSuggestionDecoration(
-                        suggestions: string[],
-                        onSelect: Function,
                         view: EditorView,
                     ) {
                         const post = view.state.selection.main.head;
-                        if (!suggestions?.length) {
+                        if (!autoSuggest.currentSuggestions?.length) {
                             return Decoration.none;
                         }
 
@@ -247,6 +246,7 @@ export class InlineSuggest {
                             const widget = new InlineSuggestionsWidget(
                                 autoSuggest,
                                 onSelect,
+                                onExit,
                                 view
                             );
 
@@ -275,12 +275,15 @@ export class InlineSuggest {
 
 class InlineSuggestionsWidget extends WidgetType {
     onSelect: Function;
+    onExit: Function;
     autoSuggest: InlineSuggest;
     renderedSuggestion: string;
-    constructor(autoSuggest: InlineSuggest, onSelect: Function, readonly view: EditorView) {
+    exitHandler: Function;
+    constructor(autoSuggest: InlineSuggest, onSelect: Function, onExit: Function, readonly view: EditorView) {
         super();
         this.autoSuggest = autoSuggest;
         this.onSelect = onSelect;
+        this.onExit = onExit;
         this.view = view;
     }
 
@@ -289,9 +292,15 @@ class InlineSuggestionsWidget extends WidgetType {
     }
 
     toDOM() {
-        const spanMAM = document.createElement("span");
 
+        const spanMAM = document.createElement("span");
         const span = spanMAM.createEl("span");
+
+        document.addEventListener("click", this.exitHandler = () => {
+            this.onExit();
+            span.style.display = "hidden"
+        })
+
 
         span.textContent = this.autoSuggest.currentSuggestions[this.autoSuggest.viewedSuggestion] + ` (${this.autoSuggest.viewedSuggestion + 1}/${this.autoSuggest.currentSuggestions.length})`;
         this.renderedSuggestion = span.textContent;
@@ -307,6 +316,7 @@ class InlineSuggestionsWidget extends WidgetType {
     }
 
     destroy(dom: HTMLElement) {
+        document.removeEventListener("click", this.exitHandler as any);
         super.destroy(dom);
     }
 
