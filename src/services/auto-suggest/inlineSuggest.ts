@@ -297,8 +297,8 @@ class InlineSuggestionsWidget extends WidgetType {
         const span = spanMAM.createEl("span");
 
         document.addEventListener("click", this.exitHandler = () => {
+            span.style.display = "hidden";
             this.onExit();
-            span.style.display = "hidden"
         })
 
 
