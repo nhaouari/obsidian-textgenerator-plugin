@@ -49,6 +49,7 @@ export class InlineSuggest {
         replacementValue: string,
     ): void {
         logger("selectSuggestion");
+        const overrideTrigger = this.plugin.settings.autoSuggestOptions.overrideTrigger ?? this.plugin.defaultSettings.autoSuggestOptions.overrideTrigger;
         const activeView = this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
 
         if (!activeView || !replacementValue?.length) {
@@ -58,12 +59,15 @@ export class InlineSuggest {
         const currentCursorPos = activeView.editor.getCursor();
 
         let addSpace = false;
+
         let letterBeforeIndex = { line: currentCursorPos.line, ch: currentCursorPos.ch - 1 };
         let letterBefore = activeView.editor.getRange({
             ch: letterBeforeIndex.ch - 1,
             line: letterBeforeIndex.line
         }, letterBeforeIndex)
+
         if (letterBefore != " ") addSpace = true;
+
         replacementValue = (addSpace ? " " : "") + replacementValue
 
 
@@ -75,7 +79,12 @@ export class InlineSuggest {
 
         activeView.editor.replaceRange(
             replacementValue,
-            currentCursorPos,
+            overrideTrigger ?
+                {
+                    ch: currentCursorPos.ch - (this.plugin.settings.autoSuggestOptions.triggerPhrase + "").length,
+                    line: currentCursorPos.line
+                }
+                : currentCursorPos,
             currentCursorPos
         );
 
@@ -166,7 +175,7 @@ export class InlineSuggest {
                             const d = !!self.currentSuggestions?.length;
                             if (!self.currentSuggestions[self.viewedSuggestion + 1]) self.viewedSuggestion = -1;
                             self.viewedSuggestion++;
-                            self.setSuggestions(self.currentSuggestions).then(console.log);
+                            self.setSuggestions(self.currentSuggestions)
                             return d;
                         },
                     },
@@ -176,7 +185,7 @@ export class InlineSuggest {
                             const d = !!self.currentSuggestions?.length;
                             if (!self.currentSuggestions[self.viewedSuggestion - 1]) self.viewedSuggestion = self.currentSuggestions.length;
                             self.viewedSuggestion--;
-                            self.setSuggestions(self.currentSuggestions).then(console.log);
+                            self.setSuggestions(self.currentSuggestions)
                             return d;
                         },
                     },

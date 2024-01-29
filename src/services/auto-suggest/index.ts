@@ -187,7 +187,10 @@ ${context.query}`;
 
     const line = editor.getLine(cursor.line).substring(0, cursor.ch);
 
-    if ((!this.plugin.settings.autoSuggestOptions.allowInNewLine && line == triggerPhrase) || !line.endsWith(triggerPhrase)) {
+    if (
+      (!this.plugin.settings.autoSuggestOptions.allowInNewLine && line == triggerPhrase)
+      || (!this.plugin.settings.autoSuggestOptions.customInstructEnabled && !line.endsWith(triggerPhrase))
+    ) {
       this.process = false;
       return null;
     }
@@ -205,7 +208,7 @@ ${context.query}`;
 
     const currentStart = line.lastIndexOf(triggerPhrase);
 
-    if (!selection.trim().length) {
+    if (!this.plugin.settings.autoSuggestOptions.customInstructEnabled && !selection.trim().length) {
       this.process = false;
       return null;
     }

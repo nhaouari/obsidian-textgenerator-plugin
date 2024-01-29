@@ -83,7 +83,8 @@ Starred Blocks: {{starredBlocks}}
     stop: ".",
     showStatus: true,
     customProvider: false,
-    inlineSuggestions: false
+    inlineSuggestions: false,
+    overrideTrigger: false
   },
 
   slashSuggestOptions: {
