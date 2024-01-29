@@ -161,16 +161,6 @@ export class InlineSuggest {
                         },
                     },
                     {
-                        key: "ArrowRight",
-                        run: () => {
-                            const d = !!self.currentSuggestions?.length;
-                            if (!d) return false;
-
-                            self.onSelect();
-                            return true;
-                        },
-                    },
-                    {
                         key: "ArrowDown",
                         run: () => {
                             const d = !!self.currentSuggestions?.length;
@@ -210,6 +200,11 @@ export class InlineSuggest {
                             console.log(evt.key)
                             if (evt.key == "Control") return false;
                             const d = !!self.currentSuggestions?.length;
+
+                            if (evt.key == "ArrowRight") {
+                                self.onSelect(evt.ctrlKey);
+                                return true;
+                            }
 
                             // ignore keys
                             // ["Backspace", "Tab", "ArrowRight", "Escape"].includes(evt.key) ...etc
