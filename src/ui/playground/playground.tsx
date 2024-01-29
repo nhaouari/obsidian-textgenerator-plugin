@@ -11,7 +11,7 @@ import { Handlebars } from "#/helpers/handlebars-helpers";
 import clsx from "clsx";
 import AvailableVars from "../components/availableVars";
 import { makeId } from "#/utils";
-import ContentManagerCls from "#/content-manager";
+import ContentManagerCls from "#/scope/content-manager";
 
 export default function ChatComp(props: {
   plugin: TextGeneratorPlugin;

@@ -1,4 +1,4 @@
-import ContentManagerCls from "#/content-manager";
+import ContentManagerCls from "#/scope/content-manager";
 import TextGeneratorPlugin from "#/main";
 import { MarkdownPostProcessorContext, MarkdownRenderer } from "obsidian";
 import debug from "debug";

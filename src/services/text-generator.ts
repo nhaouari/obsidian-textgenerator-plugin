@@ -27,7 +27,7 @@ const heavyLogger = debug("textgenerator:TextGenerator:heavy");
 import EmbeddingScope from "../scope/embeddings";
 import { IGNORE_IN_YAML } from "../constants";
 import merge from "lodash.merge";
-import { ContentManager } from "../content-manager/types";
+import { ContentManager } from "../scope/content-manager/types";
 
 export default class TextGenerator extends RequestHandler {
   plugin: TextGeneratorPlugin;

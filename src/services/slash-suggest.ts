@@ -9,7 +9,7 @@ import {
 } from "obsidian";
 import TextGeneratorPlugin from "../main";
 import { ExampleModal } from "../models/model";
-import ContentManagerCls from "../content-manager";
+import ContentManagerCls from "../scope/content-manager";
 
 export class SlashSuggest extends EditorSuggest<PromptTemplate> {
   app: App;

@@ -11,7 +11,7 @@ import { LLMProviderRegistery } from "../LLMProviders";
 import debug from "debug";
 import { VIEW_TOOL_ID } from "#/ui/tool";
 import { VIEW_Playground_ID } from "#/ui/playground";
-import ContentManagerCls from "#/content-manager";
+import ContentManagerCls from "#/scope/content-manager";
 const logger = debug("textgenerator:main");
 
 export default class Commands {

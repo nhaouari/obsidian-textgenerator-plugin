@@ -14,7 +14,7 @@ import {
 } from "obsidian";
 
 import debug from "debug";
-import ContentManagerCls from "../../content-manager";
+import ContentManagerCls from "../../scope/content-manager";
 import { InlineSuggest } from "./inlineSuggest";
 import { ListSuggest } from "./listSuggest";
 const logger = debug("textgenerator:AutoSuggest");

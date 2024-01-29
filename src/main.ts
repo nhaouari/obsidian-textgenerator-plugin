@@ -48,7 +48,7 @@ import VersionManager from "./scope/versionManager";
 import { registerAPI } from "@vanakat/plugin-api";
 import { PlaygroundView, VIEW_Playground_ID } from "./ui/playground";
 import { UnProviderSlugs } from "./LLMProviders";
-import ContentManagerCls from "./content-manager";
+import ContentManagerCls from "./scope/content-manager";
 import ContextManager from "./scope/context-manager";
 import TGBlock from "./services/tgBlock";
 
