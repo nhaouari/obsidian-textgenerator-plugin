@@ -62,21 +62,26 @@ export class InlineSuggest {
 
 
         const newCursorPos = {
-            ch: currentCursorPos.ch + replacementValue?.length,
+            ch: currentCursorPos.ch - (this.plugin.settings.autoSuggestOptions.triggerPhrase + "").length + replacementValue?.length,
             line: currentCursorPos.line,
         };
 
+        try {
+            console.log(currentCursorPos.ch, (this.plugin.settings.autoSuggestOptions.triggerPhrase + "").length)
+            activeView.editor.replaceRange(
+                replacementValue,
+                {
+                    ch: currentCursorPos.ch - (this.plugin.settings.autoSuggestOptions.triggerPhrase + "").length,
+                    line: currentCursorPos.line
+                },
+                currentCursorPos
+            );
 
-        activeView.editor.replaceRange(
-            replacementValue,
-            {
-                ch: currentCursorPos.ch - (this.plugin.settings.autoSuggestOptions.triggerPhrase + "").length,
-                line: currentCursorPos.line
-            },
-            currentCursorPos
-        );
 
-        activeView.editor.setCursor(newCursorPos);
+            activeView.editor.setCursor(newCursorPos);
+        } catch (err: any) {
+            console.warn(err)
+        }
     }
 
     async predict(k: EditorSuggestTriggerInfo, editor: Editor, file: TFile) {
@@ -289,11 +294,11 @@ class InlineSuggestionsWidget extends WidgetType {
     }
 
     toDOM() {
-
         const spanMAM = document.createElement("span");
         const span = spanMAM.createEl("span");
 
         document.addEventListener("click", this.exitHandler = () => {
+            document.removeEventListener("click", this.exitHandler as any);
             span.style.display = "hidden";
             this.onExit();
         })
@@ -323,5 +328,4 @@ class InlineSuggestionsWidget extends WidgetType {
         document.removeEventListener("click", this.exitHandler as any);
         super.destroy(dom);
     }
-
 }
