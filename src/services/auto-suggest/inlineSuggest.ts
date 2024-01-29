@@ -67,7 +67,6 @@ export class InlineSuggest {
         };
 
         try {
-            console.log(currentCursorPos.ch, (this.plugin.settings.autoSuggestOptions.triggerPhrase + "").length)
             activeView.editor.replaceRange(
                 replacementValue,
                 {
