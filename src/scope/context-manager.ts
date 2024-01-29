@@ -18,9 +18,9 @@ import set from "lodash.set";
 import merge from "lodash.merge";
 import { getHBValues } from "../utils/barhandles";
 
-import type { ContentManager } from "src/content-manager/types";
 
 import JSON5 from 'json5'
+import type { ContentManager } from "./content-manager/types";
 
 interface CodeBlock {
   type: string;
@@ -668,49 +668,39 @@ export default class ContextManager {
       (e) => e.original.substring(0, 2) === "[["
     );
     //remove duplicates from links
-    const uniqueLinks = links?.filter(
-      (v, i, a) => a.findIndex((t) => t.link === v.link) === i
-    );
+    const uniqueLinks = [...new Set(links)]
     if (uniqueLinks) {
       for (let i = 0; i < uniqueLinks.length; i++) {
         const link = uniqueLinks[i];
         const path = link.link + ".md";
-        let file;
-        if (path.includes("/")) {
-          file = await this.app.vault
-            .getFiles()
-            .filter((t) => t.path === path)[0];
-        } else {
-          file = await this.app.vault
-            .getFiles()
-            .filter((t) => t.name === path)[0];
-        }
+        if (!path) continue
+        // @ts-ignore
+        const file = this.app.vault.getAbstractFileByPathInsensitive(path);
+        if (!file) continue;
 
-        if (file) {
-          //load the file
-          const content = await this.app.vault.read(file);
+        //load the file
+        const content = await this.app.vault.read(file as any);
 
-          const metadata = this.getMetaData(file.path);
+        const metadata = this.getMetaData(file.path);
 
-          //only include frontmatter and headings if the option is set
-          const blocks: any = {};
+        //only include frontmatter and headings if the option is set
+        const blocks: any = {};
 
-          blocks["frontmatter"] = metadata?.frontmatter;
+        blocks["frontmatter"] = metadata?.frontmatter;
 
-          blocks["headings"] = metadata?.headings;
+        blocks["headings"] = metadata?.headings;
 
-          const childInfo: any = {
-            ...file,
-            content,
-            title: file.name.substring(
-              0,
-              file.name.length - file.extension.length - 1
-            ),
-            ...blocks,
-          };
+        const childInfo: any = {
+          ...file,
+          content,
+          title: file.name.substring(
+            0,
+            file.name.length - 2
+          ),
+          ...blocks,
+        };
 
-          children.push(childInfo);
-        }
+        children.push(childInfo);
       }
     }
     return children;
@@ -719,7 +709,7 @@ export default class ContextManager {
   async getHighlights(editor: ContentManager) {
     const content = await editor.getValue();
     const highlights =
-      content.match(/==(.*?)==/gi)?.map((s) => s.replaceAll("==", "")) || [];
+      content.match(/==(.*?)==/gi)?.map((s: any) => s.replaceAll("==", "")) || [];
     return highlights;
   }
 
