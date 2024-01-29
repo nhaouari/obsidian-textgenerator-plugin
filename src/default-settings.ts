@@ -84,7 +84,7 @@ Starred Blocks: {{starredBlocks}}
     showStatus: true,
     customProvider: false,
     inlineSuggestions: false,
-    overrideTrigger: false
+    overrideTrigger: " "
   },
 
   slashSuggestOptions: {

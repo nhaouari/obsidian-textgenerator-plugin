@@ -58,17 +58,7 @@ export class InlineSuggest {
 
         const currentCursorPos = activeView.editor.getCursor();
 
-        let addSpace = false;
-
-        let letterBeforeIndex = { line: currentCursorPos.line, ch: currentCursorPos.ch - 1 };
-        let letterBefore = activeView.editor.getRange({
-            ch: letterBeforeIndex.ch - 1,
-            line: letterBeforeIndex.line
-        }, letterBeforeIndex)
-
-        if (letterBefore != " ") addSpace = true;
-
-        replacementValue = (addSpace ? " " : "") + replacementValue
+        replacementValue = (overrideTrigger ? overrideTrigger : "") + replacementValue
 
 
         const newCursorPos = {
@@ -79,12 +69,10 @@ export class InlineSuggest {
 
         activeView.editor.replaceRange(
             replacementValue,
-            overrideTrigger ?
-                {
-                    ch: currentCursorPos.ch - (this.plugin.settings.autoSuggestOptions.triggerPhrase + "").length,
-                    line: currentCursorPos.line
-                }
-                : currentCursorPos,
+            {
+                ch: currentCursorPos.ch - (this.plugin.settings.autoSuggestOptions.triggerPhrase + "").length,
+                line: currentCursorPos.line
+            },
             currentCursorPos
         );
 
@@ -315,12 +303,19 @@ class InlineSuggestionsWidget extends WidgetType {
         this.renderedSuggestion = span.textContent;
 
         span.addClass("plug-tg-opacity-40")
+
         span.onclick = () => {
+            span.style.display = "hidden";
             this.onSelect();
+            this.onExit();
         }
+
         span.onselect = () => {
+            span.style.display = "hidden";
             this.onSelect();
+            this.onExit();
         }
+
         return span;
     }
 

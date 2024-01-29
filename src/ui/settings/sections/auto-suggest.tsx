@@ -88,15 +88,14 @@ export default function AutoSuggestSetting(props: { register: Register }) {
 
           <SettingItem
             name="Override Trigger"
-            description="Overrides the trigger when suggestion is accepted"
+            description="Overrides the trigger when suggestion is accepted (default: *single space*)"
             register={props.register}
             sectionId={sectionId}
           >
             <Input
-              type="checkbox"
               value={"" + global.plugin.settings.autoSuggestOptions.overrideTrigger}
               setValue={async (val) => {
-                global.plugin.settings.autoSuggestOptions.overrideTrigger = val == "true";
+                global.plugin.settings.autoSuggestOptions.overrideTrigger = val;
                 await global.plugin.saveSettings();
                 global.triggerReload();
               }}
