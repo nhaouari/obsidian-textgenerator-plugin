@@ -40,8 +40,11 @@ export class InlineSuggest {
 
     }
 
-    onSelect() {
-        this.selectSuggestion(this.currentSuggestions[this.viewedSuggestion])
+    onSelect(all?: boolean) {
+        if (all)
+            this.selectSuggestion(this.currentSuggestions.join("\n"))
+        else
+            this.selectSuggestion(this.currentSuggestions[this.viewedSuggestion])
         this.clear();
     }
 
@@ -141,68 +144,82 @@ export class InlineSuggest {
                         key: "Tab",
                         run: () => {
                             const d = !!self.currentSuggestions?.length;
+                            if (!d) return false;
+
                             self.onSelect();
-                            return d
+                            return true
                         },
                     },
                     {
                         key: "Enter",
-                        run: () => {
+                        run: (evt) => {
                             const d = !!self.currentSuggestions?.length;
+                            if (!d) return false;
+
                             self.onSelect();
-                            return d
+                            return true;
                         },
                     },
                     {
                         key: "ArrowRight",
                         run: () => {
                             const d = !!self.currentSuggestions?.length;
+                            if (!d) return false;
+
                             self.onSelect();
-                            return d;
+                            return true;
                         },
                     },
                     {
                         key: "ArrowDown",
                         run: () => {
                             const d = !!self.currentSuggestions?.length;
+                            if (!d) return false;
+
                             if (!self.currentSuggestions[self.viewedSuggestion + 1]) self.viewedSuggestion = -1;
                             self.viewedSuggestion++;
                             self.setSuggestions(self.currentSuggestions)
-                            return d;
+
+                            return true;
                         },
                     },
                     {
                         key: "ArrowUp",
                         run: () => {
                             const d = !!self.currentSuggestions?.length;
+                            if (!d) return false;
+
                             if (!self.currentSuggestions[self.viewedSuggestion - 1]) self.viewedSuggestion = self.currentSuggestions.length;
                             self.viewedSuggestion--;
                             self.setSuggestions(self.currentSuggestions)
-                            return d;
+                            return true;
                         },
                     },
                     {
                         key: "Escape",
                         run: () => {
                             const d = !!self.currentSuggestions?.length;
+                            if (!d) return false;
+
                             self.clear();
-                            return d;
+                            return true;
                         },
                     },
                     {
                         any: (view, evt) => {
+                            console.log(evt.key)
+                            if (evt.key == "Control") return false;
                             const d = !!self.currentSuggestions?.length;
+
                             // ignore keys
                             // ["Backspace", "Tab", "ArrowRight", "Escape"].includes(evt.key) ...etc
-                            if (evt.key.length > 1 || evt.ctrlKey || self.plugin.processing) {
+                            const lastletterOfTrigger = self.plugin.settings.autoSuggestOptions.triggerPhrase[self.plugin.settings.autoSuggestOptions.triggerPhrase.length - 1]
+                            if (evt.key.length > 1 || evt.ctrlKey || self.plugin.processing || evt.key !== lastletterOfTrigger) {
                                 if (d) self.setSuggestions([]);
                                 return false;
                             }
 
-                            (async () => {
-                                await new Promise(s => setTimeout(s, 200));
-                                await self.getSuggestionsDebounced();
-                            })()
+                            self.getSuggestionsDebounced();
 
                             return false;
                         },
@@ -210,14 +227,14 @@ export class InlineSuggest {
                 ])
             ),
             self.getInlineSuggestionsExtension(self,
-                () => self.onSelect(),
+                (e) => self.onSelect(e),
                 () => self.clear()
             )
         ])
         return self;
     }
 
-    getInlineSuggestionsExtension(autoSuggest: InlineSuggest, onSelect: Function, onExit: Function,) {
+    getInlineSuggestionsExtension(autoSuggest: InlineSuggest, onSelect: (all?: boolean) => void, onExit: Function) {
         return Prec.lowest(
             // must be lowest else you get infinite loop with state changes by our plugin
             ViewPlugin.fromClass(
@@ -295,6 +312,7 @@ class InlineSuggestionsWidget extends WidgetType {
     toDOM() {
         const spanMAM = document.createElement("span");
         const span = spanMAM.createEl("span");
+        const span2 = spanMAM.createEl("span");
 
         document.addEventListener("click", this.exitHandler = () => {
             document.removeEventListener("click", this.exitHandler as any);
@@ -303,24 +321,25 @@ class InlineSuggestionsWidget extends WidgetType {
         })
 
 
-        span.textContent = this.autoSuggest.currentSuggestions[this.autoSuggest.viewedSuggestion] + ` (${this.autoSuggest.viewedSuggestion + 1}/${this.autoSuggest.currentSuggestions.length})`;
+        span.textContent = this.autoSuggest.currentSuggestions[this.autoSuggest.viewedSuggestion];
+        span2.textContent = ` (${this.autoSuggest.viewedSuggestion + 1}/${this.autoSuggest.currentSuggestions.length})`;
         this.renderedSuggestion = span.textContent;
 
-        span.addClass("plug-tg-opacity-40")
+        spanMAM.addClass("plug-tg-opacity-40")
 
-        span.onclick = () => {
+        span.onselect = span.onclick = () => {
             span.style.display = "hidden";
             this.onSelect();
             this.onExit();
         }
 
-        span.onselect = () => {
+        span2.onselect = span2.onclick = () => {
             span.style.display = "hidden";
-            this.onSelect();
+            this.onSelect(true);
             this.onExit();
         }
 
-        return span;
+        return spanMAM;
     }
 
     destroy(dom: HTMLElement) {
