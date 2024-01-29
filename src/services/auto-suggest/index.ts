@@ -189,7 +189,7 @@ ${context.query}`;
 
     if (
       (!this.plugin.settings.autoSuggestOptions.allowInNewLine && line == triggerPhrase)
-      || (!this.plugin.settings.autoSuggestOptions.customInstructEnabled && !line.endsWith(triggerPhrase))
+      || !line.endsWith(triggerPhrase)
     ) {
       this.process = false;
       return null;
