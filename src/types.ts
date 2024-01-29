@@ -80,6 +80,7 @@ type TextGeneratorSettings = {
     selectedProvider?: string;
     inlineSuggestions?: boolean;
     overrideTrigger?: string;
+    showInMarkdown?: boolean;
   };
   slashSuggestOptions: {
     isEnabled: boolean;

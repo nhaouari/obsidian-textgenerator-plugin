@@ -10,7 +10,7 @@ import {
 import { Prec } from "@codemirror/state";
 import { AutoSuggest } from ".";
 import TextGeneratorPlugin from "#/main";
-import { Scope, App, EditorSuggestTriggerInfo, Editor, TFile, MarkdownView } from "obsidian";
+import { Scope, App, EditorSuggestTriggerInfo, Editor, TFile, MarkdownView, MarkdownRenderer } from "obsidian";
 import debug from "debug";
 import { debounce } from "#/utils";
 const logger = debug("textgenerator:AutoSuggest");
@@ -306,7 +306,7 @@ class InlineSuggestionsWidget extends WidgetType {
     toDOM() {
         const spanMAM = document.createElement("span");
         const span = spanMAM.createEl("span");
-        const span2 = spanMAM.createEl("span");
+
 
         document.addEventListener("click", this.exitHandler = () => {
             document.removeEventListener("click", this.exitHandler as any);
@@ -314,10 +314,9 @@ class InlineSuggestionsWidget extends WidgetType {
             this.onExit();
         })
 
+        const content = this.autoSuggest.currentSuggestions[this.autoSuggest.viewedSuggestion];
 
-        span.textContent = this.autoSuggest.currentSuggestions[this.autoSuggest.viewedSuggestion];
-        span2.textContent = ` (${this.autoSuggest.viewedSuggestion + 1}/${this.autoSuggest.currentSuggestions.length})`;
-        this.renderedSuggestion = span.textContent;
+        this.renderedSuggestion = content;
 
         spanMAM.addClass("plug-tg-opacity-40")
 
@@ -327,6 +326,19 @@ class InlineSuggestionsWidget extends WidgetType {
             this.onExit();
         }
 
+        if (this.autoSuggest.plugin.settings.autoSuggestOptions.showInMarkdown)
+            MarkdownRenderer.render(
+                app,
+                content,
+                span,
+                "",
+                this.autoSuggest.plugin
+            );
+        else
+            span.textContent = content;
+
+        const span2 = spanMAM.createEl("span");
+        span2.textContent = ` (${this.autoSuggest.viewedSuggestion + 1}/${this.autoSuggest.currentSuggestions.length})`;
         span2.onselect = span2.onclick = () => {
             span.style.display = "hidden";
             this.onSelect(true);

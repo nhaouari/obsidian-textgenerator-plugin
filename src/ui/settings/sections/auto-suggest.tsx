@@ -50,25 +50,44 @@ export default function AutoSuggestSetting(props: { register: Register }) {
         />
       </SettingItem>
 
-      <SettingItem
-        name="Inline Suggestions"
-        description="Shows the suggestions text in the editor (EXPERIMENTAL)"
-        register={props.register}
-        sectionId={sectionId}
-      >
-        <Input
-          type="checkbox"
-          value={"" + global.plugin.settings.autoSuggestOptions.inlineSuggestions}
-          setValue={async (val) => {
-            global.plugin.settings.autoSuggestOptions.inlineSuggestions = val == "true";
-            setReloader(true);
-            await global.plugin.saveSettings();
-            global.triggerReload();
-          }}
-        />
-      </SettingItem>
       {!!global.plugin.settings.autoSuggestOptions.isEnabled &&
         <>
+          <SettingItem
+            name="Inline Suggestions"
+            description="Shows the suggestions text in the editor (EXPERIMENTAL)"
+            register={props.register}
+            sectionId={sectionId}
+          >
+            <Input
+              type="checkbox"
+              value={"" + global.plugin.settings.autoSuggestOptions.inlineSuggestions}
+              setValue={async (val) => {
+                global.plugin.settings.autoSuggestOptions.inlineSuggestions = val == "true";
+                setReloader(true);
+                await global.plugin.saveSettings();
+                global.triggerReload();
+              }}
+            />
+          </SettingItem>
+
+          {!!global.plugin.settings.autoSuggestOptions.inlineSuggestions && <SettingItem
+            name="Show In Markdown"
+            description="Shows the suggestions text compiled as markdown, may shows weird spaces at the begining and end (EXPERIMENTAL)"
+            register={props.register}
+            sectionId={sectionId}
+          >
+            <Input
+              type="checkbox"
+              value={"" + global.plugin.settings.autoSuggestOptions.showInMarkdown}
+              setValue={async (val) => {
+                global.plugin.settings.autoSuggestOptions.showInMarkdown = val == "true";
+                setReloader(true);
+                await global.plugin.saveSettings();
+                global.triggerReload();
+              }}
+            />
+          </SettingItem>}
+
           <SettingItem
             name="Trigger Phrase"
             description="Trigger Phrase (default: *double space*)"
