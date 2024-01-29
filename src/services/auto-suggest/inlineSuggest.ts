@@ -197,11 +197,10 @@ export class InlineSuggest {
                     },
                     {
                         any: (view, evt) => {
-                            console.log(evt.key)
                             if (evt.key == "Control") return false;
                             const d = !!self.currentSuggestions?.length;
 
-                            if (evt.key == "ArrowRight") {
+                            if (d && evt.key == "ArrowRight") {
                                 self.onSelect(evt.ctrlKey);
                                 return true;
                             }
