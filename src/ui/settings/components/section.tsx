@@ -33,7 +33,9 @@ export default function SettingsSection(props: {
       })}
     >
       {!props.hideTitle && (
-        <div className="plug-tg-collapse-title plug-tg-cursor-pointer">
+        <div className={clsx("plug-tg-group  plug-tg-px-2 plug-tg-cursor-pointer", {
+          "hover:plug-tg-bg-gray-100/10": collapsed
+        })}>
           <div
             className="plug-tg-flex plug-tg-w-full plug-tg-flex-wrap plug-tg-items-center plug-tg-justify-between plug-tg-text-left plug-tg-font-medium"
             data-accordion-target="#accordion-flush-body-1"
@@ -45,9 +47,10 @@ export default function SettingsSection(props: {
             {!props.alwaysOpen && (
               <svg
                 data-accordion-icon
-                className={clsx("plug-tg-h-3 plug-tg-w-3 plug-tg-shrink-0 plug-tg-transition-transform", {
+                className={clsx("plug-tg-h-3 plug-tg-w-3 plug-tg-shrink-0 plug-tg-transition-all", {
                   "-plug-tg-rotate-180": !collapsed,
-                  "-plug-tg-rotate-90": collapsed,
+                  "plug-tg-upsidedown": collapsed,
+                  "plug-tg-hidden group-hover:plug-tg-block": collapsed
                 })}
                 aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"

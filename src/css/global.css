@@ -18,6 +18,11 @@
 	@apply plug-tg-w-[800px];
 }
 
+
+.plug-tg-upsidedown {
+	transform: rotate(-90deg);
+}
+
 /* .model {
 	width: auto;
 } */
@@ -43,6 +48,7 @@
 	text-align: left;
 	animation: spin10 1s steps(10) infinite;
 }
+
 
 @keyframes spin10 {
 	to {

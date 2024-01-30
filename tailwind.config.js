@@ -8,7 +8,8 @@ module.exports = {
 	// darkMode: ["class", '[class="theme-dark"]'], // or 'media' or 'class'
 	plugins: [
 		require("daisyui"),
-		require("tailwindcss-animate"), require("@tailwindcss/forms")
+		require("tailwindcss-animate"),
+		require("@tailwindcss/forms")
 	],
 
 	daisyui: {
