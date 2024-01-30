@@ -335,14 +335,14 @@ export default function Helpersfn(self: ContextManager) {
     async run(...vars: any[]) {
       const options: { data: { root: any }; fn: any } = vars.pop();
 
-      if (!options.data.root.templatePath) {
+      const firstVar = vars.shift();
+      if (!firstVar?.contains("/") && !options.data.root.templatePath) {
         throw new Error("templatePath was not found in run command");
       }
 
       const p = options.data.root.templatePath?.split("/");
       const parentPackageId = p[p.length - 2];
 
-      const firstVar = vars.shift();
       const id: string = firstVar?.contains("/")
         ? firstVar
         : `${parentPackageId}/${firstVar}`;
@@ -577,10 +577,6 @@ export default function Helpersfn(self: ContextManager) {
 
       let content = await options?.fn?.(this) as string || ""
 
-      if (!options.data.root.templatePath) {
-        throw new Error("templatePath was not found in run command");
-      }
-
       const p = options.data.root.templatePath?.split("/");
       const parentPackageId = p[p.length - 2];
 
@@ -601,6 +597,10 @@ export default function Helpersfn(self: ContextManager) {
 
       const run = (id: string, metadata?: any) => {
         let meta: any = {};
+
+        if (!id?.contains("/") && !options.data.root.templatePath) {
+          throw new Error("templatePath was not found in run command");
+        }
 
         if (content.contains("run(")) {
           const [packageId, templateId] = id.split("/")
