@@ -92,7 +92,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
       } catch (err: any) {
         console.warn("couldn't updateBoughtResources")
       }
-      setItems(glob.plugin.packageManager.getPackagesList());
+      await updateView();
     })()
   }, []);
 
@@ -137,7 +137,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
         <div className="modal mod-community-modal mod-sidebar-layout mod-community-plugin">
           <div className="modal-close-button" onClick={handleClose}></div>
           <div className="modal-title">Community Templates</div>
-          <div className="modal-content">
+          <div className="modal-content plug-tg-h-full">
             <div className="modal-sidebar community-modal-sidebar">
               <div className="community-modal-controls">
                 <div className="plug-tg-flex plug-tg-w-full plug-tg-justify-between plug-tg-items-center plug-tg-px-3 plug-tg-pb-3 plug-tg-max-w-full">
@@ -202,20 +202,16 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                     </div>
                   </div>
                 </div>
-
-                <div className="community-modal-search-summary u-muted">
-                  Showing {items.length} Packages
-                </div>
                 <div className="plug-tg-flex plug-tg-w-full plug-tg-justify-end">
-                  <div className="plug-tg-px-4 plug-tg-py-1">Find more community templates on our <a href="https://discord.gg/GvTBgzBz7n">discord server!</a></div>
+                  <div className="plug-tg-px-4 plug-tg-py-1 plug-tg-text-xs">Find more community templates on our <a href="https://discord.gg/GvTBgzBz7n">discord server!</a></div>
                 </div>
               </div>
               <div className="community-modal-search-results-wrapper">
                 <div className="plug-tg-flex plug-tg-flex-col">
                   {!!ProviderServer && !!premiumFeatures?.length && <>
                     <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2 plug-tg-p-3">
-                      <div className="plug-tg-text-xl plug-tg-font-bold">Featured Items</div>
-                      <div className="plug-tg-w-full plug-tg-flex plug-tg-gap-2 plug-tg-flex-wrap">
+                      <div className="plug-tg-text-xl plug-tg-font-bold">Featured Items ({premiumFeatures.length})</div>
+                      <div className="plug-tg-w-full plug-tg-flex plug-tg-gap-2 plug-tg-flex-wrap plug-tg-justify-items-center">
                         {premiumFeatures.map((item) => {
 
                           const i = items.findIndex(it => it.packageId == item.packageId);
@@ -241,10 +237,9 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
 
                   <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2 plug-tg-p-3 plug-tg-pr-0">
                     {communityTemplates?.length ? <>
-                      <div className="plug-tg-text-xl plug-tg-font-bold">Community Templates</div>
-                      <div className="community-modal-search-results plug-tg-pl-0">
+                      <div className="plug-tg-text-xl plug-tg-font-bold">Community Templates ({communityTemplates.length})</div>
+                      <div className="community-modal-search-results plug-tg-pl-0 plug-tg-justify-items-center">
                         {communityTemplates.map((item) => {
-
                           const i = items.findIndex(it => it.packageId == item.packageId)
                           return (
                             <TemplateItem
