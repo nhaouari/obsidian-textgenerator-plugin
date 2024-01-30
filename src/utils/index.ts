@@ -446,3 +446,8 @@ export function debounce<T extends unknown[], R>(
     });
   };
 }
+
+
+export function getFilePathByName(name: string): string | undefined {
+  return this.app.metadataCache.getFirstLinkpathDest(name, '')?.path;
+}

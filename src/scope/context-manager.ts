@@ -3,7 +3,7 @@ import { AsyncReturnType, Context } from "../types";
 import TextGeneratorPlugin from "../main";
 import { IGNORE_IN_YAML } from "../constants";
 
-import { escapeRegExp, getContextAsString, removeYAML, replaceScriptBlocksWithMustachBlocks, walkUntilTrigger } from "../utils";
+import { escapeRegExp, getContextAsString, getFilePathByName, removeYAML, replaceScriptBlocksWithMustachBlocks, walkUntilTrigger } from "../utils";
 import debug from "debug";
 const logger = debug("textgenerator:ContextManager");
 import Helpersfn, { Handlebars } from "../helpers/handlebars-helpers";
@@ -674,25 +674,16 @@ export default class ContextManager {
 
     if (!uniqueLinks) return children;
 
-    const allFiles = this.app.vault.getMarkdownFiles();
-
-
     for (let i = 0; i < uniqueLinks.length; i++) {
       const link = uniqueLinks[i];
 
-      const path = link.link + ".md";
+      if (!link.link) continue;
+
+      const path = getFilePathByName(link.link);
+
       if (!path) continue;
 
-
-      // @ts-ignore
-      // try to find it normally (most optimal)
-      let file = this.app.vault.getAbstractFileByPathInsensitive(path);
-
-      // try to find it with casesensitivity (less optimal)
-      if (!file) file = allFiles.find((f) => f.path.endsWith(path))
-
-      // try to find it without casesensitivity (least optimal)
-      if (!file) file = allFiles.find((f) => f.path.toLowerCase().endsWith(path.toLowerCase()))
+      const file = this.app.vault.getAbstractFileByPath(path);
 
       if (!file) continue;
 
