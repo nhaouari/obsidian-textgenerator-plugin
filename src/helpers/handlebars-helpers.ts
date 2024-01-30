@@ -23,6 +23,7 @@ import JSON5 from "json5";
 import * as langchain from "#/lib/langchain";
 
 export default function Helpersfn(self: ContextManager) {
+  // they are being used by the eval
   const { chains, splitters } = langchain;
 
   const extract = async (id: string, cntn: string, other: any) => {

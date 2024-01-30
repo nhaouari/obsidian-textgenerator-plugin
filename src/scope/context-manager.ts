@@ -664,44 +664,61 @@ export default class ContextManager {
       frontmatter: any;
       headings: HeadingCache[] | undefined;
     })[] = [];
+
     const links = fileCache?.links?.filter(
       (e) => e.original.substring(0, 2) === "[["
     );
+
     //remove duplicates from links
-    const uniqueLinks = [...new Set(links)]
-    if (uniqueLinks) {
-      for (let i = 0; i < uniqueLinks.length; i++) {
-        const link = uniqueLinks[i];
-        const path = link.link + ".md";
-        if (!path) continue
-        // @ts-ignore
-        const file = this.app.vault.getAbstractFileByPathInsensitive(path);
-        if (!file) continue;
+    const uniqueLinks = [...new Set(links)];
 
-        //load the file
-        const content = await this.app.vault.read(file as any);
+    if (!uniqueLinks) return children;
 
-        const metadata = this.getMetaData(file.path);
+    const allFiles = this.app.vault.getMarkdownFiles();
 
-        //only include frontmatter and headings if the option is set
-        const blocks: any = {};
 
-        blocks["frontmatter"] = metadata?.frontmatter;
+    for (let i = 0; i < uniqueLinks.length; i++) {
+      const link = uniqueLinks[i];
 
-        blocks["headings"] = metadata?.headings;
+      const path = link.link + ".md";
+      if (!path) continue;
 
-        const childInfo: any = {
-          ...file,
-          content,
-          title: file.name.substring(
-            0,
-            file.name.length - 2
-          ),
-          ...blocks,
-        };
 
-        children.push(childInfo);
-      }
+      // @ts-ignore
+      // try to find it normally (most optimal)
+      let file = this.app.vault.getAbstractFileByPathInsensitive(path);
+
+      // try to find it with casesensitivity (less optimal)
+      if (!file) file = allFiles.find((f) => f.path.endsWith(path))
+
+      // try to find it without casesensitivity (least optimal)
+      if (!file) file = allFiles.find((f) => f.path.toLowerCase().endsWith(path.toLowerCase()))
+
+      if (!file) continue;
+
+      // load the file
+      const content = await this.app.vault.read(file as any);
+
+      const metadata = this.getMetaData(file.path);
+
+      //TODO: only include frontmatter and headings if the option is set
+      const blocks: any = {};
+
+      blocks["frontmatter"] = metadata?.frontmatter;
+
+      blocks["headings"] = metadata?.headings;
+
+      const childInfo: any = {
+        ...file,
+        content,
+        title: file.name.substring(
+          0,
+          file.name.length - 2
+        ),
+        ...blocks,
+      };
+
+      children.push(childInfo);
     }
     return children;
   }
