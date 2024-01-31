@@ -470,11 +470,6 @@ export default function Helpersfn(self: ContextManager) {
         : `extractions/${firstVar}`;
 
       const otherVariables = vars;
-      const templatePath = await self.plugin.textGenerator.getTemplatePath(id)
-
-      const TemplateMetadata = self.getFrontmatter(
-        self.getMetaData(templatePath)
-      );
 
       if (!(firstVar in ExtractorSlug))
         throw new Error(`Extractor ${firstVar} Not found`);
@@ -483,10 +478,7 @@ export default function Helpersfn(self: ContextManager) {
       let varname = id;
       let other = "";
       if (options.fn) {
-        cntn = await await options.fn?.({
-          ...this,
-          ...TemplateMetadata,
-        });
+        cntn = await await options.fn?.(this);
         if (otherVariables[0]) varname = `vars["${otherVariables[0]}"]`;
         other = otherVariables[1];
       } else {
@@ -494,7 +486,6 @@ export default function Helpersfn(self: ContextManager) {
         if (otherVariables[1]) varname = `vars["${otherVariables[1]}"]`;
         other = otherVariables[2];
       }
-
 
       const res = await extract(firstVar, cntn, other)
 

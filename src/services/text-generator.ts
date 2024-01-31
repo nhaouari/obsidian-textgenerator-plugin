@@ -841,7 +841,7 @@ ${removeYAML(content)}
 
     const [packageId, templateId] = id.split("/")
 
-    if (this.templatePaths[packageId][templateId]) return this.templatePaths[packageId][templateId];
+    if (this.templatePaths[packageId]?.[templateId]) return this.templatePaths[packageId][templateId];
 
     const promptsPath = this.plugin.settings.promptsPath
 
