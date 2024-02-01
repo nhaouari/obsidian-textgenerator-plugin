@@ -31,38 +31,33 @@ export function ModelsHandler(props: {
     const updateModels = async () => {
         setLoadingUpdate(true);
         try {
-            if (global.plugin.settings.api_key.length > 0) {
-                const reqParams = {
-                    url: `${config.basePath || default_values.basePath}/models`,
-                    method: "GET",
-                    body: "",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${config.api_key || global.plugin.settings.api_key
-                            }`,
-                    },
-                };
+            if (!global.plugin.settings.api_key.length) throw "Please provide a valid api key.";
 
-                const requestResults: {
-                    data: {
-                        id: string;
-                    }[];
-                } = JSON5.parse(await request(reqParams));
+            const reqParams = {
+                url: `${config.basePath || default_values.basePath}/models`,
+                method: "GET",
+                body: "",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${config.api_key || global.plugin.settings.api_key}`,
+                },
+            };
 
-                requestResults.data.forEach(async (model) => {
-                    models.push(model.id);
-                });
+            const requestResults: {
+                data: {
+                    id: string;
+                }[];
+            } = JSON5.parse(await request(reqParams));
 
-                setModels(
-                    [...new Set(models)]
-                        .sort(
-                            (m1: keyof typeof AI_MODELS, m2: keyof typeof AI_MODELS) =>
-                                (AI_MODELS[m2]?.order || 0) - (AI_MODELS[m1]?.order || 0)
-                        )
-                );
-            } else {
-                throw "Please provide a valid api key.";
-            }
+            const postingModels: string[] = [];
+
+            requestResults.data.forEach(async (model) => {
+                if (!models.includes(model.id))
+                    postingModels.push(model.id);
+            });
+
+
+            setModels([...models, ...postingModels.sort()]);
         } catch (err: any) {
             global.plugin.handelError(err);
         }
@@ -117,13 +112,7 @@ export function ModelsHandler(props: {
                                 await global.plugin.saveSettings();
                                 global.triggerReload();
                             }}
-                            values={
-                                [...models]
-                                    .sort()
-                                    .sort(
-                                        (m1: keyof typeof AI_MODELS, m2: keyof typeof AI_MODELS) =>
-                                            (AI_MODELS[m2]?.order || 0) - (AI_MODELS[m1]?.order || 0))
-                            }
+                            values={models}
                         />
                     }
 
