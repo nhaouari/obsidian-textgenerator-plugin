@@ -59,21 +59,6 @@ export default class LangchainOllamaProvider
     return (
       <>
         <SettingItem
-          name="Model"
-          register={props.register}
-          sectionId={props.sectionId}
-        >
-          <Input
-            value={config.model}
-            setValue={async (value) => {
-              config.model = value;
-              global.triggerReload();
-              // TODO: it could use a debounce here
-              await global.plugin.saveSettings();
-            }}
-          />
-        </SettingItem>
-        <SettingItem
           name="Base Path"
           description={`Make sure it supports CORS`}
           register={props.register}
@@ -84,6 +69,21 @@ export default class LangchainOllamaProvider
             placeholder="Enter your API basePath"
             setValue={async (value) => {
               config.basePath = value;
+              global.triggerReload();
+              // TODO: it could use a debounce here
+              await global.plugin.saveSettings();
+            }}
+          />
+        </SettingItem>
+        <SettingItem
+          name="Model"
+          register={props.register}
+          sectionId={props.sectionId}
+        >
+          <Input
+            value={config.model}
+            setValue={async (value) => {
+              config.model = value;
               global.triggerReload();
               // TODO: it could use a debounce here
               await global.plugin.saveSettings();

@@ -82,12 +82,6 @@ export default class LangchainChatGoogleGenerativeAIProvider
             }}
           />
         </SettingItem>
-        <ModelsHandler
-          register={props.register}
-          sectionId={props.sectionId}
-          llmProviderId={id}
-          default_values={default_values}
-        />
         <SettingItem
           name="Base Path"
           register={props.register}
@@ -104,6 +98,12 @@ export default class LangchainChatGoogleGenerativeAIProvider
             }}
           />
         </SettingItem>
+        <ModelsHandler
+          register={props.register}
+          sectionId={props.sectionId}
+          llmProviderId={id}
+          default_values={default_values}
+        />
         <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">
           <div className="plug-tg-text-lg plug-tg-opacity-70">Useful links</div>
           <a href="https://beta.openai.com/signup/">
