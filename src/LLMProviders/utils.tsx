@@ -3,7 +3,7 @@ import useGlobal from "#/ui/context/global";
 import Dropdown from "#/ui/settings/components/dropdown";
 import Input from "#/ui/settings/components/input";
 import SettingItem from "#/ui/settings/components/item";
-import { IconReload } from "@tabler/icons-react";
+import { IconGridDots, IconList, IconPencil, IconReload } from "@tabler/icons-react";
 import clsx from "clsx";
 import { request } from "obsidian";
 import React, { useState, useEffect, useId } from "react";
@@ -23,6 +23,7 @@ export function ModelsHandler(props: {
     const global = useGlobal();
     const [models, setModels] = useState<string[]>([]);
     const [loadingUpdate, setLoadingUpdate] = useState(false);
+    const [edit, setEdit] = useState(false);
 
     const config = props.config || (global.plugin.settings.LLMProviderOptions[id] ??= {
         ...default_values,
@@ -88,7 +89,7 @@ export function ModelsHandler(props: {
                 sectionId={props.sectionId}
             >
                 <div className="plug-tg-flex plug-tg-items-center plug-tg-gap-2">
-                    {global.plugin.settings.experiment ? <>
+                    {global.plugin.settings.experiment || edit ? <>
                         <datalist id={modelsDatasetId}>
                             {[...models].map(model => <option key={model} value={model} />)}
                         </datalist>
@@ -116,15 +117,23 @@ export function ModelsHandler(props: {
                         />
                     }
 
-                    <button
-                        className={clsx({
-                            "plug-tg-loading": loadingUpdate,
-                        })}
-                        onClick={updateModels}
-                        disabled={loadingUpdate}
-                    >
-                        <IconReload />
-                    </button>
+                    <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
+                        <button
+                            onClick={() => setEdit((i) => !i)}
+                        >
+                            {edit ? <IconList /> : <IconPencil />}
+
+                        </button>
+                        <button
+                            className={clsx({
+                                "plug-tg-loading": loadingUpdate,
+                            })}
+                            onClick={updateModels}
+                            disabled={loadingUpdate}
+                        >
+                            <IconReload />
+                        </button>
+                    </div>
                 </div>
             </SettingItem>
         </>
