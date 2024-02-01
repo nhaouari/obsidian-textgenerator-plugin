@@ -122,7 +122,6 @@ export function ModelsHandler(props: {
                             onClick={() => setEdit((i) => !i)}
                         >
                             {edit ? <IconList /> : <IconPencil />}
-
                         </button>
                         <button
                             className={clsx({
