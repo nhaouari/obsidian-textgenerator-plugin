@@ -22,7 +22,7 @@ const DEFAULT_SETTINGS: TextGeneratorSettings = {
   tgSelectionLimiter: "^\\*\\*\\*",
   stream: true,
   context: {
-    customInstructEnabled: false,
+    customInstructEnabled: true,
     includeClipboard: true,
     customInstruct: `Title: {{title}}
   
@@ -72,8 +72,9 @@ Starred Blocks: {{starredBlocks}}
   },
 
   autoSuggestOptions: {
-    customInstructEnabled: false,
-    customInstruct: `continue the follwing text:
+    customInstructEnabled: true,
+    customInstruct: `Continue the follwing text:
+Title: {{title}}
 {{query}}`,
     isEnabled: false,
     allowInNewLine: false,
