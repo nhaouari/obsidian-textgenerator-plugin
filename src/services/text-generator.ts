@@ -389,8 +389,7 @@ export default class TextGenerator extends RequestHandler {
     }
 
     const title = this.plugin.app.workspace.activeLeaf?.getDisplayText();
-    const suggestedPath =
-      "textgenerator/generations/" + title + "-" + makeId(3) + ".md";
+    const suggestedPath = this.plugin.getTextGenPath("/generations/" + title + "-" + makeId(3) + ".md")
     new SetPath(
       this.plugin.app,
       suggestedPath,
@@ -421,8 +420,7 @@ export default class TextGenerator extends RequestHandler {
     insertMode = false
   ) {
     logger("createToFile");
-
-    const suggestedPath = `textgenerator/generations/${makeId(4)}`;
+    const suggestedPath = this.plugin.getTextGenPath(`/generations/${makeId(4)}`);
 
     new SetPath(
       this.plugin.app,

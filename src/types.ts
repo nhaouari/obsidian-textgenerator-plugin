@@ -48,8 +48,8 @@ type TextGeneratorSettings = {
   max_tokens: number;
   temperature: number;
   frequency_penalty: number;
-  prompt: string;
   promptsPath: string;
+  textGenPath: string;
   showStatusBar: boolean;
   displayErrorInEditor: boolean;
   outputToBlockQuote: boolean;

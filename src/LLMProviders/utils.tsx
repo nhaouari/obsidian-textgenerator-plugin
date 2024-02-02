@@ -9,6 +9,7 @@ import { request } from "obsidian";
 import React, { useState, useEffect, useId } from "react";
 import LLMProviderInterface from "./interface";
 import JSON5 from "json5";
+import { currentDate, getCurrentTime } from "#/utils";
 
 export function ModelsHandler(props: {
     register: Parameters<LLMProviderInterface["RenderSettings"]>[0]["register"];
@@ -138,3 +139,22 @@ export function ModelsHandler(props: {
         </>
     );
 }
+
+
+
+export const saveExport = (data: any, name: string) => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.download = `${name}_${currentDate()}.json`;
+    link.href = url;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+};
+
+

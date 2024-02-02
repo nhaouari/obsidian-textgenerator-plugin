@@ -29,10 +29,18 @@ export default class VersionManager {
     if (this.compare(this.plugin.settings.version, "0.5.26-beta") <= 0) {
       await this.updateFromV5_27To5_28();
     }
+
+    if (this.compare(this.plugin.settings.version, "0.6.13-beta") <= 0) {
+      await this.updateFromV6_13To6_14();
+    }
+
+
+    this.plugin.settings.version = this.currentVersion;
+    await this.plugin.saveSettings();
   }
 
   async updateFromV0_3To0_4() {
-    this.plugin.settings.version = this.currentVersion;
+    this.plugin.settings.version = "0.4.0";
     if (this.plugin.settings.endpoint) {
       if (this.plugin.settings.endpoint == "https://api.openai.com") {
         this.plugin.settings.endpoint = this.plugin.defaultSettings.endpoint;
@@ -62,10 +70,43 @@ export default class VersionManager {
 
     await this.plugin.saveSettings();
   }
+
   async updateFromV5_27To5_28() {
-    this.plugin.settings.version = this.currentVersion;
+    this.plugin.settings.version = "0.5.28";
     this.plugin.settings.options["batch-generate-in-right-click-files-menu"] = this.plugin.defaultSettings.options["batch-generate-in-right-click-files-menu"]
     this.plugin.settings.options["tg-block-processor"] = this.plugin.defaultSettings.options["tg-block-processor"]
+  }
+
+  async updateFromV6_13To6_14() {
+    this.plugin.settings.version = "0.6.14";
+    // change custom provider variables handlebars_headers_in handlebars_body_in 
+    // to custom_header, custom_body
+    const customConfig = this.plugin.settings.LLMProviderOptions[`Default (Custom)`]
+    if (customConfig) {
+      if (customConfig.handlebars_headers_in && !customConfig.custom_header) {
+        customConfig.custom_header = customConfig.handlebars_headers_in;
+        delete customConfig.handlebars_headers_in;
+      }
+
+      if (customConfig.handlebars_body_in && !customConfig.custom_body) {
+        customConfig.custom_body = customConfig.handlebars_body_in;
+        delete customConfig.handlebars_body_in;
+      }
+    }
+
+    // same thing in anthropic legacy
+    const anthropicConfig = this.plugin.settings.LLMProviderOptions[`Anthropic Legacy (Custom)`]
+    if (anthropicConfig) {
+      if (anthropicConfig.handlebars_headers_in && !anthropicConfig.custom_header) {
+        anthropicConfig.custom_header = anthropicConfig.handlebars_headers_in;
+        delete anthropicConfig.handlebars_headers_in;
+      }
+
+      if (anthropicConfig.handlebars_body_in && !anthropicConfig.custom_body) {
+        anthropicConfig.custom_body = anthropicConfig.handlebars_body_in;
+        delete anthropicConfig.handlebars_body_in;
+      }
+    }
   }
 
   isOldVersion(version: Version) {

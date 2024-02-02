@@ -5,8 +5,6 @@ import SettingsSection from "../components/section";
 import Input from "../components/input";
 import type { Register } from ".";
 import Confirm from "#/ui/package-manager/components/confirm";
-import { contextVariablesObj } from "#/scope/context-manager";
-import AvailableVars from "#/ui/components/availableVars";
 export default function AdvancedSetting(props: { register: Register }) {
   const global = useGlobal();
 
@@ -137,8 +135,8 @@ export default function AdvancedSetting(props: { register: Register }) {
         />
       </SettingItem>
       <SettingItem
-        name="Prompts Templates Path"
-        description="Path of Prompts Templates"
+        name="Templates Path"
+        description="Path for Templates directory"
         register={props.register}
         sectionId={sectionId}
       >
@@ -146,6 +144,22 @@ export default function AdvancedSetting(props: { register: Register }) {
           value={global.plugin.settings.promptsPath}
           setValue={async (val) => {
             global.plugin.settings.promptsPath = val;
+            await global.plugin.saveSettings();
+            global.triggerReload();
+          }}
+        />
+      </SettingItem>
+
+      <SettingItem
+        name="TextGenerator Path"
+        description="Path To Folder that Text Generator can put Backups,generations...etc into"
+        register={props.register}
+        sectionId={sectionId}
+      >
+        <Input
+          value={global.plugin.settings.textGenPath}
+          setValue={async (val) => {
+            global.plugin.settings.textGenPath = val;
             await global.plugin.saveSettings();
             global.triggerReload();
           }}

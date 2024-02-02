@@ -451,3 +451,40 @@ export function debounce<T extends unknown[], R>(
 export function getFilePathByName(name: string): string | undefined {
   return this.app.metadataCache.getFirstLinkpathDest(name, '')?.path;
 }
+
+
+export function currentDate() {
+  const date = new Date();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  return `${month}-${day}`;
+}
+
+export function getCurrentTime() {
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, '0');
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  const seconds = now.getSeconds().toString().padStart(2, '0');
+
+  return `${hours}${minutes}${seconds}`;
+}
+
+import JSON5 from "json5";
+
+export function extractJsonFromText(text: string) {
+  const jsonRegex = /^```(json|JSON)([\s\S]+?)```/;
+
+  const match = text.match(jsonRegex);
+  if (match) {
+    try {
+      const jsonBlock = JSON5.parse(match[2]);
+      return jsonBlock;
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+      return null;
+    }
+  } else {
+    console.error("No JSON block found in the text.");
+    return null;
+  }
+}

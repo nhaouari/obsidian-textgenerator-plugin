@@ -38,11 +38,11 @@ test4`,
 
 const default_values = {
   endpoint: "https://api.openai.com/v1/chat/completions",
-  handlebars_headers_in: `{
+  custom_header: `{
       "Content-Type": "application/json",
       authorization: "Bearer {{api_key}}"
 }`,
-  handlebars_body_in: `{
+  custom_body: `{
     model: "{{model}}",
     temperature: {{temperature}},
     top_p: {{top_p}},
@@ -151,7 +151,7 @@ export default class CustomProvider
 
         const decodedVal = decoder.decode(value, { stream: true });
 
-        const chunkValue = (0, eval)(
+        const chunkValue = await (0, eval)(
           params.sanatization_streaming || default_values.sanatization_streaming
         )(decodedVal);
 
@@ -245,8 +245,8 @@ export default class CustomProvider
           headers: JSON5.parse(
             "" +
             (await Handlebars.compile(
-              handlebarData.handlebars_headers_in ||
-              default_values.handlebars_headers_in
+              handlebarData.custom_header ||
+              default_values.custom_header
             )(handlebarData))
           ) as any,
 
@@ -254,8 +254,8 @@ export default class CustomProvider
             JSON5.parse(
               "" +
               (await Handlebars.compile(
-                handlebarData.handlebars_body_in ||
-                default_values.handlebars_body_in
+                handlebarData.custom_body ||
+                default_values.custom_body
               )(handlebarData))
             )
           ) as any,
@@ -329,8 +329,8 @@ export default class CustomProvider
           stream: handlebarData.stream,
           headers: JSON5.parse(
             await Handlebars.compile(
-              handlebarData.handlebars_headers_in ||
-              default_values.handlebars_headers_in
+              handlebarData.custom_header ||
+              default_values.custom_header
             )(handlebarData)
           ) as any,
 
@@ -338,8 +338,8 @@ export default class CustomProvider
             this.cleanConfig(
               JSON5.parse(
                 await Handlebars.compile(
-                  handlebarData.handlebars_body_in ||
-                  default_values.handlebars_body_in
+                  handlebarData.custom_body ||
+                  default_values.custom_body
                 )(handlebarData)
               )
             )

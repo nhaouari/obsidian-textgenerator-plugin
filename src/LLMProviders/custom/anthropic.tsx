@@ -36,12 +36,12 @@ test4`,
 
 const default_values = {
   endpoint: "https://api.anthropic.com/v1/complete",
-  handlebars_headers_in: `{
+  custom_header: `{
     "anthropic-version": "2023-06-01",
     "Content-Type": "application/json",
     "x-api-key":  "{{api_key}}"
 }`,
-  handlebars_body_in: `{
+  custom_body: `{
     model: "{{model}}",
     stream: {{stream}},
     max_tokens_to_sample: {{max_tokens}},
@@ -78,8 +78,8 @@ export default class AnthropicLegacyProvider
 
     const vars = useMemo(() => {
       return getHBValues(
-        `${config?.handlebars_headers_in} 
-        ${config?.handlebars_body_in}`
+        `${config?.custom_header} 
+        ${config?.custom_body}`
       ).filter((d) => !globalVars[d]);
     }, [global.trg]);
 

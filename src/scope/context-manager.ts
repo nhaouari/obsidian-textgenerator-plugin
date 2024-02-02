@@ -884,11 +884,11 @@ export default class ContextManager {
               cache?.frontmatter?.path_to_message_content,
           },
 
-          handlebars_body_in:
-            cache?.frontmatter?.body || cache?.frontmatter?.handlebars_body_in,
-          handlebars_headers_in:
+          custom_body:
+            cache?.frontmatter?.body || cache?.frontmatter?.custom_body,
+          custom_header:
             cache?.frontmatter?.headers ||
-            cache?.frontmatter?.handlebars_headers_in,
+            cache?.frontmatter?.custom_header,
 
           bodyParams: {
             ...cache?.frontmatter?.bodyParams,

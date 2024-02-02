@@ -693,4 +693,13 @@ export default class TextGeneratorPlugin extends Plugin {
 
     return null;
   }
+
+
+  getTextGenPath(path?: string) {
+    let basePath = this.settings.textGenPath?.length ? this.settings.textGenPath : this.defaultSettings.textGenPath;
+
+    if (!basePath.endsWith("/") && !path?.startsWith("/")) basePath += "/";
+
+    return `${basePath}${path}`
+  }
 }

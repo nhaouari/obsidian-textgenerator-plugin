@@ -369,8 +369,8 @@ export const IGNORE_IN_YAML: Record<string, true> = {
   // mapping
   bodyParams: true,
   reqParams: true,
-  handlebars_body_in: true,
-  handlebars_headers_in: true,
+  custom_body: true,
+  custom_header: true,
 };
 
 
