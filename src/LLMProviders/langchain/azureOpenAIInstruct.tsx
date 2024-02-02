@@ -37,7 +37,7 @@ export default class LangchainAzureOpenAIInstructProvider
       maxTokens: options.max_tokens,
       temperature: options.temperature,
       frequencyPenalty: options.frequency_penalty,
-      ...(+options.presence_penalty == null ? {} : { presencePenalty: +options.presence_penalty }),
+       ...(options.presence_penalty == null ? {} : { presencePenalty: +options.presence_penalty }),
       n: options.n,
       stop: options.stop,
       streaming: options.stream,
