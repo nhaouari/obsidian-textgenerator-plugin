@@ -3,7 +3,7 @@ import { useContext } from "react";
 
 import TextgeneratorPlugin from "../../../main";
 import { GlobalContext, GlobalType, defaultValues } from "./context";
-import { useToggle } from "usehooks-ts";
+import { useDebounce, useToggle } from "usehooks-ts";
 
 const event = new Event("triggerReloadGlobalReact-textgenerator");
 
@@ -12,7 +12,9 @@ export function GlobalProvider(props: {
   plugin: TextgeneratorPlugin;
 }) {
   const [loading, setLoading] = useState(defaultValues.loading);
-  const [trg, triggerReload] = useToggle();
+  const [_trg, triggerReload] = useToggle();
+
+  const trg = useDebounce(_trg, 80);
 
   useEffect(() => {
     if (!loading) return;
