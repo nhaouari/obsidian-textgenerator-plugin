@@ -12,6 +12,7 @@ import SettingItem from "#/ui/settings/components/item";
 import Input from "#/ui/settings/components/input";
 import useGlobal from "#/ui/context/global";
 import debug from "debug";
+import clsx from "clsx";
 
 const logger = debug("textgenerator:llmProvider:azureopenaiChat");
 
@@ -29,7 +30,9 @@ export default class LangchainAzureOpenAIChatProvider
   ): Partial<OpenAIChatInput & AzureOpenAIInput & BaseChatModelParams> {
     return this.cleanConfig({
       azureOpenAIApiKey: options.api_key,
-      azureOpenAIBasePath: options.otherOptions?.azureOpenAIBasePath,
+      azureOpenAIBasePath: options.otherOptions?.azureOpenAIBasePath?.endsWith?.("/")
+        ? options.otherOptions?.azureOpenAIBasePath.slice(0, -1)
+        : options.otherOptions?.azureOpenAIBasePath,
       azureOpenAIApiInstanceName:
         options.otherOptions?.azureOpenAIApiInstanceName,
       azureOpenAIApiDeploymentName:
@@ -80,7 +83,7 @@ export default class LangchainAzureOpenAIChatProvider
             setValue={async (value) => {
               config.api_key = value;
               global.triggerReload();
-              // TODO: it could use a debounce here
+
               global.plugin.encryptAllKeys();
               await global.plugin.saveSettings();
             }}
@@ -88,6 +91,7 @@ export default class LangchainAzureOpenAIChatProvider
         </SettingItem>
         <SettingItem
           name="Endpoint (optional)"
+          description={`ex: https:// [instanceName] .openai.azure.com /openai/deployments`}
           register={props.register}
           sectionId={props.sectionId}
         >
@@ -97,7 +101,7 @@ export default class LangchainAzureOpenAIChatProvider
             setValue={async (value) => {
               config.azureOpenAIBasePath = value;
               global.triggerReload();
-              // TODO: it could use a debounce here
+
               await global.plugin.saveSettings();
             }}
           />
@@ -106,6 +110,9 @@ export default class LangchainAzureOpenAIChatProvider
           name="Instance Name"
           register={props.register}
           sectionId={props.sectionId}
+          className={clsx({
+            "plug-tg-opacity-40 plug-tg-pointer-events-none": config.azureOpenAIBasePath
+          })}
         >
           <Input
             value={config.azureOpenAIApiInstanceName}
@@ -113,7 +120,7 @@ export default class LangchainAzureOpenAIChatProvider
             setValue={async (value) => {
               config.azureOpenAIApiInstanceName = value;
               global.triggerReload();
-              // TODO: it could use a debounce here
+
               await global.plugin.saveSettings();
             }}
           />
@@ -129,7 +136,7 @@ export default class LangchainAzureOpenAIChatProvider
             setValue={async (value) => {
               config.azureOpenAIApiDeploymentName = value;
               global.triggerReload();
-              // TODO: it could use a debounce here
+
               await global.plugin.saveSettings();
             }}
           />
@@ -145,7 +152,7 @@ export default class LangchainAzureOpenAIChatProvider
             setValue={async (value) => {
               config.model = value;
               global.triggerReload();
-              // TODO: it could use a debounce here
+
               await global.plugin.saveSettings();
             }}
           />
@@ -161,7 +168,7 @@ export default class LangchainAzureOpenAIChatProvider
             setValue={async (value) => {
               config.azureOpenAIApiVersion = value;
               global.triggerReload();
-              // TODO: it could use a debounce here
+
               await global.plugin.saveSettings();
             }}
           />

@@ -8,6 +8,7 @@ import SettingItem from "#/ui/settings/components/item";
 import Input from "#/ui/settings/components/input";
 import useGlobal from "#/ui/context/global";
 import debug from "debug";
+import clsx from "clsx";
 
 const logger = debug("textgenerator:llmProvider:azureopenaiInstruct");
 
@@ -24,7 +25,9 @@ export default class LangchainAzureOpenAIInstructProvider
   getConfig(options: LLMConfig): Partial<OpenAIInput & AzureOpenAIInput> {
     return this.cleanConfig({
       azureOpenAIApiKey: options.api_key,
-      azureOpenAIBasePath: options.otherOptions?.azureOpenAIBasePath,
+      azureOpenAIBasePath: options.otherOptions?.azureOpenAIBasePath?.endsWith?.("/")
+        ? options.otherOptions?.azureOpenAIBasePath.slice(0, -1)
+        : options.otherOptions?.azureOpenAIBasePath,
       azureOpenAIApiInstanceName:
         options.otherOptions?.azureOpenAIApiInstanceName,
       azureOpenAIApiDeploymentName:
@@ -38,7 +41,7 @@ export default class LangchainAzureOpenAIInstructProvider
       temperature: options.temperature,
       frequencyPenalty: +options.frequency_penalty || 0,
       presencePenalty: +options.presence_penalty || 0,
-       ...(options.presence_penalty == null ? {} : { presencePenalty: +options.presence_penalty }),
+      ...(options.presence_penalty == null ? {} : { presencePenalty: +options.presence_penalty }),
       n: options.n,
       stop: options.stop,
       streaming: options.stream,
@@ -75,7 +78,7 @@ export default class LangchainAzureOpenAIInstructProvider
             setValue={async (value) => {
               config.api_key = value;
               global.triggerReload();
-              // TODO: it could use a debounce here
+
               global.plugin.encryptAllKeys();
               await global.plugin.saveSettings();
             }}
@@ -91,8 +94,8 @@ export default class LangchainAzureOpenAIInstructProvider
             placeholder="Enter your API BasePath"
             setValue={async (value) => {
               config.azureOpenAIBasePath = value;
+
               global.triggerReload();
-              // TODO: it could use a debounce here
               await global.plugin.saveSettings();
             }}
           />
@@ -101,14 +104,17 @@ export default class LangchainAzureOpenAIInstructProvider
           name="Instance Name"
           register={props.register}
           sectionId={props.sectionId}
+          className={clsx({
+            "plug-tg-opacity-40 plug-tg-pointer-events-none": config.azureOpenAIBasePath
+          })}
         >
           <Input
             value={config.azureOpenAIApiInstanceName}
             placeholder="Enter your Instance name"
             setValue={async (value) => {
               config.azureOpenAIApiInstanceName = value;
+
               global.triggerReload();
-              // TODO: it could use a debounce here
               await global.plugin.saveSettings();
             }}
           />
@@ -123,8 +129,8 @@ export default class LangchainAzureOpenAIInstructProvider
             placeholder="Enter your Deployment name"
             setValue={async (value) => {
               config.azureOpenAIApiDeploymentName = value;
+
               global.triggerReload();
-              // TODO: it could use a debounce here
               await global.plugin.saveSettings();
             }}
           />
@@ -140,8 +146,8 @@ export default class LangchainAzureOpenAIInstructProvider
             placeholder="Enter your Model name"
             setValue={async (value) => {
               config.model = value;
+
               global.triggerReload();
-              // TODO: it could use a debounce here
               await global.plugin.saveSettings();
             }}
           />
@@ -156,8 +162,8 @@ export default class LangchainAzureOpenAIInstructProvider
             placeholder="Enter your Api version"
             setValue={async (value) => {
               config.azureOpenAIApiVersion = value;
+
               global.triggerReload();
-              // TODO: it could use a debounce here
               await global.plugin.saveSettings();
             }}
           />
