@@ -48,7 +48,7 @@
 		"@emotion/react": "^11",
 		"@google-ai/generativelanguage": "^1.0.0",
 		"@huggingface/inference": "^2.6.1",
-		"@langchain/google-genai": "^0.0.7",
+		"@langchain/google-genai": "^0.0.9",
 		"@mozilla/readability": "^0.4.4",
 		"@radix-ui/react-dropdown-menu": "^2.0.6",
 		"@radix-ui/react-slot": "^1.0.2",
