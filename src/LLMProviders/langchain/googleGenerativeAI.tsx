@@ -1,6 +1,6 @@
 import LangchainBase from "./base";
 
-import { GoogleGenerativeAIChatInput } from "@langchain/google-genai";
+import { ChatGoogleGenerativeAI, GoogleGenerativeAIChatInput } from "@langchain/google-genai";
 import React, { useId } from "react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import SettingItem from "#/ui/settings/components/item";
@@ -51,6 +51,7 @@ export default class LangchainChatGoogleGenerativeAIProvider
     });
   }
 
+
   async load() {
     const { ChatGoogleGenerativeAI } = await import("@langchain/google-genai");
     this.llmClass = ChatGoogleGenerativeAI;
@@ -62,7 +63,6 @@ export default class LangchainChatGoogleGenerativeAIProvider
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
       ...default_values
     });
-
 
     return (
       <>
@@ -76,14 +76,14 @@ export default class LangchainChatGoogleGenerativeAIProvider
             value={config.api_key || ""}
             setValue={async (value) => {
               config.api_key = value;
-              global.plugin.encryptAllKeys();
               global.triggerReload();
-              // TODO: it could use a debounce here
+
+              global.plugin.encryptAllKeys();
               await global.plugin.saveSettings();
             }}
           />
         </SettingItem>
-        <SettingItem
+        {/* <SettingItem
           name="Base Path"
           register={props.register}
           sectionId={props.sectionId}
@@ -94,11 +94,11 @@ export default class LangchainChatGoogleGenerativeAIProvider
             setValue={async (value) => {
               config.basePath = value;
               global.triggerReload();
-              // TODO: it could use a debounce here
+
               await global.plugin.saveSettings();
             }}
           />
-        </SettingItem>
+        </SettingItem> */}
         <ModelsHandler
           register={props.register}
           sectionId={props.sectionId}
