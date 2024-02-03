@@ -61,9 +61,8 @@ export class AutoSuggest {
     try {
       let prompt = `continue the follwing text:
 ${context.query}`;
-
-      try {
-        if (this.plugin.settings.autoSuggestOptions.customInstructEnabled) {
+      if (this.plugin.settings.autoSuggestOptions.customInstructEnabled) {
+        try {
           const templateContent = this.plugin.settings.autoSuggestOptions.customInstruct
             || this.plugin.defaultSettings.autoSuggestOptions.customInstruct;
 
@@ -78,8 +77,11 @@ ${context.query}`;
           const splittedTemplate = this.plugin.contextManager.splitTemplate(templateContent)
 
           prompt = await splittedTemplate.inputTemplate?.(templateContext);
+        } catch (err: any) {
+          logger(err);
+          console.error("error in custom instruct", err)
         }
-      } catch (err: any) { logger(err) }
+      }
 
       this.plugin.startProcessing(false);
 
@@ -87,7 +89,6 @@ ${context.query}`;
 
       if (autoSuggestOptions.customProvider && autoSuggestOptions.selectedProvider)
         await this.plugin.textGenerator.loadllm(autoSuggestOptions.selectedProvider)
-
       const re = await this.plugin.textGenerator.LLMProvider.generateMultiple(
         [{ role: "user", content: prompt }],
         {
@@ -100,10 +101,10 @@ ${context.query}`;
       );
 
       this.plugin.endProcessing(false);
-
       const suggestions = [...new Set(re)];
       return suggestions.map((r) => {
-        let label = r.trim();
+        console.log({ r })
+        let label = (r || "").trim();
         if (
           !this.checkLastSubstring(
             label,

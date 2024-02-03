@@ -3,9 +3,10 @@ import useGlobal from "../context/global";
 import clsx from "clsx";
 import Input from "../settings/components/input";
 import JSON5 from "json5"
-import { IconFileUpload, IconPackageExport, IconPackageImport } from "@tabler/icons-react";
+import { IconDatabaseImport, IconFileUpload, IconPackageExport, IconPackageImport, IconRestore } from "@tabler/icons-react";
 import { currentDate, extractJsonFromText, getCurrentTime } from "#/utils";
-export default function ExportImportHandler(props: { config: any, id: string, onImport: (data: any) => Promise<void> }) {
+import SettingItem from "../settings/components/item";
+export default function ExportImportHandler(props: { getConfig: () => any, id: string, onImport: (data: any) => Promise<void>, defaultConfig?: any }) {
     const global = useGlobal();
     const backupsDatasetId = useId();
 
@@ -28,29 +29,35 @@ export default function ExportImportHandler(props: { config: any, id: string, on
 
     const exportButtonDisabled = !selectedBackup?.length || !backups.includes(selectedBackup)
 
-    return <>
-        <div className="plug-tg-flex plug-tg-w-full plug-tg-justify-between plug-tg-items-center">
-            {/* <div></div> */}
-            <datalist id={backupsDatasetId}>
-                {[...backups].map(bu => <option key={bu} value={bu} />)}
-            </datalist>
 
+    return <>
+        <datalist id={backupsDatasetId}>
+            {[...backups].map(bu => <option key={bu} value={bu} />)}
+        </datalist>
+
+        <SettingItem
+            name="Config File"
+            description="Select Config file to be used"
+        >
             <Input
                 value={selectedBackup}
                 datalistId={backupsDatasetId}
-                placeholder="Config file"
+                placeholder="config.json.md"
                 setValue={async (value) => {
                     setSelectedBackup(value);
                 }}
             />
+        </SettingItem>
+        <div className="plug-tg-flex plug-tg-w-full plug-tg-justify-between plug-tg-items-center">
+            <div></div>
+            <div className="plug-tg-flex plug-tg-gap-2">
 
-            <div>
                 <button
                     className={clsx({
                         "plug-tg-btn-disabled plug-tg-opacity-70": exportButtonDisabled,
                         "plug-tg-cursor-pointer": !exportButtonDisabled,
                     })}
-                    disabled={exportButtonDisabled}
+                    disabled={importing || exportButtonDisabled}
 
                     onClick={async () => {
                         setError("");
@@ -68,9 +75,9 @@ export default function ExportImportHandler(props: { config: any, id: string, on
                         }
                         setImporting(false);
                     }}
-
-                ><IconPackageImport /></button>
+                ><IconDatabaseImport /></button>
                 <button
+
                     onClick={async () => {
                         setError("");
                         setExporting(true);
@@ -78,7 +85,7 @@ export default function ExportImportHandler(props: { config: any, id: string, on
 
                             await global.plugin.app.vault.adapter.mkdir(backupsDirectory);
 
-                            const config = { ...props.config };
+                            const config = { ...await props.getConfig() };
                             delete config.api_key;
                             const configAsString = `\`\`\`JSON
 ${JSON5.stringify(config, null, 2)}
@@ -96,15 +103,28 @@ ${JSON5.stringify(config, null, 2)}
                             setError(err?.message || err)
                         }
                         setExporting(false);
+                        global.triggerReload();
                     }}
                     className={clsx({
                         "plug-tg-btn-disabled plug-tg-loading": exporting
                     })}
                     disabled={exporting}
                 ><IconPackageExport /></button>
+
+                {!!props.defaultConfig &&
+                    <button
+                        className="plug-tg-cursor-pointer"
+                        onClick={async () => {
+                            setError("");
+                            await props.onImport({ ...props.defaultConfig })
+                        }}
+                    ><IconRestore /></button>
+                }
+
+                {/* <button><IconFileUpload /></button> */}
+
             </div>
         </div>
-        {/* <button><IconFileUpload /></button> */}
         <div>
             {error}
         </div>
