@@ -160,13 +160,6 @@ export default class DefaultCustomProvider
         </SettingItem>}
 
 
-        <ImportExportHandler
-          config={config}
-          id={props.self.id}
-          onImport={async (data) => {
-
-          }}
-        />
 
         <SettingItem
           name="Advance mode"
@@ -182,6 +175,17 @@ export default class DefaultCustomProvider
             }}
           />
         </SettingItem>
+
+
+        <ImportExportHandler
+          config={config}
+          id={props.self.id}
+          onImport={async (data) => {
+            for (const key in data) {
+              config[key] = data[key];
+            }
+          }}
+        />
 
 
         {showAdvanced && <>
