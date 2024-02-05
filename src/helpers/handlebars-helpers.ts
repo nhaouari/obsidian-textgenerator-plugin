@@ -594,8 +594,15 @@ export default function Helpersfn(self: ContextManager) {
           throw new Error("templatePath was not found in run command");
         }
 
+        const p = options.data.root.templatePath?.split("/");
+
+
         if (content.contains("run(")) {
-          const [packageId, templateId] = id.split("/")
+          const [packageId, templateId] = id.contains("/")
+            ? id.split("/")
+            : [p[p.length - 2], id];
+
+          console.log({ paths: self.plugin.textGenerator.templatePaths, packageId, templateId })
           const TemplateMetadata = self.getFrontmatter(
             self.getMetaData(self.plugin.textGenerator.templatePaths[packageId][templateId])
           );
