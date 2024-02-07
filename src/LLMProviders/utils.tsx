@@ -33,7 +33,7 @@ export function ModelsHandler(props: {
     const updateModels = async () => {
         setLoadingUpdate(true);
         try {
-            if (!global.plugin.settings.api_key.length) throw "Please provide a valid api key.";
+            if (!config.api_key && !global.plugin.settings.api_key) throw "Please provide a valid api key.";
 
             const reqParams = {
                 url: `${config.basePath || default_values.basePath}/models`,
