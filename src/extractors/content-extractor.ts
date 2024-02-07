@@ -62,7 +62,6 @@ export class ContentExtractor {
   constructor(app: App, plugin: TextGeneratorPlugin) {
     this.app = app;
     this.plugin = plugin;
-    console.log({ Extractors })
   }
 
   setExtractor(extractorName: ExtractorMethod) {

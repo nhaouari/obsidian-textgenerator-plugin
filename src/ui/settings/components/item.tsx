@@ -8,8 +8,8 @@ export default function SettingItem(props: {
   description?: string;
   children?: any;
   className?: string;
-  register: Register;
-  sectionId: string;
+  register?: Register;
+  sectionId?: string;
   tip?: string;
   textArea?: boolean;
 }) {

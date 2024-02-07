@@ -3,13 +3,13 @@ import useGlobal from "#/ui/context/global";
 import Dropdown from "#/ui/settings/components/dropdown";
 import Input from "#/ui/settings/components/input";
 import SettingItem from "#/ui/settings/components/item";
-import { IconGridDots, IconList, IconPencil, IconReload } from "@tabler/icons-react";
+import { IconList, IconPencil, IconReload } from "@tabler/icons-react";
 import clsx from "clsx";
-import { request } from "obsidian";
 import React, { useState, useEffect, useId } from "react";
 import LLMProviderInterface from "./interface";
 import JSON5 from "json5";
-import { currentDate, getCurrentTime } from "#/utils";
+import { currentDate } from "#/utils";
+import { request } from "obsidian";
 
 export function ModelsHandler(props: {
     register: Parameters<LLMProviderInterface["RenderSettings"]>[0]["register"];

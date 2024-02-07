@@ -4,6 +4,7 @@ import { AsyncReturnType, Message } from "../../types";
 import debug from "debug";
 import React, { useMemo } from "react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
+import { default_values as OPENAI_default_values } from "./custom";
 import { RequestUrlParam, requestUrl } from "obsidian";
 import get from "lodash.get";
 import { Handlebars } from "../../helpers/handlebars-helpers";
@@ -36,48 +37,7 @@ test4`,
 ];
 
 
-const default_values = {
-  endpoint: "https://api.openai.com/v1/chat/completions",
-  custom_header: `{
-      "Content-Type": "application/json",
-      authorization: "Bearer {{api_key}}"
-}`,
-  custom_body: `{
-    model: "{{model}}",
-    temperature: {{temperature}},
-    top_p: {{top_p}},
-    frequency_penalty: {{frequency_penalty}},
-    presence_penalty: {{presence_penalty}},
-    max_tokens: {{max_tokens}},
-    n: {{n}},
-    stream: {{stream}},
-	  stop: "{{stop}}",
-    messages: {{stringify messages}}
-}`,
-  path_to_choices: "choices",
-  path_to_message_content: "message.content",
-  path_to_error_message: "error.message",
-  sanatization_streaming: `(chunk) => {
-    let resultText = "";
-    const lines = chunk.split("\\ndata: ");
-  
-    const parsedLines = lines
-      .map((line) => line.replace(/^data: /, "").trim()) // Remove the "data: " prefix
-      .filter((line) => line !== "" && line !== "[DONE]") // Remove empty lines and "[DONE]"
-      .map((line) => JSON5.parse(line)); // Parse the JSON string
-  
-    for (const parsedLine of parsedLines) {
-      const { choices } = parsedLine;
-      const { delta } = choices[0];
-      const { content } = delta;
-      // Update the UI with the new content
-      if (content) {
-        resultText += content;
-      }
-    }
-    return resultText;
-  }`,
-};
+const default_values = OPENAI_default_values;
 
 export type CustomConfig = Record<keyof typeof default_values, string>;
 
@@ -93,9 +53,8 @@ export default class CustomProvider
       signal?: AbortSignal;
       stream?: boolean;
       onToken?: (token: string, first: boolean) => Promise<void>;
-      path_to_choices?: string;
-      path_to_error_message?: string;
       sanatization_streaming: string;
+      sanatization_response: string;
       CORSBypass?: boolean;
     }
   ) {
@@ -180,21 +139,9 @@ export default class CustomProvider
         resJson = resText;
       }
 
-      if (k.status >= 300) {
-        const err = get(
-          resJson,
-          params.path_to_error_message || default_values.path_to_error_message
-        );
-        console.error(err, { resJson });
-        throw err || JSON.stringify(resJson);
-      }
-
-      return (
-        (get(
-          resJson,
-          params.path_to_choices || default_values.path_to_choices
-        ) as object[]) || resJson
-      );
+      return await (0, eval)(
+        params.sanatization_response || default_values.sanatization_response
+      )(resJson, k)
     }
   }
 
@@ -260,11 +207,10 @@ export default class CustomProvider
             )
           ) as any,
 
-          path_to_choices:
-            handlebarData.path_to_choices || default_values.path_to_choices,
           sanatization_streaming:
-            handlebarData.sanatization_streaming ||
-            default_values.sanatization_streaming,
+            handlebarData.sanatization_streaming || default_values.sanatization_streaming,
+          sanatization_response:
+            handlebarData.sanatization_response || default_values.sanatization_response,
           CORSBypass: handlebarData.CORSBypass,
           async onToken(token: string) {
             onToken?.(token, first);
@@ -279,8 +225,7 @@ export default class CustomProvider
           resultContent =
             (get(
               choices?.[0] || choices,
-              handlebarData.path_to_message_content ||
-              default_values.path_to_message_content
+              "content"
             ) as string) || choices;
         }
 
@@ -345,8 +290,7 @@ export default class CustomProvider
             )
           ) as any,
 
-          path_to_choices:
-            handlebarData.path_to_choices || default_values.path_to_choices,
+          sanatization_response: handlebarData.sanatization_response,
           sanatization_streaming:
             handlebarData.sanatization_streaming ||
             default_values.sanatization_streaming,
@@ -356,14 +300,12 @@ export default class CustomProvider
           ? (res as object[])?.map((o) =>
             get(
               o,
-              handlebarData.path_to_message_content ||
-              default_values.path_to_message_content
+              "content"
             )
           )
           : get(
             res,
-            handlebarData.path_to_message_content ||
-            default_values.path_to_message_content
+            "content"
           );
 
         logger("generateMultiple end", {

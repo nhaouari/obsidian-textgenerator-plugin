@@ -11,6 +11,7 @@ import clsx from "clsx";
 import CustomProvider from "./base";
 import JSON5 from "json5";
 import ImportExportHandler from "#/ui/components/exportImport";
+import { UnProviderSlugs } from "..";
 
 const logger = debug("textgenerator:CustomProvider");
 
@@ -38,7 +39,7 @@ test4`,
   },
 ];
 
-const default_values = {
+export const default_values = {
   endpoint: "https://api.openai.com/v1/chat/completions",
   custom_header: `{
     "Content-Type": "application/json",
@@ -65,28 +66,40 @@ const default_values = {
   stream: false,
   temperature: 0.7,
 
-  path_to_choices: "choices",
-  path_to_message_content: "message.content",
-  path_to_error_message: "error.message",
   sanatization_streaming: `(chunk) => {
-    let resultText = "";
-    const lines = chunk.split("\\ndata: ");
-  
-    const parsedLines = lines
-      .map((line) => line.replace(/^data: /, "").trim()) // Remove the "data: " prefix
-      .filter((line) => line !== "" && line !== "[DONE]") // Remove empty lines and "[DONE]"
-      .map((line) => JSON5.parse(line)); // Parse the JSON string
-  
-    for (const parsedLine of parsedLines) {
-      const { choices } = parsedLine;
-      const { delta } = choices[0];
-      const { content } = delta;
-      // Update the UI with the new content
-      if (content) {
-        resultText += content;
-      }
+  let resultText = "";
+  const lines = chunk.split("\\ndata: ");
+
+  const parsedLines = lines
+    .map((line) => line.replace(/^data: /, "").trim()) // Remove the "data: " prefix
+    .filter((line) => line !== "" && line !== "[DONE]") // Remove empty lines and "[DONE]"
+    .map((line) => JSON.parse(line)); // Parse the JSON string
+
+  for (const parsedLine of parsedLines) {
+    const { choices } = parsedLine;
+    const { delta } = choices[0];
+    const { content } = delta;
+    // Update the UI with the new content
+    if (content) {
+      resultText += content;
     }
-    return resultText;
+  }
+  return resultText;
+}`,
+  sanatization_response: `async (data, res)=>{
+  // catch error
+  if (res.status >= 300) {
+    const err = data?.error?.message || JSON.stringify(data);
+    throw err;
+  }
+
+  // get choices
+  const choices = data.choices.map(c=> c.message);
+
+  // the return object should be in the format of 
+  // { content: string }[] 
+  // if there's only one response, put it in the array of choices.
+  return choices;
 }`,
 };
 
@@ -124,8 +137,6 @@ export default class DefaultCustomProvider
 
     return (
       <>
-
-
         <SettingItem
           name="Endpoint"
           register={props.register}
@@ -178,12 +189,27 @@ export default class DefaultCustomProvider
 
 
         <ImportExportHandler
-          config={config}
-          id={props.self.id}
+          defaultConfig={default_values}
+          id="llm"
+          getConfig={() => {
+            const cfg = { ...config };
+
+            if (config.CORSBypass || !config.streamable) {
+              delete cfg.sanatization_streaming
+            }
+
+            return config;
+          }}
           onImport={async (data) => {
+            const wasShownAdvanced = showAdvanced;
+            setShowAdvanced(false);
             for (const key in data) {
               config[key] = data[key];
             }
+            global.triggerReload();
+            await global.plugin.saveSettings();
+            if (wasShownAdvanced)
+              setShowAdvanced(true);
           }}
         />
 
@@ -298,86 +324,23 @@ export default class DefaultCustomProvider
 
           <div className="plug-tg-w-full plug-tg-pb-8"></div>
 
-          <SettingItem
-            name="Path to choices(Array) from response"
-            register={props.register}
-            sectionId={props.sectionId}
-          >
-            <Input
-              value={config.path_to_choices || default_values.path_to_choices}
-              placeholder="Enter your path to choices"
-              setValue={async (value) => {
-                config.path_to_choices = value;
-                global.triggerReload();
-                // TODO: it could use a debounce here
-                await global.plugin.saveSettings();
-              }}
-            />
-          </SettingItem>
-          <div className="plug-tg-opacity-70">
-            Path to the choices Array that has the messages
-          </div>
-          <SettingItem
-            name="Path to message content(String) from choice object"
-            register={props.register}
-            sectionId={props.sectionId}
-          >
-            <Input
+          <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
+            <div className="plug-tg-font-bold">Response Sanatization:</div>
+            <textarea
+              placeholder="Textarea will autosize to fit the content"
               value={
-                config.path_to_message_content ||
-                default_values.path_to_message_content
+                config.sanatization_response ||
+                default_values.sanatization_response
               }
-              placeholder="Enter your path to message content"
-              setValue={async (value) => {
-                config.path_to_message_content = value;
+              onChange={async (e) => {
+                config.sanatization_response = e.target.value;
                 global.triggerReload();
-                // TODO: it could use a debounce here
                 await global.plugin.saveSettings();
               }}
+              spellCheck={false}
+              rows={20}
             />
-          </SettingItem>
-          <div className="plug-tg-opacity-70">
-            Path from one of the choices to the content(if left empty it will
-            assume that the choices is an array of strings)
           </div>
-
-          <SettingItem
-            name="Path to error message from body"
-            description="incase of an error (optional)"
-            register={props.register}
-            sectionId={props.sectionId}
-          >
-            <Input
-              value={config.path_to_error_message}
-              placeholder={default_values.path_to_error_message}
-              setValue={async (value) => {
-                config.path_to_error_message = value;
-                global.triggerReload();
-                // TODO: it could use a debounce here
-                await global.plugin.saveSettings();
-              }}
-            />
-          </SettingItem>
-          <div className="plug-tg-opacity-70">
-            Path to Error message from body object, incase of error, it will show it properly
-          </div>
-
-          <SettingItem
-            name="CORS Bypass"
-            description="enable this only if you get blocked by CORS, this will result in failure in some functions"
-            register={props.register}
-            sectionId={props.sectionId}
-          >
-            <Input
-              type="checkbox"
-              value={"" + config.CORSBypass}
-              setValue={async (val) => {
-                config.CORSBypass = val == "true";
-                await global.plugin.saveSettings();
-                global.triggerReload();
-              }}
-            />
-          </SettingItem>
           <SettingItem
             name="Streamable"
             description={
@@ -404,10 +367,26 @@ export default class DefaultCustomProvider
               }}
             />
           </SettingItem>
+          <SettingItem
+            name="CORS Bypass"
+            description="enable this only if you get blocked by CORS, this will result in failure in some functions"
+            register={props.register}
+            sectionId={props.sectionId}
+          >
+            <Input
+              type="checkbox"
+              value={"" + config.CORSBypass}
+              setValue={async (val) => {
+                config.CORSBypass = val == "true";
+                await global.plugin.saveSettings();
+                global.triggerReload();
+              }}
+            />
+          </SettingItem>
           {!config.CORSBypass && config.streamable && (
             <>
               <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
-                <div className="plug-tg-font-bold">Sanatization(Streaming) function:</div>
+                <div className="plug-tg-font-bold">Stream Sanatization:</div>
                 <textarea
                   placeholder="Textarea will autosize to fit the content"
                   value={
