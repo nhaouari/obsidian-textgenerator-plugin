@@ -205,7 +205,7 @@ export default function ConsideredContextSetting(props: {
         id={sectionId}
       >
         <SettingItem
-          name="{{Context}} Template"
+          name="{{context}} Variable Template"
           description="Template for {{context}} variable"
           register={props.register}
           sectionId={sectionId}

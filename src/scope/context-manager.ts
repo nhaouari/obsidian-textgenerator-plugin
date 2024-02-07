@@ -120,7 +120,7 @@ export default class ContextManager {
       );
 
       // take context
-      let context = await getContextAsString(options as any, contextTemplate);
+      let context = options._variables["context"] ? await getContextAsString(options as any, contextTemplate) : "";
 
       if (props.insertMetadata) {
         const frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document
@@ -282,7 +282,7 @@ export default class ContextManager {
       contextTemplate + templateContent
     );
 
-    const context = await getContextAsString(contextObj as any, contextTemplate);
+    const context = contextObj._variables["context"] ? await getContextAsString(contextObj as any, contextTemplate) : "";
 
     const selection = contextObj.selection;
     const selections = contextObj.selections;
@@ -365,13 +365,13 @@ export default class ContextManager {
       mentions?: AsyncReturnType<typeof this.getMentions>
       extractions?: AsyncReturnType<typeof this.getExtractions>;
       keys?: AsyncReturnType<typeof this.plugin.getApiKeys>;
-    } = {};
+      _variables: Record<string, true>;
+    } = {
+      _variables: {}
+    };
 
-    const variables = this.getHBVariablesOfTemplate(contextTemplate || "") || [];
-    const vars: Record<string, true> = {};
-    variables.forEach((v) => {
-      vars[v] = true;
-    });
+    const vars = this.getHBVariablesObjectOfTemplate(contextTemplate || "") || {};
+    context["_variables"] = vars;
 
     const title = vars["title"] || vars["mentions"] ?
       (filePath
@@ -1027,6 +1027,18 @@ export default class ContextManager {
     }
 
     return Array.from(vars.values())
+  }
+
+  getHBVariablesObjectOfTemplate(...sections: (string | undefined)[]) {
+    const vars: Record<string, true> = {};
+
+    for (const section of sections) {
+      for (const v of getHBValues(section || "")) {
+        vars[v] = true
+      }
+    }
+
+    return vars
   }
 
 

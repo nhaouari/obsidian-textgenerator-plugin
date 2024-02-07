@@ -217,7 +217,7 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           </SettingItem>
 
           <SettingItem
-            name="Enable auto-suggest Instruct"
+            name="Custom auto-suggest Prompt"
             description={"You can customize auto-suggest prompt"}
             register={props.register}
             sectionId={sectionId}
@@ -237,7 +237,6 @@ export default function AutoSuggestSetting(props: { register: Register }) {
             <>
               <SettingItem
                 name=""
-                description=""
                 register={props.register}
                 sectionId={sectionId}
                 textArea

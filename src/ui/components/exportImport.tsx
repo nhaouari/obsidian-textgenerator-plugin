@@ -102,11 +102,41 @@ ${JSON5.stringify(config, null, 2)}
                     })}
                     disabled={exporting}
                 ><IconPackageExport /></button>
+                <button onClick={async () => {
+                    const content = await selectJSONMDFile();
+                    console.log(content)
+                }}><IconFileUpload /></button>
             </div>
         </div>
-        {/* <button><IconFileUpload /></button> */}
+
         <div>
             {error}
         </div>
     </>
+}
+
+function selectJSONMDFile(): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json.md';
+
+        input.onchange = (event) => {
+            // @ts-ignore
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = () => {
+                resolve(reader.result as string);
+            };
+
+            reader.onerror = () => {
+                reject(reader.error);
+            };
+
+            reader.readAsText(file);
+        };
+
+        input.click();
+    });
 }

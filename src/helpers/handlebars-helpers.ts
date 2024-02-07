@@ -570,7 +570,7 @@ export default function Helpersfn(self: ContextManager) {
       let content = await options?.fn?.(this) as string || ""
 
       const p = options.data.root.templatePath?.split("/");
-      const parentPackageId = p[p.length - 2];
+      const parentPackageId = p?.[p?.length - 2] || "default";
 
       const gen = async (templateContent: string, metadata: any) => {
         return await self.plugin.textGenerator.gen(templateContent, {
