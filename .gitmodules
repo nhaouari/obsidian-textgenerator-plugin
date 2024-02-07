@@ -1,3 +1,3 @@
 [submodule "src/lib/models"]
 	path = src/lib/models
-	url = https://github.com/youwriteai/models.git
+	url = https://github.com/text-gen/models.git
