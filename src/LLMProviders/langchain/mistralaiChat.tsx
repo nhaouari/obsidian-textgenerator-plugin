@@ -21,9 +21,10 @@ export default class LangchainMistralAIChatProvider
   extends LangchainBase
   implements LLMProviderInterface {
 
-  static slug = "mistralAIChat" as const;
   static provider = "Langchain" as const;
   static id = "MistralAI Chat (Langchain)" as const;
+  static slug = "mistralAIChat" as const;
+  static displayName: string = "MistralAI Chat";
 
   llmPredict = false;
   legacyN: boolean = true;
@@ -38,6 +39,10 @@ export default class LangchainMistralAIChatProvider
     "HTTP-Referer": null,
     "X-Title": null,
   }
+
+  id = LangchainMistralAIChatProvider.id;
+  provider = LangchainMistralAIChatProvider.provider;
+  originalId = LangchainMistralAIChatProvider.id;
 
   //   getLLM(options: LLMConfig) {
   //     return new Ollama({
@@ -70,8 +75,6 @@ export default class LangchainMistralAIChatProvider
     } as Partial<OpenAIChatInput>);
   }
 
-  provider = LangchainMistralAIChatProvider.provider;
-  id = LangchainMistralAIChatProvider.id;
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
 
@@ -105,7 +108,7 @@ export default class LangchainMistralAIChatProvider
         <ModelsHandler
           register={props.register}
           sectionId={props.sectionId}
-          llmProviderId={id}
+          llmProviderId={props.self.originalId || id}
           default_values={default_values}
         />
         <SettingItem

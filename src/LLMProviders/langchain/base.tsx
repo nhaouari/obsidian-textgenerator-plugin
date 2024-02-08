@@ -16,23 +16,33 @@ import { ContextTemplate } from "#/scope/context-manager";
 import { PromptTemplate } from "langchain/prompts";
 import { TypedPromptInputValues } from "langchain/dist/prompts/base";
 import { chains, splitters } from "#/lib/langchain";
+import { BaseMessageChunk } from "langchain/schema";
 
 const logger = debug("textgenerator:LangchainProvider");
 
 export default class LangchainProvider
   extends BaseProvider
   implements LLMProviderInterface {
-  streamable = true;
+  static id = "default (Langchain)";
+  static slug = "default" as any;
+  static provider = "Langchain";
+  static displayName: string = "Langchain LLM";
+
   /** generate candidates in parallel instead of sending the variable n */
   legacyN = false;
-  id = "default";
-  static slug = "default" as any;
-  llmPredict = false;
-  provider = "Langchain";
-  static provider = "Langchain";
+
+  /** You can change the default headers here */
+  defaultHeaders?: Record<string, string | null>
+
   llmClass: any;
 
-  defaultHeaders?: Record<string, string | null>
+
+  llmPredict = false;
+  streamable = true;
+
+  provider = LangchainProvider.provider;
+  id = LangchainProvider.id;
+  originalId = LangchainProvider.id;
 
   getConfig(options: LLMConfig) {
     return this.cleanConfig({
@@ -176,8 +186,10 @@ export default class LangchainProvider
 
           result = res.text;
         } else {
+          let r: any;
+          let res: BaseMessageChunk = {} as any;
           if (reqParams.llmPredict || this.llmPredict)
-            result = await (llm as any as ChatOpenAI).predict(
+            r = await (llm as any as ChatOpenAI).invoke(
               messages.length > 1
                 ? // user: test1
                 // assistant: test2
@@ -190,26 +202,34 @@ export default class LangchainProvider
               {
                 signal: params.requestParams?.signal || undefined,
                 ...this.getReqOptions(params),
+
+                callbacks: llmFuncs
                 // options: {
                 //   body: params.bodyParams,
                 // },
               },
-              llmFuncs
+
             )
-          else {
-            const res = (
-              await llm.predictMessages(
+          else
+            r = (
+              await (llm as any as ChatOpenAI).invoke(
                 mapMessagesToLangchainMessages(messages),
                 {
                   signal: params.requestParams?.signal || undefined,
-                },
-                llmFuncs
+                  ...this.getReqOptions(params),
+                  callbacks: llmFuncs
+                }
               )
             );
 
-            // @ts-ignore
+          if (typeof r == "string")
+            res.content = r;
+          else res = r;
+
+          if (typeof res.content == "string")
             result = res.content;
-          }
+          else
+            result = res.content.map(c => c.type == "image_url" ? `![${c.image_url}]` : c.text).join("\n")
         }
 
         // console.log("used Tokens: ", { allTokens });

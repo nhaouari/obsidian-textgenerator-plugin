@@ -11,7 +11,6 @@ import clsx from "clsx";
 import CustomProvider from "./base";
 import JSON5 from "json5";
 import ImportExportHandler from "#/ui/components/exportImport";
-import { UnProviderSlugs } from "..";
 
 const logger = debug("textgenerator:CustomProvider");
 
@@ -105,16 +104,18 @@ export const default_values = {
 
 export type CustomConfig = Record<keyof typeof default_values, string>;
 
-const id = "Default (Custom)" as const;
 export default class DefaultCustomProvider
   extends CustomProvider
   implements LLMProviderInterface {
   streamable = true;
-  id = id;
-  static slug = "custom" as const;
-  static id = id;
-  provider = "Custom";
   static provider = "Custom";
+  static id = "Default (Custom)" as const;
+  static slug = "custom" as const;
+  static displayName: string = "Custom";
+
+  provider = DefaultCustomProvider.provider;
+  id = DefaultCustomProvider.id;
+  originalId = DefaultCustomProvider.id;
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
 

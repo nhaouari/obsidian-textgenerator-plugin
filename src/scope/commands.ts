@@ -6,7 +6,6 @@ import { SetMaxTokens } from "../ui/settings/components/set-max-tokens";
 import { TextExtractorTool } from "../ui/text-extractor-tool";
 
 import { SetLLM } from "../ui/settings/components/set-llm";
-import { LLMProviderRegistery } from "../LLMProviders";
 
 import debug from "debug";
 import { VIEW_TOOL_ID } from "#/ui/tool";
@@ -399,7 +398,7 @@ export default class Commands {
               console.log(selectedLLMName);
               if (!selectedLLMName) return;
 
-              const llm = LLMProviderRegistery.get(selectedLLMName);
+              const llm = this.plugin.textGenerator.LLMRegestry.get(selectedLLMName);
               if (llm) {
                 this.plugin.settings.selectedProvider = selectedLLMName;
               }

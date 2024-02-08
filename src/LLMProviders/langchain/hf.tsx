@@ -4,7 +4,6 @@ import LLMProviderInterface, { LLMConfig } from "../interface";
 import SettingItem from "#/ui/settings/components/item";
 import useGlobal from "#/ui/context/global";
 import { IconExternalLink } from "@tabler/icons-react";
-import { useToggle } from "usehooks-ts";
 import Input from "#/ui/settings/components/input";
 import { BaseLLMParams } from "langchain/llms/base";
 import type { HFInput } from "langchain/llms/hf";
@@ -12,17 +11,20 @@ import debug from "debug";
 
 const logger = debug("textgenerator:llmProvider:hf");
 
-const id = "Huggingface (Langchain)" as const;
 export default class LangchainHFProvider
   extends LangchainBase
   implements LLMProviderInterface {
-  id = id;
-  static id = id;
-  static slug = "hf" as const;
-  streamable = false;
-  provider = "Langchain";
+
   static provider = "Langchain";
+  static id = "Huggingface (Langchain)" as const;
+  static slug = "hf" as const;
+  static displayName: string = "Huggingface";
+
   llmPredict = true;
+  streamable = false;
+  provider = LangchainHFProvider.provider;
+  id = LangchainHFProvider.id;
+  originalId = LangchainHFProvider.id;
   getConfig(options: LLMConfig): Partial<HFInput & BaseLLMParams> {
     console.log(options);
     return this.cleanConfig({
@@ -58,6 +60,7 @@ export default class LangchainHFProvider
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
 
+    const id = props.self.id;
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {});
     return (
       <>

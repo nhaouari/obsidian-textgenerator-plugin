@@ -102,6 +102,7 @@ Title: {{title}}
     ImageExtractor: true,
   },
   displayErrorInEditor: false,
+  LLMProviderProfiles: {},
   LLMProviderOptions: {},
   LLMProviderOptionsKeysHashed: {},
 };

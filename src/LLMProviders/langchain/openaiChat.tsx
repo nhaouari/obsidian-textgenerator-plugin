@@ -19,14 +19,15 @@ const default_values = {
 
 export default class LangchainOpenAIChatProvider extends LangchainBase implements LLMProviderInterface {
   /** for models to know what provider is that, for example if this class is being extended. and the id changes. */
-  originalId = "OpenAI Chat (Langchain)" as const;
 
   static provider = "Langchain";
   static id = "OpenAI Chat (Langchain)" as const;
   static slug = "openAIChat" as const;
+  static displayName: string = "OpenAI Chat";
 
   id = LangchainOpenAIChatProvider.id;
   provider = LangchainOpenAIChatProvider.provider;
+  originalId = LangchainOpenAIChatProvider.id;
   async load() {
     const { ChatOpenAI } = await import("langchain/chat_models/openai");
     this.llmClass = ChatOpenAI;
@@ -42,7 +43,6 @@ export default class LangchainOpenAIChatProvider extends LangchainBase implement
     const global = useGlobal();
 
     const id = props.self.id;
-
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
       ...default_values,
     });

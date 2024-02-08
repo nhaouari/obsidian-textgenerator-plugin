@@ -16,15 +16,18 @@ import clsx from "clsx";
 
 const logger = debug("textgenerator:llmProvider:azureopenaiChat");
 
-const id = "Azure OpenAI Chat (Langchain)" as const;
 export default class LangchainAzureOpenAIChatProvider
   extends LangchainBase
   implements LLMProviderInterface {
-  id = id;
-  static id = id;
-  static slug = "azureOpenaiChat" as const;
-  provider = "Langchain";
+
   static provider = "Langchain";
+  static id = "Azure OpenAI Chat (Langchain)" as const;
+  static slug = "azureOpenaiChat" as const;
+  static displayName: string = "Azure OpenAI Chat";
+
+  provider = LangchainAzureOpenAIChatProvider.provider;
+  id = LangchainAzureOpenAIChatProvider.id;
+  originalId = LangchainAzureOpenAIChatProvider.id;
   getConfig(
     options: LLMConfig
   ): Partial<OpenAIChatInput & AzureOpenAIInput & BaseChatModelParams> {
@@ -67,6 +70,8 @@ export default class LangchainAzureOpenAIChatProvider
 
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
+
+    const id = props.self.id;
 
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {});
 

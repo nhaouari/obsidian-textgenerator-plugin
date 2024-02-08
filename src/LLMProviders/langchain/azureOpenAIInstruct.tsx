@@ -12,16 +12,19 @@ import clsx from "clsx";
 
 const logger = debug("textgenerator:llmProvider:azureopenaiInstruct");
 
-const id = "Azure OpenAI Instruct (Langchain)" as const;
 export default class LangchainAzureOpenAIInstructProvider
   extends LangchainBase
   implements LLMProviderInterface {
-  id = id;
-  static id = id;
-  static slug = "azureOpenaiInstruct" as const;
-  provider = "Langchain";
-  llmPredict = true;
   static provider = "Langchain";
+  static id = "Azure OpenAI Instruct (Langchain)" as const;
+  static slug = "azureOpenaiInstruct" as const;
+  static displayName: string = "Azure OpenAI Instruct";
+
+  llmPredict = true;
+  provider = LangchainAzureOpenAIInstructProvider.provider;
+  id = LangchainAzureOpenAIInstructProvider.id;
+  originalId = LangchainAzureOpenAIInstructProvider.id;
+
   getConfig(options: LLMConfig): Partial<OpenAIInput & AzureOpenAIInput> {
     return this.cleanConfig({
       azureOpenAIApiKey: options.api_key,
@@ -62,6 +65,8 @@ export default class LangchainAzureOpenAIInstructProvider
 
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
+
+    const id = props.self.id;
 
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {});
 

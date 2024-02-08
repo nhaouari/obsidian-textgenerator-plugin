@@ -1,5 +1,3 @@
-import ProviderBase from "./base";
-
 import CustomProvider from "./custom/custom";
 import AnthropicCustomProvider from "./custom/anthropic";
 
@@ -15,12 +13,10 @@ import LangchainPalmProvider from "./langchain/palm";
 import LangchainChatGoogleGenerativeAIProvider from "./langchain/googleGenerativeAI";
 // import LangchainReplicaProvider from "./langchain/replica"
 
-import LLMProviderRegistry from "./registery";
-
 import { LOCClone1, LOCClone2 } from "./langchain/clones";
 
 
-const providers = [
+export const defaultProviders = [
   // openai
   LangchainOpenAIChatProvider,
   LangchainOpenAIInstructProvider,
@@ -61,30 +57,14 @@ const providers = [
   CustomProvider,
 ];
 
-export type llmType = (typeof providers)[number]["id"];
-export type llmSlugType = (typeof providers)[number]["slug"];
 
-const DefaultProviders: Record<llmType, (typeof providers)[number]> = {} as any;
-
-/** to get llm from slug */
-export const ProviderSlugs: Partial<Record<llmSlugType, llmType>> = {};
-/** to get llm slug */
-export const UnProviderSlugs: Record<string, llmSlugType> = {};
-
-export const ProviderSlugsList: llmSlugType[] = [];
-
-for (const pvrd of providers) {
-  DefaultProviders[pvrd.id] = pvrd;
-  if (pvrd.slug) {
-    ProviderSlugs[pvrd.slug] = pvrd.id;
-    UnProviderSlugs[pvrd.id] = pvrd.slug;
-    ProviderSlugsList.push(pvrd.slug);
-  }
-}
-
+export type llmType = (typeof defaultProviders)[number]["id"];
+export type llmSlugType = (typeof defaultProviders)[number]["slug"];
 export type LLMProviderType = llmType
 
-export const LLMProviderRegistery = new LLMProviderRegistry<ProviderBase>(
-  DefaultProviders as any,
-  ProviderSlugs
-);
+export const defaultProvidersMap: Record<any, (typeof defaultProviders)[number]> = {} as any;
+
+for (const llm of defaultProviders) {
+  defaultProvidersMap[llm.id] = llm;
+}
+

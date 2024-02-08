@@ -16,14 +16,18 @@ const id = "Replica (Langchain)" as const;
 export default class LangchainReplicaProvider
   extends LangchainBase
   implements LLMProviderInterface {
-  id = id;
+
+  static provider = "Langchain";
   static id = id;
+  static slug = "replica" as const;
+  static displayName: string = "Replica";
+
   streamable = false;
   llmPredict = true;
-  provider = "Langchain";
-  static provider = "Langchain";
-  static slug = "replica" as const;
 
+  id = LangchainReplicaProvider.id;
+  provider = LangchainReplicaProvider.provider;
+  originalId = LangchainReplicaProvider.id;
   getConfig(options: LLMConfig): Partial<ReplicateInput & BaseLLMParams> {
     console.log(options);
     return this.cleanConfig({
@@ -44,6 +48,7 @@ export default class LangchainReplicaProvider
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
 
+    const id = props.self.id;
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {});
     return (
       <>

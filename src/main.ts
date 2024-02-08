@@ -5,8 +5,6 @@ import {
   Notice,
   Plugin,
   MarkdownView,
-  MarkdownRenderer,
-  MarkdownPostProcessorContext,
   getIcon,
   TFile,
   Platform,
@@ -47,7 +45,6 @@ import VersionManager from "./scope/versionManager";
 
 import { registerAPI } from "@vanakat/plugin-api";
 import { PlaygroundView, VIEW_Playground_ID } from "./ui/playground";
-import { UnProviderSlugs } from "./LLMProviders";
 import ContentManagerCls from "./scope/content-manager";
 import ContextManager from "./scope/context-manager";
 import TGBlock from "./services/tgBlock";
@@ -101,7 +98,7 @@ export default class TextGeneratorPlugin extends Plugin {
       // Register Services
       // text generator
       this.textGenerator = new TextGenerator(this.app, this);
-      await this.textGenerator.setup();
+      await this.textGenerator.load();
 
       // auto suggest
       if (this.settings.autoSuggestOptions?.isEnabled)
@@ -632,7 +629,7 @@ export default class TextGeneratorPlugin extends Plugin {
     const keys: Record<string, string | undefined> = {};
     for (const k in this.settings.LLMProviderOptions) {
       if (Object.prototype.hasOwnProperty.call(this.settings.LLMProviderOptions, k)) {
-        keys[UnProviderSlugs[k]] = this.settings.LLMProviderOptions[k]?.api_key;
+        keys[this.textGenerator.LLMRegestry.UnProviderSlugs[k]] = this.settings.LLMProviderOptions[k]?.api_key;
       }
     }
     return keys;

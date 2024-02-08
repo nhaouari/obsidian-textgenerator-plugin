@@ -44,7 +44,9 @@ export default function SettingItem(props: {
         <div>{props.name}</div>
         <div className="plug-tg-text-[8px] md:plug-tg-text-xs plug-tg-opacity-70">{props.description}</div>
       </div>
-      {props.children}
+      <div className="plug-tg-flex plug-tg-gap-2 plug-tg-items-center">
+        {props.children}
+      </div>
     </div>
   );
 }

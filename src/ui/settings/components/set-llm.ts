@@ -1,7 +1,6 @@
 import { App, Notice, FuzzySuggestModal } from "obsidian";
 import TextGeneratorPlugin from "src/main";
 import debug from "debug";
-import { LLMProviderRegistery } from "#/LLMProviders";
 const logger = debug("textgenerator:setModel");
 
 interface LLM {
@@ -30,7 +29,7 @@ export class SetLLM extends FuzzySuggestModal<LLM> {
 
 	getItems() {
 		logger("getItems");
-		const llmList = LLMProviderRegistery.getList().map(l => ({ id: l }));
+		const llmList = this.plugin.textGenerator.LLMRegestry.getList().map(l => ({ id: l }));
 		return llmList;
 	}
 

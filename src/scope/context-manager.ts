@@ -120,7 +120,7 @@ export default class ContextManager {
       );
 
       // take context
-      let context = options._variables["context"] ? await getContextAsString(options as any, contextTemplate) : "";
+      let context = await getContextAsString(options as any, contextTemplate);
 
       if (props.insertMetadata) {
         const frontmatter = this.getMetaData()?.frontmatter; // frontmatter of the active document

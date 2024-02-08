@@ -15,13 +15,18 @@ const id = "Google Palm (Langchain)" as const;
 export default class LangchainPalmProvider
   extends LangchainBase
   implements LLMProviderInterface {
+
+  static provider = "Langchain";
+  static id = id;
+  static slug = "palm" as const;
+  static displayName: string = "Google Palm";
+
   mobileSupport = false;
   streamable = false;
-  id = id;
-  static id = id;
-  provider = "Langchain";
-  static provider = "Langchain";
-  static slug = "palm" as const;
+
+  id = LangchainPalmProvider.id;
+  provider = LangchainPalmProvider.provider;
+  originalId = LangchainPalmProvider.id;
   getConfig(options: LLMConfig): Partial<GooglePaLMChatInput> {
     return this.cleanConfig({
       apiKey: options.api_key,
@@ -55,6 +60,7 @@ export default class LangchainPalmProvider
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
 
+    const id = props.self.id;
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {});
 
     return (

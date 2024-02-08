@@ -41,13 +41,19 @@ const default_values = OPENAI_default_values;
 
 export type CustomConfig = Record<keyof typeof default_values, string>;
 
-const id = "custom"
 export default class CustomProvider
   extends BaseProvider
   implements LLMProviderInterface {
-  streamable = true;
-  provider = "Custom";
+
   static provider = "Custom";
+  static id = "Default (Custom)";
+  static displayName: string = "Custom";
+
+  streamable = true;
+
+  provider = CustomProvider.provider;
+  id = CustomProvider.id;
+  originalId = CustomProvider.id;
   async request(
     params: RequestUrlParam & {
       signal?: AbortSignal;
@@ -159,7 +165,7 @@ export default class CustomProvider
         let allText = "";
 
         const config = (this.plugin.settings.LLMProviderOptions[
-          this.id || id
+          this.id
         ] ??= {});
 
         let resultContent = "";
@@ -251,7 +257,7 @@ export default class CustomProvider
         logger("generateMultiple", reqParams);
 
         const config = (this.plugin.settings.LLMProviderOptions[
-          this.id || id
+          this.id
         ] ??= {});
 
         const handlebarData = {

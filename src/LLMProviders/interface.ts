@@ -9,6 +9,10 @@ export default interface LLMProviderInterface {
   id: string;
   slug?: string;
   provider: string;
+  cloned?: boolean;
+  /** original id before the cloning */
+  originalId: string;
+
 
   load(): Promise<any>;
 

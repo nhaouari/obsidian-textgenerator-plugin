@@ -21,17 +21,19 @@ const default_values = {
   model: "gpt-3.5-turbo-instruct",
 };
 
-const id = "OpenAI Instruct (Langchain)" as const;
 export default class LangchainOpenAIInstructProvider
   extends LangchainBase
   implements LLMProviderInterface {
-  id = id;
-  provider = "Langchain";
-  llmPredict = true;
   static provider = "Langchain";
-  static id = id;
+  static id = "OpenAI Instruct (Langchain)" as const;
   static slug = "openAIInstruct" as const;
+  static displayName = "OpenAI Instruct";
 
+  llmPredict = true;
+
+  provider = LangchainOpenAIInstructProvider.provider;
+  id = LangchainOpenAIInstructProvider.id;
+  originalId = LangchainOpenAIInstructProvider.id;
   getConfig(options: LLMConfig) {
     return this.cleanConfig({
       openAIApiKey: options.api_key,
@@ -104,6 +106,8 @@ export default class LangchainOpenAIInstructProvider
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
 
+
+    const id = props.self.id;
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
       ...default_values,
     });
@@ -150,7 +154,7 @@ export default class LangchainOpenAIInstructProvider
         <ModelsHandler
           register={props.register}
           sectionId={props.sectionId}
-          llmProviderId={id}
+          llmProviderId={props.self.originalId || id}
           default_values={default_values}
         />
         <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">

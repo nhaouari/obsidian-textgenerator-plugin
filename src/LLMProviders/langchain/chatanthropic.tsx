@@ -15,15 +15,18 @@ import debug from "debug";
 
 const logger = debug("textgenerator:llmProvider:chatanthropic");
 
-const id = "Chat Anthropic (Langchain)" as const;
 export default class LangchainChatAnthropicProvider
   extends LangchainBase
   implements LLMProviderInterface {
-  id = id;
-  static id = id;
-  static slug = "anthropic" as const;
-  provider = "Langchain";
   static provider = "Langchain";
+  static id = "Chat Anthropic (Langchain)" as const;
+  static slug = "anthropic" as const;
+  static displayName: string = "Chat Anthropic";
+
+  provider = LangchainChatAnthropicProvider.provider;
+  id = LangchainChatAnthropicProvider.id;
+  originalId = LangchainChatAnthropicProvider.id;
+
   getConfig(
     options: LLMConfig
   ): Partial<AnthropicInput & BaseLanguageModelParams> {
@@ -59,6 +62,8 @@ export default class LangchainChatAnthropicProvider
 
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
+
+    const id = props.self.id;
 
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
       model: "claude-2"

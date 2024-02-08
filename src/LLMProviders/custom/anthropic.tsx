@@ -20,20 +20,6 @@ const globalVars: Record<string, boolean> = {
   stop: true,
 };
 
-const testMessages = [
-  {
-    role: "user",
-    content: "test",
-  },
-  {
-    role: "assistant",
-    content: `test2
-test3
-
-test4`,
-  },
-];
-
 const default_values = {
   endpoint: "https://api.anthropic.com/v1/complete",
   custom_header: `{
@@ -57,16 +43,20 @@ const default_values = {
 
 export type CustomConfig = Record<keyof typeof default_values, string>;
 
-const id = "Anthropic Legacy (Custom)" as const;
 export default class AnthropicLegacyProvider
   extends CustomProvider
   implements LLMProviderInterface {
-  streamable = true;
-  id = id;
-  static slug = "anthropicLegacy" as const;
-  static id = id;
-  provider = "Custom";
   static provider = "Custom";
+  static id = "Anthropic Legacy (Custom)" as const;
+  static slug = "anthropicLegacy" as const;
+  static displayName: string = "Anthropic Legacy";
+
+  streamable = true;
+
+  provider = AnthropicLegacyProvider.provider;
+  id = AnthropicLegacyProvider.id;
+  originalId = AnthropicLegacyProvider.id;
+
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
 

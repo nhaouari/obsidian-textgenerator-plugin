@@ -2,7 +2,6 @@ import TemplateInputModalUI from "../ui/template-input-modal";
 import {
   App,
   Notice,
-  EditorPosition,
   TFile,
   stringifyYaml,
 } from "obsidian";
@@ -172,9 +171,15 @@ export default class TextGenerator extends RequestHandler {
     customContext?: InputContext
   ) {
     logger("generateStreamInEditor");
+
     const context =
       customContext ||
       (await this.plugin.contextManager.getContext({ editor, insertMetadata }));
+
+    console.log({
+      customContext,
+      context
+    })
 
     // if its a template don't bother with adding prefix
     const prefix = context.template?.outputTemplate ? "" : this.plugin.settings.prefix
@@ -466,6 +471,7 @@ export default class TextGenerator extends RequestHandler {
           )
         );
 
+        // @ts-ignore
         const failed = results?.filter((r) => r?.startsWith("FAILED:"));
 
         if (failed?.length) {

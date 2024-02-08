@@ -4,12 +4,13 @@ import TextGeneratorPlugin from "../main";
 import ReqFormatter from "../utils/api-request-formatter";
 import ContextManager, { InputContext } from "../scope/context-manager";
 import debug from "debug";
-import LLMProviderInterface from "src/LLMProviders/interface";
-import { LLMProviderRegistery } from "src/LLMProviders";
-import providerOptionsValidator from "src/LLMProviders/providerOptionsValidator";
 import { TextGeneratorSettings } from "../types";
 import { Handlebars } from "../helpers/handlebars-helpers";
 import { Platform } from "obsidian";
+import LLMProviderInterface from "../LLMProviders/interface";
+import LLMProviderRegistry from "../LLMProviders/registery";
+import { defaultProviders, defaultProvidersMap } from "../LLMProviders";
+import providerOptionsValidator from "../LLMProviders/providerOptionsValidator";
 const logger = debug("textgenerator:TextGenerator");
 
 export default class RequestHandler {
@@ -18,27 +19,94 @@ export default class RequestHandler {
   signalController?: AbortController;
 
   LLMProvider: LLMProviderInterface;
+  LLMRegestry: LLMProviderRegistry<LLMProviderInterface>;
 
   constructor(plugin: TextGeneratorPlugin) {
     this.plugin = plugin;
     this.reqFormatter = new ReqFormatter(app, plugin, this.plugin.contextManager);
 
-    this.setup();
+    this.load();
   }
 
-  async setup() {
+  async load() {
     try {
+      await this.loadLLMRegistry();
       await this.loadllm();
     } catch (err: any) {
       this.plugin.handelError(err);
     }
   }
 
-  async loadllm(name: string = this.plugin.settings.selectedProvider || "") {
-    const llmList = LLMProviderRegistery.getList();
+  async loadLLMRegistry() {
+    // default llm Providers;
+    const llmProviders: Record<any, any> = { ...defaultProvidersMap }
 
-    const llm =
-      LLMProviderRegistery.get(name) || LLMProviderRegistery.get(llmList[0]);
+
+    // get Customones and merge them with the default ones
+    for (const llmId in this.plugin.settings.LLMProviderProfiles) {
+      const llm = this.plugin.settings.LLMProviderProfiles[llmId];
+      const parent = defaultProvidersMap[llm.extends as any]
+
+      console.log({
+        llm, parent
+      })
+      if (!parent) continue;
+
+      class clone extends parent {
+        static provider = parent.provider;
+
+        static id = llmId;
+        static slug = llm.name;
+
+        cloned = true;
+        static cloned = true;
+        static displayName = llm.name;
+
+
+        id = clone.id;
+        provider = clone.provider;
+      }
+
+      llmProviders[llmId] = clone;
+    }
+
+    this.LLMRegestry = new LLMProviderRegistry(llmProviders);
+    await this.LLMRegestry.load();
+  }
+
+  async addLLMCloneInRegistry(props: {
+    /** id */
+    id: string,
+    /** name */
+    name: string,
+    /** from where it extends from (default Provider) */
+    extends: any
+  }) {
+    this.plugin.settings.LLMProviderProfiles ??= {};
+
+    this.plugin.settings.LLMProviderProfiles[props.id] = {
+      extends: props.extends,
+      name: props.name
+    }
+
+    this.plugin.settings.LLMProviderOptions[props.id] = { ...this.plugin.settings.LLMProviderOptions[props.extends] }
+
+    await this.plugin.saveSettings();
+    await this.loadLLMRegistry();
+  }
+
+  async deleteLLMCloneFromRegistry(id: string) {
+    delete this.plugin.settings.LLMProviderProfiles[id]
+    delete this.plugin.settings.LLMProviderOptions[id];
+    await this.plugin.saveSettings();
+    await this.loadLLMRegistry();
+  }
+
+
+  async loadllm(name: string = this.plugin.settings.selectedProvider || "") {
+    const llmList = this.LLMRegestry.getList();
+
+    const llm = this.LLMRegestry.get(name) || this.LLMRegestry.get(llmList[0]);
 
     if (llm && llm.id !== this.LLMProvider?.id) {
       if (Platform.isMobile && llm.mobileSupport == false)
@@ -76,6 +144,7 @@ export default class RequestHandler {
           {
             ...this.LLMProvider.getSettings(),
             ...settings,
+            //@ts-ignore
             prompt: comp,
           },
           false
@@ -175,6 +244,14 @@ export default class RequestHandler {
           templatePath,
           additionnalParams
         );
+
+      console.log({
+        bodyParams,
+        options,
+        template,
+        comp: context.context
+      })
+
 
       if (
         !this.LLMProvider ||

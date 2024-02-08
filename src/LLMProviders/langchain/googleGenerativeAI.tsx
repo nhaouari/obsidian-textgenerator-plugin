@@ -17,19 +17,22 @@ const default_values = {
 }
 
 
-const id = "Google GenerativeAI (Langchain)" as const;
 export default class LangchainChatGoogleGenerativeAIProvider
   extends LangchainBase
   implements LLMProviderInterface {
+
+  static provider = "Langchain";
+  static id = "Google GenerativeAI (Langchain)" as const;
+  static slug = "googleGenerativeAI" as const;
+  static displayName: string = "Google GenerativeAI";
+
   mobileSupport = true;
   streamable = true;
-  legacyN = true
-  id = id;
-  static id = id;
-  provider = "Langchain";
-  static provider = "Langchain";
-  static slug = "googleGenerativeAI" as const;
+  legacyN = true;
 
+  provider = LangchainChatGoogleGenerativeAIProvider.provider;
+  id = LangchainChatGoogleGenerativeAIProvider.id;
+  originalId = LangchainChatGoogleGenerativeAIProvider.id;
   getConfig(options: LLMConfig): Partial<GoogleGenerativeAIChatInput> {
     return this.cleanConfig({
       apiKey: options.api_key,
@@ -60,6 +63,7 @@ export default class LangchainChatGoogleGenerativeAIProvider
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
 
+    const id = props.self.id;
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
       ...default_values
     });
@@ -102,7 +106,7 @@ export default class LangchainChatGoogleGenerativeAIProvider
         <ModelsHandler
           register={props.register}
           sectionId={props.sectionId}
-          llmProviderId={id}
+          llmProviderId={props.self.originalId || id}
           default_values={default_values}
         />
         <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">

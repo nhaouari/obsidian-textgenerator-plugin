@@ -12,17 +12,22 @@ import { OllamaInput } from "langchain/llms/ollama";
 
 const logger = debug("textgenerator:llmProvider:ollama");
 
-const id = "Ollama (Langchain)" as const;
 export default class LangchainOllamaProvider
   extends LangchainBase
   implements LLMProviderInterface {
-  id = id;
   static slug = "ollama" as const;
-  provider = "Langchain";
-  llmPredict = true;
+
   static provider = "Langchain";
-  static id = id;
+  static id = "Ollama (Langchain)" as const;
+  static displayName: string = "Ollama";
+
   streamable = false;
+  llmPredict = true;
+
+  id = LangchainOllamaProvider.id;
+  provider = LangchainOllamaProvider.provider;
+  originalId = LangchainOllamaProvider.id;
+
   getConfig(options: LLMConfig): Partial<OllamaInput & BaseLLMParams> {
     console.log(options);
     return this.cleanConfig({
@@ -56,6 +61,7 @@ export default class LangchainOllamaProvider
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
 
+    const id = props.self.id;
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {});
     return (
       <>

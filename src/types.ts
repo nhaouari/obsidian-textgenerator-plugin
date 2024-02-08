@@ -98,6 +98,10 @@ type TextGeneratorSettings = {
   selectedProvider?: llmType;
   // TODO: FUTURE IMPLEMENTATION
   // reason: it will clean code, and also help with custom llm providers later on
+  LLMProviderProfiles: Record<string, {
+    extends: string,
+    name: string,
+  }>;
   LLMProviderOptions: Record<string, Record<string, any>>;
   LLMProviderOptionsKeysHashed: Record<string, Buffer | string>;
 };
