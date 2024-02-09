@@ -1,7 +1,7 @@
 import { AI_MODELS } from "#/constants";
 import useGlobal from "#/ui/context/global";
 import Dropdown from "#/ui/settings/components/dropdown";
-import Input from "#/ui/settings/components/input";
+import DropdownSearch from "#/ui/settings/components/dropdownSearch";
 import SettingItem from "#/ui/settings/components/item";
 import { IconList, IconPencil, IconReload } from "@tabler/icons-react";
 import clsx from "clsx";
@@ -90,23 +90,16 @@ export function ModelsHandler(props: {
                 sectionId={props.sectionId}
             >
                 <div className="plug-tg-flex plug-tg-items-center plug-tg-gap-2">
-                    {global.plugin.settings.experiment || edit ? <>
-                        <datalist id={modelsDatasetId}>
-                            {[...models].map(model => <option key={model} value={model} />)}
-                        </datalist>
-
-                        <Input
+                    {global.plugin.settings.experiment || edit ?
+                        <DropdownSearch
                             value={config.model}
-                            datalistId={modelsDatasetId}
-                            placeholder="Enter your Model name"
-                            setValue={async (value) => {
-                                config.model = value;
-                                global.triggerReload();
-                                // TODO: it could use a debounce here
+                            setValue={async (selectedModel) => {
+                                config.model = selectedModel;
                                 await global.plugin.saveSettings();
+                                global.triggerReload();
                             }}
+                            values={models}
                         />
-                    </>
                         : <Dropdown
                             value={config.model}
                             setValue={async (selectedModel) => {
@@ -122,7 +115,7 @@ export function ModelsHandler(props: {
                         <button
                             onClick={() => setEdit((i) => !i)}
                         >
-                            {edit ? <IconList /> : <IconPencil />}
+                            {edit ? <IconList size={11} /> : <IconPencil size={11} />}
                         </button>
                         <button
                             className={clsx({
@@ -131,7 +124,7 @@ export function ModelsHandler(props: {
                             onClick={updateModels}
                             disabled={loadingUpdate}
                         >
-                            <IconReload />
+                            <IconReload size={11} />
                         </button>
                     </div>
                 </div>

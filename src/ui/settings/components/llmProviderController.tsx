@@ -4,6 +4,8 @@ import Dropdown from "./dropdown";
 import SettingItem from "./item";
 import LLMProviderInterface from "../../../LLMProviders/interface";
 import useGlobal from "../../context/global";
+import Input from "./input";
+import DropdownSearch from "./dropdownSearch";
 
 export default function LLMProviderController(props: {
     register: Register,
@@ -83,18 +85,32 @@ export default function LLMProviderController(props: {
             register={props.register}
             sectionId={sectionId}
         >
-            <Dropdown
-                value={selectedLLMId}
-                setValue={(selectedLLMId) => {
-                    setSelectedLLMId(selectedLLMId);
-                    updateLLm(selectedLLMId);
-                    global.plugin.saveSettings();
-                    global.triggerReload();
-                    props.triggerResize();
-                }}
-                aliases={global.plugin.textGenerator.LLMRegestry.UnProviderNames}
-                values={llmList}
-            />
+            {global.plugin.settings.experiment ?
+                <DropdownSearch
+                    value={selectedLLMId}
+                    setValue={(selectedLLMId) => {
+                        setSelectedLLMId(selectedLLMId);
+                        updateLLm(selectedLLMId);
+                        global.plugin.saveSettings();
+                        global.triggerReload();
+                        props.triggerResize();
+                    }}
+                    aliases={global.plugin.textGenerator.LLMRegestry.UnProviderNames}
+                    values={llmList}
+                />
+                :
+                <Dropdown
+                    value={selectedLLMId}
+                    setValue={(selectedLLMId) => {
+                        setSelectedLLMId(selectedLLMId);
+                        updateLLm(selectedLLMId);
+                        global.plugin.saveSettings();
+                        global.triggerReload();
+                        props.triggerResize();
+                    }}
+                    aliases={global.plugin.textGenerator.LLMRegestry.UnProviderNames}
+                    values={llmList}
+                />}
 
             {isDefaultProvider ?
                 <button
@@ -110,8 +126,10 @@ export default function LLMProviderController(props: {
                 </button>
             }
         </SettingItem>
+
         {!props.mini &&
-            selectedLLM && (
+
+            selectedLLM && selectedLLMId && <>
                 <div className="plug-tg-flex plug-tg-h-full plug-tg-w-full plug-tg-flex-col plug-tg-gap-2">
                     <selectedLLM.RenderSettings
                         key={selectedLLMId}
@@ -120,7 +138,29 @@ export default function LLMProviderController(props: {
                         sectionId={sectionId}
                     />
                 </div>
-            )
+                {
+                    isDefaultProvider ? "" :
+                        <SettingItem
+                            name="Name"
+                            description="Change name of the profile"
+                            register={props.register}
+                            className=""
+                            sectionId={sectionId}>
+                            <Input
+                                className="plug-tg-input-sm"
+                                placeholder={global.plugin.textGenerator.LLMRegestry.UnProviderNames[selectedLLMId]}
+                                value={global.plugin.textGenerator.LLMRegestry.UnProviderNames[selectedLLMId]}
+                                setValue={async (val) => {
+                                    global.plugin.textGenerator.LLMRegestry.UnProviderNames[selectedLLMId] = val;
+                                    global.plugin.settings.LLMProviderProfiles[selectedLLMId].name = val;
+
+                                    await global.plugin.saveSettings();
+                                    global.triggerReload();
+                                }}
+                            />
+                        </SettingItem>
+                }
+            </>
         }
     </>
 }

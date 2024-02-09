@@ -78,7 +78,7 @@ export default function Input(props: {
       />
       {props.type == "password" && (
         <button onClick={() => setShowPass((i) => !i)}>
-          {!showPass ? <IconEyeClosed /> : <IconEye />}
+          {!showPass ? <IconEyeClosed size={11} /> : <IconEye size={11} />}
         </button>
       )}
     </div>
