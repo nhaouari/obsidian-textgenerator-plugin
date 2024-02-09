@@ -84,6 +84,7 @@ export class ExampleModal extends FuzzySuggestModal<PromptTemplate & { id: strin
   getItemText(template: PromptTemplate): string {
     return (
       template.tags +
+      ((!template.name || !template.promptId) ? template.path || "" : "") +
       (template.name || "") +
       this.getItemPackageId(template) +
       template.author +
