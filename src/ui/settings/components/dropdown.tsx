@@ -11,7 +11,7 @@ export default function Dropdown<T extends string>(props: {
   setValue: (_newvaL: T) => void;
   righty?: boolean;
   className?: any;
-  aliases: Record<any, string>
+  aliases?: Record<any, string>
 }) {
   const { value: isOpen, toggle, setFalse: close } = useBoolean(false);
   const slugs = useMemo(() => {
