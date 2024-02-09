@@ -1,4 +1,3 @@
-import { LLMProviderType } from "./LLMProviders";
 import MODELS from "#/lib/models";
 
 export const AI_MODELS = MODELS;
