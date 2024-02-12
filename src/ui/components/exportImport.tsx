@@ -6,7 +6,7 @@ import JSON5 from "json5"
 import { IconDatabaseImport, IconFileUpload, IconPackageExport, IconPackageImport, IconRestore } from "@tabler/icons-react";
 import { currentDate, extractJsonFromText, getCurrentTime } from "#/utils";
 import SettingItem from "../settings/components/item";
-export default function ExportImportHandler(props: { getConfig: () => any, id: string, onImport: (data: any) => Promise<void>, defaultConfig?: any }) {
+export default function ExportImportHandler(props: { getConfig: () => any, id: string, onImport: (data: any) => Promise<void> }) {
     const global = useGlobal();
     const backupsDatasetId = useId();
 
@@ -35,8 +35,8 @@ export default function ExportImportHandler(props: { getConfig: () => any, id: s
             {[...backups].map(bu => <option key={bu} value={bu} />)}
         </datalist>
 
-        <SettingItem
-            name="Config File"
+        {/* <SettingItem
+            name="Profiles"
             description="Select Config file to be used"
         >
             <Input
@@ -47,12 +47,14 @@ export default function ExportImportHandler(props: { getConfig: () => any, id: s
                     setSelectedBackup(value);
                 }}
             />
-        </SettingItem>
+        </SettingItem> */}
         <div className="plug-tg-flex plug-tg-w-full plug-tg-justify-between plug-tg-items-center">
-            <div></div>
+            <div>
+                {/* <Input type="checkbox" value={false} setValue={() => { }} /> */}
+            </div>
             <div className="plug-tg-flex plug-tg-gap-2">
 
-                <button
+                {/* <button
                     className={clsx({
                         "plug-tg-btn-disabled plug-tg-opacity-70": exportButtonDisabled,
                         "plug-tg-cursor-pointer": !exportButtonDisabled,
@@ -75,7 +77,7 @@ export default function ExportImportHandler(props: { getConfig: () => any, id: s
                         }
                         setImporting(false);
                     }}
-                ><IconDatabaseImport /></button>
+                ><IconDatabaseImport /></button> */}
                 <button
 
                     onClick={async () => {
@@ -105,15 +107,28 @@ ${JSON5.stringify(config, null, 2)}
                         setExporting(false);
                         global.triggerReload();
                     }}
-                    className={clsx({
+                    className={clsx("plug-tg-tooltip plug-tg-tooltip-top", {
                         "plug-tg-btn-disabled plug-tg-loading": exporting
                     })}
+                    data-tip="Export Profile"
                     disabled={exporting}
                 ><IconPackageExport /></button>
-                <button onClick={async () => {
-                    const content = await selectJSONMDFile();
-                    console.log(content)
-                }}><IconFileUpload /></button>
+                <button
+                    className={clsx("plug-tg-tooltip plug-tg-tooltip-top")}
+                    onClick={async () => {
+                        const content = await selectJSONMDFile();
+                        const r = content.trimStart().trimEnd().split("```JSON");
+                        r.shift();
+                        const r2 = r.join("```JSON").split("```");
+                        r2.pop();
+
+                        const jsonContent = JSON5.parse(r2.join("```"));
+                        props.onImport(jsonContent)
+                    }}
+                    data-tip="Import Profile"
+                >
+                    <IconFileUpload />
+                </button>
             </div>
         </div>
 

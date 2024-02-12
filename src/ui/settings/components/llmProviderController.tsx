@@ -5,10 +5,22 @@ import SettingItem from "./item";
 import LLMProviderInterface from "../../../LLMProviders/interface";
 import useGlobal from "../../context/global";
 import Input from "./input";
-import DropdownSearch from "./dropdownSearch";
-import { IconHttpDelete, IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconPlus, IconTrash } from "@tabler/icons-react";
 import clsx from "clsx";
 import Confirm from "#/ui/package-manager/components/confirm";
+import ExportImportHandler from "#/ui/components/exportImport";
+import { z } from "zod";
+
+
+const profileFileSchema = z.object({
+    id: z.string(),
+    profile: z.object({
+        extends: z.string(),
+        name: z.string()
+    }),
+    config: z.record(z.any())
+})
+
 
 export default function LLMProviderController(props: {
     register: Register,
@@ -32,6 +44,9 @@ export default function LLMProviderController(props: {
 
     const updateLLm = (selectedLLMId: string | undefined) => {
         if (!selectedLLMId) return;
+
+        global.plugin.textGenerator.load();
+
         const llm = global.plugin.textGenerator.LLMRegestry.get(selectedLLMId);
 
         if (llm) {
@@ -85,6 +100,13 @@ export default function LLMProviderController(props: {
     useEffect(() => updateLLm(selectedLLMId), []);
 
 
+    const selectLLM = (selectedLLMId: string) => {
+        setSelectedLLMId(selectedLLMId);
+        updateLLm(selectedLLMId);
+        global.plugin.saveSettings();
+        global.triggerReload();
+        props.triggerResize();
+    }
 
     return <>
         <SettingItem
@@ -109,13 +131,7 @@ export default function LLMProviderController(props: {
                 : */}
             <Dropdown
                 value={selectedLLMId}
-                setValue={(selectedLLMId) => {
-                    setSelectedLLMId(selectedLLMId);
-                    updateLLm(selectedLLMId);
-                    global.plugin.saveSettings();
-                    global.triggerReload();
-                    props.triggerResize();
-                }}
+                setValue={selectLLM}
                 aliases={global.plugin.textGenerator.LLMRegestry.UnProviderNames}
                 values={llmList}
             />
@@ -165,7 +181,7 @@ export default function LLMProviderController(props: {
                                 placeholder={global.plugin.textGenerator.LLMRegestry.UnProviderNames[selectedLLMId]}
                                 value={global.plugin.textGenerator.LLMRegestry.UnProviderNames[selectedLLMId]}
                                 setValue={async (val) => {
-                                    global.plugin.textGenerator.LLMRegestry.UnProviderNames[selectedLLMId] = val;
+                                    global.plugin.textGenerator.LLMRegestry.UnProviderNames[selectedLLMId] = val as any;
                                     global.plugin.settings.LLMProviderProfiles[selectedLLMId].name = val;
 
                                     await global.plugin.saveSettings();
@@ -174,6 +190,31 @@ export default function LLMProviderController(props: {
                             />
                         </SettingItem>
                 }
+                <ExportImportHandler
+                    // defaultConfig={default_values}
+                    id="llm"
+                    getConfig={() => {
+                        return {
+                            id: selectedLLMId,
+                            profile: global.plugin.settings.LLMProviderProfiles[selectedLLMId],
+                            config: global.plugin.settings.LLMProviderOptions[selectedLLMId]
+                        }
+                    }}
+                    onImport={async (data) => {
+                        const d = await profileFileSchema.parseAsync(data);
+
+                        let id = d.id;
+
+                        if (!id) {
+                            id = selectedLLM?.id + " " + llmList.filter(l => l.startsWith(d.profile.extends)).length;
+                        }
+
+                        global.plugin.settings.LLMProviderProfiles[id] = d.profile;
+                        global.plugin.settings.LLMProviderOptions[id] = d.config;
+                        selectLLM(id)
+                    }}
+                />
+
             </>
         }
     </>

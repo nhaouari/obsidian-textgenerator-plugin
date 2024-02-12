@@ -188,33 +188,6 @@ export default class DefaultCustomProvider
           />
         </SettingItem>
 
-
-        <ImportExportHandler
-          defaultConfig={default_values}
-          id="llm"
-          getConfig={() => {
-            const cfg = { ...config };
-
-            if (config.CORSBypass || !config.streamable) {
-              delete cfg.sanatization_streaming
-            }
-
-            return config;
-          }}
-          onImport={async (data) => {
-            const wasShownAdvanced = showAdvanced;
-            setShowAdvanced(false);
-            for (const key in data) {
-              config[key] = data[key];
-            }
-            global.triggerReload();
-            await global.plugin.saveSettings();
-            if (wasShownAdvanced)
-              setShowAdvanced(true);
-          }}
-        />
-
-
         {showAdvanced && <>
 
           <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">

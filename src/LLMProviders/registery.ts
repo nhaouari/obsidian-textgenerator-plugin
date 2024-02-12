@@ -34,11 +34,11 @@ export default class LLMProviderRegistry<T extends { slug?: any, id: any, displa
     for (const id in this.plugins) {
       const pvrd = this.plugins[id];
       if (pvrd.slug) {
-        this.ProviderSlugs[pvrd.slug] = pvrd.id;
+        this.ProviderSlugs[pvrd.slug as keyof typeof this.ProviderSlugs] = pvrd.id as any;
         this.UnProviderSlugs[pvrd.id] = pvrd.slug;
         this.ProviderSlugsList.push(pvrd.slug);
       }
-      this.UnProviderNames[pvrd.id] = pvrd.displayName;
+      this.UnProviderNames[pvrd.id] = pvrd.displayName as any;
     }
   }
 
@@ -53,6 +53,6 @@ export default class LLMProviderRegistry<T extends { slug?: any, id: any, displa
 
   get(name: string): T | undefined {
     // return this.plugins.get(name);
-    return this.plugins[this.ProviderSlugs[name] || name];
+    return this.plugins[this.ProviderSlugs[name as keyof typeof this.ProviderSlugs] || name];
   }
 }
