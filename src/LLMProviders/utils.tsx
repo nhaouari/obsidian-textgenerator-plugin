@@ -113,12 +113,13 @@ export function ModelsHandler(props: {
 
                     <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
                         <button
+                            className="plug-tg-btn plug-tg-btn-xs"
                             onClick={() => setEdit((i) => !i)}
                         >
                             {edit ? <IconList size={11} /> : <IconPencil size={11} />}
                         </button>
                         <button
-                            className={clsx({
+                            className={clsx("plug-tg-btn plug-tg-btn-xs", {
                                 "plug-tg-loading": loadingUpdate,
                             })}
                             onClick={updateModels}

@@ -34,6 +34,10 @@ export default class VersionManager {
       await this.updateFromV6_13To6_14();
     }
 
+    if (this.compare(this.plugin.settings.version, "0.6.14-beta") <= 0) {
+      await this.updateFromV6_14To7();
+    }
+
 
     this.plugin.settings.version = this.currentVersion;
     await this.plugin.saveSettings();
@@ -106,6 +110,28 @@ export default class VersionManager {
         anthropicConfig.custom_body = anthropicConfig.handlebars_body_in;
         delete anthropicConfig.handlebars_body_in;
       }
+    }
+  }
+
+  async updateFromV6_14To7() {
+    this.plugin.settings.version = "0.7.0";
+
+    const chat1 = this.plugin.settings.LLMProviderOptions[`OpenAI Chat 1 (Langchain)`]
+    if (chat1) {
+      this.plugin.settings.LLMProviderProfiles ??= {};
+      this.plugin.settings.LLMProviderProfiles["OpenAI Chat 1 (Langchain)"] = {
+        extends: "OpenAI Chat (Langchain)",
+        name: "OpenAI Chat 1"
+      };
+    }
+
+    const chat2 = this.plugin.settings.LLMProviderOptions[`OpenAI Chat 2 (Langchain)`]
+    if (chat2) {
+      this.plugin.settings.LLMProviderProfiles ??= {};
+      this.plugin.settings.LLMProviderProfiles["OpenAI Chat 2 (Langchain)"] = {
+        extends: "OpenAI Chat (Langchain)",
+        name: "OpenAI Chat 2"
+      };
     }
   }
 

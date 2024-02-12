@@ -6,6 +6,8 @@ import LLMProviderInterface from "../../../LLMProviders/interface";
 import useGlobal from "../../context/global";
 import Input from "./input";
 import DropdownSearch from "./dropdownSearch";
+import { IconHttpDelete, IconPlus, IconTrash } from "@tabler/icons-react";
+import clsx from "clsx";
 
 export default function LLMProviderController(props: {
     register: Register,
@@ -44,6 +46,8 @@ export default function LLMProviderController(props: {
         global.plugin.textGenerator.load();
     };
 
+    const isDefaultProvider = selectedLLM ? !selectedLLM.cloned : false;
+
     const clone = async () => {
         // pick a name and id
         const name = (selectedLLM?.slug || selectedLLMId?.split("(")[0].trim() || "")
@@ -53,7 +57,7 @@ export default function LLMProviderController(props: {
         await global.plugin.textGenerator.addLLMCloneInRegistry({
             id: newId,
             name: name + " " + llmList.filter(l => l.startsWith(name)).length,
-            extends: selectedLLMId
+            extends: isDefaultProvider ? selectedLLMId : selectedLLM?.originalId
         })
 
         llmList = global.plugin.textGenerator.LLMRegestry.getList();
@@ -76,7 +80,7 @@ export default function LLMProviderController(props: {
 
     useEffect(() => updateLLm(selectedLLMId), []);
 
-    const isDefaultProvider = selectedLLM ? !selectedLLM.cloned : false;
+
 
     return <>
         <SettingItem
@@ -85,7 +89,7 @@ export default function LLMProviderController(props: {
             register={props.register}
             sectionId={sectionId}
         >
-            {global.plugin.settings.experiment ?
+            {/* {global.plugin.settings.experiment ?
                 <DropdownSearch
                     value={selectedLLMId}
                     setValue={(selectedLLMId) => {
@@ -98,33 +102,39 @@ export default function LLMProviderController(props: {
                     aliases={global.plugin.textGenerator.LLMRegestry.UnProviderNames}
                     values={llmList}
                 />
-                :
-                <Dropdown
-                    value={selectedLLMId}
-                    setValue={(selectedLLMId) => {
-                        setSelectedLLMId(selectedLLMId);
-                        updateLLm(selectedLLMId);
-                        global.plugin.saveSettings();
-                        global.triggerReload();
-                        props.triggerResize();
-                    }}
-                    aliases={global.plugin.textGenerator.LLMRegestry.UnProviderNames}
-                    values={llmList}
-                />}
+                : */}
+            <Dropdown
+                value={selectedLLMId}
+                setValue={(selectedLLMId) => {
+                    setSelectedLLMId(selectedLLMId);
+                    updateLLm(selectedLLMId);
+                    global.plugin.saveSettings();
+                    global.triggerReload();
+                    props.triggerResize();
+                }}
+                aliases={global.plugin.textGenerator.LLMRegestry.UnProviderNames}
+                values={llmList}
+            />
+            {/* } */}
 
-            {isDefaultProvider ?
+            <div className="plug-tg-flex plug-tg-gap-1 plug-tg-flex-col">
+
                 <button
                     onClick={clone}
+                    className="plug-tg-btn plug-tg-btn-xs"
                 >
-                    +
+                    <IconPlus size={11} />
                 </button>
-                :
                 <button
-                    onClick={del}
+                    onClick={!isDefaultProvider ? del : undefined}
+                    disabled={isDefaultProvider}
+                    className={clsx("plug-tg-btn plug-tg-btn-xs", {
+                        "plug-tg-btn-disabled": isDefaultProvider
+                    })}
                 >
-                    -
+                    <IconTrash size={11} />
                 </button>
-            }
+            </div>
         </SettingItem>
 
         {!props.mini &&

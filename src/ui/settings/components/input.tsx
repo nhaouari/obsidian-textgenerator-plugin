@@ -77,7 +77,7 @@ export default function Input(props: {
         }
       />
       {props.type == "password" && (
-        <button onClick={() => setShowPass((i) => !i)}>
+        <button className="plug-tg-btn plug-tg-btn-xs" onClick={() => setShowPass((i) => !i)}>
           {!showPass ? <IconEyeClosed size={11} /> : <IconEye size={11} />}
         </button>
       )}
