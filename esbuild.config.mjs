@@ -32,18 +32,18 @@ const wasmPlugin = (config) => {
 				};
 			});
 			build.onLoad({
-					filter: /.*/,
-					namespace: "wasm-deferred"
-				},
+				filter: /.*/,
+				namespace: "wasm-deferred"
+			},
 				async (args) => ({
 					contents: await fs.promises.readFile(args.path),
 					loader: "file",
 				})
 			);
 			build.onLoad({
-					filter: /.*/,
-					namespace: "wasm-embed"
-				},
+				filter: /.*/,
+				namespace: "wasm-embed"
+			},
 				async (args) => ({
 					contents: await fs.promises.readFile(args.path),
 					loader: "binary",
@@ -55,7 +55,7 @@ const wasmPlugin = (config) => {
 
 const prod = (process.argv[2] === 'production');
 
-console.log({prod})
+console.log({ prod })
 
 esbuild.build({
 	banner: {
@@ -90,10 +90,11 @@ esbuild.build({
 		'@codemirror/text',
 		'@codemirror/tooltip',
 		'@codemirror/view',
+		"node:url",
 		...builtins
 	],
 	format: 'cjs',
-	watch: prod ? false:{
+	watch: prod ? false : {
 		onRebuild(error, result) {
 			if (error) console.error('watch build failed:', error)
 			else {
