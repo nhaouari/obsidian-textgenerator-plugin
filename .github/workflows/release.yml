@@ -17,18 +17,15 @@ jobs:
               with:
                   node-version: "16.x" # You might need to adjust this value to your own version
 
-            # Update references
-            - name: Git Submodule Update
-              run: |
-                git pull --recurse-submodules
-                git submodule update --remote --recursive
-
             - uses: pnpm/action-setup@v2
               name: Install pnpm
               with:
                   version: 6
                   run_install: false
 
+            - name: Git Submodule Update
+              run: |
+                git submodule update --init
             # Build the plugin
             - name: Build
               run: |
