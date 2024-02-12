@@ -13,7 +13,7 @@ import LangchainPalmProvider from "./langchain/palm";
 import LangchainChatGoogleGenerativeAIProvider from "./langchain/googleGenerativeAI";
 // import LangchainReplicaProvider from "./langchain/replica"
 
-import { LOCClone1, LOCClone2 } from "./langchain/clones";
+// import { LOCClone1, LOCClone2 } from "./langchain/clones";
 
 
 export const defaultProviders = [
@@ -50,8 +50,8 @@ export const defaultProviders = [
   // anthropic custom
   AnthropicCustomProvider,
 
-  LOCClone1,
-  LOCClone2,
+  // LOCClone1,
+  // LOCClone2,
 
   // custom
   CustomProvider,
