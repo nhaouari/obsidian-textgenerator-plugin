@@ -8,6 +8,7 @@ import Input from "./input";
 import DropdownSearch from "./dropdownSearch";
 import { IconHttpDelete, IconPlus, IconTrash } from "@tabler/icons-react";
 import clsx from "clsx";
+import Confirm from "#/ui/package-manager/components/confirm";
 
 export default function LLMProviderController(props: {
     register: Register,
@@ -53,11 +54,13 @@ export default function LLMProviderController(props: {
         const name = (selectedLLM?.slug || selectedLLMId?.split("(")[0].trim() || "")
         const newId = selectedLLM?.id + " " + llmList.filter(l => l.startsWith(name)).length;
 
+        if (!(isDefaultProvider ? selectedLLMId : selectedLLM?.originalId)) throw "can't be cloned"
         // add the llm clone
         await global.plugin.textGenerator.addLLMCloneInRegistry({
             id: newId,
             name: name + " " + llmList.filter(l => l.startsWith(name)).length,
-            extends: isDefaultProvider ? selectedLLMId : selectedLLM?.originalId
+            extends: isDefaultProvider ? selectedLLMId : selectedLLM?.originalId as any,
+            extendsDataFrom: selectedLLMId
         })
 
         llmList = global.plugin.textGenerator.LLMRegestry.getList();
@@ -67,6 +70,7 @@ export default function LLMProviderController(props: {
     }
 
     const del = async () => {
+        if (!await Confirm(`Are you sure you want to delete ${selectedLLMId}`, "Delete Confirmation")) return;
         const parentId = selectedLLM?.originalId;
         if (!selectedLLMId) return;
         // delete the llm clone

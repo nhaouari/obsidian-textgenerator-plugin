@@ -80,7 +80,8 @@ export default class RequestHandler {
     /** name */
     name: string,
     /** from where it extends from (default Provider) */
-    extends: any
+    extends: string,
+    extendsDataFrom?: string,
   }) {
     this.plugin.settings.LLMProviderProfiles ??= {};
 
@@ -89,7 +90,7 @@ export default class RequestHandler {
       name: props.name
     }
 
-    this.plugin.settings.LLMProviderOptions[props.id] = { ...this.plugin.settings.LLMProviderOptions[props.extends] }
+    this.plugin.settings.LLMProviderOptions[props.id] = { ...this.plugin.settings.LLMProviderOptions[props.extendsDataFrom || props.extends] }
 
     await this.plugin.saveSettings();
     await this.loadLLMRegistry();
