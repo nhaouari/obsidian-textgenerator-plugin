@@ -5,7 +5,7 @@ import debug from "debug";
 
 const logger = debug("textgenerator:Extractor:AudioExtractor");
 
-import { WhisperProviderName } from "../ui/settings/sections/otherProviders/whisper";
+import { WhisperProviderName, default_values } from "../ui/settings/sections/otherProviders/whisper";
 
 export const supportedAudioExtensions = [
   "mp3",
@@ -94,7 +94,7 @@ export default class AudioExtractor extends Extractor {
         }
       );
 
-      const jsonResponse = await response.json();
+      const jsonResponse = await response.json() as any;
 
       if ("text" in jsonResponse) return jsonResponse.text;
       else
@@ -112,7 +112,11 @@ export default class AudioExtractor extends Extractor {
     const formData = new FormData();
     const blob = new Blob([audioBuffer], { type: `audio/${filetype}` });
     formData.append("file", blob, `audio.${filetype}`);
-    formData.append("model", "whisper-1");
+    formData.append("model", this.plugin.settings.LLMProviderOptions[WhisperProviderName]?.model || default_values.model);
+
+    const lang = this.plugin.settings.LLMProviderOptions[WhisperProviderName]?.language;
+    if (lang?.length)
+      formData.append("language", lang);
 
     return formData;
   }

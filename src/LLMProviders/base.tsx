@@ -11,6 +11,8 @@ export default class ProviderBase implements LLMProviderInterface {
   static slug = "default";
   provider = "default";
   static displayName: string = "default";
+  cloned?: boolean | undefined;
+  originalId: string;
   plugin: TextGeneratorPlugin;
   config: any;
   constructor(props: { plugin: TextGeneratorPlugin, config?: any }) {
