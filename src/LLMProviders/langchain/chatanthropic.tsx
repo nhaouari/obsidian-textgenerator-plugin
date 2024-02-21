@@ -1,17 +1,14 @@
+import React from "react";
+import debug from "debug";
 import LangchainBase from "./base";
 
 import type { AnthropicInput } from "langchain/chat_models/anthropic";
-import React, { useEffect, useState } from "react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
-import SettingItem from "#/ui/settings/components/item";
-import Dropdown from "#/ui/settings/components/dropdown";
-import useGlobal from "#/ui/context/global";
-import { IconExternalLink, IconReload } from "@tabler/icons-react";
-import { request } from "obsidian";
-import clsx from "clsx";
+import { IconExternalLink } from "@tabler/icons-react";
 import { BaseLanguageModelParams } from "langchain/dist/base_language";
-import Input from "#/ui/settings/components/input";
-import debug from "debug";
+
+
+import { Input, SettingItem, useGlobal } from "../refs";
 
 const logger = debug("textgenerator:llmProvider:chatanthropic");
 
@@ -123,9 +120,9 @@ export default class LangchainChatAnthropicProvider
         </SettingItem>
         <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">
           <div className="plug-tg-text-lg plug-tg-opacity-70">Useful links</div>
-          <a href="https://beta.openai.com/signup/">
+          <a href="https://docs.anthropic.com/claude/reference/getting-started-with-the-api">
             <SettingItem
-              name="Create account OpenAI"
+              name="Getting started"
               className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
               register={props.register}
               sectionId={props.sectionId}
@@ -133,19 +130,9 @@ export default class LangchainChatAnthropicProvider
               <IconExternalLink />
             </SettingItem>
           </a>
-          <a href="https://beta.openai.com/docs/api-reference/introduction">
+          <a href="https://docs.anthropic.com/claude/reference/selecting-a-model">
             <SettingItem
-              name="API documentation"
-              className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
-              register={props.register}
-              sectionId={props.sectionId}
-            >
-              <IconExternalLink />
-            </SettingItem>
-          </a>
-          <a href="https://beta.openai.com/docs/models/overview">
-            <SettingItem
-              name="more information"
+              name="Available models"
               className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
               register={props.register}
               sectionId={props.sectionId}

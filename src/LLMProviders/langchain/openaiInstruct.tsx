@@ -1,18 +1,12 @@
+import React from "react";
+import debug from "debug";
 import LangchainBase from "./base";
 import type { OpenAI, OpenAIInput } from "langchain/llms/openai";
-import React, { useEffect, useId, useState } from "react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
-import SettingItem from "#/ui/settings/components/item";
-import Dropdown from "#/ui/settings/components/dropdown";
-import useGlobal from "#/ui/context/global";
-import { IconExternalLink, IconReload } from "@tabler/icons-react";
-import { request } from "obsidian";
-import clsx from "clsx";
-import Input from "#/ui/settings/components/input";
-import { AI_MODELS } from "#/constants";
-import { Message } from "#/types";
-import debug from "debug";
+import { IconExternalLink } from "@tabler/icons-react";
 import { ModelsHandler } from "../utils";
+
+import { AI_MODELS, Input, Message, SettingItem, useGlobal } from "../refs";
 
 const logger = debug("textgenerator:llmProvider:openaiInstruct");
 

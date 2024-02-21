@@ -7,6 +7,7 @@ import { getHBValues } from "#/utils/barhandles";
 import SettingItem from "#/ui/settings/components/item";
 import Input from "#/ui/settings/components/input";
 import CustomProvider from "./base";
+import { IconExternalLink } from "@tabler/icons-react";
 
 const logger = debug("textgenerator:AnthropicCustomProvider");
 
@@ -20,8 +21,8 @@ const globalVars: Record<string, boolean> = {
   stop: true,
 };
 
-const default_values = {
-  endpoint: "https://api.anthropic.com/v1/complete",
+export const default_values = {
+  endpoint: "https://api.anthropic.com/v1/messages",
   custom_header: `{
     "anthropic-version": "2023-06-01",
     "Content-Type": "application/json",
@@ -30,15 +31,15 @@ const default_values = {
   custom_body: `{
     model: "{{model}}",
     stream: {{stream}},
-    max_tokens_to_sample: {{max_tokens}},
-    prompt: "Human:{{escp messages.[0].content}}\\n\\nAssistant:"
+    max_tokens: {{max_tokens}},
+    messages: {{stringify messages}}
 }`,
-  path_to_choices: "completion",
-  path_to_message_content: "",
-  path_to_error_message: "",
+  path_to_choices: "content",
+  path_to_message_content: "text",
+  path_to_error_message: "error.message",
   CORSBypass: true,
   streamable: false,
-  model: "claude-2"
+  model: "claude-2.1"
 };
 
 export type CustomConfig = Record<keyof typeof default_values, string>;
@@ -91,6 +92,7 @@ export default class AnthropicLegacyProvider
             }}
           />
         </SettingItem>
+
         {vars.map((v: string) => (
           <SettingItem
             key={v}
@@ -113,6 +115,30 @@ export default class AnthropicLegacyProvider
             />
           </SettingItem>
         ))}
+
+        <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">
+          <div className="plug-tg-text-lg plug-tg-opacity-70">Useful links</div>
+          <a href="https://docs.anthropic.com/claude/reference/getting-started-with-the-api">
+            <SettingItem
+              name="Getting started"
+              className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
+              register={props.register}
+              sectionId={props.sectionId}
+            >
+              <IconExternalLink />
+            </SettingItem>
+          </a>
+          <a href="https://docs.anthropic.com/claude/reference/selecting-a-model">
+            <SettingItem
+              name="Available models"
+              className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
+              register={props.register}
+              sectionId={props.sectionId}
+            >
+              <IconExternalLink />
+            </SettingItem>
+          </a>
+        </div>
       </>
     );
   }

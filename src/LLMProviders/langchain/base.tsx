@@ -6,17 +6,15 @@ import { ChatOpenAI, OpenAIChatInput } from "langchain/chat_models/openai";
 import { HuggingFaceInference } from "langchain/llms/hf";
 
 import BaseProvider from "../base";
-import { Message } from "../../types";
 import { mapMessagesToLangchainMessages, processPromisesSetteledBatch } from "../../utils";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 
-import { AI_MODELS } from "#/constants";
-import { ContextTemplate } from "#/scope/context-manager";
 
 import { PromptTemplate } from "langchain/prompts";
 import { TypedPromptInputValues } from "langchain/dist/prompts/base";
-import { chains, splitters } from "#/lib/langchain";
 import { BaseMessageChunk } from "langchain/schema";
+
+import { chains, splitters, Message, ContextTemplate, AI_MODELS } from "../refs";
 
 const logger = debug("textgenerator:LangchainProvider");
 
