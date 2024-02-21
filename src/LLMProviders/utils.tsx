@@ -1,15 +1,13 @@
-import { AI_MODELS } from "#/constants";
-import useGlobal from "#/ui/context/global";
-import Dropdown from "#/ui/settings/components/dropdown";
-import DropdownSearch from "#/ui/settings/components/dropdownSearch";
-import SettingItem from "#/ui/settings/components/item";
 import { IconList, IconPencil, IconReload } from "@tabler/icons-react";
 import clsx from "clsx";
 import React, { useState, useEffect, useId } from "react";
 import LLMProviderInterface from "./interface";
 import JSON5 from "json5";
 import { currentDate } from "#/utils";
-import { request } from "obsidian";
+
+import { AI_MODELS, Dropdown, DropdownSearch, SettingItem, fetchWithoutCORS, useGlobal } from "./refs";
+
+
 
 export function ModelsHandler(props: {
     register: Parameters<LLMProviderInterface["RenderSettings"]>[0]["register"];
@@ -49,7 +47,7 @@ export function ModelsHandler(props: {
                 data: {
                     id: string;
                 }[];
-            } = JSON5.parse(await request(reqParams));
+            } = JSON5.parse(await fetchWithoutCORS(reqParams));
 
             const postingModels: string[] = [];
 
@@ -152,3 +150,25 @@ export const saveExport = (data: any, name: string) => {
 };
 
 
+
+
+export type AsyncReturnType<T extends (...args: any) => Promise<any>> =
+    T extends (...args: any) => Promise<infer R> ? R : any;
+
+
+export function cleanConfig<T>(options: T): T {
+    const cleanedOptions: any = {}; // Create a new object to store the cleaned properties
+
+    for (const key in options) {
+        if (Object.prototype.hasOwnProperty.call(options, key)) {
+            const value = options[key];
+
+            // Check if the value is not an empty string
+            if (value != undefined && (typeof value !== "string" || value !== "")) {
+                cleanedOptions[key] = value; // Copy non-empty properties to the cleaned object
+            }
+        }
+    }
+
+    return cleanedOptions;
+}

@@ -1,7 +1,6 @@
-import { ContextTemplate } from "#/scope/context-manager";
-import type { Register } from "#/ui/settings/sections";
 import type { LLMChain } from "langchain/chains";
 import type { Message } from "src/types";
+import type { ContextTemplate, Register } from "./refs";
 
 export default interface LLMProviderInterface {
   streamable?: boolean;

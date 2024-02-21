@@ -2,7 +2,7 @@ import React from "react";
 import safeAwait from "safe-await";
 import { Message } from "src/types";
 import TextGeneratorPlugin from "src/main";
-import { ContextTemplate } from "#/scope/context-manager";
+import type { ContextTemplate } from "./refs";
 import LLMProviderInterface, { LLMConfig } from "./interface";
 import { processPromisesSetteledBatch, promiseForceFullfil } from "#/utils";
 
