@@ -21,7 +21,7 @@ export default class LangchainOllamaProvider
   static id = "Ollama (Langchain)" as const;
   static displayName: string = "Ollama";
 
-  streamable = false;
+  streamable = true;
   llmPredict = true;
 
   id = LangchainOllamaProvider.id;
