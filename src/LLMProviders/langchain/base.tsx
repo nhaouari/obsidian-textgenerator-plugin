@@ -54,9 +54,9 @@ export default class LangchainProvider
       temperature: +options.temperature,
       frequencyPenalty: +options.frequency_penalty || 0,
       presencePenalty: +options.presence_penalty || 0,
-      n: options.n,
-      stop: options.stop,
-      streaming: options.stream,
+      n: options.n || 1,
+      stop: options.stop || undefined,
+      streaming: options.stream || false,
       maxRetries: 3,
     } as Partial<OpenAIChatInput>);
   }
