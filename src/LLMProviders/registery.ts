@@ -15,7 +15,6 @@ export default class LLMProviderRegistry<T extends { slug?: any, id: any, displa
     //         this.register(provider, element as unknown as T)
     //     }
     // }
-    console.log({ plugins })
     this.plugins = plugins;
   }
 

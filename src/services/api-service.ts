@@ -47,9 +47,6 @@ export default class RequestHandler {
       const llm = this.plugin.settings.LLMProviderProfiles[llmId];
       const parent = defaultProvidersMap[llm.extends as any]
 
-      console.log({
-        llm, parent
-      })
       if (!parent) continue;
 
       class clone extends parent {
