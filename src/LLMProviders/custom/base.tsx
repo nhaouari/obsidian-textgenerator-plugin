@@ -1,14 +1,12 @@
-import BaseProvider from "../base";
-import { cleanConfig } from "../../utils";
-import { AsyncReturnType, Message } from "../../types";
+import React from "react";
 import debug from "debug";
-import React, { useMemo } from "react";
-import LLMProviderInterface, { LLMConfig } from "../interface";
-import { default_values as OPENAI_default_values } from "./custom";
-import { RequestUrlParam, requestUrl } from "obsidian";
-import get from "lodash.get";
-import { Handlebars } from "../../helpers/handlebars-helpers";
 import JSON5 from "json5";
+import get from "lodash.get";
+import LLMProviderInterface, { LLMConfig } from "../interface";
+import { Handlebars } from "../../helpers/handlebars-helpers";
+import BaseProvider from "../base";
+import { AsyncReturnType, cleanConfig } from "../utils";
+import { requestWithoutCORS, requestWithoutCORSParam, Message } from "../refs";
 
 const logger = debug("textgenerator:CustomProvider");
 
@@ -37,7 +35,69 @@ test4`,
 ];
 
 
-const default_values = OPENAI_default_values;
+const default_values = {
+  endpoint: "https://api.openai.com/v1/chat/completions",
+  custom_header: `{
+    "Content-Type": "application/json",
+    authorization: "Bearer {{api_key}}"
+}`,
+  custom_body: `{
+    model: "{{model}}",
+    temperature: {{temperature}},
+    top_p: {{top_p}},
+    frequency_penalty: {{frequency_penalty}},
+    presence_penalty: {{presence_penalty}},
+    max_tokens: {{max_tokens}},
+    n: {{n}},
+    stream: {{stream}},
+    stop: "{{stop}}",
+    messages: {{stringify messages}}
+}`,
+  frequency_penalty: 0,
+  model: "gpt-3.5-turbo-16k",
+  presence_penalty: 0.5,
+  top_p: 1,
+  max_tokens: 400,
+  n: 1,
+  stream: false,
+  temperature: 0.7,
+
+  sanatization_streaming: `(chunk) => {
+  let resultText = "";
+  const lines = chunk.split("\\ndata: ");
+
+  const parsedLines = lines
+    .map((line) => line.replace(/^data: /, "").trim()) // Remove the "data: " prefix
+    .filter((line) => line !== "" && line !== "[DONE]") // Remove empty lines and "[DONE]"
+    .map((line) => JSON.parse(line)); // Parse the JSON string
+
+  for (const parsedLine of parsedLines) {
+    const { choices } = parsedLine;
+    const { delta } = choices[0];
+    const { content } = delta;
+    // Update the UI with the new content
+    if (content) {
+      resultText += content;
+    }
+  }
+  return resultText;
+}`,
+  sanatization_response: `async (data, res)=>{
+  // catch error
+  if (res.status >= 300) {
+    const err = data?.error?.message || JSON.stringify(data);
+    throw err;
+  }
+
+  // get choices
+  const choices = data.choices.map(c=> c.message);
+
+  // the return object should be in the format of 
+  // { content: string }[] 
+  // if there's only one response, put it in the array of choices.
+  return choices;
+}`,
+};
 
 export type CustomConfig = Record<keyof typeof default_values, string>;
 
@@ -55,7 +115,7 @@ export default class CustomProvider
   id = CustomProvider.id;
   originalId = CustomProvider.id;
   async request(
-    params: RequestUrlParam & {
+    params: requestWithoutCORSParam & {
       signal?: AbortSignal;
       stream?: boolean;
       onToken?: (token: string, first: boolean) => Promise<void>;
@@ -76,7 +136,7 @@ export default class CustomProvider
 
     const k = (
       params.CORSBypass
-        ? await requestUrl({
+        ? await requestWithoutCORS({
           url: params.url,
           method: requestOptions.method,
           body:
@@ -95,6 +155,7 @@ export default class CustomProvider
         })
         : await fetch(params.url, requestOptions)
     ) as AsyncReturnType<typeof fetch>;
+
 
     if (!params.CORSBypass && params.stream) {
       if (!k.body) return;

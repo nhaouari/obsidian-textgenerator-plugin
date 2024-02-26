@@ -1,14 +1,14 @@
 import LangchainBase from "./base";
 
-import { ChatGoogleGenerativeAI, GoogleGenerativeAIChatInput } from "@langchain/google-genai";
-import React, { useId } from "react";
+import { GoogleGenerativeAIChatInput } from "@langchain/google-genai";
+import React from "react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
-import SettingItem from "#/ui/settings/components/item";
-import useGlobal from "#/ui/context/global";
 import { IconExternalLink } from "@tabler/icons-react";
-import Input from "#/ui/settings/components/input";
 import debug from "debug";
 import { ModelsHandler } from "../utils";
+
+import { Input, SettingItem, useGlobal } from "../refs";
+
 
 const logger = debug("textgenerator:llmProvider:gemini");
 

@@ -4,11 +4,11 @@ import type { AzureOpenAIInput, OpenAIInput } from "langchain/llms/openai";
 import { IconExternalLink } from "@tabler/icons-react";
 
 import LLMProviderInterface, { LLMConfig } from "../interface";
-import SettingItem from "#/ui/settings/components/item";
-import Input from "#/ui/settings/components/input";
-import useGlobal from "#/ui/context/global";
 import debug from "debug";
 import clsx from "clsx";
+
+import { Input, SettingItem, useGlobal } from "../refs";
+
 
 const logger = debug("textgenerator:llmProvider:azureopenaiInstruct");
 

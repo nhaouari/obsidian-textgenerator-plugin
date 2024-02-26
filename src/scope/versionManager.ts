@@ -1,6 +1,7 @@
 import set from "lodash.set";
 import TextGeneratorPlugin from "../main";
 import { Version } from "../types";
+import { default_values as anthropicLegacyDefaultValues } from "#/LLMProviders/custom/anthropic";
 export default class VersionManager {
   plugin: TextGeneratorPlugin;
   currentVersion: Version;
@@ -37,6 +38,11 @@ export default class VersionManager {
     if (this.compare(this.plugin.settings.version, "0.6.14-beta") <= 0) {
       await this.updateFromV6_14To7();
     }
+
+    if (this.compare(this.plugin.settings.version, "0.7.1-beta") <= 0) {
+      await this.updateFromV7_1To7_2();
+    }
+
 
 
     this.plugin.settings.version = this.currentVersion;
@@ -132,6 +138,23 @@ export default class VersionManager {
         extends: "OpenAI Chat (Langchain)",
         name: "OpenAI Chat 2"
       };
+    }
+  }
+
+  async updateFromV7_1To7_2() {
+    this.plugin.settings.version = "0.7.2";
+
+    const anthropicLegacy = this.plugin.settings.LLMProviderOptions[
+      "Anthropic Legacy (Custom)"
+    ]
+    if (anthropicLegacy) {
+      this.plugin.settings.LLMProviderOptions[
+        "Anthropic Legacy (Custom)"
+      ] = {
+        ...anthropicLegacy,
+        ...anthropicLegacyDefaultValues,
+        endpoint: anthropicLegacy.replace("v1/complete", "v1/messages")
+      }
     }
   }
 

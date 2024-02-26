@@ -2,14 +2,12 @@ import React from "react";
 import LangchainBase from "./base";
 
 import LLMProviderInterface, { LLMConfig } from "../interface";
-import SettingItem from "#/ui/settings/components/item";
-import useGlobal from "#/ui/context/global";
 import { IconExternalLink } from "@tabler/icons-react";
-import Input from "#/ui/settings/components/input";
 import { ModelsHandler } from "../utils";
-import { AI_MODELS } from "#/constants";
-import { Message } from "#/types";
 import debug from "debug";
+
+import { AI_MODELS, Input, Message, SettingItem, useGlobal } from "../refs";
+
 
 const logger = debug("textgenerator:llmProvider:openaiChat");
 

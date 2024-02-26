@@ -1,5 +1,5 @@
-import { Notice, Plugin, normalizePath, request, requestUrl } from "obsidian";
-import handlebars, { Exception, createFrame, template } from "handlebars";
+import { Notice } from "obsidian";
+import handlebars, { Exception, createFrame } from "handlebars";
 import { pull } from "langchain/hub";
 
 import asyncHelpers from "../lib/async-handlebars-helper";

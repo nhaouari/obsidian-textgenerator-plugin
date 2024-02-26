@@ -452,10 +452,10 @@ export default class TextGeneratorPlugin extends Plugin {
 
   async handelError(error: any) {
     if (error?.length || error?.message) {
-      new Notice("🔴 " + (typeof error == "string" ? error : error.message));
+      new Notice("🔴 TG Error: " + (typeof error == "string" ? error : error.message));
     } else {
       new Notice(
-        "🔴 Error: Text Generator Plugin: An error has occurred. Please check the console by pressing CTRL+SHIFT+I or turn on display errors in the editor within the settings for more information."
+        "🔴 TG Error: An error has occurred. Please check the console by pressing CTRL+SHIFT+I or turn on display errors in the editor within the settings for more information."
       );
     }
 

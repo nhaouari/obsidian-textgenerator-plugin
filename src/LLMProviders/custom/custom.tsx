@@ -1,6 +1,6 @@
 import { cleanConfig } from "../../utils";
 import debug from "debug";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import LLMProviderInterface from "../interface";
 import useGlobal from "#/ui/context/global";
 import { getHBValues } from "#/utils/barhandles";
@@ -10,7 +10,6 @@ import { Handlebars } from "../../helpers/handlebars-helpers";
 import clsx from "clsx";
 import CustomProvider from "./base";
 import JSON5 from "json5";
-import ImportExportHandler from "#/ui/components/exportImport";
 
 const logger = debug("textgenerator:CustomProvider");
 
@@ -56,14 +55,16 @@ export const default_values = {
     stop: "{{stop}}",
     messages: {{stringify messages}}
 }`,
-  frequency_penalty: 0,
+  stream: false,
   model: "gpt-3.5-turbo-16k",
+
+  // this for the example
+  temperature: 0.7,
+  frequency_penalty: 0,
   presence_penalty: 0.5,
   top_p: 1,
   max_tokens: 400,
   n: 1,
-  stream: false,
-  temperature: 0.7,
 
   sanatization_streaming: `(chunk) => {
   let resultText = "";
@@ -129,6 +130,14 @@ export default class DefaultCustomProvider
       ...default_values,
     });
 
+
+    // delete any global variables that would interfer with global context
+    useEffect(() => {
+      for (const c in globalVars) {
+        delete config[c];
+      }
+    }, [])
+
     const vars = useMemo(() => {
       return getHBValues(
         `${config?.custom_header} 
@@ -189,7 +198,6 @@ export default class DefaultCustomProvider
         </SettingItem>
 
         {showAdvanced && <>
-
           <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
             <div className="plug-tg-font-bold">Headers:</div>
             <div className="plug-tg-text-[8px]">Check console in the devtools to see a preview of the body with example values</div>
@@ -209,7 +217,7 @@ export default class DefaultCustomProvider
                   default_values.custom_header
                 )({
                   ...global.plugin.settings,
-                  ...cleanConfig(config),
+                  ...cleanConfig(default_values),
                   n: 1,
                   messages: testMessages,
                 });

@@ -1,14 +1,14 @@
-import LangchainBase from "./base";
 import React from "react";
+import debug from "debug";
+import LangchainBase from "./base";
 import LLMProviderInterface, { LLMConfig } from "../interface";
-import SettingItem from "#/ui/settings/components/item";
-import useGlobal from "#/ui/context/global";
 import { IconExternalLink } from "@tabler/icons-react";
-import Input from "#/ui/settings/components/input";
 import { BaseLLMParams } from "langchain/llms/base"
 
-import debug from "debug";
 import { OllamaInput } from "langchain/llms/ollama";
+
+import { Input, SettingItem, useGlobal } from "../refs";
+
 
 const logger = debug("textgenerator:llmProvider:ollama");
 
@@ -21,7 +21,7 @@ export default class LangchainOllamaProvider
   static id = "Ollama (Langchain)" as const;
   static displayName: string = "Ollama";
 
-  streamable = false;
+  streamable = true;
   llmPredict = true;
 
   id = LangchainOllamaProvider.id;
@@ -99,29 +99,9 @@ export default class LangchainOllamaProvider
         </SettingItem>
         <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">
           <div className="plug-tg-text-lg plug-tg-opacity-70">Useful links</div>
-          <a href="https://beta.openai.com/signup/">
+          <a href="https://discord.com/channels/1083485983879741572/1202326921858523246">
             <SettingItem
-              name="Create account OpenAI"
-              className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
-              register={props.register}
-              sectionId={props.sectionId}
-            >
-              <IconExternalLink />
-            </SettingItem>
-          </a>
-          <a href="https://beta.openai.com/docs/api-reference/introduction">
-            <SettingItem
-              name="API documentation"
-              className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
-              register={props.register}
-              sectionId={props.sectionId}
-            >
-              <IconExternalLink />
-            </SettingItem>
-          </a>
-          <a href="https://beta.openai.com/docs/models/overview">
-            <SettingItem
-              name="more information"
+              name="How to use locally hosted ollama (Discord Link)"
               className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
               register={props.register}
               sectionId={props.sectionId}

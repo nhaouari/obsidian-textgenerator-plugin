@@ -1,15 +1,15 @@
-import LangchainBase from "./base";
 import React from "react";
+import debug from "debug";
+import LangchainBase from "./base";
 import LLMProviderInterface, { LLMConfig } from "../interface";
-import SettingItem from "#/ui/settings/components/item";
-import useGlobal from "#/ui/context/global";
 import { IconExternalLink } from "@tabler/icons-react";
-import Input from "#/ui/settings/components/input";
 import { BaseLLMParams } from "langchain/llms/base";
 import type { HFInput } from "langchain/llms/hf";
-import debug from "debug";
 
 const logger = debug("textgenerator:llmProvider:hf");
+
+import { Input, SettingItem, useGlobal } from "../refs";
+
 
 export default class LangchainHFProvider
   extends LangchainBase
@@ -99,9 +99,9 @@ export default class LangchainHFProvider
         </SettingItem>
         <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">
           <div className="plug-tg-text-lg plug-tg-opacity-70">Useful links</div>
-          <a href="https://beta.openai.com/signup/">
+          <a href="https://huggingface.co/settings/tokens">
             <SettingItem
-              name="Create account OpenAI"
+              name="Setup API token"
               className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
               register={props.register}
               sectionId={props.sectionId}
@@ -109,7 +109,7 @@ export default class LangchainHFProvider
               <IconExternalLink />
             </SettingItem>
           </a>
-          <a href="https://beta.openai.com/docs/api-reference/introduction">
+          <a href="https://huggingface.co/docs/api-inference/index">
             <SettingItem
               name="API documentation"
               className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
@@ -119,9 +119,9 @@ export default class LangchainHFProvider
               <IconExternalLink />
             </SettingItem>
           </a>
-          <a href="https://beta.openai.com/docs/models/overview">
+          <a href="https://huggingface.co/docs/api-inference/faq">
             <SettingItem
-              name="more information"
+              name="More information"
               className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
               register={props.register}
               sectionId={props.sectionId}
