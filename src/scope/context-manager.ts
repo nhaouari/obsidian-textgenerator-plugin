@@ -486,9 +486,9 @@ export default class ContextManager {
 
     let inputContent, outputContent, preRunnerContent;
     if (templateContent.includes("***")) {
-      const splitContent = templateContent.replaceAll("\\***", "").split("***");
+      const splitContent = templateContent.replaceAll("\\***", "").split("\n\*\*\*");
       inputContent = this.overProcessTemplate(splitContent[splitContent.length == 3 ? 1 : 0]);
-      outputContent = this.overProcessTemplate(splitContent[splitContent.length == 3 ? 2 : 1]);
+      outputContent = this.overProcessTemplate(splitContent[splitContent.length == 3 ? 2 : 1]).slice(1);
 
       preRunnerContent = this.overProcessTemplate(splitContent[splitContent.length - 3]);
     } else {
