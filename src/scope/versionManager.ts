@@ -177,7 +177,7 @@ export default class VersionManager {
         ...anthropicLegacy,
         ...anthropicLegacyDefaultValues,
         sanatization_response: anthropicLegacyDefaultValues.sanatization_response,
-        endpoint: anthropicLegacy.replace("v1/complete", "v1/messages")
+        endpoint: anthropicLegacy.endpoint?.replace("v1/complete", "v1/messages") || anthropicLegacyDefaultValues.endpoint
       }
     }
   }
