@@ -634,9 +634,9 @@ export default class Commands {
       name: "reload Plugin",
       icon: "layout",
       async callback() {
-        const self: TextGeneratorPlugin = this;
+        const self: Commands = this;
 
-        self.reload();
+        self.plugin.reload();
       },
     },
   ];
