@@ -2,6 +2,7 @@ import set from "lodash.set";
 import TextGeneratorPlugin from "../main";
 import { Version } from "../types";
 import { default_values as anthropicLegacyDefaultValues } from "#/LLMProviders/custom/anthropic";
+import { default_values as CUSTOMDefaultValues } from "#/LLMProviders/custom/custom";
 export default class VersionManager {
   plugin: TextGeneratorPlugin;
   currentVersion: Version;
@@ -102,6 +103,28 @@ export default class VersionManager {
         customConfig.custom_body = customConfig.handlebars_body_in;
         delete customConfig.handlebars_body_in;
       }
+
+      if (customConfig.path_to_choices ?? customConfig.path_to_message_content ?? customConfig.path_to_error_message ?? true) {
+        customConfig.sanatization_response = `async (data, res)=>{
+          // catch error
+          if (res.status >= 300) {
+            const err = data?.${customConfig.path_to_error_message} || JSON.stringify(data);
+            throw err;
+          }
+        
+          // get choices
+          const choices =  data.${customConfig.path_to_choices}.map(c=>({
+            role:"assistant", 
+            content: c.${customConfig.path_to_message_content}
+          }));
+        
+          // the return object should be in the format of 
+          // { content: string }[] 
+          // if there's only one response, put it in the array of choices.
+          return choices;
+        }`
+
+      }
     }
 
     // same thing in anthropic legacy
@@ -153,6 +176,7 @@ export default class VersionManager {
       ] = {
         ...anthropicLegacy,
         ...anthropicLegacyDefaultValues,
+        sanatization_response: anthropicLegacyDefaultValues.sanatization_response,
         endpoint: anthropicLegacy.replace("v1/complete", "v1/messages")
       }
     }
