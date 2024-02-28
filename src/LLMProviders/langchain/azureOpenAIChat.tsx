@@ -58,7 +58,7 @@ export default class LangchainAzureOpenAIChatProvider
   }
 
   async load() {
-    const { ChatOpenAI } = await import("langchain/chat_models/openai");
+    const { ChatOpenAI } = await import("@langchain/openai");
     this.llmClass = ChatOpenAI;
   }
 

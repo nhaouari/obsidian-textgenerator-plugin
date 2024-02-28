@@ -1,6 +1,6 @@
 
 import debug from "debug";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import LLMProviderInterface from "../interface";
 import useGlobal from "#/ui/context/global";
 import { getHBValues } from "#/utils/barhandles";
@@ -21,6 +21,9 @@ const globalVars: Record<string, boolean> = {
   stop: true,
 };
 
+
+const untangableVars = ["custom_header", "custom_body", "sanatization_response", "streamable", "CORSBypass"]
+
 export const default_values = {
   endpoint: "https://api.anthropic.com/v1/messages",
   custom_header: `{
@@ -34,9 +37,22 @@ export const default_values = {
     max_tokens: {{max_tokens}},
     messages: {{stringify messages}}
 }`,
-  path_to_choices: "content",
-  path_to_message_content: "text",
-  path_to_error_message: "error.message",
+
+  sanatization_response: `async (data, res)=>{
+    // catch error
+    if (res.status >= 300) {
+      const err = data?.error?.message || JSON.stringify(data);
+      throw err;
+    }
+  
+    // get choices
+    const choices = data.content.map(c=> ({role:"assistant", content:c.text}));
+  
+    // the return object should be in the format of 
+    // { content: string }[] 
+    // if there's only one response, put it in the array of choices.
+    return choices;
+  }`,
   CORSBypass: true,
   streamable: false,
   model: "claude-2.1"
@@ -66,6 +82,14 @@ export default class AnthropicLegacyProvider
     ] ??= {
       ...default_values
     });
+
+    useEffect(() => {
+      untangableVars.forEach(v => {
+        config[v] = default_values[v as keyof typeof default_values]
+      })
+      global.triggerReload();
+      global.plugin.saveSettings();
+    }, [])
 
     const vars = useMemo(() => {
       return getHBValues(

@@ -134,6 +134,23 @@ export default class CustomProvider
       signal: params.signal,
     };
 
+    console.log("request options", {
+      url: params.url,
+      method: requestOptions.method,
+      body:
+        typeof requestOptions.body == "string"
+          ? JSON.parse(requestOptions.body)
+          : requestOptions.body
+            ? requestOptions.body
+            : undefined,
+      headers:
+        typeof requestOptions.headers == "object"
+          ? (requestOptions.headers as any)
+          : requestOptions.headers
+            ? JSON5.parse(requestOptions.headers)
+            : undefined,
+
+    })
     const k = (
       params.CORSBypass
         ? await requestWithoutCORS({

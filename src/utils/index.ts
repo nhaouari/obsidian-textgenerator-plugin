@@ -196,7 +196,7 @@ import {
   AIMessage,
   BaseMessage,
   SystemMessage,
-} from "langchain/schema";
+} from "@langchain/core/messages";
 
 export function mapMessagesToLangchainMessages(
   messages: Message[]

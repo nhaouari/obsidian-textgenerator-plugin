@@ -2,7 +2,7 @@
 import debug from "debug";
 import React from "react";
 
-import { ChatOpenAI, OpenAIChatInput } from "langchain/chat_models/openai";
+import { ChatOpenAI, OpenAIChatInput } from "@langchain/openai";
 import { HuggingFaceInference } from "langchain/llms/hf";
 
 import BaseProvider from "../base";
@@ -12,9 +12,10 @@ import LLMProviderInterface, { LLMConfig } from "../interface";
 
 import { PromptTemplate } from "langchain/prompts";
 import { TypedPromptInputValues } from "langchain/dist/prompts/base";
-import { BaseMessageChunk } from "langchain/schema";
+import type { BaseMessageChunk } from "langchain/schema";
 
 import { chains, splitters, Message, ContextTemplate, AI_MODELS } from "../refs";
+import { Callbacks } from "@langchain/core/callbacks/manager";
 
 const logger = debug("textgenerator:LangchainProvider");
 
@@ -131,27 +132,25 @@ export default class LangchainProvider
         let first = true;
         let allText = "";
 
-        const llmFuncs: Parameters<
-          InstanceType<typeof ChatOpenAI>["predict"]
-        >["2"] = [
-            {
-              ...(onToken &&
-                params.stream && {
-                async handleLLMNewToken(token: string) {
-                  const d = first;
-                  first = false;
-                  alreadyBegainGenerating = true;
-                  const tk = (await onToken(token, d)) || token;
-                  allText += tk;
-                  result += tk;
-                },
-              }),
-
-              handleLLMEnd() {
-                if (params.stream) s(allText);
+        const llmFuncs: Callbacks = [
+          {
+            ...(!!onToken &&
+              !!params.stream && {
+              async handleLLMNewToken(token: string) {
+                const d = first;
+                first = false;
+                alreadyBegainGenerating = true;
+                const tk = (await onToken(token, d)) || token;
+                allText += tk;
+                result += tk;
               },
+            }),
+
+            handleLLMEnd() {
+              if (params.stream) s(allText);
             },
-          ];
+          },
+        ];
 
         if (customConfig?.chain?.type) {
           const textSplitter = new splitters.RecursiveCharacterTextSplitter({
@@ -170,9 +169,7 @@ export default class LangchainProvider
             customConfig.chain
           );
 
-          console.log({ chain });
-
-          const res = await chain.call(
+          const res = await chain.invoke(
             {
               input_documents: docs,
               signal: reqParams.requestParams?.signal || undefined,
