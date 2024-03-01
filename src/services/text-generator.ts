@@ -3,6 +3,7 @@ import {
   App,
   Notice,
   TFile,
+  Vault,
   stringifyYaml,
 } from "obsidian";
 import { TextGeneratorSettings } from "../types";
@@ -664,22 +665,26 @@ ${removeYAML(content)}
     _files?: TFile[] | undefined,
     promptsPath: string = this.plugin.settings.promptsPath
   ) {
-    const files = _files || this.plugin.app.vault.getFiles();
-    const paths = files
-      .filter(
-        (f) => f.path.startsWith(promptsPath) && !f.path.includes("/trash/")
-      );
-    return paths.map((s) => {
-      const conf = this.getMetadata(s.path) as {
-        title: string,
-        ctime: number,
-        path: string
-      } & ReturnType<typeof this.getMetadata>
-      conf.title = s.path.substring(promptsPath.length + 1);
-      conf.ctime = s.stat.ctime
-      conf.path = s.path
-      return conf;
-    });
+		const templateFolder =
+			this.plugin.app.vault.getFolderByPath(promptsPath);
+
+		let templates = [] as any;
+		if (templateFolder) {
+			Vault.recurseChildren(templateFolder, (file) => {
+				if (file instanceof TFile) {
+					const conf = this.getMetadata(file.path) as {
+						title: string;
+						ctime: number;
+						path: string;
+					} & ReturnType<typeof this.getMetadata>;
+					conf.title = file.path.substring(promptsPath.length + 1);
+					conf.ctime = file.stat.ctime;
+					conf.path = file.path;
+					templates.push(conf);
+				}
+			});
+		}
+		return templates;
   }
 
   getMetadata(path: string) {
@@ -876,14 +881,13 @@ ${removeYAML(content)}
 
   async updateTemplatesCache() {
     // get files, it will be empty onLoad, that's why we are using the getFilesOnLoad function
-    const files = await this.plugin.getFilesOnLoad();
+		// nico update : stay this await hack here for moment, before find a better solution, but keept only one implementation to load templates list, in getTemplates()
+		await this.plugin.getFilesOnLoad();
 
-    const templates = this.plugin.textGenerator.getTemplates(
-      files
-    );
+		const templates = this.plugin.textGenerator.getTemplates();
 
     this.templatePaths = {};
-    templates.forEach((template) => {
+		templates.forEach((template: any) => {
       if (template.id) {
         const ss = template.path.split("/");
         this.templatePaths[ss[ss.length - 2]] ??= {};
