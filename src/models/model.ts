@@ -5,7 +5,7 @@ import debug from "debug";
 
 const logger = debug("textgenerator:model");
 
-export class ExampleModal extends FuzzySuggestModal<PromptTemplate & { id: string }> {
+export class ExampleModal extends FuzzySuggestModal<PromptTemplate> {
   plugin: TextGeneratorPlugin;
   title: string;
   onChoose: (result: PromptTemplate) => void;
@@ -27,7 +27,9 @@ export class ExampleModal extends FuzzySuggestModal<PromptTemplate & { id: strin
 
   getItems() {
     const viewType = this.plugin.app.workspace.activeLeaf?.view.getViewType();
-    return this.plugin.textGenerator.getTemplates().filter(t => !viewType || !t.viewTypes || t.viewTypes?.includes(viewType)) as any;
+    return this.plugin.textGenerator.getTemplates()
+      // show only templates that works with this view type
+      .filter(t => !viewType || !t.viewTypes || t.viewTypes?.includes(viewType)) as any;
   }
 
   // Renders each suggestion item.
@@ -84,17 +86,17 @@ export class ExampleModal extends FuzzySuggestModal<PromptTemplate & { id: strin
   getItemText(template: PromptTemplate): string {
     return (
       template.tags +
-      ((!template.name || !template.promptId) ? template.path || "" : "") +
+      ((!template.name || !template.id) ? template.path || "" : "") +
       (template.name || "") +
       this.getItemPackageId(template) +
       template.author +
-      (template.promptId || "") +
+      (template.id || "") +
       (template.description || "")
     );
   }
 
   getItemPackageId(template: PromptTemplate): string {
-    return template.path?.split("/").reverse()[1] || template.promptId
+    return template.path?.split("/").reverse()[1] || template.id
   }
 
   onChooseItem(template: PromptTemplate, evt: MouseEvent | KeyboardEvent) {

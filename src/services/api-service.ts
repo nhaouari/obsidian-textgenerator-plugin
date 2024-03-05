@@ -18,8 +18,8 @@ export default class RequestHandler {
   reqFormatter: ReqFormatter;
   signalController?: AbortController;
 
-  LLMProvider: LLMProviderInterface;
-  LLMRegestry: LLMProviderRegistry<LLMProviderInterface>;
+  LLMProvider: LLMProviderInterface = undefined as any;
+  LLMRegestry: LLMProviderRegistry<LLMProviderInterface> = undefined as any;
 
   constructor(plugin: TextGeneratorPlugin) {
     this.plugin = plugin;

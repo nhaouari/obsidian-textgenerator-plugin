@@ -60,22 +60,23 @@ if (Platform.isDesktop) {
 const logger = debug("textgenerator:main");
 
 export default class TextGeneratorPlugin extends Plugin {
-  settings: TextGeneratorSettings;
-  textGenerator: TextGenerator;
-  packageManager: PackageManager;
-  versionManager: VersionManager;
-  contextManager: ContextManager;
+  settings: TextGeneratorSettings = undefined as any;
+  textGenerator: TextGenerator = undefined as any;
+  packageManager: PackageManager = undefined as any;
+  versionManager: VersionManager = undefined as any;
+  contextManager: ContextManager = undefined as any;
   contentManager: typeof ContentManagerCls = ContentManagerCls;
-  tokensScope: TokensScope;
+  tokensScope: TokensScope = undefined as any;
   autoSuggest?: AutoSuggest;
-  processing: boolean;
-  defaultSettings: TextGeneratorSettings;
-  textGeneratorIconItem: HTMLElement;
+  processing: boolean = undefined as any;
+  defaultSettings: TextGeneratorSettings = undefined as any;
 
-  statusBarTokens: HTMLElement;
-  notice: Notice;
-  commands: Commands;
-  statusBarItemEl: HTMLElement;
+  textGeneratorIconItem: HTMLElement = createDiv();
+  statusBarTokens: HTMLElement = createDiv();
+
+  notice: Notice = undefined as any;
+  commands: Commands = undefined as any;
+  statusBarItemEl: HTMLElement = undefined as any;
   spinner?: SpinnersPlugin;
   temp: Record<string, any> = {};
 
@@ -295,6 +296,8 @@ export default class TextGeneratorPlugin extends Plugin {
     if (state?.openInPopout) {
       const leaf = this.app.workspace.getRightLeaf(true);
 
+      if (!leaf) return;
+
       await leaf.setViewState({
         type: id,
         active: true,
@@ -313,7 +316,9 @@ export default class TextGeneratorPlugin extends Plugin {
 
     const leaf = await this.app.workspace.getRightLeaf(false);
 
-    await leaf.setViewState({
+    if (!leaf) return;
+
+    await leaf?.setViewState({
       type: id,
       active: true,
       state: { ...state, id: randomUUID() },

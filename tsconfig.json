@@ -4,6 +4,7 @@
 		"baseUrl": ".",
 		"inlineSourceMap": true,
 		"inlineSources": true,
+		"strict": true,
 		"module": "ES2022",
 		"target": "ES6",
 		"allowJs": true,

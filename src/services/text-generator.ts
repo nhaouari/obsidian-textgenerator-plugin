@@ -32,7 +32,7 @@ import { ContentManager } from "../scope/content-manager/types";
 export default class TextGenerator extends RequestHandler {
   plugin: TextGeneratorPlugin;
   reqFormatter: ReqFormatter;
-  signal: AbortSignal;
+  signal: AbortSignal = undefined as any;
 
   embeddingsScope: EmbeddingScope;
 
@@ -662,29 +662,32 @@ ${removeYAML(content)}
   }
 
   getTemplates(
-    _files?: TFile[] | undefined,
     promptsPath: string = this.plugin.settings.promptsPath
   ) {
-		const templateFolder =
-			this.plugin.app.vault.getFolderByPath(promptsPath);
+    const templateFolder =
+      this.plugin.app.vault.getFolderByPath(promptsPath);
 
-		let templates = [] as any;
-		if (templateFolder) {
-			Vault.recurseChildren(templateFolder, (file) => {
-				if (file instanceof TFile) {
-					const conf = this.getMetadata(file.path) as {
-						title: string;
-						ctime: number;
-						path: string;
-					} & ReturnType<typeof this.getMetadata>;
-					conf.title = file.path.substring(promptsPath.length + 1);
-					conf.ctime = file.stat.ctime;
-					conf.path = file.path;
-					templates.push(conf);
-				}
-			});
-		}
-		return templates;
+    let templates:
+      (ReturnType<typeof this.getMetadata> & {
+        title: string,
+        ctime: number
+        path: string
+      })[]
+      = [];
+
+    if (templateFolder) {
+      Vault.recurseChildren(templateFolder, (file) => {
+        if (file instanceof TFile) {
+          templates.push({
+            ...this.getMetadata(file.path),
+            title: file.path.substring(promptsPath.length + 1),
+            ctime: file.stat.ctime,
+            path: file.path,
+          });
+        }
+      });
+    }
+    return templates;
   }
 
   getMetadata(path: string) {
@@ -817,7 +820,7 @@ ${removeYAML(content)}
   }
 
   /** record of template paths, from packageId, templateId */
-  templatePaths: Record<string, Record<string, string>>;
+  templatePaths: Record<string, Record<string, string>> = {};
   lastTemplatePathStats: Record<string, number> = {};
 
 
@@ -881,13 +884,13 @@ ${removeYAML(content)}
 
   async updateTemplatesCache() {
     // get files, it will be empty onLoad, that's why we are using the getFilesOnLoad function
-		// nico update : stay this await hack here for moment, before find a better solution, but keept only one implementation to load templates list, in getTemplates()
-		await this.plugin.getFilesOnLoad();
+    // nico update : stay this await hack here for moment, before find a better solution, but keept only one implementation to load templates list, in getTemplates()
+    await this.plugin.getFilesOnLoad();
 
-		const templates = this.plugin.textGenerator.getTemplates();
+    const templates = this.plugin.textGenerator.getTemplates();
 
     this.templatePaths = {};
-		templates.forEach((template: any) => {
+    templates.forEach((template: any) => {
       if (template.id) {
         const ss = template.path.split("/");
         this.templatePaths[ss[ss.length - 2]] ??= {};

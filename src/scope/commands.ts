@@ -23,7 +23,7 @@ export default class Commands {
       icon: "GENERATE_ICON",
       hotkeys: [{ modifiers: ["Mod"], key: "j" }],
       async callback() {
-        const self: Commands = this;
+        const self: Commands = this as any;
         try {
           if (self.plugin.processing) return self.plugin.textGenerator.signalController?.abort();
           const activeView = await self.plugin.getActiveView();
@@ -41,7 +41,7 @@ export default class Commands {
       icon: "GENERATE_META_ICON",
       hotkeys: [{ modifiers: ["Mod", "Alt"], key: "j" }],
       async callback() {
-        const self: Commands = this;
+        const self: Commands = this as any;
         try {
           const activeView = await self.plugin.getActiveView();
           const CM = ContentManagerCls.compile(activeView, self.plugin)
@@ -58,7 +58,7 @@ export default class Commands {
       icon: "circle",
       //hotkeys: [{ modifiers: ["Mod"], key: "q"}],
       async callback() {
-        const self: Commands = this;
+        const self: Commands = this as any;
         try {
           new ExampleModal(
             self.plugin.app,
@@ -66,7 +66,7 @@ export default class Commands {
             async (result) => {
               if (!result.path) throw "Nothing was selected";
 
-              const self: Commands = this;
+              const self: Commands = this as any;
               try {
                 const activeView = await self.plugin.getActiveView();
                 const CM = ContentManagerCls.compile(activeView, self.plugin);
@@ -80,7 +80,7 @@ export default class Commands {
                   activeFile: true,
                 });
               } catch (error) {
-                this.plugin.handelError(error);
+                self.plugin.handelError(error);
               }
             },
             "Generate and Insert Template In The Active Note"
@@ -97,19 +97,19 @@ export default class Commands {
       icon: "circle",
       //hotkeys: [{ modifiers: ["Mod"], key: "q"}],
       async callback() {
+        const self: Commands = this as any;
         try {
           new ExampleModal(
-            this.plugin.app,
-            this.plugin,
+            self.plugin.app,
+            self.plugin,
             async (result) => {
-              const self: Commands = this;
               try {
                 const activeView = await self.plugin.getActiveView();
                 const CM = ContentManagerCls.compile(activeView, self.plugin);
 
-                await this.plugin.textGenerator.generateToClipboard(
+                await self.plugin.textGenerator.generateToClipboard(
                   {},
-                  result.path,
+                  result.path || "",
                   true,
                   CM
                 );
@@ -120,7 +120,7 @@ export default class Commands {
             "Generate & Copy To Clipboard"
           ).open();
         } catch (error) {
-          this.plugin.handelError(error);
+          self.plugin.handelError(error);
         }
       },
     },
@@ -131,7 +131,7 @@ export default class Commands {
       icon: "plus-circle",
       //hotkeys: [{ modifiers: ["Mod","Shift"], key: "q"}],
       async callback() {
-        const self: Commands = this;
+        const self: Commands = this as any;
         try {
           new ExampleModal(
             self.plugin.app,
@@ -170,7 +170,7 @@ export default class Commands {
       icon: "plus-circle",
       //hotkeys: [{ modifiers: ["Mod","Shift"], key: "q"}],
       async callback() {
-        const self: Commands = this;
+        const self: Commands = this as any;
         try {
           new ExampleModal(
             self.plugin.app,
@@ -206,7 +206,7 @@ export default class Commands {
       icon: "square",
       //hotkeys: [{ modifiers: ['Alt'], key: "q"}],
       async callback() {
-        const self: Commands = this;
+        const self: Commands = this as any;
         try {
           new ExampleModal(
             self.plugin.app,
@@ -246,7 +246,7 @@ export default class Commands {
       icon: "plus-square",
       //hotkeys: [{ modifiers: ["Shift","Alt"], key: "q"}],
       async callback() {
-        const self: Commands = this;
+        const self: Commands = this as any;
         try {
           new ExampleModal(
             self.plugin.app,
@@ -287,11 +287,11 @@ export default class Commands {
       icon: "layout",
       //hotkeys: [{ modifiers: ["Alt"], key: "4"}],
       async callback() {
-        const self: Commands = this;
+        const self: Commands = this as any;
         try {
           new ExampleModal(
-            this.plugin.app,
-            this.plugin,
+            self.plugin.app,
+            self.plugin,
             async (result) => {
 
               try {
@@ -313,7 +313,7 @@ export default class Commands {
             "Choose a template"
           ).open();
         } catch (error) {
-          this.plugin.handelError(error);
+          self.plugin.handelError(error);
         }
       },
     },
@@ -324,13 +324,13 @@ export default class Commands {
       icon: "layout",
       //hotkeys: [{ modifiers: ["Alt"], key: "4"}],
       async callback() {
-        const self: Commands = this;
+        const self: Commands = this as any;
         try {
           const activeView = await self.plugin.getActiveView();
           const CM = ContentManagerCls.compile(activeView, self.plugin);
           new ExampleModal(
-            this.plugin.app,
-            this.plugin,
+            self.plugin.app,
+            self.plugin,
             async (result) => {
               self.plugin.activateView(VIEW_TOOL_ID, {
                 templatePath: result.path,
@@ -342,7 +342,7 @@ export default class Commands {
             "Choose a template"
           ).open();
         } catch (error) {
-          this.plugin.handelError(error);
+          self.plugin.handelError(error);
         }
       },
     },
@@ -353,14 +353,14 @@ export default class Commands {
       icon: "layout",
       //hotkeys: [{ modifiers: ["Alt"], key: "4"}],
       async callback() {
-        const self: Commands = this;
+        const self: Commands = this as any;
         try {
           self.plugin.activateView(VIEW_Playground_ID, {
             editor: self.plugin.app.workspace.activeEditor?.editor,
             openInPopout: false,
           });
         } catch (error) {
-          this.plugin.handelError(error);
+          self.plugin.handelError(error);
         }
       },
     },
@@ -370,15 +370,16 @@ export default class Commands {
       icon: "separator-horizontal",
       //hotkeys: [{ modifiers: ["Alt"], key: "1" }],
       async callback() {
+        const self: Commands = this as any;
         new SetMaxTokens(
-          this.plugin.app,
-          this.plugin,
-          this.plugin.settings.max_tokens.toString(),
+          self.plugin.app,
+          self.plugin,
+          self.plugin.settings.max_tokens.toString(),
           async (result: string) => {
-            this.plugin.settings.max_tokens = parseInt(result);
-            await this.plugin.saveSettings();
+            self.plugin.settings.max_tokens = parseInt(result);
+            await self.plugin.saveSettings();
             new Notice(`Set Max Tokens to ${result}!`);
-            this.plugin.updateStatusBar("");
+            self.plugin.updateStatusBar("");
           }
         ).open();
       },
@@ -390,26 +391,27 @@ export default class Commands {
       icon: "list-start",
       //hotkeys: [{ modifiers: ["Alt"], key: "2" }],
       async callback() {
+        const self: Commands = this as any;
         try {
           new SetLLM(
-            this.plugin.app,
-            this.plugin,
+            self.plugin.app,
+            self.plugin,
             async (selectedLLMName) => {
               console.log(selectedLLMName);
               if (!selectedLLMName) return;
 
-              const llm = this.plugin.textGenerator.LLMRegestry.get(selectedLLMName);
+              const llm = self.plugin.textGenerator.LLMRegestry.get(selectedLLMName);
               if (llm) {
-                this.plugin.settings.selectedProvider = selectedLLMName;
+                self.plugin.settings.selectedProvider = selectedLLMName as any;
               }
 
-              this.plugin.textGenerator.setup();
-              await this.plugin.saveSettings();
+              self.plugin.textGenerator.load();
+              await self.plugin.saveSettings();
             },
             "Choose a LLM"
           ).open();
         } catch (error) {
-          this.plugin.handelError(error);
+          self.plugin.handelError(error);
         }
       },
     },
@@ -420,9 +422,10 @@ export default class Commands {
       icon: "boxes",
       //hotkeys: [{ modifiers: ["Alt"], key: "3" }],
       async callback() {
+        const self: Commands = this as any;
         new PackageManagerUI(
-          this.plugin.app,
-          this.plugin,
+          self.plugin.app,
+          self.plugin,
           async (result: string) => { }
         ).open();
       },
@@ -434,7 +437,7 @@ export default class Commands {
       icon: "plus",
       //hotkeys: [{ modifiers: ["Alt"], key: "c"}],
       async callback() {
-        const self: Commands = this;
+        const self: Commands = this as any;
 
         try {
           const activeView = await self.plugin.getActiveView();
@@ -453,7 +456,7 @@ export default class Commands {
       icon: "heading",
       //hotkeys: [{ modifiers: ["Alt"], key: "c"}],
       async callback() {
-        const self: Commands = this;
+        const self: Commands = this as any;
 
         try {
           const CM = ContentManagerCls.compile(await self.plugin.getActiveView(), self.plugin);
@@ -477,12 +480,12 @@ export default class Commands {
 
             templateContext.content = (await CM.getValue()).trim()
 
-            const splittedTemplate = this.plugin.contextManager.splitTemplate(templateContent)
+            const splittedTemplate = self.plugin.contextManager.splitTemplate(templateContent || "")
 
             prompt = await splittedTemplate.inputTemplate?.(templateContext);
           } catch (err: any) { logger(err) }
 
-          const generatedTitle = await this.plugin.textGenerator.gen(
+          const generatedTitle = await self.plugin.textGenerator.gen(
             prompt,
             {}
           );
@@ -499,14 +502,14 @@ export default class Commands {
             `${sanitizedTitle}.${file.extension}`
           );
 
-          await this.plugin.app.fileManager.renameFile(
+          await self.plugin.app.fileManager.renameFile(
             file,
             renamedFilePath
           );
 
           logger(`Generated a title: ${sanitizedTitle}`);
         } catch (error) {
-          this.plugin.handelError(error);
+          self.plugin.handelError(error);
         }
       },
     },
@@ -517,14 +520,14 @@ export default class Commands {
       icon: "heading",
       //hotkeys: [{ modifiers: ["Alt"], key: "c"}],
       async editorCallback(editor: Editor) {
-        const self: Commands = this;
+        const self: Commands = this as any;
         self.plugin.settings.autoSuggestOptions.isEnabled =
           !self.plugin.settings.autoSuggestOptions.isEnabled;
         await self.plugin.saveSettings();
 
         self.plugin.autoSuggest?.renderStatusBar();
 
-        if (this.plugin.settings.autoSuggestOptions.isEnabled) {
+        if (self.plugin.settings.autoSuggestOptions.isEnabled) {
           new Notice(`Auto Suggestion is on!`);
         } else {
           new Notice(`Auto Suggestion is off!`);
@@ -538,7 +541,7 @@ export default class Commands {
       icon: "heading",
       //hotkeys: [{ modifiers: ["Alt"], key: "c"}],
       async callback() {
-        const self: Commands = this;
+        const self: Commands = this as any;
 
         try {
           const activeView = await self.plugin.getActiveView();
@@ -569,7 +572,7 @@ export default class Commands {
       icon: "layout",
       //hotkeys: [{ modifiers: ["Alt"], key: "4"}],
       async callback() {
-        const self: Commands = this;
+        const self: Commands = this as any;
         try {
           new ExampleModal(
             self.plugin.app,
@@ -611,10 +614,11 @@ export default class Commands {
       name: "Text Extractor Tool",
       icon: "layout",
       async callback() {
+        const self: Commands = this as any;
         try {
-          new TextExtractorTool(this.plugin.app, this.plugin).open();
+          new TextExtractorTool(self.plugin.app, self.plugin).open();
         } catch (error) {
-          this.plugin.handelError(error);
+          self.plugin.handelError(error);
         }
       },
     },
@@ -624,8 +628,9 @@ export default class Commands {
       name: "Stop Stream",
       icon: "layout",
       async callback() {
-        if (!this.plugin.textGenerator.signalController?.signal.aborted) {
-          this.plugin.textGenerator.endLoading();
+        const self: Commands = this as any;
+        if (!self.plugin.textGenerator.signalController?.signal.aborted) {
+          self.plugin.textGenerator.endLoading();
         }
       },
     },
@@ -634,7 +639,7 @@ export default class Commands {
       name: "reload Plugin",
       icon: "layout",
       async callback() {
-        const self: Commands = this;
+        const self: Commands = this as any;
 
         self.plugin.reload();
       },
@@ -674,7 +679,7 @@ export default class Commands {
             }`,
           name: `${template.id || template.name}: ${command.toUpperCase()}`,
           callback: async () => {
-            const self: Commands = this;
+            const self: Commands = this as any;
 
             const activeView = await self.plugin.getActiveView();
 
@@ -740,7 +745,7 @@ export default class Commands {
                 case "estimate":
                   {
                     const context =
-                      await this.plugin.contextManager.getContext(
+                      await self.plugin.contextManager.getContext(
                         {
                           editor: CM,
                           filePath,
@@ -751,8 +756,8 @@ export default class Commands {
                           },
                         }
                       );
-                    this.plugin.tokensScope.showTokens(
-                      await this.plugin.tokensScope.estimate(context)
+                    self.plugin.tokensScope.showTokens(
+                      await self.plugin.tokensScope.estimate(context)
                     );
                   }
                   break;

@@ -34,7 +34,7 @@
 		"esbuild": "0.13.12",
 		"esbuild-plugin-wasm": "^1.1.0",
 		"eslint-plugin-tailwindcss": "^3.13.0",
-		"obsidian": "^1.4.11",
+		"obsidian": "1.5.7-1",
 		"prettier": "^3.0.3",
 		"tslib": "2.6.2",
 		"typescript": "5.2.2"
