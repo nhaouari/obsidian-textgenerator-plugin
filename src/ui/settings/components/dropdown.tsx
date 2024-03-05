@@ -42,7 +42,7 @@ export default function Dropdown<T extends string>(props: {
           "plug-tg-select plug-tg-cursor-pointer plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-px-4",
           props.className
         )}
-        value={props.value}
+        value={props.value || ""}
         onChange={(e) => props.setValue?.(e.target.value as any)}
       >
         {!props.values.includes(props.value) && <option value={props.value} key={-1} className="plug-tg-z-20 plug-tg-w-full">

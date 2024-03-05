@@ -53,14 +53,14 @@ export const default_values = {
     stop: "{{stop}}",
     messages: {{stringify messages}}
 }`,
-  frequency_penalty: 0,
+  // frequency_penalty: 0,
   model: "gpt-3.5-turbo-16k",
-  presence_penalty: 0.5,
-  top_p: 1,
-  max_tokens: 400,
+  // presence_penalty: 0.5,
+  // top_p: 1,
+  // max_tokens: 400,
   n: 1,
-  stream: false,
-  temperature: 0.7,
+  // stream: false,
+  // temperature: 0.7,
 
   sanatization_streaming: `(chunk) => {
   let resultText = "";
@@ -252,6 +252,7 @@ export default class CustomProvider
 
         const handlebarData = {
           ...this.plugin.settings,
+          ...cleanConfig(this.default_values),
           ...cleanConfig(config),
           ...cleanConfig(reqParams.otherOptions),
           ...cleanConfig(reqParams),
@@ -273,8 +274,6 @@ export default class CustomProvider
           url: await Handlebars.compile(
             handlebarData.endpoint || this.default_values.endpoint
           )(handlebarData),
-          signal: handlebarData.requestParams?.signal || undefined,
-          stream: handlebarData.stream,
           headers: JSON5.parse(
             "" +
             (await Handlebars.compile(
@@ -293,6 +292,8 @@ export default class CustomProvider
             )
           ) as any,
 
+          signal: handlebarData.requestParams?.signal || undefined,
+          stream: handlebarData.stream,
           sanatization_streaming:
             handlebarData.sanatization_streaming || this.default_values.sanatization_streaming,
           sanatization_response:

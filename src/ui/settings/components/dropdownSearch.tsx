@@ -41,7 +41,7 @@ export default function DropdownSearch<T extends string>(props: {
             <input
                 className="input"
                 type="search"
-                value={props.aliases?.[props.value] || props.value}
+                value={props.aliases?.[props.value] || props.value || ""}
                 list={datalistId}
                 placeholder={props.placeHolder || "Enter your Model name"}
                 onChange={(e) => {
