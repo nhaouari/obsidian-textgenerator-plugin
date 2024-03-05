@@ -6,10 +6,8 @@ import useGlobal from "#/ui/context/global";
 import { getHBValues } from "#/utils/barhandles";
 import SettingItem from "#/ui/settings/components/item";
 import Input from "#/ui/settings/components/input";
-import CustomProvider from "./base";
+import CustomProvider, { default_values as baseDefaultValues } from "./base";
 import { IconExternalLink } from "@tabler/icons-react";
-
-const logger = debug("textgenerator:AnthropicCustomProvider");
 
 const globalVars: Record<string, boolean> = {
   n: true,
@@ -25,6 +23,7 @@ const globalVars: Record<string, boolean> = {
 const untangableVars = ["custom_header", "custom_body", "sanatization_response", "streamable", "CORSBypass"]
 
 export const default_values = {
+  ...baseDefaultValues,
   endpoint: "https://api.anthropic.com/v1/messages",
   custom_header: `{
     "anthropic-version": "2023-06-01",
@@ -73,6 +72,7 @@ export default class AnthropicLegacyProvider
   provider = AnthropicLegacyProvider.provider;
   id = AnthropicLegacyProvider.id;
   originalId = AnthropicLegacyProvider.id;
+  default_values = default_values;
 
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();

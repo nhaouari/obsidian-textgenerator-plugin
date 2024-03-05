@@ -35,7 +35,7 @@ test4`,
 ];
 
 
-const default_values = {
+export const default_values = {
   endpoint: "https://api.openai.com/v1/chat/completions",
   custom_header: `{
     "Content-Type": "application/json",
@@ -114,6 +114,8 @@ export default class CustomProvider
   provider = CustomProvider.provider;
   id = CustomProvider.id;
   originalId = CustomProvider.id;
+
+  default_values = default_values;
   async request(
     params: requestWithoutCORSParam & {
       signal?: AbortSignal;
@@ -195,7 +197,7 @@ export default class CustomProvider
         const decodedVal = decoder.decode(value, { stream: true });
 
         const chunkValue = await (0, eval)(
-          params.sanatization_streaming || default_values.sanatization_streaming
+          params.sanatization_streaming || this.default_values.sanatization_streaming
         )(decodedVal);
 
         // try {
@@ -224,7 +226,7 @@ export default class CustomProvider
       }
 
       return await (0, eval)(
-        params.sanatization_response || default_values.sanatization_response
+        params.sanatization_response || this.default_values.sanatization_response
       )(resJson, k)
     }
   }
@@ -269,7 +271,7 @@ export default class CustomProvider
         const res = await this.request({
           method: handlebarData.method,
           url: await Handlebars.compile(
-            handlebarData.endpoint || default_values.endpoint
+            handlebarData.endpoint || this.default_values.endpoint
           )(handlebarData),
           signal: handlebarData.requestParams?.signal || undefined,
           stream: handlebarData.stream,
@@ -277,7 +279,7 @@ export default class CustomProvider
             "" +
             (await Handlebars.compile(
               handlebarData.custom_header ||
-              default_values.custom_header
+              this.default_values.custom_header
             )(handlebarData))
           ) as any,
 
@@ -286,15 +288,15 @@ export default class CustomProvider
               "" +
               (await Handlebars.compile(
                 handlebarData.custom_body ||
-                default_values.custom_body
+                this.default_values.custom_body
               )(handlebarData))
             )
           ) as any,
 
           sanatization_streaming:
-            handlebarData.sanatization_streaming || default_values.sanatization_streaming,
+            handlebarData.sanatization_streaming || this.default_values.sanatization_streaming,
           sanatization_response:
-            handlebarData.sanatization_response || default_values.sanatization_response,
+            handlebarData.sanatization_response || this.default_values.sanatization_response,
           CORSBypass: handlebarData.CORSBypass,
           async onToken(token: string) {
             onToken?.(token, first);
@@ -352,14 +354,14 @@ export default class CustomProvider
         const res = await this.request({
           method: handlebarData.method,
           url: await Handlebars.compile(
-            config.endpoint || default_values.endpoint
+            config.endpoint || this.default_values.endpoint
           )(handlebarData),
           signal: handlebarData.requestParams?.signal || undefined,
           stream: handlebarData.stream,
           headers: JSON5.parse(
             await Handlebars.compile(
               handlebarData.custom_header ||
-              default_values.custom_header
+              this.default_values.custom_header
             )(handlebarData)
           ) as any,
 
@@ -368,7 +370,7 @@ export default class CustomProvider
               JSON5.parse(
                 await Handlebars.compile(
                   handlebarData.custom_body ||
-                  default_values.custom_body
+                  this.default_values.custom_body
                 )(handlebarData)
               )
             )
@@ -377,7 +379,7 @@ export default class CustomProvider
           sanatization_response: handlebarData.sanatization_response,
           sanatization_streaming:
             handlebarData.sanatization_streaming ||
-            default_values.sanatization_streaming,
+            this.default_values.sanatization_streaming,
         });
 
         const choices = res
