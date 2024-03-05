@@ -88,7 +88,9 @@ export function ModelsHandler(props: {
                 sectionId={props.sectionId}
             >
                 <div className="plug-tg-flex plug-tg-items-center plug-tg-gap-2">
-                    {global.plugin.settings.experiment || edit ?
+                    {global.plugin.settings.experiment
+                        || edit
+                        ?
                         <DropdownSearch
                             value={config.model}
                             setValue={async (selectedModel) => {

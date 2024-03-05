@@ -45,9 +45,9 @@ export default function Dropdown<T extends string>(props: {
         value={props.value}
         onChange={(e) => props.setValue?.(e.target.value as any)}
       >
-        {/* <option disabled selected>
-        {props.value || props.defaultValue}
-      </option> */}
+        {!props.values.includes(props.value) && <option value={props.value} key={-1} className="plug-tg-z-20 plug-tg-w-full">
+          {props.value}*
+        </option>}
         {props.values?.map((val, i) => (
           <option value={val} key={i} className="plug-tg-z-20 plug-tg-w-full">
             {props.aliases?.[slugs[i]] || slugs[i]}

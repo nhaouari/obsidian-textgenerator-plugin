@@ -158,7 +158,6 @@ export default function LLMProviderController(props: {
         </SettingItem>
 
         {!props.mini &&
-
             selectedLLM && selectedLLMId && <>
                 <div className="plug-tg-flex plug-tg-h-full plug-tg-w-full plug-tg-flex-col plug-tg-gap-2">
                     <selectedLLM.RenderSettings
