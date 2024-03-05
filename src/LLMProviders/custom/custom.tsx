@@ -8,7 +8,7 @@ import SettingItem from "#/ui/settings/components/item";
 import Input from "#/ui/settings/components/input";
 import { Handlebars } from "../../helpers/handlebars-helpers";
 import clsx from "clsx";
-import CustomProvider from "./base";
+import CustomProvider, { default_values as baseDefaultValues } from "./base";
 import JSON5 from "json5";
 
 const logger = debug("textgenerator:CustomProvider");
@@ -38,6 +38,7 @@ test4`,
 ];
 
 export const default_values = {
+  ...baseDefaultValues,
   endpoint: "https://api.openai.com/v1/chat/completions",
   custom_header: `{
     "Content-Type": "application/json",
@@ -117,6 +118,8 @@ export default class DefaultCustomProvider
   provider = DefaultCustomProvider.provider;
   id = DefaultCustomProvider.id;
   originalId = DefaultCustomProvider.id;
+
+  default_values = default_values;
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
 
