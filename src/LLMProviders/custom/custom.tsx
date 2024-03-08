@@ -41,22 +41,6 @@ test4`,
 export const default_values = {
   ...baseDefaultValues,
   endpoint: "https://api.openai.com/v1/chat/completions",
-  custom_header: `{
-    "Content-Type": "application/json",
-    authorization: "Bearer {{api_key}}"
-}`,
-  custom_body: `{
-    model: "{{model}}",
-    temperature: {{temperature}},
-    top_p: {{top_p}},
-    frequency_penalty: {{frequency_penalty}},
-    presence_penalty: {{presence_penalty}},
-    max_tokens: {{max_tokens}},
-    n: {{n}},
-    stream: {{stream}},
-    stop: "{{stop}}",
-    messages: {{stringify messages}}
-}`,
   stream: false,
   model: "gpt-3.5-turbo-16k",
 
@@ -67,50 +51,13 @@ export const default_values = {
   top_p: 1,
   max_tokens: 400,
   n: 1,
-
-  sanatization_streaming: `(chunk) => {
-  let resultText = "";
-  const lines = chunk.split("\\ndata: ");
-
-  const parsedLines = lines
-    .map((line) => line.replace(/^data: /, "").trim()) // Remove the "data: " prefix
-    .filter((line) => line !== "" && line !== "[DONE]") // Remove empty lines and "[DONE]"
-    .map((line) => JSON.parse(line)); // Parse the JSON string
-
-  for (const parsedLine of parsedLines) {
-    const { choices } = parsedLine;
-    const { delta } = choices[0];
-    const { content } = delta;
-    // Update the UI with the new content
-    if (content) {
-      resultText += content;
-    }
-  }
-  return resultText;
-}`,
-  sanatization_response: `async (data, res)=>{
-  // catch error
-  if (res.status >= 300) {
-    const err = data?.error?.message || JSON.stringify(data);
-    throw err;
-  }
-
-  // get choices
-  const choices = data.choices.map(c=> c.message);
-
-  // the return object should be in the format of 
-  // { content: string }[] 
-  // if there's only one response, put it in the array of choices.
-  return choices;
-}`,
 };
 
 export type CustomConfig = Record<keyof typeof default_values, string>;
 
 export default class DefaultCustomProvider
   extends CustomProvider
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   streamable = true;
   static provider = "Custom";
   static id = "Default (Custom)" as const;

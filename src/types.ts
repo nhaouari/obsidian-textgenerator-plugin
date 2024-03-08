@@ -202,6 +202,8 @@ type LiteralUnion<T extends U, U = string> = T | (U & { zz_IGNORE_ME?: never });
 
 export type Role = LiteralUnion<"assistant" | "user" | "system" | "admin">;
 export type Message = {
+  type?:string;
+  image_url?:string;
   role: Role;
   content: string;
 };
