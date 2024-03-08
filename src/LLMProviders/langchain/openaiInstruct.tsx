@@ -17,7 +17,8 @@ const default_values = {
 
 export default class LangchainOpenAIInstructProvider
   extends LangchainBase
-  implements LLMProviderInterface {
+  implements LLMProviderInterface
+{
   static provider = "Langchain";
   static id = "OpenAI Instruct (Langchain)" as const;
   static slug = "openAIInstruct" as const;
@@ -63,14 +64,14 @@ export default class LangchainOpenAIInstructProvider
           ...this.cleanConfig(this.plugin.settings),
           ...this.cleanConfig(
             this.plugin.settings.LLMProviderOptions[
-            this.id as keyof typeof this.plugin.settings
+              this.id as keyof typeof this.plugin.settings
             ]
           ),
           ...this.cleanConfig(reqParams.otherOptions),
           ...this.cleanConfig(reqParams),
           otherOptions: this.cleanConfig(
             this.plugin.settings.LLMProviderOptions[
-            this.id as keyof typeof this.plugin.settings
+              this.id as keyof typeof this.plugin.settings
             ]
           ),
         };
@@ -99,7 +100,6 @@ export default class LangchainOpenAIInstructProvider
 
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
-
 
     const id = props.self.id;
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
@@ -204,8 +204,7 @@ export default class LangchainOpenAIInstructProvider
   ): Promise<number> {
     const model = reqParams.model;
     const modelInfo =
-      AI_MODELS[model as keyof typeof AI_MODELS] ||
-      AI_MODELS["gpt-3.5-turbo"];
+      AI_MODELS[model as keyof typeof AI_MODELS] || AI_MODELS["gpt-3.5-turbo"];
 
     console.log(reqParams.max_tokens, modelInfo.prices.completion);
     return (
@@ -221,8 +220,7 @@ export default class LangchainOpenAIInstructProvider
   ): ReturnType<LLMProviderInterface["calcTokens"]> {
     const model = reqParams.model;
     const modelInfo =
-      AI_MODELS[model as keyof typeof AI_MODELS] ||
-      AI_MODELS["gpt-3.5-turbo"];
+      AI_MODELS[model as keyof typeof AI_MODELS] || AI_MODELS["gpt-3.5-turbo"];
 
     if (!modelInfo)
       return {

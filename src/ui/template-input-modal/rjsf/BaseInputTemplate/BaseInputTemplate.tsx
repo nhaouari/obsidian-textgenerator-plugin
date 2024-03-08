@@ -6,10 +6,10 @@ import {
   getInputProps,
   RJSFSchema,
   StrictRJSFSchema,
-} from "@rjsf/utils"
-import clsx from "clsx"
-import React from "react"
-import { ChangeEvent, FocusEvent } from "react"
+} from "@rjsf/utils";
+import clsx from "clsx";
+import React from "react";
+import { ChangeEvent, FocusEvent } from "react";
 
 export default function BaseInputTemplate<
   T = any,
@@ -37,14 +37,13 @@ export default function BaseInputTemplate<
   const inputProps = {
     ...extraProps,
     ...getInputProps<T, S, F>(schema, type, options),
-  }
+  };
   const _onChange = ({ target: { value } }: ChangeEvent<HTMLInputElement>) =>
-    onChange(value === "" ? options.emptyValue : value)
+    onChange(value === "" ? options.emptyValue : value);
   const _onBlur = ({ target: { value } }: FocusEvent<HTMLInputElement>) =>
-    onBlur(id, value)
+    onBlur(id, value);
   const _onFocus = ({ target: { value } }: FocusEvent<HTMLInputElement>) =>
-    onFocus(id, value)
-
+    onFocus(id, value);
 
   return (
     <>
@@ -59,9 +58,11 @@ export default function BaseInputTemplate<
         readOnly={readonly}
         list={schema.examples ? examplesId<T>(id) : undefined}
         {...inputProps}
-        className={clsx(`plug-tg-input plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none plug-tg-w-full`,
+        className={clsx(
+          `plug-tg-input plug-tg-w-full plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none`,
           rawErrors.length > 0 ? "plug-tg-input-error" : "",
-          inputProps)}
+          inputProps
+        )}
         value={value || value === 0 ? value : ""}
         onChange={onChangeOverride || _onChange}
         onBlur={_onBlur}
@@ -75,13 +76,13 @@ export default function BaseInputTemplate<
             .concat(
               schema.default && !schema.examples.includes(schema.default)
                 ? ([schema.default] as string[])
-                : [],
+                : []
             )
             .map((example: any) => {
-              return <option key={example} value={example} />
+              return <option key={example} value={example} />;
             })}
         </datalist>
       ) : null}
     </>
-  )
+  );
 }

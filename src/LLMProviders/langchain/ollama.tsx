@@ -3,18 +3,18 @@ import debug from "debug";
 import LangchainBase from "./base";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import { IconExternalLink } from "@tabler/icons-react";
-import { BaseLLMParams } from "langchain/llms/base"
+import { BaseLLMParams } from "langchain/llms/base";
 
 import { OllamaInput } from "langchain/llms/ollama";
 
 import { Input, SettingItem, useGlobal } from "../refs";
 
-
 const logger = debug("textgenerator:llmProvider:ollama");
 
 export default class LangchainOllamaProvider
   extends LangchainBase
-  implements LLMProviderInterface {
+  implements LLMProviderInterface
+{
   static slug = "ollama" as const;
 
   static provider = "Langchain";

@@ -117,7 +117,6 @@ export function removeYAML(content: string) {
   }
 }
 
-
 export function removeExtensionFromName(name: string) {
   logger("removeExtension", name);
   const arr = name.contains(".") ? name.split(".") : [name, ""];
@@ -236,11 +235,11 @@ export function cleanConfig<T>(options: T): T {
 }
 
 export async function processPromisesSetteledBatch<
-  T extends () => Promise<any>
+  T extends () => Promise<any>,
 >(
   items: Array<AsyncReturnType<T>>,
   limit: number,
-  waitingBetween: number = 10,
+  waitingBetween: number = 10
 ): Promise<PromiseSettledResult<any>[]> {
   let results: PromiseSettledResult<Awaited<AsyncReturnType<T>>>[] = [];
   for (let batchNum = 0; batchNum < items.length; batchNum += limit) {
@@ -249,7 +248,7 @@ export async function processPromisesSetteledBatch<
 
     const slicedResults = await Promise.allSettled(items.slice(batchNum, end));
 
-    await new Promise((s) => setTimeout(s, waitingBetween))
+    await new Promise((s) => setTimeout(s, waitingBetween));
 
     results = [...results, ...slicedResults];
   }
@@ -319,7 +318,6 @@ export function trimBy<T>(objects: T[], propertyName: string): T[] {
   return result;
 }
 
-
 export function replaceScriptBlocksWithMustachBlocks(templateString: string) {
   if (!templateString) return "";
   // Regular expressions for matching the script tags
@@ -329,15 +327,17 @@ export function replaceScriptBlocksWithMustachBlocks(templateString: string) {
 
   // Replace all occurrences of {{#script}} and {{/script}} with {{{{script}}}} and {{{{/script}}}} respectively
   let updatedTemplateString = templateString
-    .replace(startScriptRegex, '{{{{script}}}}')
-    .replace(endScriptRegex, '{{{{/script}}}}');
+    .replace(startScriptRegex, "{{{{script}}}}")
+    .replace(endScriptRegex, "{{{{/script}}}}");
 
   // Handle the case where {{{{/script}}}} is already present
-  updatedTemplateString = updatedTemplateString.replace(quadErrorRegex, '{{{{/script}}}}');
+  updatedTemplateString = updatedTemplateString.replace(
+    quadErrorRegex,
+    "{{{{/script}}}}"
+  );
 
   return updatedTemplateString;
 }
-
 
 export function nFormatter(n?: number, digits = 1) {
   const num = n || 0;
@@ -348,32 +348,33 @@ export function nFormatter(n?: number, digits = 1) {
     { value: 1e9, symbol: "G" },
     { value: 1e12, symbol: "T" },
     { value: 1e15, symbol: "P" },
-    { value: 1e18, symbol: "E" }
+    { value: 1e18, symbol: "E" },
   ];
   const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
-  var item = lookup.slice().reverse().find(function (item) {
-    return num >= item.value;
-  });
-  return item ? (num / item.value).toFixed(digits).replace(rx, "$1") + item.symbol : "0";
+  var item = lookup
+    .slice()
+    .reverse()
+    .find(function (item) {
+      return num >= item.value;
+    });
+  return item
+    ? (num / item.value).toFixed(digits).replace(rx, "$1") + item.symbol
+    : "0";
 }
 
-
-
-export function unpromisifyAsyncFunction<T>(
-  asyncFunction: Promise<T>
-): T {
+export function unpromisifyAsyncFunction<T>(asyncFunction: Promise<T>): T {
   let isAsyncComplete = false;
   let result: T;
 
   // Call the provided asynchronous function
-  asyncFunction.then(asyncResult => {
+  asyncFunction.then((asyncResult) => {
     result = asyncResult;
     isAsyncComplete = true;
   });
 
   // Use a while loop to wait for the asynchronous operation to complete
   while (!isAsyncComplete) {
-    syncWait(10)
+    syncWait(10);
   }
 
   // Return the result synchronously
@@ -382,17 +383,20 @@ export function unpromisifyAsyncFunction<T>(
 }
 
 const syncWait = (ms: number) => {
-  const end = Date.now() + ms
-  while (Date.now() < end) continue
-}
+  const end = Date.now() + ms;
+  while (Date.now() < end) continue;
+};
 
-
-export function walkUntilTrigger(inputStr: string, triggerStrings: string[], reversedWalk: boolean = false): string {
+export function walkUntilTrigger(
+  inputStr: string,
+  triggerStrings: string[],
+  reversedWalk: boolean = false
+): string {
   if (reversedWalk) {
-    inputStr = inputStr.split('').reverse().join('');
+    inputStr = inputStr.split("").reverse().join("");
   }
 
-  let walkedStr: string = '';
+  let walkedStr: string = "";
   let index: number = 0;
 
   while (index < inputStr.length) {
@@ -402,7 +406,7 @@ export function walkUntilTrigger(inputStr: string, triggerStrings: string[], rev
     for (const trigger of triggerStrings) {
       if (walkedStr.endsWith(trigger)) {
         if (reversedWalk) {
-          return walkedStr.split('').reverse().join('');
+          return walkedStr.split("").reverse().join("");
         } else {
           return walkedStr;
         }
@@ -414,12 +418,11 @@ export function walkUntilTrigger(inputStr: string, triggerStrings: string[], rev
 
   // If no trigger string is found, return the entire input string
   if (reversedWalk) {
-    return inputStr.split('').reverse().join('');
+    return inputStr.split("").reverse().join("");
   } else {
     return inputStr;
   }
 }
-
 
 export function debounce<T extends unknown[], R>(
   func: (...args: T) => Promise<R>,
@@ -447,11 +450,9 @@ export function debounce<T extends unknown[], R>(
   };
 }
 
-
 export function getFilePathByName(name: string): string | undefined {
-  return this.app.metadataCache.getFirstLinkpathDest(name, '')?.path;
+  return this.app.metadataCache.getFirstLinkpathDest(name, "")?.path;
 }
-
 
 export function currentDate() {
   const date = new Date();
@@ -462,9 +463,9 @@ export function currentDate() {
 
 export function getCurrentTime() {
   const now = new Date();
-  const hours = now.getHours().toString().padStart(2, '0');
-  const minutes = now.getMinutes().toString().padStart(2, '0');
-  const seconds = now.getSeconds().toString().padStart(2, '0');
+  const hours = now.getHours().toString().padStart(2, "0");
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+  const seconds = now.getSeconds().toString().padStart(2, "0");
 
   return `${hours}${minutes}${seconds}`;
 }

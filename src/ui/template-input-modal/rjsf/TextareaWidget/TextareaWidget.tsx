@@ -1,20 +1,20 @@
-import React, { ChangeEvent, FocusEvent } from "react"
+import React, { ChangeEvent, FocusEvent } from "react";
 import {
   ariaDescribedByIds,
   FormContextType,
   RJSFSchema,
   StrictRJSFSchema,
   WidgetProps,
-} from "@rjsf/utils"
-import clsx from "clsx"
+} from "@rjsf/utils";
+import clsx from "clsx";
 
 type CustomWidgetProps<
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any,
 > = WidgetProps<T, S, F> & {
-  options: any
-}
+  options: any;
+};
 
 export default function TextareaWidget<
   T = any,
@@ -34,11 +34,11 @@ export default function TextareaWidget<
   options,
 }: CustomWidgetProps<T, S, F>) {
   const _onChange = ({ target: { value } }: ChangeEvent<HTMLTextAreaElement>) =>
-    onChange(value === "" ? options.emptyValue : value)
+    onChange(value === "" ? options.emptyValue : value);
   const _onBlur = ({ target: { value } }: FocusEvent<HTMLTextAreaElement>) =>
-    onBlur(id, value)
+    onBlur(id, value);
   const _onFocus = ({ target: { value } }: FocusEvent<HTMLTextAreaElement>) =>
-    onFocus(id, value)
+    onFocus(id, value);
 
   //           "focus-within:plug-tg-ring-red-300 plug-tg-ring-1": props.required && !props.value && !props.label.contains("optional")
   //         })}
@@ -47,7 +47,9 @@ export default function TextareaWidget<
   return (
     <div className="plug-tg-flex">
       <textarea
-        className={clsx("plug-tg-h-24 plug-tg-w-full plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-resize-none plug-tg-rounded plug-tg-border plug-tg-border-gray-300 plug-tg-p-2 focus:plug-tg-border-blue-500 focus:plug-tg-outline-none")}
+        className={clsx(
+          "plug-tg-h-24 plug-tg-w-full plug-tg-resize-none plug-tg-rounded plug-tg-border plug-tg-border-gray-300 plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-p-2 focus:plug-tg-border-blue-500 focus:plug-tg-outline-none"
+        )}
         id={id}
         name={id}
         placeholder={placeholder}
@@ -63,5 +65,5 @@ export default function TextareaWidget<
         aria-describedby={ariaDescribedByIds<T>(id)}
       />
     </div>
-  )
+  );
 }

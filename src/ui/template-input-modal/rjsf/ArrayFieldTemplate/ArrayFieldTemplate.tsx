@@ -7,7 +7,7 @@ import {
   getUiOptions,
   RJSFSchema,
   StrictRJSFSchema,
-} from "@rjsf/utils"
+} from "@rjsf/utils";
 
 export default function ArrayFieldTemplate<
   T = any,
@@ -26,29 +26,29 @@ export default function ArrayFieldTemplate<
     required,
     schema,
     title,
-  } = props
-  const uiOptions = getUiOptions<T, S, F>(uiSchema)
+  } = props;
+  const uiOptions = getUiOptions<T, S, F>(uiSchema);
   const ArrayFieldDescriptionTemplate = getTemplate<
     "ArrayFieldDescriptionTemplate",
     T,
     S,
     F
-  >("ArrayFieldDescriptionTemplate", registry, uiOptions)
+  >("ArrayFieldDescriptionTemplate", registry, uiOptions);
   const ArrayFieldItemTemplate = getTemplate<"ArrayFieldItemTemplate", T, S, F>(
     "ArrayFieldItemTemplate",
     registry,
-    uiOptions,
-  )
+    uiOptions
+  );
   const ArrayFieldTitleTemplate = getTemplate<
     "ArrayFieldTitleTemplate",
     T,
     S,
     F
-  >("ArrayFieldTitleTemplate", registry, uiOptions)
+  >("ArrayFieldTitleTemplate", registry, uiOptions);
   // Button templates are not overridden in the uiSchema
   const {
     ButtonTemplates: { AddButton },
-  } = registry.templates
+  } = registry.templates;
 
   return (
     <div>
@@ -77,7 +77,7 @@ export default function ArrayFieldTemplate<
                   ...itemProps
                 }: ArrayFieldTemplateItemType<T, S, F>) => (
                   <ArrayFieldItemTemplate key={key} {...itemProps} />
-                ),
+                )
               )}
             {canAdd && (
               <div>
@@ -99,5 +99,5 @@ export default function ArrayFieldTemplate<
         </div>
       </div>
     </div>
-  )
+  );
 }

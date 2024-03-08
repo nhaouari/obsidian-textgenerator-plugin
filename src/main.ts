@@ -105,12 +105,10 @@ export default class TextGeneratorPlugin extends Plugin {
       if (this.settings.autoSuggestOptions?.isEnabled)
         this.autoSuggest = new AutoSuggest(this.app, this);
 
-
       // modal suggest
       if (this.settings.slashSuggestOptions?.isEnabled) {
         this.registerEditorSuggest(new SlashSuggest(this.app, this));
       }
-
 
       // This adds a settings tab so the user can configure various aspects of the plugin
       this.addSettingTab(new TextGeneratorSettingTab(this.app, this));
@@ -135,7 +133,6 @@ export default class TextGeneratorPlugin extends Plugin {
       if (this.settings.autoSuggestOptions.showStatus)
         this.autoSuggest?.AddStatusBar();
 
-
       // registering different views
       // Playground view
       this.registerView(
@@ -149,25 +146,23 @@ export default class TextGeneratorPlugin extends Plugin {
       // register events such as right click
       if (this.settings.options["generate-in-right-click-menu"])
         this.registerEvent(
-          this.app.workspace.on(
-            "editor-menu",
-            async (menu) => {
-              menu.addItem((item) => {
-                item.setIcon("GENERATE_META_ICON");
-                item.setTitle("Generate");
-                item.onClick(async () => {
-                  try {
-                    if (this.processing) return this.textGenerator.signalController?.abort();
-                    const activeView = await this.getActiveView();
-                    const CM = ContentManagerCls.compile(activeView, this)
-                    await this.textGenerator.generateInEditor({}, false, CM);
-                  } catch (error) {
-                    this.handelError(error);
-                  }
-                });
+          this.app.workspace.on("editor-menu", async (menu) => {
+            menu.addItem((item) => {
+              item.setIcon("GENERATE_META_ICON");
+              item.setTitle("Generate");
+              item.onClick(async () => {
+                try {
+                  if (this.processing)
+                    return this.textGenerator.signalController?.abort();
+                  const activeView = await this.getActiveView();
+                  const CM = ContentManagerCls.compile(activeView, this);
+                  await this.textGenerator.generateInEditor({}, false, CM);
+                } catch (error) {
+                  this.handelError(error);
+                }
               });
-            }
-          )
+            });
+          })
         );
 
       if (this.settings.options["batch-generate-in-right-click-files-menu"])
@@ -209,9 +204,8 @@ export default class TextGeneratorPlugin extends Plugin {
 
       // tg codeblock
       if (this.settings.options["tg-block-processor"]) {
-        new TGBlock(this)
+        new TGBlock(this);
       }
-
 
       // This creates an icon in the left ribbon.
       this.addRibbonIcon(
@@ -222,7 +216,7 @@ export default class TextGeneratorPlugin extends Plugin {
           // const activeFile = this.app.workspace.getActiveFile();
           const activeView = this.getActiveViewMD();
           if (activeView !== null) {
-            const CM = ContentManagerCls.compile(activeView, this)
+            const CM = ContentManagerCls.compile(activeView, this);
             try {
               await this.textGenerator.generateInEditor({}, false, CM);
             } catch (error) {
@@ -239,7 +233,7 @@ export default class TextGeneratorPlugin extends Plugin {
           new PackageManagerUI(
             this.app,
             this,
-            async (result: string) => { }
+            async (result: string) => {}
           ).open();
         }
       );
@@ -259,8 +253,8 @@ export default class TextGeneratorPlugin extends Plugin {
 
     try {
       this.registerObsidianProtocolHandler(`text-gen`, async (params) => {
-        console.log(params.intent, this.actions, this.actions[params.intent])
-        this.actions[params.intent]?.(params)
+        console.log(params.intent, this.actions, this.actions[params.intent]);
+        this.actions[params.intent]?.(params);
       });
     } catch (err: any) {
       this.handelError(err);
@@ -457,7 +451,9 @@ export default class TextGeneratorPlugin extends Plugin {
 
   async handelError(error: any) {
     if (error?.length || error?.message) {
-      new Notice("🔴 TG Error: " + (typeof error == "string" ? error : error.message));
+      new Notice(
+        "🔴 TG Error: " + (typeof error == "string" ? error : error.message)
+      );
     } else {
       new Notice(
         "🔴 TG Error: An error has occurred. Please check the console by pressing CTRL+SHIFT+I or turn on display errors in the editor within the settings for more information."
@@ -482,14 +478,13 @@ export default class TextGeneratorPlugin extends Plugin {
     setTimeout(() => this.updateStatusBar(``), 5000);
   }
 
-
   getFilesOnLoad(): Promise<TFile[]> {
     return new Promise(async (resolve, reject) => {
       let testFiles = app.vault.getFiles();
       if (testFiles.length === 0) {
         let retryTimes = 30;
         const timer = setInterval(() => {
-          console.log("attempting to get files", retryTimes)
+          console.log("attempting to get files", retryTimes);
           testFiles = app.vault.getFiles();
           retryTimes--;
 
@@ -562,10 +557,8 @@ export default class TextGeneratorPlugin extends Plugin {
     });
 
     keyList.forEach((pth) => {
-      const keyval = get(
-        this.settings?.LLMProviderOptions,
-        pth
-      ) as never as string || "";
+      const keyval =
+        (get(this.settings?.LLMProviderOptions, pth) as never as string) || "";
 
       const encrypted = this.getEncryptedKey(keyval);
       this.settings.LLMProviderOptionsKeysHashed[pth] = encrypted;
@@ -629,12 +622,17 @@ export default class TextGeneratorPlugin extends Plugin {
     return safeStorage.encryptString(apiKey) as Buffer;
   }
 
-
   getApiKeys() {
     const keys: Record<string, string | undefined> = {};
     for (const k in this.settings.LLMProviderOptions) {
-      if (Object.prototype.hasOwnProperty.call(this.settings.LLMProviderOptions, k)) {
-        keys[this.textGenerator.LLMRegestry.UnProviderSlugs[k]] = this.settings.LLMProviderOptions[k]?.api_key;
+      if (
+        Object.prototype.hasOwnProperty.call(
+          this.settings.LLMProviderOptions,
+          k
+        )
+      ) {
+        keys[this.textGenerator.LLMRegestry.UnProviderSlugs[k]] =
+          this.settings.LLMProviderOptions[k]?.api_key;
       }
     }
     return keys;
@@ -655,9 +653,9 @@ export default class TextGeneratorPlugin extends Plugin {
     this.app.setting.openTabById("obsidian-textgenerator-plugin").display();
   }
 
-  actions: Record<string, any> = {}
+  actions: Record<string, any> = {};
   registerAction<T>(action: `${string}`, cb: (params: T) => void): any {
-    return this.actions[action] = cb;
+    return (this.actions[action] = cb);
   }
 
   getRelativePathTo(path: string) {
@@ -672,7 +670,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
     basePath = d.join("/");
 
-    return `${basePath}/${path}`
+    return `${basePath}/${path}`;
   }
 
   async getActiveView() {
@@ -680,7 +678,7 @@ export default class TextGeneratorPlugin extends Plugin {
     const activeView = this.app.workspace.activeLeaf.view;
 
     if (!activeView) {
-      throw 'No active view.'
+      throw "No active view.";
     }
     return activeView;
   }
@@ -696,12 +694,13 @@ export default class TextGeneratorPlugin extends Plugin {
     return null;
   }
 
-
   getTextGenPath(path?: string) {
-    let basePath = this.settings.textGenPath?.length ? this.settings.textGenPath : this.defaultSettings.textGenPath;
+    let basePath = this.settings.textGenPath?.length
+      ? this.settings.textGenPath
+      : this.defaultSettings.textGenPath;
 
     if (!basePath.endsWith("/") && !path?.startsWith("/")) basePath += "/";
 
-    return `${basePath}${path}`
+    return `${basePath}${path}`;
   }
 }

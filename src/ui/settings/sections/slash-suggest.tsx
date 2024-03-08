@@ -38,7 +38,8 @@ export default function SlashSuggestSetting(props: { register: Register }) {
           type="checkbox"
           value={"" + global.plugin.settings.slashSuggestOptions.isEnabled}
           setValue={async (val) => {
-            global.plugin.settings.slashSuggestOptions.isEnabled = val == "true";
+            global.plugin.settings.slashSuggestOptions.isEnabled =
+              val == "true";
             global.plugin.autoSuggest?.renderStatusBar();
             setReloader(true);
             await global.plugin.saveSettings();
@@ -46,7 +47,7 @@ export default function SlashSuggestSetting(props: { register: Register }) {
           }}
         />
       </SettingItem>
-      {!!global.plugin.settings.slashSuggestOptions.isEnabled &&
+      {!!global.plugin.settings.slashSuggestOptions.isEnabled && (
         <>
           <SettingItem
             name="Trigger Phrase"
@@ -64,7 +65,8 @@ export default function SlashSuggestSetting(props: { register: Register }) {
               }}
             />
           </SettingItem>
-        </>}
+        </>
+      )}
     </SettingsSection>
   );
 }

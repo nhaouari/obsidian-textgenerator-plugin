@@ -9,7 +9,7 @@ import {
   RJSFSchema,
   StrictRJSFSchema,
   titleId,
-} from "@rjsf/utils"
+} from "@rjsf/utils";
 
 export default function ObjectFieldTemplate<
   T = any,
@@ -29,22 +29,22 @@ export default function ObjectFieldTemplate<
   readonly,
   registry,
 }: ObjectFieldTemplateProps<T, S, F>) {
-  const uiOptions = getUiOptions<T, S, F>(uiSchema)
+  const uiOptions = getUiOptions<T, S, F>(uiSchema);
   const TitleFieldTemplate = getTemplate<"TitleFieldTemplate", T, S, F>(
     "TitleFieldTemplate",
     registry,
-    uiOptions,
-  )
+    uiOptions
+  );
   const DescriptionFieldTemplate = getTemplate<
     "DescriptionFieldTemplate",
     T,
     S,
     F
-  >("DescriptionFieldTemplate", registry, uiOptions)
+  >("DescriptionFieldTemplate", registry, uiOptions);
   // Button templates are not overridden in the uiSchema
   const {
     ButtonTemplates: { AddButton },
-  } = registry.templates
+  } = registry.templates;
 
   return (
     <>
@@ -71,7 +71,9 @@ export default function ObjectFieldTemplate<
         {properties.map((element: any, index: number) => (
           <div
             key={index}
-            className={`${element.hidden ? "plug-tg-hidden" : ""} plug-tg-mb-2.5 plug-tg-flex`}
+            className={`${
+              element.hidden ? "plug-tg-hidden" : ""
+            } plug-tg-mb-2.5 plug-tg-flex`}
           >
             <div className="plug-tg-w-full"> {element.content}</div>
           </div>
@@ -91,5 +93,5 @@ export default function ObjectFieldTemplate<
         ) : null}
       </div>
     </>
-  )
+  );
 }

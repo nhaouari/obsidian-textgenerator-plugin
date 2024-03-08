@@ -3,7 +3,11 @@ import handlebars, { Exception, createFrame } from "handlebars";
 import { pull } from "langchain/hub";
 
 import asyncHelpers from "../lib/async-handlebars-helper";
-import { compileLangMessages, createFileWithInput, createFolder } from "#/utils";
+import {
+  compileLangMessages,
+  createFileWithInput,
+  createFolder,
+} from "#/utils";
 
 import { pluginApi } from "@vanakat/plugin-api";
 
@@ -30,29 +34,27 @@ export default function Helpersfn(self: ContextManager) {
     const ce = new ContentExtractor(self.app, self.plugin);
 
     ce.setExtractor(
-      ExtractorSlug[
-      id as keyof typeof ExtractorSlug
-      ] as keyof typeof Extractors
+      ExtractorSlug[id as keyof typeof ExtractorSlug] as keyof typeof Extractors
     );
 
     return await ce.convert(cntn, other);
-  }
+  };
 
   const _runTemplate = async (id: string, metadata?: any) => {
     return await self.plugin.textGenerator.templateGen(id, {
       additionalProps: metadata,
-    })
-  }
+    });
+  };
 
   const write = async (path: string, data: string) => {
-    return await createFileWithInput(path, data, self.plugin.app)
-  }
+    return await createFileWithInput(path, data, self.plugin.app);
+  };
 
   const deleteFile = async (path: string) => {
-    return await self.plugin.app.vault.adapter.remove(path)
-  }
+    return await self.plugin.app.vault.adapter.remove(path);
+  };
 
-  const append = async (path: string, data: string,) => {
+  const append = async (path: string, data: string) => {
     const dirMatch = path.match(/(.*)[/\\]/);
     let dirName = "";
     if (dirMatch) dirName = dirMatch[1];
@@ -60,32 +62,32 @@ export default function Helpersfn(self: ContextManager) {
     if (!(await self.app.vault.adapter.exists(dirName)))
       await createFolder(dirName, app);
 
-    return await self.plugin.app.vault.adapter.append(path, `\n${data}`)
-  }
+    return await self.plugin.app.vault.adapter.append(path, `\n${data}`);
+  };
 
   const error = async (context: any) => {
     await self.plugin.handelError(context);
     throw new Error(context);
-  }
+  };
 
   const notice = (context: any, duration: any) => {
     new Notice(context, typeof duration == "object" ? undefined : +duration);
-  }
+  };
 
   const read = async (path: string) => {
-    return await Read(path, self.plugin)
-  }
+    return await Read(path, self.plugin);
+  };
 
   const Helpers = {
     each: async (context: any, options: any) => {
       if (!options) {
-        throw new Exception('Must pass iterator to #each');
+        throw new Exception("Must pass iterator to #each");
       }
 
       let fn = options.fn,
         inverse = options.inverse,
         i = 0,
-        ret = '',
+        ret = "",
         data: any;
 
       if (typeof context == "function") {
@@ -96,7 +98,12 @@ export default function Helpersfn(self: ContextManager) {
         data = createFrame(options.data);
       }
 
-      async function execIteration(field: any, value: any, index: any, last?: any) {
+      async function execIteration(
+        field: any,
+        value: any,
+        index: any,
+        last?: any
+      ) {
         if (data) {
           data.key = field;
           data.index = index;
@@ -106,13 +113,13 @@ export default function Helpersfn(self: ContextManager) {
 
         ret =
           ret +
-          await fn(value, {
+          (await fn(value, {
             data: data,
             blockParams: [context[field], field],
-          });
+          }));
       }
 
-      if (context && typeof context === 'object') {
+      if (context && typeof context === "object") {
         if (Array.isArray(context)) {
           for (let j = context.length; i < j; i++) {
             if (i in context) {
@@ -129,7 +136,7 @@ export default function Helpersfn(self: ContextManager) {
           for (const value of context) {
             await execIteration(i, value, i++, i === j);
           }
-        } else if (typeof Symbol === 'function' && context[Symbol.iterator]) {
+        } else if (typeof Symbol === "function" && context[Symbol.iterator]) {
           const newContext = [];
           const iterator = context[Symbol.iterator]();
           for (let it = iterator.next(); !it.done; it = iterator.next()) {
@@ -148,13 +155,12 @@ export default function Helpersfn(self: ContextManager) {
               // the last iteration without have to scan the object twice and create
               // an intermediate keys array.
               if (priorKey !== undefined) {
-                await execIteration(priorKey, context[priorKey], i - 1,);
+                await execIteration(priorKey, context[priorKey], i - 1);
               }
               priorKey = key;
               i++;
             }
           }
-
 
           if (priorKey !== undefined) {
             await execIteration(priorKey, context[priorKey], i - 1, true);
@@ -230,7 +236,10 @@ export default function Helpersfn(self: ContextManager) {
       let files = self.app.vault.getMarkdownFiles();
 
       if (str) {
-        const filteredFiles = files.filter((file) => file.path.match(str) && (!minLength || file.stat.size >= minLength));
+        const filteredFiles = files.filter(
+          (file) =>
+            file.path.match(str) && (!minLength || file.stat.size >= minLength)
+        );
         if (filteredFiles.length === 0) {
           throw new Error(`No files match the pattern ${str}`);
         }
@@ -296,7 +305,7 @@ export default function Helpersfn(self: ContextManager) {
     },
 
     error: async function (context: any) {
-      await error(context)
+      await error(context);
     },
 
     notice: function (context: any, duration: any) {
@@ -308,8 +317,7 @@ export default function Helpersfn(self: ContextManager) {
       if (vars[vars.length - 1].fn) {
         fnExists = true;
         vars[vars.length - 1] = (await vars[vars.length - 1].fn?.(this)) || "";
-      }
-      else delete vars[vars.length - 1];
+      } else delete vars[vars.length - 1];
 
       // try to json parse them
       vars.forEach((v, i) => {
@@ -321,15 +329,13 @@ export default function Helpersfn(self: ContextManager) {
       });
 
       if (!fnExists && !vars[vars.length - 1]) vars.pop();
-      console.log(...vars)
+      console.log(...vars);
       return "";
     },
 
     async package(packageId: string, version?: string) {
-      if (!await self.plugin.textGenerator.packageExists(packageId))
-        throw new Error(
-          `package ${packageId} was not found.`
-        );
+      if (!(await self.plugin.textGenerator.packageExists(packageId)))
+        throw new Error(`package ${packageId} was not found.`);
       return true;
     },
 
@@ -350,7 +356,7 @@ export default function Helpersfn(self: ContextManager) {
 
       const otherVariables = vars;
 
-      const templatePath = await self.plugin.textGenerator.getTemplatePath(id)
+      const templatePath = await self.plugin.textGenerator.getTemplatePath(id);
 
       if (!templatePath)
         throw new Error(
@@ -378,8 +384,8 @@ export default function Helpersfn(self: ContextManager) {
           innerResult = innerTxt.trim().startsWith("{")
             ? JSON5.parse(innerTxt)
             : {
-              [param]: innerTxt,
-            };
+                [param]: innerTxt,
+              };
         } catch (err: any) {
           innerResult = {
             [param]: innerTxt,
@@ -393,7 +399,6 @@ export default function Helpersfn(self: ContextManager) {
             err
           );
         }
-
       } else {
         if (otherVariables[0]) varname = otherVariables[0];
 
@@ -402,17 +407,20 @@ export default function Helpersfn(self: ContextManager) {
         const innerTxt = otherVariables[1];
 
         innerResult = {
-          [otherVariables.length > 1 ? param : "tg_selection"]:
-            innerTxt,
+          [otherVariables.length > 1 ? param : "tg_selection"]: innerTxt,
         };
       }
 
-      lodashSet(options.data.root, otherVariables.length >= 1 ? `vars["${otherVariables[0]}"]` : id, await _runTemplate(id, {
-        ...options.data.root,
-        disableProvider: false,
-        ...TemplateMetadata,
-        ...innerResult
-      }))
+      lodashSet(
+        options.data.root,
+        otherVariables.length >= 1 ? `vars["${otherVariables[0]}"]` : id,
+        await _runTemplate(id, {
+          ...options.data.root,
+          disableProvider: false,
+          ...TemplateMetadata,
+          ...innerResult,
+        })
+      );
 
       return "";
     },
@@ -430,25 +438,22 @@ export default function Helpersfn(self: ContextManager) {
 
       const id: string = templateId?.contains("/")
         ? // if it has a slash that means it already have the packageId
-        `["${templateId}"]`
+          `["${templateId}"]`
         : // checking for vars
-        Object.keys(additionalOptions.data.root.vars || {}).includes(
-          templateId
-        )
-          ? `vars["${templateId}"]`
-          : // make packageId/templateId
+        Object.keys(additionalOptions.data.root.vars || {}).includes(templateId)
+        ? `vars["${templateId}"]`
+        : // make packageId/templateId
           `["${parentPackageId}/${templateId}"]`;
 
       const val = lodashGet(additionalOptions.data.root, id);
 
-      return clean ? JSON.stringify(val) : val
+      return clean ? JSON.stringify(val) : val;
     },
 
     async set(...vars: any[]) {
       const additionalOptions = vars.pop();
 
-
-      const id: string = `vars["${vars[0]}"]`
+      const id: string = `vars["${vars[0]}"]`;
 
       let value = vars[1];
 
@@ -487,7 +492,7 @@ export default function Helpersfn(self: ContextManager) {
         other = otherVariables[2];
       }
 
-      const res = await extract(firstVar, cntn, other)
+      const res = await extract(firstVar, cntn, other);
 
       lodashSet(options.data.root, varname, res);
 
@@ -511,7 +516,7 @@ export default function Helpersfn(self: ContextManager) {
 
       const regexResults = cntn.match(reg);
 
-      lodashSet(options.data.root, `vars["${firstVar}"]`, regexResults)
+      lodashSet(options.data.root, `vars["${firstVar}"]`, regexResults);
       return regexResults;
     },
 
@@ -562,12 +567,15 @@ export default function Helpersfn(self: ContextManager) {
     },
 
     async script(...vars: any[]) {
-      if (!self.plugin.settings.allowJavascriptRun) throw new Error("Scripts are not allowed to run, for security reasons. Go to plugin settings and enable it");
+      if (!self.plugin.settings.allowJavascriptRun)
+        throw new Error(
+          "Scripts are not allowed to run, for security reasons. Go to plugin settings and enable it"
+        );
       const options = vars.pop();
 
       options.data.root.vars ??= {};
 
-      let content = await options?.fn?.(this) as string || ""
+      let content = ((await options?.fn?.(this)) as string) || "";
 
       const p = options.data.root.templatePath?.split("/");
       const parentPackageId = p?.[p?.length - 2] || "default";
@@ -576,16 +584,18 @@ export default function Helpersfn(self: ContextManager) {
         return await self.plugin.textGenerator.gen(templateContent, {
           ...options.data.root,
           disableProvider: false,
-          ...metadata
+          ...metadata,
         });
-      }
+      };
 
       const genJSON = async (templateContent: string, metadata: any) => {
-        return JSON5.parse(await gen(templateContent, {
-          ...metadata,
-          modelKwargs: { "response_format": { "type": "json_object" } }
-        }));
-      }
+        return JSON5.parse(
+          await gen(templateContent, {
+            ...metadata,
+            modelKwargs: { response_format: { type: "json_object" } },
+          })
+        );
+      };
 
       const run = (id: string, metadata?: any) => {
         let meta: any = {};
@@ -596,34 +606,39 @@ export default function Helpersfn(self: ContextManager) {
 
         const p = options.data.root.templatePath?.split("/");
 
-
         if (content.contains("run(")) {
           const [packageId, templateId] = id.contains("/")
             ? id.split("/")
             : [p[p.length - 2], id];
 
-          console.log({ paths: self.plugin.textGenerator.templatePaths, packageId, templateId })
+          console.log({
+            paths: self.plugin.textGenerator.templatePaths,
+            packageId,
+            templateId,
+          });
           const TemplateMetadata = self.getFrontmatter(
-            self.getMetaData(self.plugin.textGenerator.templatePaths[packageId][templateId])
+            self.getMetaData(
+              self.plugin.textGenerator.templatePaths[packageId][templateId]
+            )
           );
           meta = {
             ...options.data.root,
             disableProvider: false,
             ...TemplateMetadata,
-          }
+          };
         }
 
-        const Id = id?.contains("/")
-          ? id
-          : `${parentPackageId}/${id}`;
+        const Id = id?.contains("/") ? id : `${parentPackageId}/${id}`;
 
         return _runTemplate(Id, {
           ...meta,
-          ...(typeof metadata == "object" ? metadata : {
-            "tg_selection": metadata
-          })
-        })
-      }
+          ...(typeof metadata == "object"
+            ? metadata
+            : {
+                tg_selection: metadata,
+              }),
+        });
+      };
 
       if (content.startsWith("```")) {
         let k = content.split("\n");
@@ -638,7 +653,16 @@ export default function Helpersfn(self: ContextManager) {
         async (plugin, app, pluginApi, run, gen, genJSON, error, JSON5)=>{
           ${content}
         }  
-      `).bind(this)(self.plugin, self.app, pluginApi, run, gen, genJSON, error, JSON5);
+      `).bind(this)(
+        self.plugin,
+        self.app,
+        pluginApi,
+        run,
+        gen,
+        genJSON,
+        error,
+        JSON5
+      );
     },
 
     read,
@@ -646,17 +670,16 @@ export default function Helpersfn(self: ContextManager) {
     async write(...vars: any[]) {
       const options: { data: { root: any }; fn: any } = vars.pop();
       let data = vars[1];
-      if (options.fn) data = await options.fn(options.data.root)
-      return await write(vars[0], data)
+      if (options.fn) data = await options.fn(options.data.root);
+      return await write(vars[0], data);
     },
 
     async append(...vars: any[]) {
       const options: { data: { root: any }; fn: any } = vars.pop();
       let data = vars[1];
-      if (options.fn) data = await options.fn(options.data.root)
-      return await append(vars[0], data)
-    }
-
+      if (options.fn) data = await options.fn(options.data.root);
+      return await append(vars[0], data);
+    },
   } as const;
 
   return Helpers;
@@ -680,19 +703,18 @@ export async function langPull(rep: string) {
   if (k.kwargs.template_format && k.kwargs.template_format != "f-string")
     throw new Error("only accepts templates with format f-string for now.");
 
-
   const data = compileLangMessages(
     k.kwargs.messages ||
-    (k.kwargs.template
-      ? [
-        {
-          prompt: {
-            template: k.kwargs.template,
-            inputVariables: k.kwargs.input_variables,
-          },
-        },
-      ]
-      : [])
+      (k.kwargs.template
+        ? [
+            {
+              prompt: {
+                template: k.kwargs.template,
+                inputVariables: k.kwargs.input_variables,
+              },
+            },
+          ]
+        : [])
   );
 
   return data;

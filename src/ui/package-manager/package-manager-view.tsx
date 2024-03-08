@@ -9,12 +9,12 @@ import Profile from "./profile";
 import { Platform } from "obsidian";
 import { ProviderServer } from "./package-manager";
 
-
-
 export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   const glob = useglobal();
 
-  const [_items, setItems] = useState<(PackageTemplate & { selected?: boolean })[]>([]);
+  const [_items, setItems] = useState<
+    (PackageTemplate & { selected?: boolean })[]
+  >([]);
 
   const parent = p.parent;
 
@@ -25,14 +25,12 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
 
   const pacakgeIdsToUpdateHash = useMemo(() => {
     const hash: Record<string, boolean> = {};
-    packagesIdsToUpdate.forEach(p => hash[p] = true);
+    packagesIdsToUpdate.forEach((p) => (hash[p] = true));
     return hash;
-  }, [packagesIdsToUpdate])
+  }, [packagesIdsToUpdate]);
 
   const items = useMemo(() => {
-    let itms = justInstalled ?
-      _items.filter(i => !!i.installed)
-      : _items;
+    let itms = justInstalled ? _items.filter((i) => !!i.installed) : _items;
 
     if (searchInput.length)
       itms = itms.filter((p) =>
@@ -42,10 +40,8 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
           .includes(searchInput.toLowerCase())
       );
 
-    return itms
-  },
-    [_items, justInstalled, packagesIdsToUpdate, searchInput]
-  );
+    return itms;
+  }, [_items, justInstalled, packagesIdsToUpdate, searchInput]);
 
   function toggleJustInstalled() {
     setJustInstalled((i) => !i);
@@ -53,7 +49,8 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
 
   async function getAllPackages(update = true) {
     let packages: any = [];
-    if (update) packages = await glob.plugin.packageManager.updatePackagesList();
+    if (update)
+      packages = await glob.plugin.packageManager.updatePackagesList();
 
     await glob.plugin.packageManager.updatePackagesStats();
 
@@ -61,7 +58,11 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   }
 
   async function updateView() {
-    setItems(glob.plugin.packageManager.getPackagesList().filter(p => !p.desktopOnly || Platform.isDesktop));
+    setItems(
+      glob.plugin.packageManager
+        .getPackagesList()
+        .filter((p) => !p.desktopOnly || Platform.isDesktop)
+    );
   }
 
   function handleChange(value: string) {
@@ -82,7 +83,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
 
   useEffect(() => {
     setSelectedIndex(-1);
-  }, [searchInput])
+  }, [searchInput]);
 
   useEffect(() => {
     (async () => {
@@ -90,45 +91,68 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
       try {
         await glob.plugin.packageManager.updateBoughtResources();
       } catch (err: any) {
-        console.warn("couldn't updateBoughtResources")
+        console.warn("couldn't updateBoughtResources");
       }
       await updateView();
-    })()
+    })();
   }, []);
 
-  const userApikey = useMemo(() => glob.plugin.packageManager.getApikey(), [glob.trg]);
+  const userApikey = useMemo(
+    () => glob.plugin.packageManager.getApikey(),
+    [glob.trg]
+  );
   const isLoggedIn = !!userApikey;
 
-
   const loginComponent = ProviderServer ? (
-    <div className="plug-tg-flex plug-tg-gap-2 plug-tg-items-center plug-tg-pr-9">
-      {isLoggedIn ? <>
-        <Profile key={userApikey} apiKey={userApikey} mini />
-        <button
-          data-tip="Logout"
-          className="plug-tg-tooltip plug-tg-tooltip-bottom plug-tg-cursor-pointer plug-tg-p-[3px]"
-          onClick={async () => {
-            await attemptLogout(glob.plugin);
-            glob.triggerReload();
-          }}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
-        </button>
-      </> :
+    <div className="plug-tg-flex plug-tg-items-center plug-tg-gap-2 plug-tg-pr-9">
+      {isLoggedIn ? (
+        <>
+          <Profile key={userApikey} apiKey={userApikey} mini />
+          <button
+            data-tip="Logout"
+            className="plug-tg-tooltip plug-tg-tooltip-bottom plug-tg-cursor-pointer plug-tg-p-[3px]"
+            onClick={async () => {
+              await attemptLogout(glob.plugin);
+              glob.triggerReload();
+            }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="lucide lucide-log-out"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" x2="9" y1="12" y2="12" />
+            </svg>
+          </button>
+        </>
+      ) : (
         <button
           data-tip="Login"
           className="plug-tg-tooltip plug-tg-tooltip-bottom plug-tg-cursor-pointer"
           onClick={async () => {
             await attemptLogin(glob.plugin);
             glob.triggerReload();
-          }}>
+          }}
+        >
           Login
         </button>
-      }
+      )}
     </div>
-  ) : "";
+  ) : (
+    ""
+  );
 
-  const premiumFeatures = items.filter(i => !!i.core);
-  const communityTemplates = items.filter(i => !i.core);
+  const premiumFeatures = items.filter((i) => !!i.core);
+  const communityTemplates = items.filter((i) => !i.core);
 
   return (
     <>
@@ -140,7 +164,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
           <div className="modal-content plug-tg-h-full">
             <div className="modal-sidebar community-modal-sidebar">
               <div className="community-modal-controls">
-                <div className="plug-tg-flex plug-tg-w-full plug-tg-justify-between plug-tg-items-center plug-tg-px-3 plug-tg-pb-3 plug-tg-max-w-full">
+                <div className="plug-tg-flex plug-tg-w-full plug-tg-max-w-full plug-tg-items-center plug-tg-justify-between plug-tg-px-3 plug-tg-pb-3">
                   <div>
                     <div className="setting-item-info">
                       <div className="setting-item-name"></div>
@@ -182,10 +206,10 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                           <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
                         </svg>
                       </button>
-
                     </div>
                   </div>
-                  {!(selectedIndex !== -1 && items[selectedIndex]) && loginComponent}
+                  {!(selectedIndex !== -1 && items[selectedIndex]) &&
+                    loginComponent}
                 </div>
                 <div className="setting-item mod-toggle">
                   <div className="setting-item-info">
@@ -194,8 +218,9 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                   </div>
                   <div className="setting-item-control">
                     <div
-                      className={`checkbox-container mod-small ${justInstalled && "is-enabled"
-                        }`}
+                      className={`checkbox-container mod-small ${
+                        justInstalled && "is-enabled"
+                      }`}
                       onClick={() => toggleJustInstalled()}
                     >
                       <input type="checkbox" tabIndex={0} />
@@ -203,66 +228,78 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                   </div>
                 </div>
                 <div className="plug-tg-flex plug-tg-w-full plug-tg-justify-end">
-                  <div className="plug-tg-px-4 plug-tg-py-1 plug-tg-text-xs">Find more community templates on our <a href="https://discord.gg/GvTBgzBz7n">discord server!</a></div>
+                  <div className="plug-tg-px-4 plug-tg-py-1 plug-tg-text-xs">
+                    Find more community templates on our{" "}
+                    <a href="https://discord.gg/GvTBgzBz7n">discord server!</a>
+                  </div>
                 </div>
               </div>
               <div className="community-modal-search-results-wrapper">
                 <div className="plug-tg-flex plug-tg-flex-col">
-                  {!!ProviderServer && !!premiumFeatures?.length && <>
-                    <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2 plug-tg-p-3">
-                      <div className="plug-tg-text-xl plug-tg-font-bold">Featured Items ({premiumFeatures.length})</div>
-                      <div className="plug-tg-w-full plug-tg-flex plug-tg-gap-2 plug-tg-flex-wrap plug-tg-justify-items-center">
-                        {premiumFeatures.map((item) => {
-
-                          const i = items.findIndex(it => it.packageId == item.packageId);
-                          return (
-                            <TemplateItem
-                              key={item.packageId + "premium"}
-                              item={item}
-                              index={i}
-                              selected={selectedIndex == i}
-                              select={select}
-                              owned={glob.plugin.packageManager.simpleCheckOwnership(item.packageId)}
-                              update={
-                                pacakgeIdsToUpdateHash[item.packageId]
-                              }
-                            />
-                          )
-                        })}
+                  {!!ProviderServer && !!premiumFeatures?.length && (
+                    <>
+                      <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2 plug-tg-p-3">
+                        <div className="plug-tg-text-xl plug-tg-font-bold">
+                          Featured Items ({premiumFeatures.length})
+                        </div>
+                        <div className="plug-tg-flex plug-tg-w-full plug-tg-flex-wrap plug-tg-justify-items-center plug-tg-gap-2">
+                          {premiumFeatures.map((item) => {
+                            const i = items.findIndex(
+                              (it) => it.packageId == item.packageId
+                            );
+                            return (
+                              <TemplateItem
+                                key={item.packageId + "premium"}
+                                item={item}
+                                index={i}
+                                selected={selectedIndex == i}
+                                select={select}
+                                owned={glob.plugin.packageManager.simpleCheckOwnership(
+                                  item.packageId
+                                )}
+                                update={pacakgeIdsToUpdateHash[item.packageId]}
+                              />
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
 
-                    <hr className="plug-tg-h-px plug-tg-my-2 plug-tg-bg-gray-200/25 plug-tg-border-0" />
-                  </>}
+                      <hr className="plug-tg-my-2 plug-tg-h-px plug-tg-border-0 plug-tg-bg-gray-200/25" />
+                    </>
+                  )}
 
                   <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2 plug-tg-p-3 plug-tg-pr-0">
-                    {communityTemplates?.length ? <>
-                      <div className="plug-tg-text-xl plug-tg-font-bold">Community Templates ({communityTemplates.length})</div>
-                      <div className="community-modal-search-results plug-tg-pl-0 plug-tg-justify-items-center">
-                        {communityTemplates.map((item) => {
-                          const i = items.findIndex(it => it.packageId == item.packageId)
-                          return (
-                            <TemplateItem
-                              key={item.packageId + "community"}
-                              item={item}
-                              index={i}
-                              selected={selectedIndex == i}
-                              select={select}
-                              update={
-                                pacakgeIdsToUpdateHash[item.packageId]
-                              }
-                            />
-                          )
-                        })}
-                      </div>
-                    </> : null}
+                    {communityTemplates?.length ? (
+                      <>
+                        <div className="plug-tg-text-xl plug-tg-font-bold">
+                          Community Templates ({communityTemplates.length})
+                        </div>
+                        <div className="community-modal-search-results plug-tg-justify-items-center plug-tg-pl-0">
+                          {communityTemplates.map((item) => {
+                            const i = items.findIndex(
+                              (it) => it.packageId == item.packageId
+                            );
+                            return (
+                              <TemplateItem
+                                key={item.packageId + "community"}
+                                item={item}
+                                index={i}
+                                selected={selectedIndex == i}
+                                select={select}
+                                update={pacakgeIdsToUpdateHash[item.packageId]}
+                              />
+                            );
+                          })}
+                        </div>
+                      </>
+                    ) : null}
                   </div>
                 </div>
               </div>
             </div>
             {selectedIndex !== -1 && items[selectedIndex] && (
               <div className="community-modal-details">
-                <div className="modal-setting-nav-bar plug-tg-flex plug-tg-w-full plug-tg-justify-between plug-tg-items-center">
+                <div className="modal-setting-nav-bar plug-tg-flex plug-tg-w-full plug-tg-items-center plug-tg-justify-between">
                   <div
                     className="clickable-icon"
                     aria-label="Back"
@@ -299,7 +336,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
             )}
           </div>
         </div>
-      </div >
+      </div>
     </>
   );
 };

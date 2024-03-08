@@ -53,7 +53,9 @@ export const CodeBlock: FC<Props> = memo(({ language, value }) => {
   return (
     <div className="codeblock plug-tg-relative plug-tg-font-sans plug-tg-text-[16px]">
       <div className="plug-tg-flex plug-tg-items-center plug-tg-justify-between plug-tg-px-4 plug-tg-py-1.5">
-        <span className="plug-tg-text-xs plug-tg-lowercase plug-tg-text-white">{language}</span>
+        <span className="plug-tg-text-xs plug-tg-lowercase plug-tg-text-white">
+          {language}
+        </span>
 
         <div className="plug-tg-flex plug-tg-items-center">
           <button

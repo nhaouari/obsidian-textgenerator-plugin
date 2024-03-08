@@ -5,7 +5,7 @@ import {
   helpId,
   RJSFSchema,
   StrictRJSFSchema,
-} from "@rjsf/utils"
+} from "@rjsf/utils";
 
 /** The `FieldHelpTemplate` component renders any help desired for a field
  *
@@ -16,17 +16,19 @@ export default function FieldHelpTemplate<
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any,
 >(props: FieldHelpProps<T, S, F>) {
-  const { idSchema, help, hasErrors } = props
+  const { idSchema, help, hasErrors } = props;
   if (!help) {
-    return null
+    return null;
   }
-  const id = helpId<T>(idSchema)
+  const id = helpId<T>(idSchema);
   return (
     <span
-      className={hasErrors ? "plug-tg-text-red-500" : "plug-tg-text-muted-foreground"}
+      className={
+        hasErrors ? "plug-tg-text-red-500" : "plug-tg-text-muted-foreground"
+      }
       id={id}
     >
       {help}
     </span>
-  )
+  );
 }

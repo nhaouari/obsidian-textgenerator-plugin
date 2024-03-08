@@ -26,7 +26,6 @@ export default function MarkDownViewer(props: {
     if (!ref.current) return;
     ref.current.innerHTML = "";
     try {
-
       MarkdownRenderer.render(
         Global?.plugin.app || app,
         "" + props.children,
@@ -34,9 +33,10 @@ export default function MarkDownViewer(props: {
         "",
         props.plugin || Global.plugin
       );
-
     } catch (err: any) {
-      Global.plugin.handelError(`failed to render "${"" + props.children}" it should be a string`);
+      Global.plugin.handelError(
+        `failed to render "${"" + props.children}" it should be a string`
+      );
     }
   }, [props.children, ref.current]);
 

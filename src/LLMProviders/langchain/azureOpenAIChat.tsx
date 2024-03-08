@@ -13,13 +13,12 @@ import clsx from "clsx";
 
 import { Input, SettingItem, useGlobal } from "../refs";
 
-
 const logger = debug("textgenerator:llmProvider:azureopenaiChat");
 
 export default class LangchainAzureOpenAIChatProvider
   extends LangchainBase
-  implements LLMProviderInterface {
-
+  implements LLMProviderInterface
+{
   static provider = "Langchain";
   static id = "Azure OpenAI Chat (Langchain)" as const;
   static slug = "azureOpenaiChat" as const;
@@ -33,9 +32,10 @@ export default class LangchainAzureOpenAIChatProvider
   ): Partial<OpenAIChatInput & AzureOpenAIInput & BaseChatModelParams> {
     return this.cleanConfig({
       azureOpenAIApiKey: options.api_key,
-      azureOpenAIBasePath: options.otherOptions?.azureOpenAIBasePath?.endsWith?.("/")
-        ? options.otherOptions?.azureOpenAIBasePath.slice(0, -1)
-        : options.otherOptions?.azureOpenAIBasePath,
+      azureOpenAIBasePath:
+        options.otherOptions?.azureOpenAIBasePath?.endsWith?.("/")
+          ? options.otherOptions?.azureOpenAIBasePath.slice(0, -1)
+          : options.otherOptions?.azureOpenAIBasePath,
       azureOpenAIApiInstanceName:
         options.otherOptions?.azureOpenAIApiInstanceName,
       azureOpenAIApiDeploymentName:
@@ -49,7 +49,9 @@ export default class LangchainAzureOpenAIChatProvider
       temperature: options.temperature,
       frequencyPenalty: +options.frequency_penalty || 0,
       presencePenalty: +options.presence_penalty || 0,
-      ...(options.presence_penalty == null ? {} : { presencePenalty: +options.presence_penalty }),
+      ...(options.presence_penalty == null
+        ? {}
+        : { presencePenalty: +options.presence_penalty }),
       n: options.n,
       stop: options.stop,
       streaming: options.stream,
@@ -116,7 +118,8 @@ export default class LangchainAzureOpenAIChatProvider
           register={props.register}
           sectionId={props.sectionId}
           className={clsx({
-            "plug-tg-opacity-40 plug-tg-pointer-events-none": config.azureOpenAIBasePath
+            "plug-tg-pointer-events-none plug-tg-opacity-40":
+              config.azureOpenAIBasePath,
           })}
         >
           <Input

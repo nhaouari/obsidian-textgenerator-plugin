@@ -4,12 +4,12 @@ import {
   FormContextType,
   RJSFSchema,
   StrictRJSFSchema,
-} from "@rjsf/utils"
+} from "@rjsf/utils";
 
 export default function DescriptionField<
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
-  F extends FormContextType = any
+  F extends FormContextType = any,
 >({ id, description }: DescriptionFieldProps<T, S, F>) {
   if (description) {
     return (
@@ -18,8 +18,8 @@ export default function DescriptionField<
           {description}
         </div>
       </div>
-    )
+    );
   }
 
-  return null
+  return null;
 }

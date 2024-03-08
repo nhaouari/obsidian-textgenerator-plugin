@@ -11,12 +11,12 @@ export default function Dropdown<T extends string>(props: {
   setValue: (_newvaL: T) => void;
   righty?: boolean;
   className?: any;
-  aliases?: Record<any, string>
+  aliases?: Record<any, string>;
 }) {
   const { value: isOpen, toggle, setFalse: close } = useBoolean(false);
   const slugs = useMemo(() => {
     return props.values.map((v) => {
-      const val = v
+      const val = v;
       return val == "Default" ? "Custom" : val;
     });
   }, [props.values]);
@@ -45,9 +45,15 @@ export default function Dropdown<T extends string>(props: {
         value={props.value || ""}
         onChange={(e) => props.setValue?.(e.target.value as any)}
       >
-        {!props.values.includes(props.value) && <option value={props.value} key={-1} className="plug-tg-z-20 plug-tg-w-full">
-          {props.value}*
-        </option>}
+        {!props.values.includes(props.value) && (
+          <option
+            value={props.value}
+            key={-1}
+            className="plug-tg-z-20 plug-tg-w-full"
+          >
+            {props.value}*
+          </option>
+        )}
         {props.values?.map((val, i) => (
           <option value={val} key={i} className="plug-tg-z-20 plug-tg-w-full">
             {props.aliases?.[slugs[i]] || slugs[i]}

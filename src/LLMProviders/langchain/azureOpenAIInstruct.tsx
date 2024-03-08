@@ -9,12 +9,12 @@ import clsx from "clsx";
 
 import { Input, SettingItem, useGlobal } from "../refs";
 
-
 const logger = debug("textgenerator:llmProvider:azureopenaiInstruct");
 
 export default class LangchainAzureOpenAIInstructProvider
   extends LangchainBase
-  implements LLMProviderInterface {
+  implements LLMProviderInterface
+{
   static provider = "Langchain";
   static id = "Azure OpenAI Instruct (Langchain)" as const;
   static slug = "azureOpenaiInstruct" as const;
@@ -28,9 +28,10 @@ export default class LangchainAzureOpenAIInstructProvider
   getConfig(options: LLMConfig): Partial<OpenAIInput & AzureOpenAIInput> {
     return this.cleanConfig({
       azureOpenAIApiKey: options.api_key,
-      azureOpenAIBasePath: options.otherOptions?.azureOpenAIBasePath?.endsWith?.("/")
-        ? options.otherOptions?.azureOpenAIBasePath.slice(0, -1)
-        : options.otherOptions?.azureOpenAIBasePath,
+      azureOpenAIBasePath:
+        options.otherOptions?.azureOpenAIBasePath?.endsWith?.("/")
+          ? options.otherOptions?.azureOpenAIBasePath.slice(0, -1)
+          : options.otherOptions?.azureOpenAIBasePath,
       azureOpenAIApiInstanceName:
         options.otherOptions?.azureOpenAIApiInstanceName,
       azureOpenAIApiDeploymentName:
@@ -44,7 +45,9 @@ export default class LangchainAzureOpenAIInstructProvider
       temperature: options.temperature,
       frequencyPenalty: +options.frequency_penalty || 0,
       presencePenalty: +options.presence_penalty || 0,
-      ...(options.presence_penalty == null ? {} : { presencePenalty: +options.presence_penalty }),
+      ...(options.presence_penalty == null
+        ? {}
+        : { presencePenalty: +options.presence_penalty }),
       n: options.n,
       stop: options.stop,
       streaming: options.stream,
@@ -110,7 +113,8 @@ export default class LangchainAzureOpenAIInstructProvider
           register={props.register}
           sectionId={props.sectionId}
           className={clsx({
-            "plug-tg-opacity-40 plug-tg-pointer-events-none": config.azureOpenAIBasePath
+            "plug-tg-pointer-events-none plug-tg-opacity-40":
+              config.azureOpenAIBasePath,
           })}
         >
           <Input
@@ -199,7 +203,7 @@ export default class LangchainAzureOpenAIInstructProvider
           <a href="https://beta.openai.com/docs/models/overview">
             <SettingItem
               name="more information"
-              className="plug-tg-text-xs plug-tg-pacity-50 hover:plug-tg-opacity-100"
+              className="plug-tg-pacity-50 plug-tg-text-xs hover:plug-tg-opacity-100"
               register={props.register}
               sectionId={props.sectionId}
             >

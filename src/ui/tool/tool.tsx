@@ -97,7 +97,6 @@ export default function Tool(props: {
   }, []);
 
   useEffect(() => {
-
     if (!selectedTemplatePath) return;
     (async () => {
       await props.view.leaf.setViewState({
@@ -117,9 +116,9 @@ export default function Tool(props: {
 
       const [errortemplateContent, templateContent] = templateFile?.path
         ? await safeAwait(
-          //@ts-ignore
-          props.plugin.app.vault.adapter.read(templateFile?.path)
-        )
+            //@ts-ignore
+            props.plugin.app.vault.adapter.read(templateFile?.path)
+          )
         : ["", ""];
 
       if (errortemplateContent) {
@@ -133,29 +132,25 @@ export default function Tool(props: {
       }
 
       const { inputContent, outputContent, preRunnerContent } =
-        props.plugin.contextManager.splitTemplate(
-          templateContent
-        );
-
-
+        props.plugin.contextManager.splitTemplate(templateContent);
 
       // const variables = this.contextManager
       //   .extractVariablesFromTemplate(inputContent)
       //   .filter((variable) => !variable.includes("."));
 
-
-
       const variables = props.plugin.contextManager.getHBVariablesOfTemplate(
-        preRunnerContent, inputContent, outputContent)
+        preRunnerContent,
+        inputContent,
+        outputContent
+      );
 
-      const templateContext =
-        await props.plugin.contextManager.getContext({
-          editor: config.editor as any,
-          templatePath: config.templatePath,
-          filePath: props.plugin.app.workspace.activeEditor?.file?.path,
-        });
-      templateContext.options.templatePath = config.templatePath
-      console.log({ templateContext, config })
+      const templateContext = await props.plugin.contextManager.getContext({
+        editor: config.editor as any,
+        templatePath: config.templatePath,
+        filePath: props.plugin.app.workspace.activeEditor?.file?.path,
+      });
+      templateContext.options.templatePath = config.templatePath;
+      console.log({ templateContext, config });
 
       setTemplateContext(templateContext.options);
       setVariables(variables);
@@ -166,13 +161,12 @@ export default function Tool(props: {
     const data = event.formData;
     setLoading(true);
     try {
-      const context =
-        await props.plugin.contextManager.getContext({
-          insertMetadata: false,
-          templatePath: selectedTemplatePath,
-          editor: config.editor as any,
-          addtionalOpts: data,
-        });
+      const context = await props.plugin.contextManager.getContext({
+        insertMetadata: false,
+        templatePath: selectedTemplatePath,
+        editor: config.editor as any,
+        addtionalOpts: data,
+      });
 
       const strm = await props.plugin.textGenerator.streamGenerate(
         context,
@@ -203,7 +197,8 @@ export default function Tool(props: {
     } catch (err: any) {
       console.error(err);
       setAnswer(
-        `ERR: ${err?.message?.replace("stack:", "\n\n\n\nMore Details") || err.message
+        `ERR: ${
+          err?.message?.replace("stack:", "\n\n\n\nMore Details") || err.message
         }`
       );
     } finally {
@@ -225,7 +220,13 @@ export default function Tool(props: {
       <div className="plug-tg-min-h-16 plug-tg-flex plug-tg-w-full plug-tg-resize-y plug-tg-flex-col plug-tg-justify-end plug-tg-gap-6 plug-tg-overflow-y-scroll plug-tg-pb-2">
         <div className="plug-tg-flex plug-tg-h-full plug-tg-flex-col plug-tg-gap-2">
           <div className="plug-tg-flex plug-tg-h-full plug-tg-flex-col plug-tg-gap-4">
-            <TemplateInputModalView labels={variables} metadata={meta} templateContext={templateContext} p={{ plugin: props.plugin }} onSubmit={handleSubmit} >
+            <TemplateInputModalView
+              labels={variables}
+              metadata={meta}
+              templateContext={templateContext}
+              p={{ plugin: props.plugin }}
+              onSubmit={handleSubmit}
+            >
               <div className="plug-tg-flex plug-tg-justify-end plug-tg-gap-3 plug-tg-pr-3">
                 {loading ? (
                   <button
@@ -255,7 +256,9 @@ export default function Tool(props: {
             {answer}
           </MarkDownViewer>
         ) : (
-          <div className="plug-tg-h-full plug-tg-text-sm plug-tg-opacity-50">(empty)</div>
+          <div className="plug-tg-h-full plug-tg-text-sm plug-tg-opacity-50">
+            (empty)
+          </div>
         )}
       </div>
     </div>

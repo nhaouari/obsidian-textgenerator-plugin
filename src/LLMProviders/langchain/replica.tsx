@@ -15,8 +15,8 @@ const logger = debug("textgenerator:llmProvider:replicated");
 const id = "Replica (Langchain)" as const;
 export default class LangchainReplicaProvider
   extends LangchainBase
-  implements LLMProviderInterface {
-
+  implements LLMProviderInterface
+{
   static provider = "Langchain";
   static id = id;
   static slug = "replica" as const;

@@ -1,10 +1,10 @@
-import React, { CSSProperties } from "react"
+import React, { CSSProperties } from "react";
 import {
   ArrayFieldTemplateItemType,
   FormContextType,
   RJSFSchema,
   StrictRJSFSchema,
-} from "@rjsf/utils"
+} from "@rjsf/utils";
 
 export default function ArrayFieldItemTemplate<
   T = any,
@@ -26,21 +26,23 @@ export default function ArrayFieldItemTemplate<
     readonly,
     registry,
     uiSchema,
-  } = props
+  } = props;
 
   const { CopyButton, MoveDownButton, MoveUpButton, RemoveButton } =
-    registry.templates.ButtonTemplates
+    registry.templates.ButtonTemplates;
   const btnStyle: CSSProperties = {
     flex: 1,
     paddingLeft: 6,
     paddingRight: 6,
     fontWeight: "bold",
-  }
+  };
 
   return (
     <div>
       <div className="plug-tg-mb-2 plug-tg-flex plug-tg-items-center">
-        <div className="plug-tg-w-3/4 plug-tg-flex-none lg:plug-tg-w-3/4">{children}</div>
+        <div className="plug-tg-w-3/4 plug-tg-flex-none lg:plug-tg-w-3/4">
+          {children}
+        </div>
         <div className="plug-tg-w-1/4 plug-tg-flex-none plug-tg-px-4 plug-tg-py-6 lg:plug-tg-w-1/4">
           {hasToolbar && (
             <div className="plug-tg-flex">
@@ -94,5 +96,5 @@ export default function ArrayFieldItemTemplate<
         </div>
       </div>
     </div>
-  )
+  );
 }

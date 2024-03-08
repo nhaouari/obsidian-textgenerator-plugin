@@ -44,8 +44,13 @@ export default function AvailableVars(props: {
               );
             })}
           </div>
-          <div className="plug-tg-flex plug-tg-justify-end plug-tg-items-center plug-tg-w-full">
-            <a className="text-xs" href="https://docs.text-gen.com/_notes/3-+Templates/subpages/Handlebar+Templates">Learn More</a>
+          <div className="plug-tg-flex plug-tg-w-full plug-tg-items-center plug-tg-justify-end">
+            <a
+              className="text-xs"
+              href="https://docs.text-gen.com/_notes/3-+Templates/subpages/Handlebar+Templates"
+            >
+              Learn More
+            </a>
           </div>
         </div>
         {hovered && (

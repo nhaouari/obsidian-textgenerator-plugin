@@ -44,8 +44,6 @@ export default class VersionManager {
       await this.updateFromV7_1To7_2();
     }
 
-
-
     this.plugin.settings.version = this.currentVersion;
     await this.plugin.saveSettings();
   }
@@ -57,42 +55,70 @@ export default class VersionManager {
         this.plugin.settings.endpoint = this.plugin.defaultSettings.endpoint;
 
         // @ts-ignore
-        set(this.plugin.settings, `LLMProviderOptions["OpenAI Chat (Langchain)"].basePath`, this.plugin.settings.endpoint)
+        set(
+          this.plugin.settings,
+          `LLMProviderOptions["OpenAI Chat (Langchain)"].basePath`,
+          this.plugin.settings.endpoint
+        );
         // @ts-ignore
-        set(this.plugin.settings, `LLMProviderOptions["OpenAI Instruct (Langchain)"].basePath`, this.plugin.settings.endpoint)
+        set(
+          this.plugin.settings,
+          `LLMProviderOptions["OpenAI Instruct (Langchain)"].basePath`,
+          this.plugin.settings.endpoint
+        );
       }
     }
 
     // @ts-ignore
     if (this.plugin.settings.engine) {
       // @ts-ignore
-      set(this.plugin.settings, `LLMProviderOptions["OpenAI Chat (Langchain)"].model`, this.plugin.settings.engine)
+      set(
+        this.plugin.settings,
+        `LLMProviderOptions["OpenAI Chat (Langchain)"].model`,
+        this.plugin.settings.engine
+      );
       // @ts-ignore
-      set(this.plugin.settings, `LLMProviderOptions["OpenAI Instruct (Langchain)"].model`, this.plugin.settings.engine)
+      set(
+        this.plugin.settings,
+        `LLMProviderOptions["OpenAI Instruct (Langchain)"].model`,
+        this.plugin.settings.engine
+      );
     }
 
     if (this.plugin.settings.api_key) {
-      set(this.plugin.settings, `LLMProviderOptions["OpenAI Chat (Langchain)"].api_key`, this.plugin.settings.api_key)
-      set(this.plugin.settings, `LLMProviderOptions["OpenAI Instruct (Langchain)"].api_key`, this.plugin.settings.api_key)
+      set(
+        this.plugin.settings,
+        `LLMProviderOptions["OpenAI Chat (Langchain)"].api_key`,
+        this.plugin.settings.api_key
+      );
+      set(
+        this.plugin.settings,
+        `LLMProviderOptions["OpenAI Instruct (Langchain)"].api_key`,
+        this.plugin.settings.api_key
+      );
 
       this.plugin.encryptAllKeys();
     }
-
 
     await this.plugin.saveSettings();
   }
 
   async updateFromV5_27To5_28() {
     this.plugin.settings.version = "0.5.28";
-    this.plugin.settings.options["batch-generate-in-right-click-files-menu"] = this.plugin.defaultSettings.options["batch-generate-in-right-click-files-menu"]
-    this.plugin.settings.options["tg-block-processor"] = this.plugin.defaultSettings.options["tg-block-processor"]
+    this.plugin.settings.options["batch-generate-in-right-click-files-menu"] =
+      this.plugin.defaultSettings.options[
+        "batch-generate-in-right-click-files-menu"
+      ];
+    this.plugin.settings.options["tg-block-processor"] =
+      this.plugin.defaultSettings.options["tg-block-processor"];
   }
 
   async updateFromV6_13To6_14() {
     this.plugin.settings.version = "0.6.14";
-    // change custom provider variables handlebars_headers_in handlebars_body_in 
+    // change custom provider variables handlebars_headers_in handlebars_body_in
     // to custom_header, custom_body
-    const customConfig = this.plugin.settings.LLMProviderOptions[`Default (Custom)`]
+    const customConfig =
+      this.plugin.settings.LLMProviderOptions[`Default (Custom)`];
     if (customConfig) {
       if (customConfig.handlebars_headers_in && !customConfig.custom_header) {
         customConfig.custom_header = customConfig.handlebars_headers_in;
@@ -104,7 +130,12 @@ export default class VersionManager {
         delete customConfig.handlebars_body_in;
       }
 
-      if (customConfig.path_to_choices ?? customConfig.path_to_message_content ?? customConfig.path_to_error_message ?? true) {
+      if (
+        customConfig.path_to_choices ??
+        customConfig.path_to_message_content ??
+        customConfig.path_to_error_message ??
+        true
+      ) {
         customConfig.sanatization_response = `async (data, res)=>{
           // catch error
           if (res.status >= 300) {
@@ -122,15 +153,18 @@ export default class VersionManager {
           // { content: string }[] 
           // if there's only one response, put it in the array of choices.
           return choices;
-        }`
-
+        }`;
       }
     }
 
     // same thing in anthropic legacy
-    const anthropicConfig = this.plugin.settings.LLMProviderOptions[`Anthropic Legacy (Custom)`]
+    const anthropicConfig =
+      this.plugin.settings.LLMProviderOptions[`Anthropic Legacy (Custom)`];
     if (anthropicConfig) {
-      if (anthropicConfig.handlebars_headers_in && !anthropicConfig.custom_header) {
+      if (
+        anthropicConfig.handlebars_headers_in &&
+        !anthropicConfig.custom_header
+      ) {
         anthropicConfig.custom_header = anthropicConfig.handlebars_headers_in;
         delete anthropicConfig.handlebars_headers_in;
       }
@@ -145,21 +179,23 @@ export default class VersionManager {
   async updateFromV6_14To7() {
     this.plugin.settings.version = "0.7.0";
 
-    const chat1 = this.plugin.settings.LLMProviderOptions[`OpenAI Chat 1 (Langchain)`]
+    const chat1 =
+      this.plugin.settings.LLMProviderOptions[`OpenAI Chat 1 (Langchain)`];
     if (chat1) {
       this.plugin.settings.LLMProviderProfiles ??= {};
       this.plugin.settings.LLMProviderProfiles["OpenAI Chat 1 (Langchain)"] = {
         extends: "OpenAI Chat (Langchain)",
-        name: "OpenAI Chat 1"
+        name: "OpenAI Chat 1",
       };
     }
 
-    const chat2 = this.plugin.settings.LLMProviderOptions[`OpenAI Chat 2 (Langchain)`]
+    const chat2 =
+      this.plugin.settings.LLMProviderOptions[`OpenAI Chat 2 (Langchain)`];
     if (chat2) {
       this.plugin.settings.LLMProviderProfiles ??= {};
       this.plugin.settings.LLMProviderProfiles["OpenAI Chat 2 (Langchain)"] = {
         extends: "OpenAI Chat (Langchain)",
-        name: "OpenAI Chat 2"
+        name: "OpenAI Chat 2",
       };
     }
   }
@@ -167,18 +203,18 @@ export default class VersionManager {
   async updateFromV7_1To7_2() {
     this.plugin.settings.version = "0.7.2";
 
-    const anthropicLegacy = this.plugin.settings.LLMProviderOptions[
-      "Anthropic Legacy (Custom)"
-    ]
+    const anthropicLegacy =
+      this.plugin.settings.LLMProviderOptions["Anthropic Legacy (Custom)"];
     if (anthropicLegacy) {
-      this.plugin.settings.LLMProviderOptions[
-        "Anthropic Legacy (Custom)"
-      ] = {
+      this.plugin.settings.LLMProviderOptions["Anthropic Legacy (Custom)"] = {
         ...anthropicLegacy,
         ...anthropicLegacyDefaultValues,
-        sanatization_response: anthropicLegacyDefaultValues.sanatization_response,
-        endpoint: anthropicLegacy.endpoint?.replace("v1/complete", "v1/messages") || anthropicLegacyDefaultValues.endpoint
-      }
+        sanatization_response:
+          anthropicLegacyDefaultValues.sanatization_response,
+        endpoint:
+          anthropicLegacy.endpoint?.replace("v1/complete", "v1/messages") ||
+          anthropicLegacyDefaultValues.endpoint,
+      };
     }
   }
 

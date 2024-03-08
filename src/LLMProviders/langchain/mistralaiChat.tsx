@@ -9,9 +9,7 @@ import { OpenAIChatInput } from "langchain/chat_models/openai";
 
 const logger = debug("textgenerator:llmProvider:mistralChat");
 
-
 import { Input, SettingItem, useGlobal } from "../refs";
-
 
 const default_values = {
   basePath: "https://api.mistral.ai/v1",
@@ -19,8 +17,8 @@ const default_values = {
 
 export default class LangchainMistralAIChatProvider
   extends LangchainBase
-  implements LLMProviderInterface {
-
+  implements LLMProviderInterface
+{
   static provider = "Langchain" as const;
   static id = "MistralAI Chat (Langchain)" as const;
   static slug = "mistralAIChat" as const;
@@ -38,7 +36,7 @@ export default class LangchainMistralAIChatProvider
     "X-Stainless-Package-Version": null,
     "HTTP-Referer": null,
     "X-Title": null,
-  }
+  };
 
   id = LangchainMistralAIChatProvider.id;
   provider = LangchainMistralAIChatProvider.provider;
@@ -54,14 +52,13 @@ export default class LangchainMistralAIChatProvider
     return this.cleanConfig({
       openAIApiKey: options.api_key,
 
-
       // ------------Necessary stuff--------------
       modelKwargs: {
         ...options.modelKwargs,
         response_format: undefined,
         frequency_penalty: undefined,
         presence_penalty: undefined,
-        n: undefined
+        n: undefined,
       },
       modelName: options.model,
       maxTokens: +options.max_tokens,
@@ -81,7 +78,7 @@ export default class LangchainMistralAIChatProvider
     const id = props.self.id;
 
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
-      ...default_values
+      ...default_values,
     });
 
     return (

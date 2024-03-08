@@ -15,7 +15,6 @@ import LangchainChatGoogleGenerativeAIProvider from "./langchain/googleGenerativ
 
 // import { LOCClone1, LOCClone2 } from "./langchain/clones";
 
-
 export const defaultProviders = [
   // openai
   LangchainOpenAIChatProvider,
@@ -37,15 +36,12 @@ export const defaultProviders = [
   // anthropic
   ChatanthropicLangchainProvider,
 
-
   // azure
   LangchainAzureOpenAIChatProvider,
   LangchainAzureOpenAIInstructProvider,
 
   // replica (disabled because it doesn't work)
   // "Replica (Langchain)": LangchainReplicaProvider,
-
-
 
   // anthropic custom
   AnthropicCustomProvider,
@@ -57,14 +53,15 @@ export const defaultProviders = [
   CustomProvider,
 ];
 
-
 export type llmType = (typeof defaultProviders)[number]["id"];
 export type llmSlugType = (typeof defaultProviders)[number]["slug"];
-export type LLMProviderType = llmType
+export type LLMProviderType = llmType;
 
-export const defaultProvidersMap: Record<any, (typeof defaultProviders)[number]> = {} as any;
+export const defaultProvidersMap: Record<
+  any,
+  (typeof defaultProviders)[number]
+> = {} as any;
 
 for (const llm of defaultProviders) {
   defaultProvidersMap[llm.id] = llm;
 }
-

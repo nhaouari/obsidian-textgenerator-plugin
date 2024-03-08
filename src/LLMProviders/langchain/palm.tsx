@@ -13,8 +13,8 @@ const logger = debug("textgenerator:llmProvider:palm");
 const id = "Google Palm (Langchain)" as const;
 export default class LangchainPalmProvider
   extends LangchainBase
-  implements LLMProviderInterface {
-
+  implements LLMProviderInterface
+{
   static provider = "Langchain";
   static id = id;
   static slug = "palm" as const;
@@ -29,7 +29,6 @@ export default class LangchainPalmProvider
   getConfig(options: LLMConfig): Partial<GooglePaLMChatInput> {
     return this.cleanConfig({
       apiKey: options.api_key,
-
 
       // ------------Necessary stuff--------------
       modelKwargs: options.modelKwargs,
@@ -98,7 +97,9 @@ export default class LangchainPalmProvider
           />
         </SettingItem>
         <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">
-          <div className="plug-tg-text-lg plug-tg-opacity-70">Recommended to use Google GenerativeAI instead</div>
+          <div className="plug-tg-text-lg plug-tg-opacity-70">
+            Recommended to use Google GenerativeAI instead
+          </div>
         </div>
       </>
     );

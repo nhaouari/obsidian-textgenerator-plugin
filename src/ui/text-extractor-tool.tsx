@@ -51,9 +51,9 @@ const ContentExtractorComponent = ({
     try {
       const contentExtractor = new ContentExtractor(app, plugin);
       const extractedUrls: {
-        url: string,
-        file: any,
-        extractorMethod: any,
+        url: string;
+        file: any;
+        extractorMethod: any;
       }[] = [];
 
       // Iterate through each extractor method and add the extracted URLs to the array.
@@ -77,7 +77,7 @@ const ContentExtractorComponent = ({
       }
       setUrlResults(extractedUrls);
     } catch (err: any) {
-      plugin.handelError(err)
+      plugin.handelError(err);
     }
   };
 

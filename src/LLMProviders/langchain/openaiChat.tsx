@@ -8,14 +8,16 @@ import debug from "debug";
 
 import { AI_MODELS, Input, Message, SettingItem, useGlobal } from "../refs";
 
-
 const logger = debug("textgenerator:llmProvider:openaiChat");
 
 const default_values = {
   basePath: "https://api.openai.com/v1",
 };
 
-export default class LangchainOpenAIChatProvider extends LangchainBase implements LLMProviderInterface {
+export default class LangchainOpenAIChatProvider
+  extends LangchainBase
+  implements LLMProviderInterface
+{
   /** for models to know what provider is that, for example if this class is being extended. and the id changes. */
 
   static provider = "Langchain";
@@ -77,7 +79,8 @@ export default class LangchainOpenAIChatProvider extends LangchainBase implement
             placeholder="Enter your API Base Path"
             setValue={async (value) => {
               config.basePath = value || default_values.basePath;
-              global.plugin.settings.endpoint = value || default_values.basePath;
+              global.plugin.settings.endpoint =
+                value || default_values.basePath;
               global.triggerReload();
               // TODO: it could use a debounce here
               await global.plugin.saveSettings();
@@ -146,8 +149,7 @@ export default class LangchainOpenAIChatProvider extends LangchainBase implement
   ): Promise<number> {
     const model = reqParams.model;
     const modelInfo =
-      AI_MODELS[model as keyof typeof AI_MODELS] ||
-      AI_MODELS["gpt-3.5-turbo"];
+      AI_MODELS[model as keyof typeof AI_MODELS] || AI_MODELS["gpt-3.5-turbo"];
 
     console.log(reqParams.max_tokens, modelInfo.prices.completion);
     return (
@@ -163,8 +165,7 @@ export default class LangchainOpenAIChatProvider extends LangchainBase implement
   ): ReturnType<LLMProviderInterface["calcTokens"]> {
     const model = reqParams.model;
     const modelInfo =
-      AI_MODELS[model as keyof typeof AI_MODELS] ||
-      AI_MODELS["gpt-3.5-turbo"];
+      AI_MODELS[model as keyof typeof AI_MODELS] || AI_MODELS["gpt-3.5-turbo"];
 
     if (!modelInfo)
       return {

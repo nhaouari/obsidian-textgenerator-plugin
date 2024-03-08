@@ -108,7 +108,7 @@ export class PlaygroundView extends ItemView {
   }
 
   // this is just a placeholder for the, do not put code here. edit the tool.tsx file to add more events
-  onEvent(name: string) { }
+  onEvent(name: string) {}
 
   id?: string;
   async setState(state: any, result: ViewStateResult): Promise<void> {
@@ -132,22 +132,29 @@ export class PlaygroundView extends ItemView {
 
   getTemp(id?: string) {
     this.id = id || this.id;
-    return this.plugin.temp[this.id ? `playground_${this.id}` : "playground"] || {};
+    return (
+      this.plugin.temp[this.id ? `playground_${this.id}` : "playground"] || {}
+    );
   }
 
   setTemp(newdata: any, id?: string) {
     this.id = id || this.id;
-    this.plugin.temp[this.id ? `playground_${this.id}` : "playground"] = newdata;
+    this.plugin.temp[this.id ? `playground_${this.id}` : "playground"] =
+      newdata;
   }
 
   toggleAlwaysOnTop(bool?: boolean) {
-    const win = (require("electron") as any).remote.BrowserWindow.getFocusedWindow();
+    const win = (
+      require("electron") as any
+    ).remote.BrowserWindow.getFocusedWindow();
     win.setAlwaysOnTop(bool ?? !win.isAlwaysOnTop());
     return win.isAlwaysOnTop();
   }
 
   isAlwaysOnTop() {
-    const win = (require("electron") as any).remote.BrowserWindow.getFocusedWindow();
+    const win = (
+      require("electron") as any
+    ).remote.BrowserWindow.getFocusedWindow();
     return win.isAlwaysOnTop();
   }
 

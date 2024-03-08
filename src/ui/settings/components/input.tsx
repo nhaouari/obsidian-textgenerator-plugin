@@ -27,8 +27,8 @@ export default function Input(props: {
       onClick={
         props.type == "checkbox"
           ? (e) => {
-            props.setValue(props.value != "true" ? "true" : "false");
-          }
+              props.setValue(props.value != "true" ? "true" : "false");
+            }
           : undefined
       }
       data-tip={error || ""}
@@ -47,7 +47,8 @@ export default function Input(props: {
           "plug-tg-input plug-tg-bg-[var(--background-modifier-form-field)]",
           {
             "plug-tg-toggle": props.type == "checkbox",
-            "plug-tg-outline plug-tg-outline-red-400 plug-tg-text-red-300": error,
+            "plug-tg-text-red-300 plug-tg-outline plug-tg-outline-red-400":
+              error,
           },
           props.className
         )}
@@ -58,26 +59,29 @@ export default function Input(props: {
         onChange={
           props.type != "checkbox"
             ? (e) => {
-              try {
-                setValue(e.target.value);
+                try {
+                  setValue(e.target.value);
 
-                const v =
-                  props.type == "number"
-                    ? e.target.valueAsNumber || 0
-                    : e.target.value;
+                  const v =
+                    props.type == "number"
+                      ? e.target.valueAsNumber || 0
+                      : e.target.value;
 
-                setError("");
-                props.validator?.parse(v);
-                props.setValue("" + v);
-              } catch (err: any) {
-                setError(JSON5.parse(err?.message)?.[0]?.message);
+                  setError("");
+                  props.validator?.parse(v);
+                  props.setValue("" + v);
+                } catch (err: any) {
+                  setError(JSON5.parse(err?.message)?.[0]?.message);
+                }
               }
-            }
             : undefined
         }
       />
       {props.type == "password" && (
-        <button className="plug-tg-btn plug-tg-btn-xs" onClick={() => setShowPass((i) => !i)}>
+        <button
+          className="plug-tg-btn plug-tg-btn-xs"
+          onClick={() => setShowPass((i) => !i)}
+        >
           {!showPass ? <IconEyeClosed size={11} /> : <IconEye size={11} />}
         </button>
       )}

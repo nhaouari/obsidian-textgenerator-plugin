@@ -5,8 +5,8 @@ import {
   getUiOptions,
   RJSFSchema,
   StrictRJSFSchema,
-} from "@rjsf/utils"
-import React from "react"
+} from "@rjsf/utils";
+import React from "react";
 
 export default function FieldTemplate<
   T = any,
@@ -34,15 +34,15 @@ export default function FieldTemplate<
   uiSchema,
   registry,
 }: FieldTemplateProps<T, S, F>) {
-  const uiOptions = getUiOptions(uiSchema)
+  const uiOptions = getUiOptions(uiSchema);
   const WrapIfAdditionalTemplate = getTemplate<
     "WrapIfAdditionalTemplate",
     T,
     S,
     F
-  >("WrapIfAdditionalTemplate", registry, uiOptions)
+  >("WrapIfAdditionalTemplate", registry, uiOptions);
   if (hidden) {
-    return <div className="plug-tg-hidden">{children}</div>
+    return <div className="plug-tg-hidden">{children}</div>;
   }
   return (
     <WrapIfAdditionalTemplate
@@ -63,8 +63,9 @@ export default function FieldTemplate<
         {displayLabel && (
           <label
             htmlFor={id}
-            className={`plug-tg-mb-2 plug-tg-inline-block ${rawErrors.length > 0 ? "plug-tg-text-red-500" : ""
-              }`}
+            className={`plug-tg-mb-2 plug-tg-inline-block ${
+              rawErrors.length > 0 ? "plug-tg-text-red-500" : ""
+            }`}
           >
             {label}
             {required ? "*" : null}
@@ -74,8 +75,11 @@ export default function FieldTemplate<
         {displayLabel && rawDescription && (
           <small className="plug-tg-mt-1 plug-tg-block">
             <div
-              className={`${rawErrors.length > 0 ? "plug-tg-text-red-500" : "plug-tg-text-muted-foreground"
-                }`}
+              className={`${
+                rawErrors.length > 0
+                  ? "plug-tg-text-red-500"
+                  : "plug-tg-text-muted-foreground"
+              }`}
             >
               {description}
             </div>
@@ -85,5 +89,5 @@ export default function FieldTemplate<
         {help}
       </div>
     </WrapIfAdditionalTemplate>
-  )
+  );
 }

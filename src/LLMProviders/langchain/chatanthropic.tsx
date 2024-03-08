@@ -7,14 +7,14 @@ import LLMProviderInterface, { LLMConfig } from "../interface";
 import { IconExternalLink } from "@tabler/icons-react";
 import { BaseLanguageModelParams } from "langchain/dist/base_language";
 
-
 import { Input, SettingItem, useGlobal } from "../refs";
 
 const logger = debug("textgenerator:llmProvider:chatanthropic");
 
 export default class LangchainChatAnthropicProvider
   extends LangchainBase
-  implements LLMProviderInterface {
+  implements LLMProviderInterface
+{
   static provider = "Langchain";
   static id = "Chat Anthropic (Langchain)" as const;
   static slug = "anthropic" as const;
@@ -63,7 +63,7 @@ export default class LangchainChatAnthropicProvider
     const id = props.self.id;
 
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
-      model: "claude-2"
+      model: "claude-2",
     });
 
     return (

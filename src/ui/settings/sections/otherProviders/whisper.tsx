@@ -10,7 +10,7 @@ export const WhisperProviderName = "whisper";
 
 export const default_values = {
   base_path: "https://api.openai.com/v1",
-  model: "whisper-1"
+  model: "whisper-1",
 };
 
 export default function WhisperProviderSetting(props: { register: Register }) {
@@ -85,8 +85,6 @@ export default function WhisperProviderSetting(props: { register: Register }) {
   );
 }
 
-
-
 const languages = [
   "Afrikaans",
   "Arabic",
@@ -144,5 +142,5 @@ const languages = [
   "Ukrainian",
   "Urdu",
   "Vietnamese",
-  "Welsh"
-]
+  "Welsh",
+];

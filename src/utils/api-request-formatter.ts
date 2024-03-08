@@ -50,8 +50,8 @@ export default class ReqFormatter {
     const params = {
       ...this.plugin.settings,
       ...this.plugin.settings.LLMProviderOptions[
-      frontmatter?.config?.provider ||
-      (this.plugin.settings.selectedProvider as any)
+        frontmatter?.config?.provider ||
+          (this.plugin.settings.selectedProvider as any)
       ],
       ...this.getFrontmatter(templatePath, insertMetadata),
       ..._params,

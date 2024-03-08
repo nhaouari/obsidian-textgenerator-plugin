@@ -1,46 +1,49 @@
 import { TFile } from "obsidian";
 
-export type Mode = "insert" | "stream" | "replace"
+export type Mode = "insert" | "stream" | "replace";
 
 export type EditorPosition = {
-    ch: number;
-    line: number;
-}
+  ch: number;
+  line: number;
+};
 
 export type Options = {
-    wrapInBlockQuote?: boolean;
-}
+  wrapInBlockQuote?: boolean;
+};
 
 export interface ContentManager {
-    getValue(): Promise<string> | string;
+  getValue(): Promise<string> | string;
 
-    getSelection(): Promise<string>;
-    getSelections(): Promise<string[]>
+  getSelection(): Promise<string>;
+  getSelections(): Promise<string[]>;
 
-    getLastLetterBeforeCursor(): string;
+  getLastLetterBeforeCursor(): string;
 
-    getTgSelection(tgSelectionLimiter?: string): Promise<string> | string;
+  getTgSelection(tgSelectionLimiter?: string): Promise<string> | string;
 
-    selectTgSelection(tgSelectionLimiter?: string): void;
+  selectTgSelection(tgSelectionLimiter?: string): void;
 
-    getCursor(pos?: "from" | "to"): any;
+  getCursor(pos?: "from" | "to"): any;
 
-    getRange(from?: any, to?: any): any;
-    getCurrentLine(): string;
+  getRange(from?: any, to?: any): any;
+  getCurrentLine(): string;
 
-    setCursor(pos: any): void;
+  setCursor(pos: any): void;
 
-    getActiveFile(): Promise<TFile> | TFile | undefined;
+  getActiveFile(): Promise<TFile> | TFile | undefined;
 
-    // replaceRange(str: string, startingPos: EditorPosition, endPos?: EditorPosition): void;
+  // replaceRange(str: string, startingPos: EditorPosition, endPos?: EditorPosition): void;
 
-    // replaceSelection(str: string): void;
+  // replaceSelection(str: string): void;
 
-    insertText(data: string, pos: any, mode?: Mode): Promise<any>;
+  insertText(data: string, pos: any, mode?: Mode): Promise<any>;
 
-    insertStream(pos: any, mode?: Mode): Promise<{
-        insert(data: string): void,
-        end(): void,
-        replaceAllWith(newData: string): void
-    }>;
+  insertStream(
+    pos: any,
+    mode?: Mode
+  ): Promise<{
+    insert(data: string): void;
+    end(): void;
+    replaceAllWith(newData: string): void;
+  }>;
 }

@@ -1,60 +1,60 @@
 import clsx from "clsx";
 import React, { useState, useEffect } from "react";
 
-import validator from '@rjsf/validator-ajv8';
-import { Theme } from './rjsf';
-import { getDefaultRegistry, FormProps, withTheme } from '@rjsf/core';
+import validator from "@rjsf/validator-ajv8";
+import { Theme } from "./rjsf";
+import { getDefaultRegistry, FormProps, withTheme } from "@rjsf/core";
 import TextGeneratorPlugin from "#/main";
 
 const Form = withTheme(Theme);
 
 export default function TemplateInputModalView(props: {
-  p: { plugin: TextGeneratorPlugin, close?: Function };
+  p: { plugin: TextGeneratorPlugin; close?: Function };
   labels: string[];
   templateContext: any;
   onSubmit: any;
   metadata: any;
   children?: any;
 }) {
-
   const handleSubmit = (data: any, event: any) => {
     event.preventDefault();
     props.onSubmit(data.formData);
     props.p.close?.();
   };
 
-  const [JSONSchema, setJSONSchema] = useState<FormProps["schema"]>({})
-  const [UISchema, setUISchema] = useState<FormProps["uiSchema"]>({})
-  const [formData, setFormData] = useState<FormProps["formData"]>({})
+  const [JSONSchema, setJSONSchema] = useState<FormProps["schema"]>({});
+  const [UISchema, setUISchema] = useState<FormProps["uiSchema"]>({});
+  const [formData, setFormData] = useState<FormProps["formData"]>({});
 
   useEffect(() => {
     (async () => {
       const basicProps: Record<string, FormProps["schema"]> = {};
       const basicUi: Record<string, FormProps["uiSchema"]> = {};
       const required: string[] = [];
-      const formData: FormProps["formData"] = {}
-      props.labels.forEach(l => {
+      const formData: FormProps["formData"] = {};
+      props.labels.forEach((l) => {
         if (typeof props.templateContext[l] !== "object") {
           basicProps[l] = {
-            type: 'string',
-            title: l
-          }
+            type: "string",
+            title: l,
+          };
           basicUi[l] = {
             "ui:widget": "textarea",
             props: {
-              className: "w-full"
-            }
-          }
+              className: "w-full",
+            },
+          };
         }
         formData[l] = props.templateContext[l];
-        if (props.templateContext.strict && !l.contains("_optional")) required.push(l)
-      })
+        if (props.templateContext.strict && !l.contains("_optional"))
+          required.push(l);
+      });
 
       const obj = {
         title: props.metadata.name || props.metadata.id,
-        type: 'object',
+        type: "object",
         properties: basicProps,
-        required
+        required,
       } as FormProps["schema"];
 
       setJSONSchema(obj);
@@ -62,8 +62,11 @@ export default function TemplateInputModalView(props: {
       setFormData(formData);
 
       if (props.templateContext.templatePath) {
-        const cschema = await props.p.plugin.contextManager.getTemplateCustomInputConfig(props.templateContext.templatePath)
-        console.log({ cschema })
+        const cschema =
+          await props.p.plugin.contextManager.getTemplateCustomInputConfig(
+            props.templateContext.templatePath
+          );
+        console.log({ cschema });
         if (cschema) {
           setJSONSchema({
             ...obj,
@@ -71,18 +74,17 @@ export default function TemplateInputModalView(props: {
             ...cschema,
           });
 
-          if (cschema.uiSchema)
-            setUISchema(cschema.uiSchema);
+          if (cschema.uiSchema) setUISchema(cschema.uiSchema);
 
           if (cschema.formData)
             setFormData({
               ...formData,
-              ...cschema.formData
+              ...cschema.formData,
             });
         }
       }
-    })()
-  }, [])
+    })();
+  }, []);
 
   return (
     <Form
@@ -91,11 +93,13 @@ export default function TemplateInputModalView(props: {
       uiSchema={UISchema}
       formData={formData}
       validator={validator}
-      onChange={d => {
-        console.log({ d })
-        if (d.formData) setFormData(formData)
+      onChange={(d) => {
+        console.log({ d });
+        if (d.formData) setFormData(formData);
       }}
       onSubmit={handleSubmit}
-    >{props.children}</Form>
+    >
+      {props.children}
+    </Form>
   );
 }

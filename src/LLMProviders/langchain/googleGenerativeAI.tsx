@@ -9,18 +9,16 @@ import { ModelsHandler } from "../utils";
 
 import { Input, SettingItem, useGlobal } from "../refs";
 
-
 const logger = debug("textgenerator:llmProvider:gemini");
 
 const default_values = {
-  model: "models/gemini-pro"
-}
-
+  model: "models/gemini-pro",
+};
 
 export default class LangchainChatGoogleGenerativeAIProvider
   extends LangchainBase
-  implements LLMProviderInterface {
-
+  implements LLMProviderInterface
+{
   static provider = "Langchain";
   static id = "Google GenerativeAI (Langchain)" as const;
   static slug = "googleGenerativeAI" as const;
@@ -54,7 +52,6 @@ export default class LangchainChatGoogleGenerativeAIProvider
     });
   }
 
-
   async load() {
     const { ChatGoogleGenerativeAI } = await import("@langchain/google-genai");
     this.llmClass = ChatGoogleGenerativeAI;
@@ -65,7 +62,7 @@ export default class LangchainChatGoogleGenerativeAIProvider
 
     const id = props.self.id;
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
-      ...default_values
+      ...default_values,
     });
 
     return (

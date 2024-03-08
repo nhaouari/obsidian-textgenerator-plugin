@@ -15,7 +15,7 @@ export default class ProviderBase implements LLMProviderInterface {
   originalId: string;
   plugin: TextGeneratorPlugin;
   config: any;
-  constructor(props: { plugin: TextGeneratorPlugin, config?: any }) {
+  constructor(props: { plugin: TextGeneratorPlugin; config?: any }) {
     this.plugin = props.plugin;
     this.config = props.config;
   }
@@ -23,7 +23,7 @@ export default class ProviderBase implements LLMProviderInterface {
   streamable?: boolean | undefined;
   mobileSupport?: boolean | undefined;
 
-  async load() { }
+  async load() {}
 
   async generate(
     messages: Message[],
@@ -73,14 +73,19 @@ export default class ProviderBase implements LLMProviderInterface {
   }
 
   async generateBatch(
-    batches: { messages: Message[], reqParams: Partial<LLMConfig> }[],
+    batches: { messages: Message[]; reqParams: Partial<LLMConfig> }[],
     customConfig?: any,
     onOneFinishs?: ((content: string, index: number) => void) | undefined
   ): Promise<string[]> {
     const k = await processPromisesSetteledBatch(
       batches.map(async (batch, i) => {
         const [err, res] = await safeAwait(
-          this.generate(batch.messages, batch.reqParams, undefined, customConfig)
+          this.generate(
+            batch.messages,
+            batch.reqParams,
+            undefined,
+            customConfig
+          )
         );
 
         const content = err ? "fAILED:" + err.message : res;

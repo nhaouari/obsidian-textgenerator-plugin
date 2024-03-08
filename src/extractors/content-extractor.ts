@@ -12,11 +12,15 @@ import ImageExtractorEmbded from "./image-extractor-embded";
 import RssExtractor from "./rss-extractor";
 const logger = debug("textgenerator:Extractor");
 
-
 export const listOfUsableExtractors = [
-  "PDFExtractor", "WebPageExtractor", "YoutubeExtractor", "AudioExtractor", "ImageExtractor", "ImageExtractorEmbded", "RssExtractor"
-]
-
+  "PDFExtractor",
+  "WebPageExtractor",
+  "YoutubeExtractor",
+  "AudioExtractor",
+  "ImageExtractor",
+  "ImageExtractorEmbded",
+  "RssExtractor",
+];
 
 // Add the new Extractor here
 export const Extractors = {
@@ -27,7 +31,7 @@ export const Extractors = {
   AudioExtractor,
   ImageExtractor,
   ImageExtractorEmbded,
-  RssExtractor
+  RssExtractor,
 } as const;
 
 export const ExtractorSlug = {
@@ -42,9 +46,8 @@ export const ExtractorSlug = {
   audio: "AudioExtractor",
   img: "ImageExtractor",
   ImgEmbd: "ImageExtractorEmbded",
-  rss: "RssExtractor"
+  rss: "RssExtractor",
 } as const;
-
 
 export const UnExtractorSlug: Record<string, string> = {};
 for (const key in ExtractorSlug) {
@@ -72,14 +75,20 @@ export class ContentExtractor {
   async convert(docPath: string, otherOptions?: any): Promise<string> {
     // Use the selected splitter to split the text
     this.plugin.startProcessing(false);
-    const text = await this.extractor.convert(docPath.trimStart().trimEnd(), otherOptions);
+    const text = await this.extractor.convert(
+      docPath.trimStart().trimEnd(),
+      otherOptions
+    );
     this.plugin.endProcessing(false);
     return text;
   }
 
   async extract(filePath: string, filecontent?: string) {
-    const fileContent = filecontent
-      || await this.app.vault.cachedRead(this.app.vault.getAbstractFileByPath(filePath) as any)
+    const fileContent =
+      filecontent ||
+      (await this.app.vault.cachedRead(
+        this.app.vault.getAbstractFileByPath(filePath) as any
+      ));
 
     return this.extractor.extract(filePath, fileContent);
   }

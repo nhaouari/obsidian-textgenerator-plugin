@@ -21,8 +21,12 @@ export default function ProviderSetting(props: { register: Register }) {
       >
         <LLMProviderController
           register={props.register}
-          getSelectedProvider={() => global.plugin.settings.selectedProvider || ""}
-          setSelectedProvider={(newVal) => global.plugin.settings.selectedProvider = newVal as any || ""}
+          getSelectedProvider={() =>
+            global.plugin.settings.selectedProvider || ""
+          }
+          setSelectedProvider={(newVal) =>
+            (global.plugin.settings.selectedProvider = (newVal as any) || "")
+          }
           triggerResize={triggerResize}
         />
       </SettingsSection>

@@ -18,17 +18,16 @@ import Confirm from "./components/confirm";
 import { createFolder, processPromisesSetteledBatch } from "#/utils";
 import set from "lodash.set";
 import JSON5 from "json5";
-import showGratitude from "./gratitude"
+import showGratitude from "./gratitude";
 
 const logger = debug("textgenerator:PackageManager");
 
 const packageRegistry = `https://raw.githubusercontent.com/text-gen/text-generator-packages/master/community-packages.json`;
 const corePackageRegistry = `https://raw.githubusercontent.com/text-gen/text-generator-packages/master/core-packages.json`;
 
-export const PackageProviderid = "package-provider"
+export const PackageProviderid = "package-provider";
 
-export const ProviderServer = ""
-
+export const ProviderServer = "";
 
 export default class PackageManager {
   configuration: TextGeneratorConfiguration;
@@ -52,14 +51,17 @@ export default class PackageManager {
       installedPackagesHash: {},
       packagesHash: {},
       resources: {},
-      subscriptions: []
+      subscriptions: [],
     };
 
     if (await adapter.exists(configPath)) {
       try {
         this.configuration = JSON5.parse(await adapter.read(configPath)) as any;
       } catch (err: any) {
-        console.warn("packageManager: couldn't parse the config file ", configPath);
+        console.warn(
+          "packageManager: couldn't parse the config file ",
+          configPath
+        );
         await this.initConfigFlie();
       }
     } else {
@@ -67,28 +69,29 @@ export default class PackageManager {
     }
 
     if (!this.configuration.packagesHash) this.configuration.packagesHash = {};
-    if (!this.configuration.installedPackagesHash) this.configuration.installedPackagesHash = {};
+    if (!this.configuration.installedPackagesHash)
+      this.configuration.installedPackagesHash = {};
 
     // @ts-ignore
     if (this.configuration.installedPackages?.length) {
       // @ts-ignore
-      this.configuration.installedPackages.forEach(p => {
+      this.configuration.installedPackages.forEach((p) => {
         this.configuration.installedPackagesHash[p.packageId] = p;
-      })
+      });
 
       // @ts-ignore
-      delete this.configuration["installedPackages"]
+      delete this.configuration["installedPackages"];
     }
 
     // @ts-ignore
     if (this.configuration.packages?.length) {
       // @ts-ignore
-      this.configuration.packages.forEach(p => {
+      this.configuration.packages.forEach((p) => {
         this.configuration.installedPackagesHash[p.packageId] = p;
-      })
+      });
 
       // @ts-ignore
-      delete this.configuration["packages"]
+      delete this.configuration["packages"];
     }
 
     await this.fetch();
@@ -100,26 +103,40 @@ export default class PackageManager {
     const self = this;
 
     try {
-      this.plugin.registerAction<{ apikey?: string }>("login", async (props) => {
-        const apikey = props.apikey;
+      this.plugin.registerAction<{ apikey?: string }>(
+        "login",
+        async (props) => {
+          const apikey = props.apikey;
 
-        if (!apikey) return "";
+          if (!apikey) return "";
 
-        await self.plugin.packageManager.setApiKey(apikey);
-      });
-    } catch { }
+          await self.plugin.packageManager.setApiKey(apikey);
+        }
+      );
+    } catch {}
 
     try {
-      this.plugin.registerAction<{ packageId?: string }>("bought-package", async (props) => {
-        console.log("bought item", { props })
-        console.log("doing something cool", props, props.packageId ? self.configuration.packagesHash[props.packageId] : "")
-        // do something cool
-        if (props.packageId)
-          await showGratitude(self.plugin, self.configuration.packagesHash[props.packageId])
-      });
-    } catch { }
+      this.plugin.registerAction<{ packageId?: string }>(
+        "bought-package",
+        async (props) => {
+          console.log("bought item", { props });
+          console.log(
+            "doing something cool",
+            props,
+            props.packageId
+              ? self.configuration.packagesHash[props.packageId]
+              : ""
+          );
+          // do something cool
+          if (props.packageId)
+            await showGratitude(
+              self.plugin,
+              self.configuration.packagesHash[props.packageId]
+            );
+        }
+      );
+    } catch {}
   }
-
 
   async initConfigFlie() {
     logger("initConfigFlie");
@@ -127,7 +144,7 @@ export default class PackageManager {
       packagesHash: {},
       resources: {},
       installedPackagesHash: {},
-      subscriptions: []
+      subscriptions: [],
     };
     const adapter = this.app.vault.adapter;
     adapter.write(this.getConfigPath(), JSON.stringify(initConfig, null, 2));
@@ -151,22 +168,25 @@ export default class PackageManager {
     await this.fetch();
     const packagesIdsToUpdate: string[] = [];
     await Promise.all(
-      Object.entries(this.configuration.installedPackagesHash).map(async ([installedPackage, promptId], i: number) => {
-        try {
-          const pkg = this.getPackageById(installedPackage.packageId);
-          if (
-            pkg &&
-            installedPackage.version &&
-            pkg.version &&
-            gt(pkg.version, installedPackage.version)
-          ) {
-            packagesIdsToUpdate.push(installedPackage.packageId);
+      Object.entries(this.configuration.installedPackagesHash).map(
+        async ([installedPackage, promptId], i: number) => {
+          try {
+            const pkg = this.getPackageById(installedPackage.packageId);
+            if (
+              pkg &&
+              installedPackage.version &&
+              pkg.version &&
+              gt(pkg.version, installedPackage.version)
+            ) {
+              packagesIdsToUpdate.push(installedPackage.packageId);
+            }
+          } catch (err: any) {
+            delete this.configuration.installedPackagesHash[promptId];
+            console.error(`error in package`, installedPackage, err);
           }
-        } catch (err: any) {
-          delete this.configuration.installedPackagesHash[promptId]
-          console.error(`error in package`, installedPackage, err);
         }
-      }));
+      )
+    );
     logger("checkUpdates end", { packagesIdsToUpdate });
     return packagesIdsToUpdate;
   }
@@ -182,12 +202,12 @@ export default class PackageManager {
     try {
       await this.updateBoughtResources();
     } catch (err: any) {
-      console.warn("couldn't updateBoughtResources")
+      console.warn("couldn't updateBoughtResources");
     }
   }
 
   async updateBoughtResources() {
-    const apikey = this.getApikey()
+    const apikey = this.getApikey();
     if (!ProviderServer || !apikey) return;
 
     const data = await getBoughtResources(apikey);
@@ -195,40 +215,46 @@ export default class PackageManager {
     if (data.subscriptions)
       this.configuration.subscriptions = data.subscriptions;
 
-    if (data.resources)
-      this.configuration.resources = data.resources;
+    if (data.resources) this.configuration.resources = data.resources;
   }
 
   getApikey() {
-    return this.plugin.settings?.LLMProviderOptions?.[PackageProviderid]?.api_key
+    return this.plugin.settings?.LLMProviderOptions?.[PackageProviderid]
+      ?.api_key;
   }
 
   async setApiKey(newKey?: string) {
-    set(this.plugin.settings, `LLMProviderOptions.[${PackageProviderid}].api_key`, newKey);
+    set(
+      this.plugin.settings,
+      `LLMProviderOptions.[${PackageProviderid}].api_key`,
+      newKey
+    );
     this.plugin.encryptAllKeys();
     await this.plugin.saveSettings();
   }
 
   getResourcesOfFolder(folderName?: string) {
-    return Object.values(this.configuration.resources || {}).filter(r => r.folderName == folderName)
+    return Object.values(this.configuration.resources || {}).filter(
+      (r) => r.folderName == folderName
+    );
   }
 
   getPackageById(packageId: string): PackageTemplate | null {
     return this.configuration?.packagesHash?.[packageId] || null;
   }
 
-
   async validateOwnership(packageId: string): Promise<{
-    allowed: boolean,
-    oneRequired?: string[],
+    allowed: boolean;
+    oneRequired?: string[];
   }> {
     const pkg = this.getPackageById(packageId);
 
-    if (!pkg || !pkg.price || !pkg.packageId) return {
-      allowed: true,
-    };
+    if (!pkg || !pkg.price || !pkg.packageId)
+      return {
+        allowed: true,
+      };
 
-    return await validateOwnership(pkg.packageId, this.getApikey())
+    return await validateOwnership(pkg.packageId, this.getApikey());
   }
 
   simpleCheckOwnership(packageId: string) {
@@ -238,11 +264,15 @@ export default class PackageManager {
 
     const resources = this.getResourcesOfFolder(pkg.packageId);
 
-    return !!resources.length
+    return !!resources.length;
   }
 
-  async installPackage(packageId: string, installAllPrompts = true, progress?: (progress: { installed: number, total: number }) => void) {
-    console.log("trying to install package", packageId)
+  async installPackage(
+    packageId: string,
+    installAllPrompts = true,
+    progress?: (progress: { installed: number; total: number }) => void
+  ) {
+    console.log("trying to install package", packageId);
     logger("installPackage", { packageId, installAllPrompts });
     const p = await this.getPackageById(packageId);
 
@@ -251,7 +281,7 @@ export default class PackageManager {
     const repo = p.repo;
 
     if (p.type == "feature") {
-      await this.installFeatureExternal(p)
+      await this.installFeatureExternal(p);
     } else {
       // Its a normal package templates
 
@@ -265,8 +295,8 @@ export default class PackageManager {
         const resources = await this.getResourcesOfFolder(p.packageId);
         data = {
           packageId: p.packageId,
-          prompts: resources.map(r => r.id)
-        }
+          prompts: resources.map((r) => r.id),
+        };
       } else {
         const release = await this.getReleaseByRepo(repo);
         data = await this.getAsset(release, "data.json");
@@ -276,25 +306,25 @@ export default class PackageManager {
 
       progress?.({
         installed: 0,
-        total: data?.prompts.length || 0
-      })
+        total: data?.prompts.length || 0,
+      });
 
       // this.configuration.installedPackages {packageId,prompts,installedPrompts=empty}
       const installedPrompts: string[] = [];
       if (!this.configuration.installedPackagesHash[packageId] && p) {
         const obj = {
           packageId,
-          prompts: data.prompts.map((promptId) => ({ promptId } as any)),
+          prompts: data.prompts.map((promptId) => ({ promptId }) as any),
           installedPrompts: installedPrompts.map(
-            (promptId) => ({ promptId } as any)
+            (promptId) => ({ promptId }) as any
           ),
           version: p.version,
-        }
+        };
 
-        this.configuration.installedPackagesHash[packageId] = obj
+        this.configuration.installedPackagesHash[packageId] = obj;
         let finished = 0;
         if (installAllPrompts) {
-          await new Promise(s => setTimeout(s, 1000))
+          await new Promise((s) => setTimeout(s, 1000));
           await processPromisesSetteledBatch(
             data.prompts.map(async (promptId) => {
               p.price
@@ -303,15 +333,14 @@ export default class PackageManager {
               finished++;
               progress?.({
                 installed: finished,
-                total: data?.prompts.length || 0
-              })
+                total: data?.prompts.length || 0,
+              });
             }),
             3,
             1000
           );
           new Notice(`Package ${packageId} installed`);
         }
-
       }
       await this.save();
       logger("installPackage end", { packageId, installAllPrompts });
@@ -323,9 +352,12 @@ export default class PackageManager {
     const p = await this.getPackageById(packageId);
 
     if (p?.type === "feature")
-      await this.app.vault.adapter.rmdir(`.obsidian/plugins/${p.packageId}`, true)
+      await this.app.vault.adapter.rmdir(
+        `.obsidian/plugins/${p.packageId}`,
+        true
+      );
     else {
-      await this.toTrash(packageId)
+      await this.toTrash(packageId);
     }
 
     delete this.configuration.installedPackagesHash[packageId];
@@ -357,14 +389,14 @@ export default class PackageManager {
       try {
         // remove destination if exists
         if (await adapter.exists(to))
-          if (promptId) await adapter.remove(to)
+          if (promptId) await adapter.remove(to);
           else await adapter.rmdir(to, true);
-      } catch { }
+      } catch {}
 
       if (!promptId) {
         const list = (await adapter.list(from)).files;
 
-        if (!await adapter.exists(to)) await adapter.mkdir(to)
+        if (!(await adapter.exists(to))) await adapter.mkdir(to);
 
         // copy
         for (const item of list) {
@@ -378,7 +410,7 @@ export default class PackageManager {
         await adapter.copy(from, to);
 
         // remove old
-        await adapter.remove(from)
+        await adapter.remove(from);
       }
     } else {
       console.warn("prompt file does not exist", { packageId, promptId });
@@ -392,11 +424,11 @@ export default class PackageManager {
     const index = packageId;
 
     if (p?.type == "feature") {
-      await this.installPackage(p.packageId)
+      await this.installPackage(p.packageId);
       return;
     }
 
-    console.log({ p, packageId })
+    console.log({ p, packageId });
 
     if (p?.repo) {
       const repo = p.repo;
@@ -404,7 +436,7 @@ export default class PackageManager {
       const data = await this.getAsset(release, "data.json");
 
       if (!data) throw "Couldn't get assets";
-      console.log({ release })
+      console.log({ release });
 
       let installedPrompts: string[] = [];
       await Promise.all(
@@ -415,9 +447,9 @@ export default class PackageManager {
       installedPrompts = data.prompts;
       this.configuration.installedPackagesHash[index] = {
         packageId,
-        prompts: data.prompts.map((promptId) => ({ promptId } as any)),
+        prompts: data.prompts.map((promptId) => ({ promptId }) as any),
         installedPrompts: installedPrompts.map(
-          (promptId) => ({ promptId } as any)
+          (promptId) => ({ promptId }) as any
         ),
         version: release.version,
       };
@@ -441,11 +473,13 @@ export default class PackageManager {
   }
 
   async getInstalledPackageById(packageId: string) {
-    console.log("checking installed package", packageId)
+    console.log("checking installed package", packageId);
     if (this.configuration.packagesHash[packageId]?.type == "feature") {
-      return await this.app.vault.adapter.exists(`.obsidian/plugins/${this.configuration.packagesHash[packageId].packageId}`) ?
-        this.configuration.installedPackagesHash[packageId]
-        : null
+      return (await this.app.vault.adapter.exists(
+        `.obsidian/plugins/${this.configuration.packagesHash[packageId].packageId}`
+      ))
+        ? this.configuration.installedPackagesHash[packageId]
+        : null;
     }
     return this.configuration.installedPackagesHash[packageId];
   }
@@ -456,14 +490,14 @@ export default class PackageManager {
     if (!manifest) throw `couldn't get repo from package ${packageId}`;
     if (manifest.type != "feature")
       try {
-        const repo = manifest.repo
+        const repo = manifest.repo;
         if (!manifest) throw `it doesn't have repo ${packageId}`;
         //const release = await this.getReleaseByRepo(repo);
         //const manifest= await this.getAsset(release,'manifest.json');
         const url = `https://raw.githubusercontent.com/${repo}/master/manifest.json`;
         manifest = JSON5.parse(await request({ url: url })) as any;
         // console.log(manifest);
-        this.setPackageInfo(packageId, (manifest as any));
+        this.setPackageInfo(packageId, manifest as any);
       } catch (err: any) {
         console.error(err);
       }
@@ -473,7 +507,7 @@ export default class PackageManager {
   }
 
   setPackageInfo(packageId: string, info: PackageTemplate) {
-    return this.configuration.packagesHash[packageId] = info;
+    return (this.configuration.packagesHash[packageId] = info);
   }
 
   async addPackage(repo: string) {
@@ -484,7 +518,11 @@ export default class PackageManager {
     const manifest = await this.getAsset(release, "manifest.json");
 
     if (!manifest) throw "couldn't get manifest";
-    if (!manifest.packageId && !this.configuration.packagesHash[manifest.packageId]) throw `package id (${manifest.packageId}) already being used, or is undefined`
+    if (
+      !manifest.packageId &&
+      !this.configuration.packagesHash[manifest.packageId]
+    )
+      throw `package id (${manifest.packageId}) already being used, or is undefined`;
 
     this.configuration.packagesHash[manifest.packageId] = manifest;
 
@@ -493,8 +531,9 @@ export default class PackageManager {
   }
 
   getPromptById(packageId: string, promptId: string) {
-    return this.configuration.installedPackagesHash[packageId]
-      ?.prompts?.find((prompt) => prompt.promptId === promptId);
+    return this.configuration.installedPackagesHash[packageId]?.prompts?.find(
+      (prompt) => prompt.promptId === promptId
+    );
   }
 
   async getReleaseByPackageId(packageId: string) {
@@ -539,7 +578,6 @@ export default class PackageManager {
     return release;
   }
 
-
   /** https://github.com/plugins-galore/obsidian-plugins-galore/blob/bd3553908fa9eacf33a5e1c2e7b0dea2a02a9d80/src/util/gitServerInterface.ts#L86 */
   async getAsset(release: any, name: string) {
     logger("getAsset", { release, name });
@@ -552,10 +590,8 @@ export default class PackageManager {
 
     const txt = await request({
       url: asset.url,
-    })
-    return JSON5.parse(
-      txt
-    ) as {
+    });
+    return JSON5.parse(txt) as {
       packageId: string;
       prompts: string[];
     };
@@ -568,13 +604,7 @@ export default class PackageManager {
     try {
       const readmeMD = await request({ url: url });
       const el = document.createElement("div");
-      MarkdownRenderer.render(
-        this.app,
-        readmeMD,
-        el,
-        "",
-        this.plugin
-      );
+      MarkdownRenderer.render(this.app, readmeMD, el, "", this.plugin);
       logger(" getReadme end", { packageId });
       return el;
     } catch (error) {
@@ -584,8 +614,6 @@ export default class PackageManager {
     }
   }
 
-
-
   /**
    * download the prompt content
    * update it if it does exist
@@ -594,7 +622,7 @@ export default class PackageManager {
   async installPrompt(packageId: string, promptId: string, overwrite = true) {
     try {
       logger("installPrompt", { packageId, promptId, overwrite });
-      const pacakge = await this.getPackageById(packageId)
+      const pacakge = await this.getPackageById(packageId);
       const repo = pacakge?.repo;
       const url = `https://raw.githubusercontent.com/${repo}/master/prompts/${promptId}.md`;
 
@@ -604,11 +632,9 @@ export default class PackageManager {
         await request({ url: url }),
         overwrite
       );
-      this.configuration.installedPackagesHash[packageId]
-        ?.installedPrompts?.push({ promptId: promptId, version: "" }); //this.getPromptById(packageId,promptId).version
-
-
-
+      this.configuration.installedPackagesHash[
+        packageId
+      ]?.installedPrompts?.push({ promptId: promptId, version: "" }); //this.getPromptById(packageId,promptId).version
     } catch (error) {
       logger("installPrompt error", error);
       console.error(error);
@@ -618,10 +644,10 @@ export default class PackageManager {
   }
 
   /**
-  * download the prompt content from external source
-  * update it if it does exist
-  * add if its new
-  */
+   * download the prompt content from external source
+   * update it if it does exist
+   * add if its new
+   */
   async installPromptExternal(packageId: string, id: string, overwrite = true) {
     try {
       logger("installPromptExternal", { packageId, id, overwrite });
@@ -630,12 +656,16 @@ export default class PackageManager {
       const res = await requestUrl({
         url: new URL(`/api/content/${id}`, ProviderServer).href,
         headers: {
-          "Authorization": `Bearer ${this.getApikey()}`,
+          Authorization: `Bearer ${this.getApikey()}`,
         },
-        throw: false
-      })
+        throw: false,
+      });
 
-      console.log({ resource, res, url: new URL(`/api/content/${id}`, ProviderServer).href })
+      console.log({
+        resource,
+        res,
+        url: new URL(`/api/content/${id}`, ProviderServer).href,
+      });
 
       if (res.status >= 300) {
         throw res.text;
@@ -643,8 +673,9 @@ export default class PackageManager {
 
       await this.writePrompt(packageId, resource.name, await res.text, true);
 
-      this.configuration.installedPackagesHash[packageId]
-        ?.installedPrompts?.push({ promptId: resource.name, version: "" }); //this.getPromptById(packageId,promptId).version
+      this.configuration.installedPackagesHash[
+        packageId
+      ]?.installedPrompts?.push({ promptId: resource.name, version: "" }); //this.getPromptById(packageId,promptId).version
     } catch (error) {
       logger("installPromptExternal error", error);
       console.error(error);
@@ -653,20 +684,18 @@ export default class PackageManager {
     logger("installPromptExternal end", { packageId, id, overwrite });
   }
 
-
   /**
-  * download the feature from external source
-  * update it if it does exist
-  * add if its new
-  */
+   * download the feature from external source
+   * update it if it does exist
+   * add if its new
+   */
   async installFeatureExternal(p: PackageTemplate) {
-
-    // create feature folder    
+    // create feature folder
     const dirPath = `.obsidian/plugins/${p.packageId}`;
     if (!(await app.vault.adapter.exists(dirPath)))
       await createFolder(dirPath, app);
 
-    const files = this.getResourcesOfFolder(p.packageId)
+    const files = this.getResourcesOfFolder(p.packageId);
 
     // get manifest.json
     await Promise.all(
@@ -675,30 +704,31 @@ export default class PackageManager {
         const res = await requestUrl({
           url: new URL(`/api/content/${id}`, ProviderServer).href,
           headers: {
-            "Authorization": `Bearer ${this.getApikey()}`,
+            Authorization: `Bearer ${this.getApikey()}`,
           },
-          throw: false
-        })
+          throw: false,
+        });
 
-        console.log(`${dirPath}/${file.name}`)
+        console.log(`${dirPath}/${file.name}`);
         if (res.status >= 300) {
           throw res.text;
         }
 
-
-        await app.vault.adapter.writeBinary(`${dirPath}/${file.name}`, await res.arrayBuffer);
+        await app.vault.adapter.writeBinary(
+          `${dirPath}/${file.name}`,
+          await res.arrayBuffer
+        );
       })
-    )
+    );
 
     const obj: InstalledPackage = {
       packageId: p.packageId,
       prompts: [],
       installedPrompts: [],
       version: p.version,
-    }
+    };
 
-    this.configuration.installedPackagesHash[p.packageId] = obj
-
+    this.configuration.installedPackagesHash[p.packageId] = obj;
   }
 
   getPromptPath(packageId: string, promptId?: string) {
@@ -758,28 +788,28 @@ export default class PackageManager {
   async updatePackagesList() {
     logger("updatePackagesList");
     const remotePackagesList: PackageTemplate[] = [
-      ...((JSON5.parse(
-        await request({ url: packageRegistry })
-      ) || []) as any)
+      ...((JSON5.parse(await request({ url: packageRegistry })) || []) as any)
         // to exclude any community features or labled as core
         .filter((p: PackageTemplate) => p.type !== "feature" && !p.core),
 
-      // core packages can be templates or features 
-      ...(JSON5.parse(
-        await request({ url: corePackageRegistry })
-      ) || []) as any
+      // core packages can be templates or features
+      ...((JSON5.parse(await request({ url: corePackageRegistry })) ||
+        []) as any),
     ];
 
     const newPackages = remotePackagesList.filter(
-      (p) => !this.getPackageById(p.packageId) || JSON.stringify(p) != JSON.stringify(this.configuration.packagesHash[p.packageId])
+      (p) =>
+        !this.getPackageById(p.packageId) ||
+        JSON.stringify(p) !=
+          JSON.stringify(this.configuration.packagesHash[p.packageId])
     );
 
-    newPackages.forEach(e => {
+    newPackages.forEach((e) => {
       this.configuration.packagesHash[e.packageId] = {
         ...e,
-        installed: !!this.configuration.packagesHash[e.packageId]?.installed
+        installed: !!this.configuration.packagesHash[e.packageId]?.installed,
       };
-    })
+    });
 
     this.save();
     logger("updatePackagesList end");
@@ -805,8 +835,8 @@ export default class PackageManager {
       this.configuration.packagesHash[p.packageId] = {
         ...this.configuration.packagesHash[p.packageId],
         downloads: stats[p.packageId] ? stats[p.packageId].downloads : 0,
-      }
-    })
+      };
+    });
 
     this.save();
     logger("updatePackagesStats end");
@@ -823,75 +853,83 @@ export default class PackageManager {
   }
 }
 
+import FC from "func-cache";
+import funCache, { localStorageCacher } from "#/lib/func-cache";
 
-import FC from "func-cache"
-import funCache, { localStorageCacher } from "#/lib/func-cache"
+const validateOwnership = funCache(
+  async (packageId: string, apikey: string) => {
+    const res = await requestUrl({
+      url: new URL(`/api/content/package/${packageId}/verify`, ProviderServer)
+        .href,
+      headers: {
+        Authorization: `Bearer ${apikey}`,
+      },
+      throw: false,
+    });
 
-const validateOwnership = funCache(async (packageId: string, apikey: string) => {
-  const res = await requestUrl({
-    url: new URL(`/api/content/package/${packageId}/verify`, ProviderServer).href,
-    headers: {
-      "Authorization": `Bearer ${apikey}`,
-    },
-    throw: false
-  })
+    const d: {
+      allowed: boolean;
+      oneRequired: string[];
+      details?: string;
+    } = await res.json;
 
-  const d: {
-    allowed: boolean;
-    oneRequired: string[];
-    details?: string;
-  } = await res.json;
+    if (res.status > 300) throw d.details;
+    return d;
+  },
+  {
+    // in miliseconds
+    lifeTime: 10000,
 
-  if (res.status > 300)
-    throw d.details;
-  return d;
-}, {
-  // in miliseconds
-  lifeTime: 10000,
+    /** debounce time wait to call onDataUpdate, default 1000ms */
+    debounceTimer: 1000,
 
-  /** debounce time wait to call onDataUpdate, default 1000ms */
-  debounceTimer: 1000,
+    /** incase the call is async, (sometimes the script doesn't detect it's async and wont run the await for it) default: false */
+    async: true,
+    ...localStorageCacher("tg-cache-pm-"),
+  }
+);
 
-  /** incase the call is async, (sometimes the script doesn't detect it's async and wont run the await for it) default: false */
-  async: true,
-  ...localStorageCacher("tg-cache-pm-")
-})
+const getBoughtResources = FC(
+  async (apikey: string) => {
+    console.log("getting bought resources");
+    const res = await requestUrl({
+      url: new URL(`/api/v2/resources`, ProviderServer).href,
+      headers: {
+        Authorization: `Bearer ${apikey}`,
+      },
+      throw: false,
+    });
 
+    if (res.status > 300) throw res.text;
 
-const getBoughtResources = FC(async (apikey: string) => {
-  console.log("getting bought resources")
-  const res = await requestUrl({
-    url: new URL(`/api/v2/resources`, ProviderServer).href, headers: {
-      "Authorization": `Bearer ${apikey}`,
-    },
-    throw: false
-  })
+    const data: {
+      resources: Record<
+        string,
+        {
+          id: string;
+          name: string;
+          size: number;
+          types: string;
+          metadata: Record<string, string>;
+          folderName: string;
+        }
+      >;
+      subscriptions: {
+        id: string;
+        name: string;
+        type: string;
+      }[];
+    } = await res.json;
 
-  if (res.status > 300) throw res.text;
+    return data;
+  },
+  {
+    lifeTime: 5000,
 
-  const data: {
-    resources: Record<string, {
-      id: string
-      name: string
-      size: number
-      types: string
-      metadata: Record<string, string>
-      folderName: string
-    }>;
-    subscriptions: {
-      id: string,
-      name: string,
-      type: string,
-    }[];
-  } = await res.json;
+    /** debounce time wait to call onDataUpdate, default 1000ms */
+    // debounceTimer: 100,
 
-  return data;
-}, {
-  lifeTime: 5000,
-
-  /** debounce time wait to call onDataUpdate, default 1000ms */
-  // debounceTimer: 100,
-
-  /** incase the call is async, (sometimes the script doesn't detect it's async and wont run the await for it) default: false */
-  async: true,
-})
+    /** incase the call is async, (sometimes the script doesn't detect it's async and wont run the await for it) default: false */
+    async: true,
+  }
+);

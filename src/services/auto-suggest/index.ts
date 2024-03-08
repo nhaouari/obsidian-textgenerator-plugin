@@ -63,23 +63,29 @@ export class AutoSuggest {
 ${context.query}`;
       if (this.plugin.settings.autoSuggestOptions.customInstructEnabled) {
         try {
-          const templateContent = this.plugin.settings.autoSuggestOptions.customInstruct
-            || this.plugin.defaultSettings.autoSuggestOptions.customInstruct;
+          const templateContent =
+            this.plugin.settings.autoSuggestOptions.customInstruct ||
+            this.plugin.defaultSettings.autoSuggestOptions.customInstruct;
 
-          const templateContext = await this.plugin.contextManager.getTemplateContext({
-            editor: ContentManagerCls.compile(await this.plugin.getActiveView(), this.plugin),
-            templateContent,
-            filePath: context.file?.path,
-          })
+          const templateContext =
+            await this.plugin.contextManager.getTemplateContext({
+              editor: ContentManagerCls.compile(
+                await this.plugin.getActiveView(),
+                this.plugin
+              ),
+              templateContent,
+              filePath: context.file?.path,
+            });
 
-          templateContext.query = context.query
+          templateContext.query = context.query;
 
-          const splittedTemplate = this.plugin.contextManager.splitTemplate(templateContent)
+          const splittedTemplate =
+            this.plugin.contextManager.splitTemplate(templateContent);
 
           prompt = await splittedTemplate.inputTemplate?.(templateContext);
         } catch (err: any) {
           logger(err);
-          console.error("error in custom instruct", err)
+          console.error("error in custom instruct", err);
         }
       }
 
@@ -87,8 +93,13 @@ ${context.query}`;
 
       const autoSuggestOptions = this.plugin.settings.autoSuggestOptions;
 
-      if (autoSuggestOptions.customProvider && autoSuggestOptions.selectedProvider)
-        await this.plugin.textGenerator.loadllm(autoSuggestOptions.selectedProvider)
+      if (
+        autoSuggestOptions.customProvider &&
+        autoSuggestOptions.selectedProvider
+      )
+        await this.plugin.textGenerator.loadllm(
+          autoSuggestOptions.selectedProvider
+        );
       const re = await this.plugin.textGenerator.LLMProvider.generateMultiple(
         [{ role: "user", content: prompt }],
         {
@@ -103,7 +114,7 @@ ${context.query}`;
       this.plugin.endProcessing(false);
       const suggestions = [...new Set(re)];
       return suggestions.map((r) => {
-        console.log({ r })
+        console.log({ r });
         let label = (r || "").trim();
         if (
           !this.checkLastSubstring(
@@ -177,8 +188,7 @@ ${context.query}`;
       // @ts-ignore
       (this.app.workspace.activeEditor?.editor?.cm?.state?.vim?.mode &&
         // @ts-ignore
-        this.app.workspace.activeEditor.editor.cm.state.vim.mode !==
-        "insert")
+        this.app.workspace.activeEditor.editor.cm.state.vim.mode !== "insert")
     ) {
       this.process = false;
       return null;
@@ -189,8 +199,9 @@ ${context.query}`;
     const line = editor.getLine(cursor.line).substring(0, cursor.ch);
 
     if (
-      (!this.plugin.settings.autoSuggestOptions.allowInNewLine && line == triggerPhrase)
-      || !line.endsWith(triggerPhrase)
+      (!this.plugin.settings.autoSuggestOptions.allowInNewLine &&
+        line == triggerPhrase) ||
+      !line.endsWith(triggerPhrase)
     ) {
       this.process = false;
       return null;
@@ -199,9 +210,14 @@ ${context.query}`;
     this.process = true;
 
     // @ts-ignore
-    const CM = ContentManagerCls.compile(this.plugin.app.workspace.activeLeaf?.view, this.plugin)
+    const CM = ContentManagerCls.compile(
+      this.plugin.app.workspace.activeLeaf?.view,
+      this.plugin
+    );
 
-    const selection = this.plugin.contextManager.getTGSelection(CM) as unknown as string
+    const selection = this.plugin.contextManager.getTGSelection(
+      CM
+    ) as unknown as string;
     const lastOccurrenceIndex = selection.lastIndexOf(triggerPhrase);
     const currentPart =
       selection.substring(0, lastOccurrenceIndex) +
@@ -209,7 +225,10 @@ ${context.query}`;
 
     const currentStart = line.lastIndexOf(triggerPhrase);
 
-    if (!this.plugin.settings.autoSuggestOptions.customInstructEnabled && !selection.trim().length) {
+    if (
+      !this.plugin.settings.autoSuggestOptions.customInstructEnabled &&
+      !selection.trim().length
+    ) {
       this.process = false;
       return null;
     }
@@ -227,13 +246,10 @@ ${context.query}`;
     return result;
   }
 
-
   public setup() {
     if (this.plugin.settings.autoSuggestOptions.inlineSuggestions)
-      return InlineSuggest.setup(this.app, this.plugin, this)
+      return InlineSuggest.setup(this.app, this.plugin, this);
 
-    ListSuggest.setup(this.app, this.plugin, this)
+    ListSuggest.setup(this.app, this.plugin, this);
   }
 }
-
-

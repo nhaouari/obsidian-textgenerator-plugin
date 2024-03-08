@@ -5,7 +5,7 @@ import {
   RJSFSchema,
   StrictRJSFSchema,
   SubmitButtonProps,
-} from "@rjsf/utils"
+} from "@rjsf/utils";
 
 export default function SubmitButton<
   T = any,
@@ -16,21 +16,21 @@ export default function SubmitButton<
     submitText,
     norender,
     props: submitButtonProps,
-  } = getSubmitButtonOptions<T, S, F>(props.uiSchema)
+  } = getSubmitButtonOptions<T, S, F>(props.uiSchema);
 
   if (norender) {
-    return null
+    return null;
   }
 
   return (
     <div>
       <button
         type="submit"
-        className="plug-tg-bg-primary plug-tg-px-4 plug-tg-py-2 plug-tg-text-base plug-tg-font-normal plug-tg-text-primary-foreground hover:plug-tg-bg-primary/90"
+        className="plug-tg-text-primary-foreground plug-tg-bg-primary plug-tg-px-4 plug-tg-py-2 plug-tg-text-base plug-tg-font-normal hover:plug-tg-bg-primary/90"
         {...submitButtonProps}
       >
         {submitText}
       </button>
     </div>
-  )
+  );
 }

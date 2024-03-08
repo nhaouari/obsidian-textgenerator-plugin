@@ -86,7 +86,7 @@ export default function ExtractorsOptionsSetting(props: {
                 value={
                   "" +
                   global.plugin.settings.extractorsOptions[
-                  key as keyof typeof global.plugin.settings.extractorsOptions
+                    key as keyof typeof global.plugin.settings.extractorsOptions
                   ]
                 }
                 setValue={async (val) => {

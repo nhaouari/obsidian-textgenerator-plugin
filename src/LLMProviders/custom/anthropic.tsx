@@ -1,4 +1,3 @@
-
 import debug from "debug";
 import React, { useEffect, useMemo } from "react";
 import LLMProviderInterface from "../interface";
@@ -19,8 +18,13 @@ const globalVars: Record<string, boolean> = {
   stop: true,
 };
 
-
-const untangableVars = ["custom_header", "custom_body", "sanatization_response", "streamable", "CORSBypass"]
+const untangableVars = [
+  "custom_header",
+  "custom_body",
+  "sanatization_response",
+  "streamable",
+  "CORSBypass",
+];
 
 export const default_values = {
   ...baseDefaultValues,
@@ -54,14 +58,15 @@ export const default_values = {
   }`,
   CORSBypass: true,
   streamable: false,
-  model: "claude-2.1"
+  model: "claude-2.1",
 };
 
 export type CustomConfig = Record<keyof typeof default_values, string>;
 
 export default class AnthropicLegacyProvider
   extends CustomProvider
-  implements LLMProviderInterface {
+  implements LLMProviderInterface
+{
   static provider = "Custom";
   static id = "Anthropic Legacy (Custom)" as const;
   static slug = "anthropicLegacy" as const;
@@ -80,16 +85,16 @@ export default class AnthropicLegacyProvider
     const config = (global.plugin.settings.LLMProviderOptions[
       props.self.id || "default"
     ] ??= {
-      ...default_values
+      ...default_values,
     });
 
     useEffect(() => {
-      untangableVars.forEach(v => {
-        config[v] = default_values[v as keyof typeof default_values]
-      })
+      untangableVars.forEach((v) => {
+        config[v] = default_values[v as keyof typeof default_values];
+      });
       global.triggerReload();
       global.plugin.saveSettings();
-    }, [])
+    }, []);
 
     const vars = useMemo(() => {
       return getHBValues(

@@ -50,7 +50,7 @@ export default function AutoSuggestSetting(props: { register: Register }) {
         />
       </SettingItem>
 
-      {!!global.plugin.settings.autoSuggestOptions.isEnabled &&
+      {!!global.plugin.settings.autoSuggestOptions.isEnabled && (
         <>
           <SettingItem
             name="Inline Suggestions"
@@ -60,9 +60,12 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           >
             <Input
               type="checkbox"
-              value={"" + global.plugin.settings.autoSuggestOptions.inlineSuggestions}
+              value={
+                "" + global.plugin.settings.autoSuggestOptions.inlineSuggestions
+              }
               setValue={async (val) => {
-                global.plugin.settings.autoSuggestOptions.inlineSuggestions = val == "true";
+                global.plugin.settings.autoSuggestOptions.inlineSuggestions =
+                  val == "true";
                 setReloader(true);
                 await global.plugin.saveSettings();
                 global.triggerReload();
@@ -70,23 +73,28 @@ export default function AutoSuggestSetting(props: { register: Register }) {
             />
           </SettingItem>
 
-          {!!global.plugin.settings.autoSuggestOptions.inlineSuggestions && <SettingItem
-            name="Show In Markdown"
-            description="Shows the suggestions text compiled as markdown, may shows weird spaces at the begining and end (EXPERIMENTAL)"
-            register={props.register}
-            sectionId={sectionId}
-          >
-            <Input
-              type="checkbox"
-              value={"" + global.plugin.settings.autoSuggestOptions.showInMarkdown}
-              setValue={async (val) => {
-                global.plugin.settings.autoSuggestOptions.showInMarkdown = val == "true";
-                setReloader(true);
-                await global.plugin.saveSettings();
-                global.triggerReload();
-              }}
-            />
-          </SettingItem>}
+          {!!global.plugin.settings.autoSuggestOptions.inlineSuggestions && (
+            <SettingItem
+              name="Show In Markdown"
+              description="Shows the suggestions text compiled as markdown, may shows weird spaces at the begining and end (EXPERIMENTAL)"
+              register={props.register}
+              sectionId={sectionId}
+            >
+              <Input
+                type="checkbox"
+                value={
+                  "" + global.plugin.settings.autoSuggestOptions.showInMarkdown
+                }
+                setValue={async (val) => {
+                  global.plugin.settings.autoSuggestOptions.showInMarkdown =
+                    val == "true";
+                  setReloader(true);
+                  await global.plugin.saveSettings();
+                  global.triggerReload();
+                }}
+              />
+            </SettingItem>
+          )}
 
           <SettingItem
             name="Trigger Phrase"
@@ -112,7 +120,9 @@ export default function AutoSuggestSetting(props: { register: Register }) {
             sectionId={sectionId}
           >
             <Input
-              value={"" + global.plugin.settings.autoSuggestOptions.overrideTrigger}
+              value={
+                "" + global.plugin.settings.autoSuggestOptions.overrideTrigger
+              }
               setValue={async (val) => {
                 global.plugin.settings.autoSuggestOptions.overrideTrigger = val;
                 await global.plugin.saveSettings();
@@ -151,7 +161,8 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           >
             <Input
               value={
-                "" + global.plugin.settings.autoSuggestOptions.numberOfSuggestions
+                "" +
+                global.plugin.settings.autoSuggestOptions.numberOfSuggestions
               }
               setValue={async (val) => {
                 global.plugin.settings.autoSuggestOptions.numberOfSuggestions =
@@ -187,7 +198,9 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           >
             <Input
               type="checkbox"
-              value={"" + global.plugin.settings.autoSuggestOptions.allowInNewLine}
+              value={
+                "" + global.plugin.settings.autoSuggestOptions.allowInNewLine
+              }
               setValue={async (val) => {
                 global.plugin.settings.autoSuggestOptions.allowInNewLine =
                   val == "true";
@@ -224,7 +237,10 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           >
             <Input
               type="checkbox"
-              value={"" + global.plugin.settings.autoSuggestOptions.customInstructEnabled}
+              value={
+                "" +
+                global.plugin.settings.autoSuggestOptions.customInstructEnabled
+              }
               setValue={async (val) => {
                 global.plugin.settings.autoSuggestOptions.customInstructEnabled =
                   val == "true";
@@ -243,10 +259,11 @@ export default function AutoSuggestSetting(props: { register: Register }) {
               >
                 <textarea
                   placeholder="Textarea will autosize to fit the content"
-                  className="plug-tg-resize-y plug-tg-input plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none plug-tg-h-fit plug-tg-w-full"
+                  className="plug-tg-input plug-tg-h-fit plug-tg-w-full plug-tg-resize-y plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none"
                   value={
                     global.plugin.settings.autoSuggestOptions.customInstruct ||
-                    global.plugin.defaultSettings.autoSuggestOptions.customInstruct
+                    global.plugin.defaultSettings.autoSuggestOptions
+                      .customInstruct
                   }
                   onChange={async (e) => {
                     global.plugin.settings.autoSuggestOptions.customInstruct =
@@ -263,8 +280,8 @@ export default function AutoSuggestSetting(props: { register: Register }) {
                   ...contextVariablesObj,
                   query: {
                     example: "{{query}}",
-                    hint: "query text that triggered auto-suggest"
-                  }
+                    hint: "query text that triggered auto-suggest",
+                  },
                 }}
               />
             </>
@@ -280,9 +297,12 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           >
             <Input
               type="checkbox"
-              value={"" + global.plugin.settings.autoSuggestOptions.customProvider}
+              value={
+                "" + global.plugin.settings.autoSuggestOptions.customProvider
+              }
               setValue={async (val) => {
-                global.plugin.settings.autoSuggestOptions.customProvider = val == "true";
+                global.plugin.settings.autoSuggestOptions.customProvider =
+                  val == "true";
                 global.plugin.autoSuggest?.renderStatusBar();
                 await global.plugin.saveSettings();
                 global.triggerReload();
@@ -290,15 +310,22 @@ export default function AutoSuggestSetting(props: { register: Register }) {
             />
           </SettingItem>
 
-          {!!global.plugin.settings.autoSuggestOptions.customProvider &&
+          {!!global.plugin.settings.autoSuggestOptions.customProvider && (
             <LLMProviderController
               register={props.register}
-              getSelectedProvider={() => global.plugin.settings.autoSuggestOptions.selectedProvider || ""}
-              setSelectedProvider={(newVal) => global.plugin.settings.autoSuggestOptions.selectedProvider = newVal as any || ""}
+              getSelectedProvider={() =>
+                global.plugin.settings.autoSuggestOptions.selectedProvider || ""
+              }
+              setSelectedProvider={(newVal) =>
+                (global.plugin.settings.autoSuggestOptions.selectedProvider =
+                  (newVal as any) || "")
+              }
               triggerResize={triggerResize}
               mini
-            />}
-        </>}
+            />
+          )}
+        </>
+      )}
     </SettingsSection>
   );
 }

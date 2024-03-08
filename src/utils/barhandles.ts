@@ -3,7 +3,7 @@ import Helpersfn from "#/helpers/handlebars-helpers";
 import set from "lodash.set";
 
 const helpers: Record<string, any> = Helpersfn({} as any);
-const helpersArr: string[] = Object.keys(helpers)
+const helpersArr: string[] = Object.keys(helpers);
 
 const ignoredVariables = ["output", "this", "true", "false", "script"];
 const defaultHelpers = ["if", "unless", "with", "each", "package"];
@@ -123,12 +123,11 @@ function extractVariableNames(inputString: string) {
   return variableNames;
 }
 
-
 function extractVariablesAndStrings(input: string): string[] {
   const results: string[] = [];
-  let currentToken = '';
+  let currentToken = "";
   let withinQuotes = false;
-  let currentQuote = '';
+  let currentQuote = "";
 
   for (let i = 0; i < input.length; i++) {
     const char = input[i];
@@ -137,18 +136,18 @@ function extractVariablesAndStrings(input: string): string[] {
       if (withinQuotes && char === currentQuote) {
         currentToken += char;
         results.push(currentToken);
-        currentToken = '';
+        currentToken = "";
         withinQuotes = false;
       } else if (!withinQuotes) {
         withinQuotes = true;
         currentQuote = char;
         currentToken += char;
       }
-    } else if (char === ' ' && !withinQuotes) {
+    } else if (char === " " && !withinQuotes) {
       if (currentToken) {
         results.push(currentToken);
       }
-      currentToken = '';
+      currentToken = "";
     } else {
       currentToken += char;
     }

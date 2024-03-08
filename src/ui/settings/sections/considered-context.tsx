@@ -95,7 +95,7 @@ export default function ConsideredContextSetting(props: {
             >
               <textarea
                 placeholder="Textarea will autosize to fit the content"
-                className="plug-tg-resize-y plug-tg-input plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none plug-tg-h-fit plug-tg-w-full"
+                className="plug-tg-input plug-tg-h-fit plug-tg-w-full plug-tg-resize-y plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none"
                 value={
                   global.plugin.settings.context.customInstruct ||
                   global.plugin.defaultSettings.context.customInstruct
@@ -114,7 +114,6 @@ export default function ConsideredContextSetting(props: {
           </>
         )}
 
-
         <SettingItem
           name="Enable generate title instruct"
           description={"You can customize generate title prompt"}
@@ -123,11 +122,16 @@ export default function ConsideredContextSetting(props: {
         >
           <Input
             type="checkbox"
-            value={"" + global.plugin.settings.advancedOptions?.generateTitleInstructEnabled}
+            value={
+              "" +
+              global.plugin.settings.advancedOptions
+                ?.generateTitleInstructEnabled
+            }
             setValue={async (val) => {
-              if (!global.plugin.settings.advancedOptions) global.plugin.settings.advancedOptions = {
-                generateTitleInstructEnabled: val == "true",
-              }
+              if (!global.plugin.settings.advancedOptions)
+                global.plugin.settings.advancedOptions = {
+                  generateTitleInstructEnabled: val == "true",
+                };
 
               global.plugin.settings.advancedOptions.generateTitleInstructEnabled =
                 val == "true";
@@ -136,7 +140,8 @@ export default function ConsideredContextSetting(props: {
             }}
           />
         </SettingItem>
-        {global.plugin.settings.advancedOptions?.generateTitleInstructEnabled && (
+        {global.plugin.settings.advancedOptions
+          ?.generateTitleInstructEnabled && (
           <>
             <SettingItem
               name=""
@@ -147,16 +152,19 @@ export default function ConsideredContextSetting(props: {
             >
               <textarea
                 placeholder="Textarea will autosize to fit the content"
-                className="plug-tg-resize-y plug-tg-input plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none plug-tg-h-fit plug-tg-w-full"
+                className="plug-tg-input plug-tg-h-fit plug-tg-w-full plug-tg-resize-y plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none"
                 value={
-                  global.plugin.settings.advancedOptions?.generateTitleInstruct ||
-                  global.plugin.defaultSettings.advancedOptions?.generateTitleInstruct
+                  global.plugin.settings.advancedOptions
+                    ?.generateTitleInstruct ||
+                  global.plugin.defaultSettings.advancedOptions
+                    ?.generateTitleInstruct
                 }
                 onChange={async (e) => {
-                  if (!global.plugin.settings.advancedOptions) global.plugin.settings.advancedOptions = {
-                    generateTitleInstructEnabled: true,
-                    generateTitleInstruct: e.target.value
-                  }
+                  if (!global.plugin.settings.advancedOptions)
+                    global.plugin.settings.advancedOptions = {
+                      generateTitleInstructEnabled: true,
+                      generateTitleInstruct: e.target.value,
+                    };
 
                   global.plugin.settings.advancedOptions.generateTitleInstruct =
                     e.target.value;
@@ -173,13 +181,12 @@ export default function ConsideredContextSetting(props: {
                 ...contextVariablesObj,
                 query: {
                   example: "{{content255}}",
-                  hint: "first 255 letters of trimmed content of the note"
-                }
+                  hint: "first 255 letters of trimmed content of the note",
+                },
               }}
             />
           </>
         )}
-
 
         <SettingItem
           name="TG Selection Limiter(regex)"
@@ -213,7 +220,7 @@ export default function ConsideredContextSetting(props: {
         >
           <textarea
             placeholder="Textarea will autosize to fit the content"
-            className="plug-tg-resize-y plug-tg-input plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none plug-tg-h-fit plug-tg-w-full"
+            className="plug-tg-input plug-tg-h-fit plug-tg-w-full plug-tg-resize-y plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none"
             value={
               global.plugin.settings.context.contextTemplate ||
               global.plugin.defaultSettings.context.contextTemplate
@@ -249,7 +256,7 @@ export default function ConsideredContextSetting(props: {
                   value={
                     "" +
                     global.plugin.settings.context[
-                    key as keyof typeof global.plugin.settings.context
+                      key as keyof typeof global.plugin.settings.context
                     ]
                   }
                   setValue={async (val) => {

@@ -20,16 +20,24 @@ export class ExampleModal extends FuzzySuggestModal<PromptTemplate> {
     this.plugin = plugin;
     this.title = title;
     this.modalEl.insertBefore(
-      createEl("div", { text: title, cls: "plug-tg-text-center plug-tg-text-xl plug-tg-font-bold" }),
+      createEl("div", {
+        text: title,
+        cls: "plug-tg-text-center plug-tg-text-xl plug-tg-font-bold",
+      }),
       this.modalEl.children[0]
     );
   }
 
   getItems() {
     const viewType = this.plugin.app.workspace.activeLeaf?.view.getViewType();
-    return this.plugin.textGenerator.getTemplates()
-      // show only templates that works with this view type
-      .filter(t => !viewType || !t.viewTypes || t.viewTypes?.includes(viewType)) as any;
+    return (
+      this.plugin.textGenerator
+        .getTemplates()
+        // show only templates that works with this view type
+        .filter(
+          (t) => !viewType || !t.viewTypes || t.viewTypes?.includes(viewType)
+        ) as any
+    );
   }
 
   // Renders each suggestion item.
@@ -61,7 +69,10 @@ export class ExampleModal extends FuzzySuggestModal<PromptTemplate> {
   //   return itms as any;
   // }
 
-  calculateMatchScore(item: PromptTemplate & { id: string; }, queryString: string): number {
+  calculateMatchScore(
+    item: PromptTemplate & { id: string },
+    queryString: string
+  ): number {
     const itemText = this.getItemText(item).toLowerCase();
 
     // Calculate match score based on various factors
@@ -84,7 +95,7 @@ export class ExampleModal extends FuzzySuggestModal<PromptTemplate> {
   }
 
   getItemText(template: PromptTemplate): string {
-		return `${template.tags || ""} \
+    return `${template.tags || ""} \
 ${!template.name && !template.id ? template.path || "" : ""} \
 ${template.id || ""} \
 ${template.name || ""} \
@@ -94,7 +105,7 @@ ${template.description || ""}`;
   }
 
   getItemPackageId(template: PromptTemplate): string {
-    return template.path?.split("/").reverse()[1] || template.id
+    return template.path?.split("/").reverse()[1] || template.id;
   }
 
   onChooseItem(template: PromptTemplate, evt: MouseEvent | KeyboardEvent) {

@@ -108,7 +108,8 @@ export type CustomConfig = Record<keyof typeof default_values, string>;
 
 export default class DefaultCustomProvider
   extends CustomProvider
-  implements LLMProviderInterface {
+  implements LLMProviderInterface
+{
   streamable = true;
   static provider = "Custom";
   static id = "Default (Custom)" as const;
@@ -133,13 +134,12 @@ export default class DefaultCustomProvider
       ...default_values,
     });
 
-
     // delete any global variables that would interfer with global context
     useEffect(() => {
       for (const c in globalVars) {
         delete config[c];
       }
-    }, [])
+    }, []);
 
     const vars = useMemo(() => {
       return getHBValues(
@@ -166,24 +166,24 @@ export default class DefaultCustomProvider
           />
         </SettingItem>
 
-        {!!vars.includes("api_key") && <SettingItem
-          name="API Key"
-          register={props.register}
-          sectionId={props.sectionId}
-        >
-          <Input
-            value={config.api_key}
-            type="password"
-            placeholder="Enter your API endpoint"
-            setValue={async (value) => {
-              config.api_key = value;
-              global.triggerReload();
-              await global.plugin.saveSettings();
-            }}
-          />
-        </SettingItem>}
-
-
+        {!!vars.includes("api_key") && (
+          <SettingItem
+            name="API Key"
+            register={props.register}
+            sectionId={props.sectionId}
+          >
+            <Input
+              value={config.api_key}
+              type="password"
+              placeholder="Enter your API endpoint"
+              setValue={async (value) => {
+                config.api_key = value;
+                global.triggerReload();
+                await global.plugin.saveSettings();
+              }}
+            />
+          </SettingItem>
+        )}
 
         <SettingItem
           name="Advance mode"
@@ -200,196 +200,212 @@ export default class DefaultCustomProvider
           />
         </SettingItem>
 
-        {showAdvanced && <>
-          <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
-            <div className="plug-tg-font-bold">Headers:</div>
-            <div className="plug-tg-text-[8px]">Check console in the devtools to see a preview of the body with example values</div>
+        {showAdvanced && (
+          <>
+            <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
+              <div className="plug-tg-font-bold">Headers:</div>
+              <div className="plug-tg-text-[8px]">
+                Check console in the devtools to see a preview of the body with
+                example values
+              </div>
 
-            <textarea
-              placeholder="Headers"
-              className="plug-tg-resize-none"
-              defaultValue={
-                config.custom_header ||
-                default_values.custom_header
-              }
-              onChange={async (e) => {
-                config.custom_header = e.target.value;
-
-                const compiled = await Handlebars.compile(
-                  config.custom_header ||
-                  default_values.custom_header
-                )({
-                  ...global.plugin.settings,
-                  ...cleanConfig(default_values),
-                  n: 1,
-                  messages: testMessages,
-                });
-
-                console.log("------ PREVIEW OF HEADER ------\n", compiled);
-                setHeaderValidityError("")
-                try {
-                  console.log("------ PREVIEW OF HEADER COMPILED ------\n", JSON5.parse(compiled));
-                } catch (err: any) {
-                  setHeaderValidityError(err.message || err)
-                  console.warn(err);
+              <textarea
+                placeholder="Headers"
+                className="plug-tg-resize-none"
+                defaultValue={
+                  config.custom_header || default_values.custom_header
                 }
+                onChange={async (e) => {
+                  config.custom_header = e.target.value;
 
-                global.triggerReload();
-                await global.plugin.saveSettings();
-              }}
-              spellCheck={false}
-              rows={5}
-            />
-            <div className="plug-tg-text-red-300">{headerValidityError}</div>
+                  const compiled = await Handlebars.compile(
+                    config.custom_header || default_values.custom_header
+                  )({
+                    ...global.plugin.settings,
+                    ...cleanConfig(default_values),
+                    n: 1,
+                    messages: testMessages,
+                  });
 
-          </div>
+                  console.log("------ PREVIEW OF HEADER ------\n", compiled);
+                  setHeaderValidityError("");
+                  try {
+                    console.log(
+                      "------ PREVIEW OF HEADER COMPILED ------\n",
+                      JSON5.parse(compiled)
+                    );
+                  } catch (err: any) {
+                    setHeaderValidityError(err.message || err);
+                    console.warn(err);
+                  }
 
-          <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
-            <div className="plug-tg-font-bold">Body:</div>
-            <div className="plug-tg-text-[8px]">Check console in the devtools to see a preview of the body with example values</div>
-            <textarea
-              placeholder="Body as JSON5 content"
-              className="plug-tg-resize-none"
-              defaultValue={
-                config.custom_body || default_values.custom_body
-              }
-              onChange={async (e) => {
-                config.custom_body = e.target.value;
+                  global.triggerReload();
+                  await global.plugin.saveSettings();
+                }}
+                spellCheck={false}
+                rows={5}
+              />
+              <div className="plug-tg-text-red-300">{headerValidityError}</div>
+            </div>
 
-                const compiled = await Handlebars.compile(
-                  config.custom_body || default_values.custom_body
-                )({
-                  ...global.plugin.settings,
-                  ...cleanConfig(config),
-                  n: 1,
-                  messages: testMessages,
-                });
+            <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
+              <div className="plug-tg-font-bold">Body:</div>
+              <div className="plug-tg-text-[8px]">
+                Check console in the devtools to see a preview of the body with
+                example values
+              </div>
+              <textarea
+                placeholder="Body as JSON5 content"
+                className="plug-tg-resize-none"
+                defaultValue={config.custom_body || default_values.custom_body}
+                onChange={async (e) => {
+                  config.custom_body = e.target.value;
 
-                console.log("------ PREVIEW OF BODY ------\n", compiled);
-                setBodyValidityError("")
-                try {
-                  console.log("------ PREVIEW OF BODY COMPILED ------\n", JSON5.parse(compiled));
-                } catch (err: any) {
-                  setBodyValidityError(err.message || err)
-                  console.warn("this error could be cause of one of the variables being undefined which breaks the json5 format, check the preview above", err);
+                  const compiled = await Handlebars.compile(
+                    config.custom_body || default_values.custom_body
+                  )({
+                    ...global.plugin.settings,
+                    ...cleanConfig(config),
+                    n: 1,
+                    messages: testMessages,
+                  });
+
+                  console.log("------ PREVIEW OF BODY ------\n", compiled);
+                  setBodyValidityError("");
+                  try {
+                    console.log(
+                      "------ PREVIEW OF BODY COMPILED ------\n",
+                      JSON5.parse(compiled)
+                    );
+                  } catch (err: any) {
+                    setBodyValidityError(err.message || err);
+                    console.warn(
+                      "this error could be cause of one of the variables being undefined which breaks the json5 format, check the preview above",
+                      err
+                    );
+                  }
+
+                  global.triggerReload();
+                  await global.plugin.saveSettings();
+                }}
+                spellCheck={false}
+                rows={20}
+              />
+              <div className="plug-tg-text-red-300">{bodyValidityError}</div>
+            </div>
+
+            <div className="plug-tg-opacity-70">Variables</div>
+            {vars.map((v: string) =>
+              v == "api_key" ? null : (
+                <SettingItem
+                  key={v}
+                  name={v}
+                  register={props.register}
+                  sectionId={props.sectionId}
+                >
+                  <Input
+                    value={config[v]}
+                    placeholder={`Enter your ${v}`}
+                    type={v.toLowerCase().contains("key") ? "password" : "text"}
+                    setValue={async (value) => {
+                      config[v] = value;
+                      global.triggerReload();
+                      if (v.toLowerCase().contains("key"))
+                        global.plugin.encryptAllKeys();
+                      // TODO: it could use a debounce here
+                      await global.plugin.saveSettings();
+                    }}
+                  />
+                </SettingItem>
+              )
+            )}
+
+            <div className="plug-tg-w-full plug-tg-pb-8"></div>
+
+            <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
+              <div className="plug-tg-font-bold">Response Sanatization:</div>
+              <textarea
+                placeholder="Textarea will autosize to fit the content"
+                value={
+                  config.sanatization_response ||
+                  default_values.sanatization_response
                 }
-
-                global.triggerReload();
-                await global.plugin.saveSettings();
-              }}
-              spellCheck={false}
-              rows={20}
-            />
-            <div className="plug-tg-text-red-300">{bodyValidityError}</div>
-          </div>
-
-          <div className="plug-tg-opacity-70">Variables</div>
-          {vars.map((v: string) => (v == "api_key" ? null :
+                onChange={async (e) => {
+                  config.sanatization_response = e.target.value;
+                  global.triggerReload();
+                  await global.plugin.saveSettings();
+                }}
+                spellCheck={false}
+                rows={20}
+              />
+            </div>
             <SettingItem
-              key={v}
-              name={v}
+              name="Streamable"
+              description={
+                config.CORSBypass
+                  ? "Disable CORS Bypass to be able to use this feature"
+                  : "If enabled, means this API is streamable"
+              }
               register={props.register}
               sectionId={props.sectionId}
+              className={clsx({
+                "plug-tg-pointer-events-none plug-tg-cursor-not-allowed plug-tg-opacity-60":
+                  config.CORSBypass,
+              })}
             >
               <Input
-                value={config[v]}
-                placeholder={`Enter your ${v}`}
-                type={v.toLowerCase().contains("key") ? "password" : "text"}
+                type="checkbox"
+                value={
+                  !config.CORSBypass && config.streamable ? "true" : "false"
+                }
+                placeholder="Is it Streamable"
                 setValue={async (value) => {
-                  config[v] = value;
+                  config.streamable = value == "true";
                   global.triggerReload();
-                  if (v.toLowerCase().contains("key"))
-                    global.plugin.encryptAllKeys();
                   // TODO: it could use a debounce here
                   await global.plugin.saveSettings();
                 }}
               />
             </SettingItem>
-          ))}
-
-          <div className="plug-tg-w-full plug-tg-pb-8"></div>
-
-          <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
-            <div className="plug-tg-font-bold">Response Sanatization:</div>
-            <textarea
-              placeholder="Textarea will autosize to fit the content"
-              value={
-                config.sanatization_response ||
-                default_values.sanatization_response
-              }
-              onChange={async (e) => {
-                config.sanatization_response = e.target.value;
-                global.triggerReload();
-                await global.plugin.saveSettings();
-              }}
-              spellCheck={false}
-              rows={20}
-            />
-          </div>
-          <SettingItem
-            name="Streamable"
-            description={
-              config.CORSBypass
-                ? "Disable CORS Bypass to be able to use this feature"
-                : "If enabled, means this API is streamable"
-            }
-            register={props.register}
-            sectionId={props.sectionId}
-            className={clsx({
-              "plug-tg-cursor-not-allowed plug-tg-pointer-events-none plug-tg-opacity-60":
-                config.CORSBypass,
-            })}
-          >
-            <Input
-              type="checkbox"
-              value={!config.CORSBypass && config.streamable ? "true" : "false"}
-              placeholder="Is it Streamable"
-              setValue={async (value) => {
-                config.streamable = value == "true";
-                global.triggerReload();
-                // TODO: it could use a debounce here
-                await global.plugin.saveSettings();
-              }}
-            />
-          </SettingItem>
-          <SettingItem
-            name="CORS Bypass"
-            description="enable this only if you get blocked by CORS, this will result in failure in some functions"
-            register={props.register}
-            sectionId={props.sectionId}
-          >
-            <Input
-              type="checkbox"
-              value={"" + config.CORSBypass}
-              setValue={async (val) => {
-                config.CORSBypass = val == "true";
-                await global.plugin.saveSettings();
-                global.triggerReload();
-              }}
-            />
-          </SettingItem>
-          {!config.CORSBypass && config.streamable && (
-            <>
-              <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
-                <div className="plug-tg-font-bold">Stream Sanatization:</div>
-                <textarea
-                  placeholder="Textarea will autosize to fit the content"
-                  value={
-                    config.sanatization_streaming ||
-                    default_values.sanatization_streaming
-                  }
-                  onChange={async (e) => {
-                    config.sanatization_streaming = e.target.value;
-                    global.triggerReload();
-                    await global.plugin.saveSettings();
-                  }}
-                  spellCheck={false}
-                  rows={20}
-                />
-              </div>
-            </>
-          )}
-        </>}
+            <SettingItem
+              name="CORS Bypass"
+              description="enable this only if you get blocked by CORS, this will result in failure in some functions"
+              register={props.register}
+              sectionId={props.sectionId}
+            >
+              <Input
+                type="checkbox"
+                value={"" + config.CORSBypass}
+                setValue={async (val) => {
+                  config.CORSBypass = val == "true";
+                  await global.plugin.saveSettings();
+                  global.triggerReload();
+                }}
+              />
+            </SettingItem>
+            {!config.CORSBypass && config.streamable && (
+              <>
+                <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
+                  <div className="plug-tg-font-bold">Stream Sanatization:</div>
+                  <textarea
+                    placeholder="Textarea will autosize to fit the content"
+                    value={
+                      config.sanatization_streaming ||
+                      default_values.sanatization_streaming
+                    }
+                    onChange={async (e) => {
+                      config.sanatization_streaming = e.target.value;
+                      global.triggerReload();
+                      await global.plugin.saveSettings();
+                    }}
+                    spellCheck={false}
+                    rows={20}
+                  />
+                </div>
+              </>
+            )}
+          </>
+        )}
       </>
     );
   }

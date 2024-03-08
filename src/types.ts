@@ -65,7 +65,7 @@ type TextGeneratorSettings = {
   advancedOptions?: {
     generateTitleInstruct?: string;
     generateTitleInstructEnabled?: boolean;
-  },
+  };
   autoSuggestOptions: {
     customInstructEnabled: boolean;
     customInstruct: string;
@@ -98,28 +98,31 @@ type TextGeneratorSettings = {
   selectedProvider?: llmType;
   // TODO: FUTURE IMPLEMENTATION
   // reason: it will clean code, and also help with custom llm providers later on
-  LLMProviderProfiles: Record<string, {
-    extends: string,
-    name: string,
-  }>;
+  LLMProviderProfiles: Record<
+    string,
+    {
+      extends: string;
+      name: string;
+    }
+  >;
   LLMProviderOptions: Record<string, Record<string, any>>;
   LLMProviderOptionsKeysHashed: Record<string, Buffer | string>;
 };
 
 type Resource = {
-  id: string
-  name: string
-  size: number
-  types: string
-  metadata: Record<string, string>
-  folderName: string
-}
+  id: string;
+  name: string;
+  size: number;
+  types: string;
+  metadata: Record<string, string>;
+  folderName: string;
+};
 
 type Subscription = {
-  id: string,
-  name: string,
-  type: string,
-}
+  id: string;
+  name: string;
+  type: string;
+};
 
 type TextGeneratorConfiguration = {
   packagesHash: Record<string, PackageTemplate>;

@@ -85,7 +85,7 @@ Title: {{title}}
     showStatus: true,
     customProvider: false,
     inlineSuggestions: false,
-    overrideTrigger: " "
+    overrideTrigger: " ",
   },
 
   slashSuggestOptions: {

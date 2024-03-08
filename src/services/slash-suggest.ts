@@ -26,13 +26,15 @@ export class SlashSuggest extends EditorSuggest<PromptTemplate> {
 
   public onTrigger(cursor: EditorPosition, editor: Editor) {
     const _line: string = editor.getLine(cursor.line);
-    const trigger = this.plugin.settings.slashSuggestOptions?.triggerPhrase || this.plugin.defaultSettings.slashSuggestOptions.triggerPhrase;
+    const trigger =
+      this.plugin.settings.slashSuggestOptions?.triggerPhrase ||
+      this.plugin.defaultSettings.slashSuggestOptions.triggerPhrase;
     const start = _line.trimStart();
 
-    const startAfterTriggerPhrase = start.substring(trigger.length, cursor.ch)
+    const startAfterTriggerPhrase = start.substring(trigger.length, cursor.ch);
 
     if (!start.startsWith(trigger)) return null;
-    const currentPart = startAfterTriggerPhrase
+    const currentPart = startAfterTriggerPhrase;
     return {
       start: { ch: 0, line: cursor.line },
       end: cursor,
@@ -46,7 +48,7 @@ export class SlashSuggest extends EditorSuggest<PromptTemplate> {
     const modal = new ExampleModal(
       this.app,
       this.plugin,
-      async (result) => { },
+      async (result) => {},
       "Choose a template"
     );
 
@@ -75,7 +77,7 @@ export class SlashSuggest extends EditorSuggest<PromptTemplate> {
 
     if (!activeView) return console.warn("couldn't find activeView");
 
-    const CM = ContentManagerCls.compile(activeView, this.plugin)
+    const CM = ContentManagerCls.compile(activeView, this.plugin);
 
     activeView.editor.replaceRange("", value.context.start, value.context.end);
     await this.plugin.textGenerator.tempalteToModal({

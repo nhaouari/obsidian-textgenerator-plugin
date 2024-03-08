@@ -20,7 +20,7 @@ const k = (command: Command) =>
       }
     },
     ...command,
-  } as Command);
+  }) as Command;
 
 export default function useCommandsHandler(cb: (command: cmd) => void) {
   useEffect(() => {

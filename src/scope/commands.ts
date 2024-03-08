@@ -25,9 +25,10 @@ export default class Commands {
       async callback() {
         const self: Commands = this as any;
         try {
-          if (self.plugin.processing) return self.plugin.textGenerator.signalController?.abort();
+          if (self.plugin.processing)
+            return self.plugin.textGenerator.signalController?.abort();
           const activeView = await self.plugin.getActiveView();
-          const CM = ContentManagerCls.compile(activeView, self.plugin)
+          const CM = ContentManagerCls.compile(activeView, self.plugin);
           await self.plugin.textGenerator.generateInEditor({}, false, CM);
         } catch (error) {
           self.plugin.handelError(error);
@@ -44,7 +45,7 @@ export default class Commands {
         const self: Commands = this as any;
         try {
           const activeView = await self.plugin.getActiveView();
-          const CM = ContentManagerCls.compile(activeView, self.plugin)
+          const CM = ContentManagerCls.compile(activeView, self.plugin);
           await self.plugin.textGenerator.generateInEditor({}, true, CM);
         } catch (error) {
           self.plugin.handelError(error);
@@ -154,7 +155,6 @@ export default class Commands {
               } catch (error: any) {
                 self.plugin.handelError(error);
               }
-
             },
             "Generate and Create a New Note From Template"
           ).open();
@@ -229,8 +229,6 @@ export default class Commands {
               } catch (error: any) {
                 self.plugin.handelError(error);
               }
-
-
             },
             "Insert Template In The Active Note"
           ).open();
@@ -254,7 +252,6 @@ export default class Commands {
             async (result) => {
               if (!result.path) throw "Nothing was selected";
 
-
               try {
                 const activeView = await self.plugin.getActiveView();
                 const CM = ContentManagerCls.compile(activeView, self.plugin);
@@ -268,7 +265,6 @@ export default class Commands {
                   activeFile: false,
                   insertMode: true,
                 });
-
               } catch (error) {
                 self.plugin.handelError(error);
               }
@@ -293,7 +289,6 @@ export default class Commands {
             self.plugin.app,
             self.plugin,
             async (result) => {
-
               try {
                 const activeView = await self.plugin.getActiveView();
                 const CM = ContentManagerCls.compile(activeView, self.plugin);
@@ -304,11 +299,9 @@ export default class Commands {
                   editor: CM,
                   filePath: (await CM.getActiveFile())?.path,
                 });
-
               } catch (error) {
                 self.plugin.handelError(error);
               }
-
             },
             "Choose a template"
           ).open();
@@ -400,7 +393,8 @@ export default class Commands {
               console.log(selectedLLMName);
               if (!selectedLLMName) return;
 
-              const llm = self.plugin.textGenerator.LLMRegestry.get(selectedLLMName);
+              const llm =
+                self.plugin.textGenerator.LLMRegestry.get(selectedLLMName);
               if (llm) {
                 self.plugin.settings.selectedProvider = selectedLLMName as any;
               }
@@ -426,7 +420,7 @@ export default class Commands {
         new PackageManagerUI(
           self.plugin.app,
           self.plugin,
-          async (result: string) => { }
+          async (result: string) => {}
         ).open();
       },
     },
@@ -459,38 +453,55 @@ export default class Commands {
         const self: Commands = this as any;
 
         try {
-          const CM = ContentManagerCls.compile(await self.plugin.getActiveView(), self.plugin);
-          const file = await CM.getActiveFile()
+          const CM = ContentManagerCls.compile(
+            await self.plugin.getActiveView(),
+            self.plugin
+          );
+          const file = await CM.getActiveFile();
 
           let prompt = ``;
 
-          let templateContent = self.plugin.defaultSettings.advancedOptions?.generateTitleInstruct;
+          let templateContent =
+            self.plugin.defaultSettings.advancedOptions?.generateTitleInstruct;
 
           try {
-            if (self.plugin.settings.advancedOptions?.generateTitleInstructEnabled) {
-              templateContent = self.plugin.settings.advancedOptions?.generateTitleInstruct
-                || self.plugin.defaultSettings.advancedOptions?.generateTitleInstruct
+            if (
+              self.plugin.settings.advancedOptions?.generateTitleInstructEnabled
+            ) {
+              templateContent =
+                self.plugin.settings.advancedOptions?.generateTitleInstruct ||
+                self.plugin.defaultSettings.advancedOptions
+                  ?.generateTitleInstruct;
             }
 
-            const templateContext = await self.plugin.contextManager.getTemplateContext({
-              editor: ContentManagerCls.compile(await self.plugin.getActiveView(), self.plugin),
-              templateContent,
-              filePath: file?.path,
-            });
+            const templateContext =
+              await self.plugin.contextManager.getTemplateContext({
+                editor: ContentManagerCls.compile(
+                  await self.plugin.getActiveView(),
+                  self.plugin
+                ),
+                templateContent,
+                filePath: file?.path,
+              });
 
-            templateContext.content = (await CM.getValue()).trim()
+            templateContext.content = (await CM.getValue()).trim();
 
-            const splittedTemplate = self.plugin.contextManager.splitTemplate(templateContent || "")
+            const splittedTemplate = self.plugin.contextManager.splitTemplate(
+              templateContent || ""
+            );
 
             prompt = await splittedTemplate.inputTemplate?.(templateContext);
-          } catch (err: any) { logger(err) }
+          } catch (err: any) {
+            logger(err);
+          }
 
           const generatedTitle = await self.plugin.textGenerator.gen(
             prompt,
             {}
           );
 
-          const sanitizedTitle = generatedTitle.trim()
+          const sanitizedTitle = generatedTitle
+            .trim()
             .replaceAll("\\", "")
             .replace(/[*\\"/<>:|?\.]/g, "")
             .replace(/^\n*/g, "");
@@ -502,10 +513,7 @@ export default class Commands {
             `${sanitizedTitle}.${file.extension}`
           );
 
-          await self.plugin.app.fileManager.renameFile(
-            file,
-            renamedFilePath
-          );
+          await self.plugin.app.fileManager.renameFile(file, renamedFilePath);
 
           logger(`Generated a title: ${sanitizedTitle}`);
         } catch (error) {
@@ -547,19 +555,17 @@ export default class Commands {
           const activeView = await self.plugin.getActiveView();
           const CM = ContentManagerCls.compile(activeView, self.plugin);
 
-          const context =
-            await self.plugin.contextManager.getContext({
-              editor: CM,
-              filePath: (await CM.getActiveFile())?.path,
-              insertMetadata: true,
-              addtionalOpts: {
-                estimatingMode: true,
-              },
-            });
+          const context = await self.plugin.contextManager.getContext({
+            editor: CM,
+            filePath: (await CM.getActiveFile())?.path,
+            insertMetadata: true,
+            addtionalOpts: {
+              estimatingMode: true,
+            },
+          });
           self.plugin.tokensScope.showTokens(
             await self.plugin.tokensScope.estimate(context)
           );
-
         } catch (error) {
           self.plugin.handelError(error);
         }
@@ -582,16 +588,15 @@ export default class Commands {
                 const activeView = await self.plugin.getActiveView();
                 const CM = ContentManagerCls.compile(activeView, self.plugin);
 
-                const context =
-                  await self.plugin.contextManager.getContext({
-                    editor: CM,
-                    filePath: (await CM.getActiveFile())?.path,
-                    insertMetadata: true,
-                    templatePath: result.path,
-                    addtionalOpts: {
-                      estimatingMode: true,
-                    },
-                  });
+                const context = await self.plugin.contextManager.getContext({
+                  editor: CM,
+                  filePath: (await CM.getActiveFile())?.path,
+                  insertMetadata: true,
+                  templatePath: result.path,
+                  addtionalOpts: {
+                    estimatingMode: true,
+                  },
+                });
 
                 self.plugin.tokensScope.showTokens(
                   await self.plugin.tokensScope.estimate(context)
@@ -605,8 +610,7 @@ export default class Commands {
         } catch (error) {
           self.plugin.handelError(error);
         }
-
-      }
+      },
     },
 
     {
@@ -661,7 +665,7 @@ export default class Commands {
     const cmds = this.commands.filter(
       (cmd) =>
         this.plugin.settings.options[
-        cmd.id as keyof typeof this.plugin.settings.options
+          cmd.id as keyof typeof this.plugin.settings.options
         ] === true
     );
 
@@ -675,17 +679,18 @@ export default class Commands {
       template.commands?.forEach((command) => {
         logger("Template commands ", { template, command });
         const cmd: Command = {
-          id: `${template.path.split("/").slice(-2, -1)[0]}-${command}-${template.id
-            }`,
+          id: `${template.path.split("/").slice(-2, -1)[0]}-${command}-${
+            template.id
+          }`,
           name: `${template.id || template.name}: ${command.toUpperCase()}`,
           callback: async () => {
             const self: Commands = this as any;
 
             const activeView = await self.plugin.getActiveView();
 
-            const CM = ContentManagerCls.compile(activeView, self.plugin)
+            const CM = ContentManagerCls.compile(activeView, self.plugin);
 
-            const filePath = (await CM.getActiveFile())?.path
+            const filePath = (await CM.getActiveFile())?.path;
             try {
               switch (command) {
                 case "generate":
@@ -744,18 +749,17 @@ export default class Commands {
                   break;
                 case "estimate":
                   {
-                    const context =
-                      await self.plugin.contextManager.getContext(
-                        {
-                          editor: CM,
-                          filePath,
-                          insertMetadata: true,
-                          templatePath: template.path,
-                          addtionalOpts: {
-                            estimatingMode: true,
-                          },
-                        }
-                      );
+                    const context = await self.plugin.contextManager.getContext(
+                      {
+                        editor: CM,
+                        filePath,
+                        insertMetadata: true,
+                        templatePath: template.path,
+                        addtionalOpts: {
+                          estimatingMode: true,
+                        },
+                      }
+                    );
                     self.plugin.tokensScope.showTokens(
                       await self.plugin.tokensScope.estimate(context)
                     );

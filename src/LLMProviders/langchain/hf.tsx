@@ -10,11 +10,10 @@ const logger = debug("textgenerator:llmProvider:hf");
 
 import { Input, SettingItem, useGlobal } from "../refs";
 
-
 export default class LangchainHFProvider
   extends LangchainBase
-  implements LLMProviderInterface {
-
+  implements LLMProviderInterface
+{
   static provider = "Langchain";
   static id = "Huggingface (Langchain)" as const;
   static slug = "hf" as const;
@@ -30,7 +29,7 @@ export default class LangchainHFProvider
     return this.cleanConfig({
       apiKey: options.otherOptions.api_key,
       // ------------Necessary stuff--------------
-      model: options.model || options.otherOptions.model as any,
+      model: options.model || (options.otherOptions.model as any),
       modelKwargs: options.modelKwargs,
       maxTokens: options.max_tokens,
       temperature: options.temperature,
@@ -41,8 +40,8 @@ export default class LangchainHFProvider
       streaming: options.stream,
       maxRetries: 3,
       parameters: {
-        candidate_labels: ["refund", "legal", "faq"]
-      }
+        candidate_labels: ["refund", "legal", "faq"],
+      },
     });
   }
 

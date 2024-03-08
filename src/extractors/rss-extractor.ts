@@ -25,7 +25,8 @@ export default class RssExtractor extends Extractor {
 
   // Converts an RSS feed URL to a text representation
   async convert(url: string): Promise<string> {
-    if (!Platform.isDesktop) throw new Error("rss is only supported in desktop")
+    if (!Platform.isDesktop)
+      throw new Error("rss is only supported in desktop");
 
     logger("convert", { url });
     try {
@@ -53,15 +54,15 @@ export default class RssExtractor extends Extractor {
     // This regex matches URLs that start with 'http://' or 'https://',
     // followed by any characters that are not whitespace, and end with
     // '.rss', ':feed', 'rss', or 'feeds', at a word boundary, not followed by other URL-valid characters.
-    const rssUrlRegex = /https?:\/\/[^\s]+?(?:\.rss|:feed|\/rss|\/feeds)\b(?![\w\-\.%])/g;
+    const rssUrlRegex =
+      /https?:\/\/[^\s]+?(?:\.rss|:feed|\/rss|\/feeds)\b(?![\w\-\.%])/g;
     const matches = text.match(rssUrlRegex);
     console.log({
-      text, matches
-    })
+      text,
+      matches,
+    });
     return matches ? Array.from(new Set(matches)) : [];
   }
-
-
 
   // Optionally, extract URLs from a given file
   async extractFromFile(file: TFile): Promise<string[]> {
@@ -88,5 +89,4 @@ export default class RssExtractor extends Extractor {
     itemText += "\n"; // Add a new line after each item for readability
     return itemText;
   }
-
 }

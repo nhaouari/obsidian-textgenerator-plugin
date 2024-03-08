@@ -35,16 +35,19 @@ export default function SettingItem(props: {
         },
         props.className,
         {
-          "plug-tg-hidden": props.register && !props.register.listOfAllowed.contains(id),
+          "plug-tg-hidden":
+            props.register && !props.register.listOfAllowed.contains(id),
           "plug-tg-tooltip": props.tip?.length,
         }
       )}
     >
       <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
         <div>{props.name}</div>
-        <div className="plug-tg-text-[8px] md:plug-tg-text-xs plug-tg-opacity-70">{props.description}</div>
+        <div className="plug-tg-text-[8px] plug-tg-opacity-70 md:plug-tg-text-xs">
+          {props.description}
+        </div>
       </div>
-      <div className="plug-tg-flex plug-tg-gap-2 plug-tg-items-center">
+      <div className="plug-tg-flex plug-tg-items-center plug-tg-gap-2">
         {props.children}
       </div>
     </div>

@@ -53,7 +53,7 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-    const div = containerEl.createDiv("div")
+    const div = containerEl.createDiv("div");
     const sections = createRoot(div);
 
     sections.render(

@@ -42,10 +42,10 @@ export default function SectionsMain() {
       !searchTerm.length
         ? Object.entries(items)
         : Object.entries(items).filter(([key, val]) =>
-          `${val.term} ${items[val.sectionId]?.term}`
-            .toLocaleLowerCase()
-            .includes(searchTerm.toLocaleLowerCase())
-        ),
+            `${val.term} ${items[val.sectionId]?.term}`
+              .toLocaleLowerCase()
+              .includes(searchTerm.toLocaleLowerCase())
+          ),
     [items, searchTerm]
   );
 
@@ -87,43 +87,55 @@ export default function SectionsMain() {
     },
   };
 
-  return (<>
-    <div className="plug-tg-flex plug-tg-w-full plug-tg-flex-col plug-tg-gap-3">
-      <div className="flex flex-col gap-2">
-        <h1>Text Generator</h1>
-        <div className="tags plug-tg-flex plug-tg-flex-wrap plug-tg-gap-2">
-          <a className="tag" href={`https://github.com/nhaouari/obsidian-textgenerator-plugin/releases/tag/${global.plugin.manifest.version}`}>V{global.plugin.manifest.version}</a>
-          <a className="tag" href="https://bit.ly/tg_docs">{"\u{1F4D6}"} Documentation</a>
-          <a className="tag" href="https://bit.ly/Tg-discord">{"\u{1F44B}"} Discord</a>
-          <a className="tag" href="https://bit.ly/tg-twitter2">{"\u{1F3A5}"} YouTube</a>
-          <a className="tag" href="https://bit.ly/tg-twitter2">{"\u{1F426}"} Twitter</a>
+  return (
+    <>
+      <div className="plug-tg-flex plug-tg-w-full plug-tg-flex-col plug-tg-gap-3">
+        <div className="flex flex-col gap-2">
+          <h1>Text Generator</h1>
+          <div className="tags plug-tg-flex plug-tg-flex-wrap plug-tg-gap-2">
+            <a
+              className="tag"
+              href={`https://github.com/nhaouari/obsidian-textgenerator-plugin/releases/tag/${global.plugin.manifest.version}`}
+            >
+              V{global.plugin.manifest.version}
+            </a>
+            <a className="tag" href="https://bit.ly/tg_docs">
+              {"\u{1F4D6}"} Documentation
+            </a>
+            <a className="tag" href="https://bit.ly/Tg-discord">
+              {"\u{1F44B}"} Discord
+            </a>
+            <a className="tag" href="https://bit.ly/tg-twitter2">
+              {"\u{1F3A5}"} YouTube
+            </a>
+            <a className="tag" href="https://bit.ly/tg-twitter2">
+              {"\u{1F426}"} Twitter
+            </a>
+          </div>
         </div>
+
+        <div className="plug-tg-w-full lg:plug-tg-flex lg:plug-tg-justify-between">
+          <div className="plug-tg-hidden lg:plug-tg-block"></div>
+          <Input
+            setValue={(val) => setSearchTerm(val.toLocaleLowerCase())}
+            value={searchTerm}
+            className="plug-tg-w-full lg:plug-tg-w-auto"
+            placeholder="Search For Option"
+          />
+        </div>
+
+        <ProviderSetting register={register} />
+        <AdvancedSetting register={register} />
+        {!!ProviderServer && <AccountSettings register={register} />}
+
+        <DMPSetting register={register} />
+        <AutoSuggestSetting register={register} />
+        <SlashSuggestSetting register={register} />
+        <ConsideredContextSetting register={register} />
+        <ExtractorOptionsSetting register={register} />
+        <OtherProvidersSetting register={register} />
+        <OptionsSetting register={register} />
       </div>
-
-      <div className="lg:plug-tg-flex plug-tg-w-full lg:plug-tg-justify-between">
-        <div className="plug-tg-hidden lg:plug-tg-block"></div>
-        <Input
-          setValue={(val) => setSearchTerm(val.toLocaleLowerCase())}
-          value={searchTerm}
-          className="plug-tg-w-full lg:plug-tg-w-auto"
-          placeholder="Search For Option"
-        />
-      </div>
-
-      <ProviderSetting register={register} />
-      <AdvancedSetting register={register} />
-      {
-        !!ProviderServer && <AccountSettings register={register} />
-      }
-
-      <DMPSetting register={register} />
-      <AutoSuggestSetting register={register} />
-      <SlashSuggestSetting register={register} />
-      <ConsideredContextSetting register={register} />
-      <ExtractorOptionsSetting register={register} />
-      <OtherProvidersSetting register={register} />
-      <OptionsSetting register={register} />
-    </div>
-  </>
+    </>
   );
 }

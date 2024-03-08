@@ -33,9 +33,10 @@ export default function ChatComp(props: {
   const createTemplate = () => {
     props.plugin.textGenerator.createTemplate(
       firstTextareaRef.current?.value || "",
-      "new_template_" + makeId(4), {
-      disableProvider: true
-    }
+      "new_template_" + makeId(4),
+      {
+        disableProvider: true,
+      }
     );
   };
 
@@ -80,54 +81,68 @@ export default function ChatComp(props: {
   }, [input]);
 
   const handleSubmit = async (event: any) => {
-
     const wasHoldingCtrl = holding.ctrl;
 
     event.preventDefault();
     setLoading(true);
     try {
-      const editor = ContentManagerCls.compile(app.workspace.getLeaf().view, props.plugin)
-      const selection = await props.plugin.contextManager.getSelection(editor)
-      const selections = await props.plugin.contextManager.getSelections(editor)
-      const templateContent = input
-      const context =
-        await props.plugin.contextManager.getContext({
-          insertMetadata: false,
-          editor: editor,
-          templateContent,
-          addtionalOpts: {
-            content: editor?.getValue(),
-            selections: selections.length < 1 ? [selection] : selections,
-            selection
-          },
-        });
+      const editor = ContentManagerCls.compile(
+        app.workspace.getLeaf().view,
+        props.plugin
+      );
+      const selection = await props.plugin.contextManager.getSelection(editor);
+      const selections =
+        await props.plugin.contextManager.getSelections(editor);
+      const templateContent = input;
+      const context = await props.plugin.contextManager.getContext({
+        insertMetadata: false,
+        editor: editor,
+        templateContent,
+        addtionalOpts: {
+          content: editor?.getValue(),
+          selections: selections.length < 1 ? [selection] : selections,
+          selection,
+        },
+      });
 
-      const result = await props.plugin.contextManager.execDataview(await Handlebars.compile(props.plugin.contextManager.overProcessTemplate(templateContent))({
-        ...context.options,
-        templatePath: "default/default"
-      }));
-
-
+      const result = await props.plugin.contextManager.execDataview(
+        await Handlebars.compile(
+          props.plugin.contextManager.overProcessTemplate(templateContent)
+        )({
+          ...context.options,
+          templatePath: "default/default",
+        })
+      );
 
       if (wasHoldingCtrl) {
-        setAnswer(await props.plugin.textGenerator.LLMProvider.generate([{
-          role: "user",
-          content: result
-        }], {
-          ...props.plugin.textGenerator.LLMProvider.getSettings(),
-          requestParams: {
-            signal: abortController.signal
-          }
-        }, async (token, first) => {
-          if (first) setAnswer("");
-          setAnswer((a) => a + token);
-        }));
-      } else
-        setAnswer(result);
+        setAnswer(
+          await props.plugin.textGenerator.LLMProvider.generate(
+            [
+              {
+                role: "user",
+                content: result,
+              },
+            ],
+            {
+              ...props.plugin.textGenerator.LLMProvider.getSettings(),
+              requestParams: {
+                signal: abortController.signal,
+              },
+            },
+            async (token, first) => {
+              if (first) setAnswer("");
+              setAnswer((a) => a + token);
+            }
+          )
+        );
+      } else setAnswer(result);
     } catch (err: any) {
       console.error(err);
       setAnswer(
-        `ERR: ${err?.message?.replace("stack:", "\n\n\n\nMore Details") || err.message || err
+        `ERR: ${
+          err?.message?.replace("stack:", "\n\n\n\nMore Details") ||
+          err.message ||
+          err
         }`
       );
     } finally {
@@ -145,10 +160,13 @@ export default function ChatComp(props: {
   };
 
   return (
-    <form className="plug-tg-flex plug-tg-h-full plug-tg-w-full plug-tg-flex-col plug-tg-gap-2" onSubmit={handleSubmit}>
+    <form
+      className="plug-tg-flex plug-tg-h-full plug-tg-w-full plug-tg-flex-col plug-tg-gap-2"
+      onSubmit={handleSubmit}
+    >
       <div
         className={clsx(
-          "plug-tg-min-h-[200px] plug-tg-flex plug-tg-w-full plug-tg-resize-y plug-tg-flex-col plug-tg-justify-end plug-tg-gap-2 plug-tg-overflow-x-hidden plug-tg-overflow-y-scroll plug-tg-pb-2",
+          "plug-tg-flex plug-tg-min-h-[200px] plug-tg-w-full plug-tg-resize-y plug-tg-flex-col plug-tg-justify-end plug-tg-gap-2 plug-tg-overflow-x-hidden plug-tg-overflow-y-scroll plug-tg-pb-2",
           {
             "plug-tg-tooltip plug-tg-tooltip-bottom": warn,
           }
@@ -161,7 +179,7 @@ export default function ChatComp(props: {
           placeholder="Template"
           className={clsx(
             "markdown-source-view plug-tg-min-h-16 plug-tg-h-full plug-tg-w-full plug-tg-resize-y plug-tg-rounded plug-tg-border plug-tg-border-gray-300 plug-tg-p-2 plug-tg-outline-2 focus:plug-tg-border-blue-500 focus:plug-tg-outline-none",
-            "plug-tg-input plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none plug-tg-w-full",
+            "plug-tg-input plug-tg-w-full plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none",
             {
               "focus:border-yellow-400": warn,
             }
@@ -185,32 +203,37 @@ export default function ChatComp(props: {
           >
             Stop
           </button>
+        ) : holding.ctrl ? (
+          <button
+            type="submit"
+            data-tip="unhold ctrl to use preview"
+            className="plug-tg-tooltip plug-tg-tooltip-bottom plug-tg-rounded plug-tg-bg-blue-500 plug-tg-px-6 plug-tg-py-2 plug-tg-font-semibold hover:plug-tg-bg-blue-600 focus:plug-tg-outline-none focus:plug-tg-ring-4 focus:plug-tg-ring-blue-300/50"
+          >
+            Run
+          </button>
         ) : (
-          holding.ctrl ?
-            <button
-              type="submit"
-              data-tip="unhold ctrl to use preview"
-              className="plug-tg-rounded plug-tg-tooltip plug-tg-tooltip-bottom plug-tg-bg-blue-500 plug-tg-px-6 plug-tg-py-2 plug-tg-font-semibold hover:plug-tg-bg-blue-600 focus:plug-tg-outline-none focus:plug-tg-ring-4 focus:plug-tg-ring-blue-300/50"
-            >
-              Run
-            </button> :
-            <button
-              type="submit"
-              data-tip="hold ctrl to use run"
-              className="plug-tg-rounded plug-tg-tooltip plug-tg-tooltip-bottom plug-tg-bg-blue-500 plug-tg-px-6 plug-tg-py-2 plug-tg-font-semibold hover:plug-tg-bg-blue-600 focus:plug-tg-outline-none focus:plug-tg-ring-4 focus:plug-tg-ring-blue-300/50"
-            >
-              Preview
-            </button>
+          <button
+            type="submit"
+            data-tip="hold ctrl to use run"
+            className="plug-tg-tooltip plug-tg-tooltip-bottom plug-tg-rounded plug-tg-bg-blue-500 plug-tg-px-6 plug-tg-py-2 plug-tg-font-semibold hover:plug-tg-bg-blue-600 focus:plug-tg-outline-none focus:plug-tg-ring-4 focus:plug-tg-ring-blue-300/50"
+          >
+            Preview
+          </button>
         )}
         {answer && <CopyButton textToCopy={answer} justAButton />}
       </div>
       <div className="plug-tg-min-h-16 plug-tg-w-full">
         {answer ? (
-          <MarkDownViewer className="plug-tg-h-full plug-tg-w-full plug-tg-select-text plug-tg-overflow-y-auto" editable>
+          <MarkDownViewer
+            className="plug-tg-h-full plug-tg-w-full plug-tg-select-text plug-tg-overflow-y-auto"
+            editable
+          >
             {answer}
           </MarkDownViewer>
         ) : (
-          <div className="plug-tg-h-full plug-tg-text-sm plug-tg-opacity-50">(empty)</div>
+          <div className="plug-tg-h-full plug-tg-text-sm plug-tg-opacity-50">
+            (empty)
+          </div>
         )}
       </div>
     </form>

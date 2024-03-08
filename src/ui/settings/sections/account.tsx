@@ -8,13 +8,11 @@ import Profile from "#/ui/package-manager/profile";
 import SettingItem from "../components/item";
 import { ProviderServer } from "#/ui/package-manager/package-manager";
 
-
 export default function AccountSetting(props: { register: Register }) {
   const global = useGlobal();
   const sectionId = useId();
 
   const [_, triggerReload] = useToggle();
-
 
   const apiKey = global.plugin.packageManager.getApikey();
   const loggedIn = !!apiKey;
@@ -36,43 +34,68 @@ export default function AccountSetting(props: { register: Register }) {
 
         {loggedIn && <Profile apiKey={apiKey} />}
 
-        <div className="plug-tg-flex plug-tg-justify-end plug-tg-w-full">
-          {loggedIn ?
+        <div className="plug-tg-flex plug-tg-w-full plug-tg-justify-end">
+          {loggedIn ? (
             <div className="plug-tg-flex plug-tg-gap-2">
-              <button className="plug-tg-cursor-pointer"
+              <button
+                className="plug-tg-cursor-pointer"
                 onClick={async () => {
                   await attemptLogout(global.plugin);
-                  triggerReload()
+                  triggerReload();
                 }}
-              >Logout</button>
+              >
+                Logout
+              </button>
 
-              <button className="plug-tg-cursor-pointer"
+              <button
+                className="plug-tg-cursor-pointer"
                 onClick={async () => {
-                  window.open(new URL("/dashboard/settings", ProviderServer).href)
-                }}>Manage Account</button>
+                  window.open(
+                    new URL("/dashboard/settings", ProviderServer).href
+                  );
+                }}
+              >
+                Manage Account
+              </button>
             </div>
-            : <button
+          ) : (
+            <button
               onClick={async () => {
                 await attemptLogin(global.plugin);
-                triggerReload()
+                triggerReload();
               }}
-            >Login</button>
-          }
+            >
+              Login
+            </button>
+          )}
         </div>
 
-        {loggedIn && <>
-          <div className="plug-tg-w-full plug-tg-flex plug-tg-gap-2 plug-tg-flex-col">
-            <h3>Subscriptions:</h3>
-            {
-              global.plugin.packageManager.configuration.subscriptions?.map(s => <div key={s.id}>{s.name} ({s.type})</div>)
-            }
-          </div>
-          <div className="plug-tg-flex plug-tg-justify-end plug-tg-w-full">
-            <button className="plug-tg-cursor-pointer" onClick={async () => {
-              window.open(new URL("/dashboard/subscriptions", ProviderServer).href)
-            }}>Manage Subscriptions</button>
-          </div>
-        </>}
+        {loggedIn && (
+          <>
+            <div className="plug-tg-flex plug-tg-w-full plug-tg-flex-col plug-tg-gap-2">
+              <h3>Subscriptions:</h3>
+              {global.plugin.packageManager.configuration.subscriptions?.map(
+                (s) => (
+                  <div key={s.id}>
+                    {s.name} ({s.type})
+                  </div>
+                )
+              )}
+            </div>
+            <div className="plug-tg-flex plug-tg-w-full plug-tg-justify-end">
+              <button
+                className="plug-tg-cursor-pointer"
+                onClick={async () => {
+                  window.open(
+                    new URL("/dashboard/subscriptions", ProviderServer).href
+                  );
+                }}
+              >
+                Manage Subscriptions
+              </button>
+            </div>
+          </>
+        )}
       </SettingsSection>
     </>
   );

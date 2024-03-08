@@ -34,7 +34,6 @@ test4`,
   },
 ];
 
-
 export const default_values = {
   endpoint: "https://api.openai.com/v1/chat/completions",
   custom_header: `{
@@ -103,8 +102,8 @@ export type CustomConfig = Record<keyof typeof default_values, string>;
 
 export default class CustomProvider
   extends BaseProvider
-  implements LLMProviderInterface {
-
+  implements LLMProviderInterface
+{
   static provider = "Custom";
   static id = "Default (Custom)";
   static displayName: string = "Custom";
@@ -143,38 +142,35 @@ export default class CustomProvider
         typeof requestOptions.body == "string"
           ? JSON.parse(requestOptions.body)
           : requestOptions.body
-            ? requestOptions.body
-            : undefined,
+          ? requestOptions.body
+          : undefined,
       headers:
         typeof requestOptions.headers == "object"
           ? (requestOptions.headers as any)
           : requestOptions.headers
-            ? JSON5.parse(requestOptions.headers)
-            : undefined,
-
-    })
+          ? JSON5.parse(requestOptions.headers)
+          : undefined,
+    });
     const k = (
       params.CORSBypass
         ? await requestWithoutCORS({
-          url: params.url,
-          method: requestOptions.method,
-          body:
-            typeof requestOptions.body == "string"
-              ? requestOptions.body
-              : requestOptions.body
+            url: params.url,
+            method: requestOptions.method,
+            body:
+              typeof requestOptions.body == "string"
+                ? requestOptions.body
+                : requestOptions.body
                 ? JSON.stringify(requestOptions.body)
                 : undefined,
-          headers:
-            typeof requestOptions.headers == "object"
-              ? (requestOptions.headers as any)
-              : requestOptions.headers
+            headers:
+              typeof requestOptions.headers == "object"
+                ? (requestOptions.headers as any)
+                : requestOptions.headers
                 ? JSON5.parse(requestOptions.headers)
                 : undefined,
-
-        })
+          })
         : await fetch(params.url, requestOptions)
     ) as AsyncReturnType<typeof fetch>;
-
 
     if (!params.CORSBypass && params.stream) {
       if (!k.body) return;
@@ -197,7 +193,8 @@ export default class CustomProvider
         const decodedVal = decoder.decode(value, { stream: true });
 
         const chunkValue = await (0, eval)(
-          params.sanatization_streaming || this.default_values.sanatization_streaming
+          params.sanatization_streaming ||
+            this.default_values.sanatization_streaming
         )(decodedVal);
 
         // try {
@@ -226,8 +223,9 @@ export default class CustomProvider
       }
 
       return await (0, eval)(
-        params.sanatization_response || this.default_values.sanatization_response
-      )(resJson, k)
+        params.sanatization_response ||
+          this.default_values.sanatization_response
+      )(resJson, k);
     }
   }
 
@@ -244,9 +242,8 @@ export default class CustomProvider
         let first = true;
         let allText = "";
 
-        const config = (this.plugin.settings.LLMProviderOptions[
-          this.id
-        ] ??= {});
+        const config = (this.plugin.settings.LLMProviderOptions[this.id] ??=
+          {});
 
         let resultContent = "";
 
@@ -276,28 +273,28 @@ export default class CustomProvider
           )(handlebarData),
           headers: JSON5.parse(
             "" +
-            (await Handlebars.compile(
-              handlebarData.custom_header ||
-              this.default_values.custom_header
-            )(handlebarData))
+              (await Handlebars.compile(
+                handlebarData.custom_header || this.default_values.custom_header
+              )(handlebarData))
           ) as any,
 
           body: JSON.stringify(
             JSON5.parse(
               "" +
-              (await Handlebars.compile(
-                handlebarData.custom_body ||
-                this.default_values.custom_body
-              )(handlebarData))
+                (await Handlebars.compile(
+                  handlebarData.custom_body || this.default_values.custom_body
+                )(handlebarData))
             )
           ) as any,
 
           signal: handlebarData.requestParams?.signal || undefined,
           stream: handlebarData.stream,
           sanatization_streaming:
-            handlebarData.sanatization_streaming || this.default_values.sanatization_streaming,
+            handlebarData.sanatization_streaming ||
+            this.default_values.sanatization_streaming,
           sanatization_response:
-            handlebarData.sanatization_response || this.default_values.sanatization_response,
+            handlebarData.sanatization_response ||
+            this.default_values.sanatization_response,
           CORSBypass: handlebarData.CORSBypass,
           async onToken(token: string) {
             onToken?.(token, first);
@@ -310,10 +307,7 @@ export default class CustomProvider
         else {
           const choices = res as any;
           resultContent =
-            (get(
-              choices?.[0] || choices,
-              "content"
-            ) as string) || choices;
+            (get(choices?.[0] || choices, "content") as string) || choices;
         }
 
         logger("generate end", {
@@ -337,9 +331,8 @@ export default class CustomProvider
       try {
         logger("generateMultiple", reqParams);
 
-        const config = (this.plugin.settings.LLMProviderOptions[
-          this.id
-        ] ??= {});
+        const config = (this.plugin.settings.LLMProviderOptions[this.id] ??=
+          {});
 
         const handlebarData = {
           ...this.plugin.settings,
@@ -361,8 +354,7 @@ export default class CustomProvider
           stream: handlebarData.stream,
           headers: JSON5.parse(
             await Handlebars.compile(
-              handlebarData.custom_header ||
-              this.default_values.custom_header
+              handlebarData.custom_header || this.default_values.custom_header
             )(handlebarData)
           ) as any,
 
@@ -370,8 +362,7 @@ export default class CustomProvider
             this.cleanConfig(
               JSON5.parse(
                 await Handlebars.compile(
-                  handlebarData.custom_body ||
-                  this.default_values.custom_body
+                  handlebarData.custom_body || this.default_values.custom_body
                 )(handlebarData)
               )
             )
@@ -384,16 +375,8 @@ export default class CustomProvider
         });
 
         const choices = res
-          ? (res as object[])?.map((o) =>
-            get(
-              o,
-              "content"
-            )
-          )
-          : get(
-            res,
-            "content"
-          );
+          ? (res as object[])?.map((o) => get(o, "content"))
+          : get(res, "content");
 
         logger("generateMultiple end", {
           choices,
@@ -410,6 +393,6 @@ export default class CustomProvider
   }
 
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
-    return <>Default unuseable</>
+    return <>Default unuseable</>;
   }
 }

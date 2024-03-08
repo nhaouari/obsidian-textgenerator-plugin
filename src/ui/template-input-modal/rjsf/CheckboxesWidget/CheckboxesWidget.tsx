@@ -9,9 +9,9 @@ import {
   RJSFSchema,
   StrictRJSFSchema,
   WidgetProps,
-} from "@rjsf/utils"
-import React from "react"
-import { ChangeEvent, FocusEvent } from "react"
+} from "@rjsf/utils";
+import React from "react";
+import { ChangeEvent, FocusEvent } from "react";
 
 export default function CheckboxesWidget<
   T = any,
@@ -29,27 +29,27 @@ export default function CheckboxesWidget<
   onBlur,
   onFocus,
 }: WidgetProps<T, S, F>) {
-  const { enumOptions, enumDisabled, inline, emptyValue } = options
-  const checkboxesValues = Array.isArray(value) ? value : [value]
+  const { enumOptions, enumDisabled, inline, emptyValue } = options;
+  const checkboxesValues = Array.isArray(value) ? value : [value];
 
   const _onChange =
     (index: number) =>
-      ({ target: { checked } }: ChangeEvent<HTMLInputElement>) => {
-        if (checked) {
-          onChange(
-            enumOptionsSelectValue<S>(index, checkboxesValues, enumOptions),
-          )
-        } else {
-          onChange(
-            enumOptionsDeselectValue<S>(index, checkboxesValues, enumOptions),
-          )
-        }
+    ({ target: { checked } }: ChangeEvent<HTMLInputElement>) => {
+      if (checked) {
+        onChange(
+          enumOptionsSelectValue<S>(index, checkboxesValues, enumOptions)
+        );
+      } else {
+        onChange(
+          enumOptionsDeselectValue<S>(index, checkboxesValues, enumOptions)
+        );
       }
+    };
 
   const _onBlur = ({ target: { value } }: FocusEvent<HTMLInputElement>) =>
-    onBlur(id, enumOptionsValueForIndex<S>(value, enumOptions, emptyValue))
+    onBlur(id, enumOptionsValueForIndex<S>(value, enumOptions, emptyValue));
   const _onFocus = ({ target: { value } }: FocusEvent<HTMLInputElement>) =>
-    onFocus(id, enumOptionsValueForIndex<S>(value, enumOptions, emptyValue))
+    onFocus(id, enumOptionsValueForIndex<S>(value, enumOptions, emptyValue));
 
   return (
     <div className="plug-tg-space-y-4">
@@ -57,22 +57,24 @@ export default function CheckboxesWidget<
         enumOptions.map((option, index: number) => {
           const checked = enumOptionsIsSelected<S>(
             option.value,
-            checkboxesValues,
-          )
+            checkboxesValues
+          );
           const itemDisabled =
             Array.isArray(enumDisabled) &&
-            enumDisabled.indexOf(option.value) !== -1
+            enumDisabled.indexOf(option.value) !== -1;
 
           return (
             <div
               key={option.value}
-              className={`plug-tg-flex plug-tg-items-center ${inline ? "plug-tg-space-x-2" : ""}`}
+              className={`plug-tg-flex plug-tg-items-center ${
+                inline ? "plug-tg-space-x-2" : ""
+              }`}
             >
               <input
                 type="checkbox"
                 id={optionId(id, index)}
                 name={id}
-                className="plug-tg-checkbox plug-tg-checkbox-primary plug-tg-border-0 plug-tg-bg-transparent"
+                className="plug-tg-checkbox-primary plug-tg-checkbox plug-tg-border-0 plug-tg-bg-transparent"
                 required={required}
                 checked={checked}
                 autoFocus={autofocus && index === 0}
@@ -82,12 +84,15 @@ export default function CheckboxesWidget<
                 disabled={disabled || itemDisabled || readonly}
                 aria-describedby={ariaDescribedByIds<T>(id)}
               />
-              <label htmlFor={optionId(id, index)} className="plug-tg-cursor-pointer">
+              <label
+                htmlFor={optionId(id, index)}
+                className="plug-tg-cursor-pointer"
+              >
                 {option.label}
               </label>
             </div>
-          )
+          );
         })}
     </div>
-  )
+  );
 }

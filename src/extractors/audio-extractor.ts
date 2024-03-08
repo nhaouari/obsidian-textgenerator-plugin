@@ -5,7 +5,10 @@ import debug from "debug";
 
 const logger = debug("textgenerator:Extractor:AudioExtractor");
 
-import { WhisperProviderName, default_values } from "../ui/settings/sections/otherProviders/whisper";
+import {
+  WhisperProviderName,
+  default_values,
+} from "../ui/settings/sections/otherProviders/whisper";
 
 export const supportedAudioExtensions = [
   "mp3",
@@ -15,7 +18,7 @@ export const supportedAudioExtensions = [
   "m4a",
   "wav",
   "webm",
-  "ogg"
+  "ogg",
 ];
 
 export default class AudioExtractor extends Extractor {
@@ -43,11 +46,12 @@ export default class AudioExtractor extends Extractor {
   }
 
   async extract(filePath: string) {
-
     const embeds = this.app.metadataCache
       .getCache(filePath)
       ?.embeds?.filter((embed) =>
-        supportedAudioExtensions.some((ext) => embed.link.toLowerCase().endsWith(`.${ext}`))
+        supportedAudioExtensions.some((ext) =>
+          embed.link.toLowerCase().endsWith(`.${ext}`)
+        )
       );
     if (!embeds) {
       return [];
@@ -67,9 +71,9 @@ export default class AudioExtractor extends Extractor {
         this.plugin.settings.LLMProviderOptions[WhisperProviderName]?.basePath
           ?.length
           ? this.plugin.settings.LLMProviderOptions[WhisperProviderName]
-            ?.basePath
+              ?.basePath
           : this.plugin.settings.endpoint ||
-          this.plugin.defaultSettings.endpoint
+            this.plugin.defaultSettings.endpoint
       );
 
       if (
@@ -94,7 +98,7 @@ export default class AudioExtractor extends Extractor {
         }
       );
 
-      const jsonResponse = await response.json() as any;
+      const jsonResponse = (await response.json()) as any;
 
       if ("text" in jsonResponse) return jsonResponse.text;
       else
@@ -112,11 +116,15 @@ export default class AudioExtractor extends Extractor {
     const formData = new FormData();
     const blob = new Blob([audioBuffer], { type: `audio/${filetype}` });
     formData.append("file", blob, `audio.${filetype}`);
-    formData.append("model", this.plugin.settings.LLMProviderOptions[WhisperProviderName]?.model || default_values.model);
+    formData.append(
+      "model",
+      this.plugin.settings.LLMProviderOptions[WhisperProviderName]?.model ||
+        default_values.model
+    );
 
-    const lang = this.plugin.settings.LLMProviderOptions[WhisperProviderName]?.language;
-    if (lang?.length)
-      formData.append("language", lang);
+    const lang =
+      this.plugin.settings.LLMProviderOptions[WhisperProviderName]?.language;
+    if (lang?.length) formData.append("language", lang);
 
     return formData;
   }

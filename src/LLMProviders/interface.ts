@@ -12,7 +12,6 @@ export default interface LLMProviderInterface {
   /** original id before the cloning */
   originalId: string;
 
-
   load(): Promise<any>;
 
   generate(
@@ -32,7 +31,7 @@ export default interface LLMProviderInterface {
   ): Promise<string[]>;
 
   generateBatch(
-    batches: { messages: Message[], reqParams: Partial<LLMConfig> }[],
+    batches: { messages: Message[]; reqParams: Partial<LLMConfig> }[],
     customConfig?: any,
     onOneFinishs?: (content: string, index: number) => void
   ): Promise<string[]>;

@@ -15,8 +15,8 @@ const extendedInfo: Record<
 > = {
   "modal-suggest": {
     name: "Slash suggestions",
-    description: "modal-suggest"
-  }
+    description: "modal-suggest",
+  },
 };
 
 export default function OptionsSetting(props: { register: Register }) {
@@ -85,7 +85,7 @@ export default function OptionsSetting(props: { register: Register }) {
                 value={
                   "" +
                   global.plugin.settings.options[
-                  key as keyof typeof global.plugin.settings.options
+                    key as keyof typeof global.plugin.settings.options
                   ]
                 }
                 setValue={async (val) => {

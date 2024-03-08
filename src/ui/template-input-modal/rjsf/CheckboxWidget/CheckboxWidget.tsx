@@ -8,9 +8,9 @@ import {
   schemaRequiresTrueValue,
   StrictRJSFSchema,
   WidgetProps,
-} from "@rjsf/utils"
-import React from "react"
-import { FocusEvent } from "react"
+} from "@rjsf/utils";
+import React from "react";
+import { FocusEvent } from "react";
 
 export default function CheckboxWidget<
   T = any,
@@ -32,30 +32,33 @@ export default function CheckboxWidget<
     onFocus,
     registry,
     uiSchema,
-  } = props
+  } = props;
   // Because an unchecked checkbox will cause html5 validation to fail, only add
   // the "required" attribute if the field value must be "true", due to the
   // "const" or "enum" keywords
-  const required = schemaRequiresTrueValue<S>(schema)
+  const required = schemaRequiresTrueValue<S>(schema);
   const DescriptionFieldTemplate = getTemplate<
     "DescriptionFieldTemplate",
     T,
     S,
     F
-  >("DescriptionFieldTemplate", registry, options)
+  >("DescriptionFieldTemplate", registry, options);
 
   const _onChange = ({ target: { checked } }: FocusEvent<HTMLInputElement>) =>
-    onChange(checked)
+    onChange(checked);
   const _onBlur = ({ target: { checked } }: FocusEvent<HTMLInputElement>) =>
-    onBlur(id, checked)
+    onBlur(id, checked);
   const _onFocus = ({ target: { checked } }: FocusEvent<HTMLInputElement>) =>
-    onFocus(id, checked)
+    onFocus(id, checked);
 
-  const description = options.description || schema.description
+  const description = options.description || schema.description;
   return (
     <div
-      className={`plug-tg-relative ${disabled || readonly ? "plug-tg-cursor-not-allowed plug-tg-opacity-50" : ""
-        }`}
+      className={`plug-tg-relative ${
+        disabled || readonly
+          ? "plug-tg-cursor-not-allowed plug-tg-opacity-50"
+          : ""
+      }`}
       aria-describedby={ariaDescribedByIds<T>(id)}
     >
       {!hideLabel && !!description && (
@@ -81,8 +84,10 @@ export default function CheckboxWidget<
           onFocus={_onFocus}
           className="plug-tg-form-checkbox plug-tg-text-primary"
         />
-        <span className="plug-tg-ml-2">{labelValue(label, hideLabel || !label)}</span>
+        <span className="plug-tg-ml-2">
+          {labelValue(label, hideLabel || !label)}
+        </span>
       </label>
     </div>
-  )
+  );
 }
