@@ -8,6 +8,7 @@ import BaseProvider from "../base";
 import { AsyncReturnType, cleanConfig } from "../utils";
 import { requestWithoutCORS, requestWithoutCORSParam, Message } from "../refs";
 import { Platform } from "obsidian";
+import runJSInSandbox from "#/helpers/javascript-sandbox";
 
 const logger = debug("textgenerator:CustomProvider");
 
@@ -206,10 +207,15 @@ export default class CustomProvider
 
         const decodedVal = decoder.decode(value, { stream: true });
 
-        const chunkValue = await (0, eval)(
-          params.sanatization_streaming ||
+        const chunkValue = await runJSInSandbox(
+          `return await (${
+            params.sanatization_streaming ||
             this.default_values.sanatization_streaming
-        )(decodedVal);
+          })(${JSON.stringify(decodedVal)})`,
+          {
+            plugin: this.plugin,
+          }
+        );
 
         text += chunkValue || "";
         await params.onToken?.(chunkValue, isFirst);
@@ -227,10 +233,15 @@ export default class CustomProvider
         resJson = resText;
       }
 
-      const rs = await (0, eval)(
-        params.sanatization_response ||
+      const rs = await runJSInSandbox(
+        `return await (${
+          params.sanatization_response ||
           this.default_values.sanatization_response
-      )(resJson, k);
+        })(${JSON.stringify(resJson)}, ${JSON.stringify(k)})`,
+        {
+          plugin: this.plugin,
+        }
+      );
 
       console.log(rs);
 

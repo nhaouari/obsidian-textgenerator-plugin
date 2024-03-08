@@ -24,6 +24,7 @@ import lodashSet from "lodash.set";
 import lodashGet from "lodash.get";
 import JSON5 from "json5";
 
+import runJsInSandbox from "./javascript-sandbox";
 import * as langchain from "#/lib/langchain";
 
 export default function Helpersfn(self: ContextManager) {
@@ -50,10 +51,6 @@ export default function Helpersfn(self: ContextManager) {
     return await createFileWithInput(path, data, self.plugin.app);
   };
 
-  const deleteFile = async (path: string) => {
-    return await self.plugin.app.vault.adapter.remove(path);
-  };
-
   const append = async (path: string, data: string) => {
     const dirMatch = path.match(/(.*)[/\\]/);
     let dirName = "";
@@ -68,10 +65,6 @@ export default function Helpersfn(self: ContextManager) {
   const error = async (context: any) => {
     await self.plugin.handelError(context);
     throw new Error(context);
-  };
-
-  const notice = (context: any, duration: any) => {
-    new Notice(context, typeof duration == "object" ? undefined : +duration);
   };
 
   const read = async (path: string) => {
@@ -91,6 +84,7 @@ export default function Helpersfn(self: ContextManager) {
         data: any;
 
       if (typeof context == "function") {
+        // @ts-ignore
         context = await context.call(this);
       }
 
@@ -169,6 +163,7 @@ export default function Helpersfn(self: ContextManager) {
       }
 
       if (i === 0) {
+        // @ts-ignore
         ret = inverse(this);
       }
 
@@ -649,20 +644,15 @@ export default function Helpersfn(self: ContextManager) {
       }
 
       // do not use (0, eval), it will break "this", and the eval wont be able to access context
-      return await eval(`
-        async (plugin, app, pluginApi, run, gen, genJSON, error, JSON5)=>{
-          ${content}
-        }  
-      `).bind(this)(
-        self.plugin,
-        self.app,
+      return await runJsInSandbox(content, {
+        ...this,
+        plugin: self.plugin,
+        app: self.app,
         pluginApi,
         run,
         gen,
         genJSON,
-        error,
-        JSON5
-      );
+      });
     },
 
     read,
