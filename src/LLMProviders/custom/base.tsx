@@ -109,7 +109,8 @@ export type CustomConfig = Record<keyof typeof default_values, string>;
 
 export default class CustomProvider
   extends BaseProvider
-  implements LLMProviderInterface {
+  implements LLMProviderInterface
+{
   static provider = "Custom";
   static id = "Default (Custom)";
   static displayName: string = "Custom";
@@ -150,44 +151,39 @@ export default class CustomProvider
         typeof requestOptions.body == "string"
           ? JSON.parse(requestOptions.body)
           : requestOptions.body
-            ? requestOptions.body
-            : undefined,
+          ? requestOptions.body
+          : undefined,
       headers:
         typeof requestOptions.headers == "object"
           ? (requestOptions.headers as any)
           : requestOptions.headers
-            ? JSON5.parse(requestOptions.headers)
-            : undefined,
+          ? JSON5.parse(requestOptions.headers)
+          : undefined,
     });
 
     const url = params.CORSBypass
-      ? await this.plugin.textGenerator.proxyService.getProxiedUrl(
-        params.url
-      )
+      ? await this.plugin.textGenerator.proxyService.getProxiedUrl(params.url)
       : params.url;
 
     const k = (
       useRequest
         ? await requestWithoutCORS({
-          url: params.url,
-          method: requestOptions.method,
-          body:
-            typeof requestOptions.body == "string"
-              ? requestOptions.body
-              : requestOptions.body
+            url: params.url,
+            method: requestOptions.method,
+            body:
+              typeof requestOptions.body == "string"
+                ? requestOptions.body
+                : requestOptions.body
                 ? JSON.stringify(requestOptions.body)
                 : undefined,
-          headers:
-            typeof requestOptions.headers == "object"
-              ? (requestOptions.headers as any)
-              : requestOptions.headers
+            headers:
+              typeof requestOptions.headers == "object"
+                ? (requestOptions.headers as any)
+                : requestOptions.headers
                 ? JSON5.parse(requestOptions.headers)
                 : undefined,
-        })
-        : await fetch(
-          url,
-          requestOptions
-        )
+          })
+        : await fetch(url, requestOptions)
     ) as AsyncReturnType<typeof fetch>;
 
     if (!useRequest && params.stream) {
@@ -212,7 +208,7 @@ export default class CustomProvider
 
         const chunkValue = await (0, eval)(
           params.sanatization_streaming ||
-          this.default_values.sanatization_streaming
+            this.default_values.sanatization_streaming
         )(decodedVal);
 
         text += chunkValue || "";
@@ -231,18 +227,18 @@ export default class CustomProvider
         resJson = resText;
       }
 
-
       const rs = await (0, eval)(
         params.sanatization_response ||
-        this.default_values.sanatization_response
-      )(resJson, k)
+          this.default_values.sanatization_response
+      )(resJson, k);
 
-      console.log(rs)
+      console.log(rs);
 
-      return rs?.map((c: Message) =>
-        c.type == "image_url" ? `![${c.image_url}]` : c.content
-      )
-        .join("\n");;
+      return rs
+        ?.map((c: Message) =>
+          c.type == "image_url" ? `![${c.image_url}]` : c.content
+        )
+        .join("\n");
     }
   }
 
@@ -288,21 +284,26 @@ export default class CustomProvider
           url: await Handlebars.compile(
             handlebarData.endpoint || this.default_values.endpoint
           )(handlebarData),
-          headers: cleanConfig(JSON5.parse(
-            "" +
-            (await Handlebars.compile(
-              handlebarData.custom_header || this.default_values.custom_header
-            )(handlebarData))
-          ) as any),
+          headers: cleanConfig(
+            JSON5.parse(
+              "" +
+                (await Handlebars.compile(
+                  handlebarData.custom_header ||
+                    this.default_values.custom_header
+                )(handlebarData))
+            ) as any
+          ),
 
           body: JSON.stringify(
-            cleanConfig(JSON5.parse(
-              "" +
-              (await Handlebars.compile(
-                handlebarData.custom_body || this.default_values.custom_body
-              )(handlebarData))
-            )
-            ) as any),
+            cleanConfig(
+              JSON5.parse(
+                "" +
+                  (await Handlebars.compile(
+                    handlebarData.custom_body || this.default_values.custom_body
+                  )(handlebarData))
+              )
+            ) as any
+          ),
 
           signal: handlebarData.requestParams?.signal || undefined,
           stream: handlebarData.stream,
