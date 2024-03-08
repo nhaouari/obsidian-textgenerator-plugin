@@ -367,12 +367,22 @@ export default class ContextManager {
       yaml?: Record<string, any>;
       metadata?: string;
       content?: string;
-      headings?: AsyncReturnType<typeof this.getHeadingContent>;
-      children?: AsyncReturnType<typeof this.getChildrenContent>;
-      highlights?: ReturnType<typeof this.getHighlights>;
-      mentions?: AsyncReturnType<typeof this.getMentions>;
-      extractions?: AsyncReturnType<typeof this.getExtractions>;
-      keys?: AsyncReturnType<typeof this.plugin.getApiKeys>;
+      headings?: AsyncReturnType<
+        InstanceType<typeof ContextManager>["getHeadingContent"]
+      >;
+      children?: AsyncReturnType<
+        InstanceType<typeof ContextManager>["getChildrenContent"]
+      >;
+      highlights?: AsyncReturnType<
+        InstanceType<typeof ContextManager>["getHighlights"]
+      >;
+      mentions?: AsyncReturnType<
+        InstanceType<typeof ContextManager>["getMentions"]
+      >;
+      extractions?: AsyncReturnType<
+        InstanceType<typeof ContextManager>["getExtractions"]
+      >;
+      keys?: ReturnType<InstanceType<typeof TextGeneratorPlugin>["getApiKeys"]>;
       _variables: Record<string, true>;
     } = {
       _variables: {},

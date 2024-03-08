@@ -31,7 +31,7 @@ export async function createFolder(folder: string, app: App): Promise<void> {
   const folderExists = await app.vault.adapter.exists(folder);
 
   if (!folderExists) {
-    await this.app.vault.createFolder(folder);
+    await app.vault.createFolder(folder);
   }
   logger("createFolder end");
 }
@@ -432,6 +432,7 @@ export function debounce<T extends unknown[], R>(
 
   logger("debounce", func, wait);
   return function debouncedFunction(...args: T): Promise<R> {
+    // @ts-ignore
     const context = this;
 
     return new Promise((resolve, reject) => {
@@ -451,7 +452,7 @@ export function debounce<T extends unknown[], R>(
 }
 
 export function getFilePathByName(name: string): string | undefined {
-  return this.app.metadataCache.getFirstLinkpathDest(name, "")?.path;
+  return app.metadataCache.getFirstLinkpathDest(name, "")?.path;
 }
 
 export function currentDate() {

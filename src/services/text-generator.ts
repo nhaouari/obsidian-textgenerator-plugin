@@ -477,8 +477,8 @@ export default class TextGenerator extends RequestHandler {
               const [errorFile, file] = await safeAwait(
                 createFileWithInput(
                   path +
-                  `/${text?.startsWith("FAILED:") ? "FAILED-" : ""}` +
-                  files[i].path,
+                    `/${text?.startsWith("FAILED:") ? "FAILED-" : ""}` +
+                    files[i].path,
                   text,
                   this.plugin.app
                 )
@@ -882,8 +882,9 @@ ${removeYAML(content)}
 
     const promptsPath = this.plugin.settings.promptsPath;
 
-    const guessPath = `${promptsPath}${promptsPath.endsWith("/") ? "" : "/"
-      }${id}.md`;
+    const guessPath = `${promptsPath}${
+      promptsPath.endsWith("/") ? "" : "/"
+    }${id}.md`;
 
     // test if the guess is actually a file
     if (await this.plugin.app.vault.adapter.exists(guessPath)) return guessPath;

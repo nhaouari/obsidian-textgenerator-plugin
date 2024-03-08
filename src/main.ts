@@ -49,7 +49,7 @@ import ContentManagerCls from "./scope/content-manager";
 import ContextManager from "./scope/context-manager";
 import TGBlock from "./services/tgBlock";
 
-// @ts-ignore
+//    @ts-ignore
 let safeStorage: Electron.SafeStorage;
 
 if (Platform.isDesktop) {
