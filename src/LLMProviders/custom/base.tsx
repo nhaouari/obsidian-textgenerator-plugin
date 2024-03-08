@@ -109,7 +109,8 @@ export type CustomConfig = Record<keyof typeof default_values, string>;
 
 export default class CustomProvider
   extends BaseProvider
-  implements LLMProviderInterface {
+  implements LLMProviderInterface
+{
   static provider = "Custom";
   static id = "Default (Custom)";
   static displayName: string = "Custom";
@@ -131,7 +132,6 @@ export default class CustomProvider
       CORSBypass?: boolean;
     }
   ) {
-
     const useRequest = params.CORSBypass && !Platform.isDesktop;
 
     const requestOptions: RequestInit = {
@@ -151,14 +151,14 @@ export default class CustomProvider
         typeof requestOptions.body == "string"
           ? JSON.parse(requestOptions.body)
           : requestOptions.body
-            ? requestOptions.body
-            : undefined,
+          ? requestOptions.body
+          : undefined,
       headers:
         typeof requestOptions.headers == "object"
           ? (requestOptions.headers as any)
           : requestOptions.headers
-            ? JSON5.parse(requestOptions.headers)
-            : undefined,
+          ? JSON5.parse(requestOptions.headers)
+          : undefined,
     });
 
     const url = params.CORSBypass
@@ -168,21 +168,21 @@ export default class CustomProvider
     const k = (
       useRequest
         ? await requestWithoutCORS({
-          url: params.url,
-          method: requestOptions.method,
-          body:
-            typeof requestOptions.body == "string"
-              ? requestOptions.body
-              : requestOptions.body
+            url: params.url,
+            method: requestOptions.method,
+            body:
+              typeof requestOptions.body == "string"
+                ? requestOptions.body
+                : requestOptions.body
                 ? JSON.stringify(requestOptions.body)
                 : undefined,
-          headers:
-            typeof requestOptions.headers == "object"
-              ? (requestOptions.headers as any)
-              : requestOptions.headers
+            headers:
+              typeof requestOptions.headers == "object"
+                ? (requestOptions.headers as any)
+                : requestOptions.headers
                 ? JSON5.parse(requestOptions.headers)
                 : undefined,
-        })
+          })
         : await fetch(url, requestOptions)
     ) as AsyncReturnType<typeof fetch>;
 
@@ -208,7 +208,7 @@ export default class CustomProvider
 
         const chunkValue = await (0, eval)(
           params.sanatization_streaming ||
-          this.default_values.sanatization_streaming
+            this.default_values.sanatization_streaming
         )(decodedVal);
 
         text += chunkValue || "";
@@ -229,7 +229,7 @@ export default class CustomProvider
 
       const rs = await (0, eval)(
         params.sanatization_response ||
-        this.default_values.sanatization_response
+          this.default_values.sanatization_response
       )(resJson, k);
 
       console.log(rs);
@@ -262,7 +262,6 @@ export default class CustomProvider
 
         const useRequest = config.CORSBypass && !Platform.isDesktop;
 
-
         const handlebarData = {
           ...this.plugin.settings,
           ...cleanConfig(this.default_values),
@@ -290,10 +289,10 @@ export default class CustomProvider
           headers: cleanConfig(
             JSON5.parse(
               "" +
-              (await Handlebars.compile(
-                handlebarData.custom_header ||
-                this.default_values.custom_header
-              )(handlebarData))
+                (await Handlebars.compile(
+                  handlebarData.custom_header ||
+                    this.default_values.custom_header
+                )(handlebarData))
             ) as any
           ),
 
@@ -301,9 +300,9 @@ export default class CustomProvider
             cleanConfig(
               JSON5.parse(
                 "" +
-                (await Handlebars.compile(
-                  handlebarData.custom_body || this.default_values.custom_body
-                )(handlebarData))
+                  (await Handlebars.compile(
+                    handlebarData.custom_body || this.default_values.custom_body
+                  )(handlebarData))
               )
             ) as any
           ),
