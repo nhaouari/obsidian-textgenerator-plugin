@@ -477,8 +477,8 @@ export default class TextGenerator extends RequestHandler {
               const [errorFile, file] = await safeAwait(
                 createFileWithInput(
                   path +
-                    `/${text?.startsWith("FAILED:") ? "FAILED-" : ""}` +
-                    files[i].path,
+                  `/${text?.startsWith("FAILED:") ? "FAILED-" : ""}` +
+                  files[i].path,
                   text,
                   this.plugin.app
                 )
@@ -663,29 +663,33 @@ ${removeYAML(content)}
     const templateContext =
       await this.plugin.contextManager.getTemplateContext(props);
 
-    new TemplateInputModalUI(
-      this.plugin.app,
-      this.plugin,
-      variables,
-      metadata,
-      templateContext,
-      async (results: any) => {
-        try {
-          await this.generateFromTemplate({
-            params: props.params,
-            templatePath: props.templatePath || "",
-            insertMetadata: true,
-            filePath: props.filePath,
-            editor: props.editor,
-            activeFile: props.activeFile,
-            additionalProps: results,
-          });
-        } catch (err: any) {
-          this.plugin.handelError(err);
-          this.endLoading(true);
-        }
+    const onSubmit = async (results: any) => {
+      try {
+        await this.generateFromTemplate({
+          params: props.params,
+          templatePath: props.templatePath || "",
+          insertMetadata: true,
+          filePath: props.filePath,
+          editor: props.editor,
+          activeFile: props.activeFile,
+          additionalProps: results,
+        });
+      } catch (err: any) {
+        this.plugin.handelError(err);
+        this.endLoading(true);
       }
-    ).open();
+    }
+
+    if (variables.length)
+      new TemplateInputModalUI(
+        this.plugin.app,
+        this.plugin,
+        variables,
+        metadata,
+        templateContext,
+        onSubmit
+      ).open();
+    else await onSubmit({})
     logger("tempalteToModal end");
   }
 
@@ -882,9 +886,8 @@ ${removeYAML(content)}
 
     const promptsPath = this.plugin.settings.promptsPath;
 
-    const guessPath = `${promptsPath}${
-      promptsPath.endsWith("/") ? "" : "/"
-    }${id}.md`;
+    const guessPath = `${promptsPath}${promptsPath.endsWith("/") ? "" : "/"
+      }${id}.md`;
 
     // test if the guess is actually a file
     if (await this.plugin.app.vault.adapter.exists(guessPath)) return guessPath;
