@@ -29,8 +29,7 @@ const logger = debug("textgenerator:LangchainProvider");
 
 export default class LangchainProvider
   extends BaseProvider
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   static id = "default (Langchain)";
   static slug = "default" as any;
   static provider = "Langchain";
@@ -50,6 +49,8 @@ export default class LangchainProvider
   provider = LangchainProvider.provider;
   id = LangchainProvider.id;
   originalId = LangchainProvider.id;
+
+  default_values: any = {};
 
   getConfig(options: LLMConfig) {
     return this.cleanConfig({
@@ -73,7 +74,22 @@ export default class LangchainProvider
     this.llmClass = ChatOpenAI;
   }
 
-  getLLM(options: LLMConfig) {
+  async getLLM(_options: LLMConfig) {
+    const options = { ..._options };
+    const originalBasePath = options.basePath || this.default_values.basePath;
+
+    if (this.corsBypass)
+      options.basePath = await this.plugin.textGenerator.proxyService.getProxiedUrl(originalBasePath);
+
+
+    const headers = {
+      "User-Agent": undefined,
+      "HTTP-Referer": location.origin,
+      "X-Title": "obsidian-text-generator",
+      "X-Test": options.basePath,
+      ...this.defaultHeaders,
+    }
+
     return new (this.llmClass as typeof ChatOpenAI)(this.getConfig(options), {
       basePath: options.basePath?.length
         ? options.basePath.endsWith("/")
@@ -83,12 +99,7 @@ export default class LangchainProvider
 
       defaultQuery: options.bodyParams,
 
-      defaultHeaders: {
-        "User-Agent": undefined,
-        "HTTP-Referer": location.origin,
-        "X-Title": "obsidian-text-generator",
-        ...this.defaultHeaders,
-      },
+      defaultHeaders: headers,
     }) as any;
   }
 
@@ -97,14 +108,14 @@ export default class LangchainProvider
       ...this.cleanConfig(this.plugin.settings),
       ...this.cleanConfig(
         this.plugin.settings.LLMProviderOptions[
-          this.id as keyof typeof this.plugin.settings
+        this.id as keyof typeof this.plugin.settings
         ]
       ),
       ...this.cleanConfig(options.otherOptions),
       ...this.cleanConfig(options),
       otherOptions: this.cleanConfig(
         this.plugin.settings.LLMProviderOptions[
-          this.id as keyof typeof this.plugin.settings
+        this.id as keyof typeof this.plugin.settings
         ]
       ),
     };
@@ -134,7 +145,7 @@ export default class LangchainProvider
         // if the model is streamable
         params.stream = params.stream && this.streamable;
 
-        const llm = this.getLLM(params) as HuggingFaceInference;
+        const llm = await this.getLLM(params) as HuggingFaceInference;
 
         let first = true;
         let allText = "";
@@ -143,15 +154,15 @@ export default class LangchainProvider
           {
             ...(!!onToken &&
               !!params.stream && {
-                async handleLLMNewToken(token: string) {
-                  const d = first;
-                  first = false;
-                  alreadyBegainGenerating = true;
-                  const tk = (await onToken(token, d)) || token;
-                  allText += tk;
-                  result += tk;
-                },
-              }),
+              async handleLLMNewToken(token: string) {
+                const d = first;
+                first = false;
+                alreadyBegainGenerating = true;
+                const tk = (await onToken(token, d)) || token;
+                allText += tk;
+                result += tk;
+              },
+            }),
 
             handleLLMEnd() {
               if (params.stream) s(allText);
@@ -194,11 +205,11 @@ export default class LangchainProvider
             r = await (llm as any as ChatOpenAI).invoke(
               messages.length > 1
                 ? // user: test1
-                  // assistant: test2
-                  // ...
-                  messages.map((msg) => `${msg.role}:${msg.content}`).join("\n")
+                // assistant: test2
+                // ...
+                messages.map((msg) => `${msg.role}:${msg.content}`).join("\n")
                 : // test1
-                  messages[0].content,
+                messages[0].content,
               {
                 signal: params.requestParams?.signal || undefined,
                 ...this.getReqOptions(params),
@@ -258,7 +269,7 @@ export default class LangchainProvider
         logger("generateMultiple", reqParams);
 
         const params = this.configMerger(reqParams);
-        const llm = this.getLLM(params);
+        const llm = await this.getLLM(params);
         let requestResults: any[] = [];
         if (this.legacyN) {
           await processPromisesSetteledBatch(
@@ -269,20 +280,20 @@ export default class LangchainProvider
                     reqParams.llmPredict || this.llmPredict
                       ? messages.length > 1
                         ? // user: test1
-                          // assistant: test2
-                          // ...
-                          [
-                            messages
-                              .map((msg) => `${msg.role}:${msg.content}`)
-                              .join("\n"),
-                          ]
+                        // assistant: test2
+                        // ...
+                        [
+                          messages
+                            .map((msg) => `${msg.role}:${msg.content}`)
+                            .join("\n"),
+                        ]
                         : // test1
-                          [messages[0].content]
+                        [messages[0].content]
                       : [
-                          mapMessagesToLangchainMessages(
-                            messages
-                          ) as any as string,
-                        ],
+                        mapMessagesToLangchainMessages(
+                          messages
+                        ) as any as string,
+                      ],
                     {
                       signal: params.requestParams?.signal || undefined,
                       ...this.getReqOptions(params),
@@ -299,15 +310,15 @@ export default class LangchainProvider
               reqParams.llmPredict || this.llmPredict
                 ? messages.length > 1
                   ? // user: test1
-                    // assistant: test2
-                    // ...
-                    [
-                      messages
-                        .map((msg) => `${msg.role}:${msg.content}`)
-                        .join("\n"),
-                    ]
+                  // assistant: test2
+                  // ...
+                  [
+                    messages
+                      .map((msg) => `${msg.role}:${msg.content}`)
+                      .join("\n"),
+                  ]
                   : // test1
-                    [messages[0].content]
+                  [messages[0].content]
                 : [mapMessagesToLangchainMessages(messages) as any as string],
               {
                 signal: params.requestParams?.signal || undefined,
@@ -349,7 +360,7 @@ export default class LangchainProvider
   //         logger("generateMultiple", reqParams);
 
   //         const params = this.configMerger(reqParams);
-  //         const chat = this.getLLM(params);
+  //         const chat = await this.getLLM(params);
 
   //         let results: string[] = [];
   //         if (customConfig?.chain?.type)
@@ -418,7 +429,7 @@ export default class LangchainProvider
         };
 
         const params = this.configMerger(reqParams);
-        const chat = this.getLLM(params);
+        const chat = await this.getLLM(params);
 
         const llm = new chains.LLMChain({
           llm: chat,
@@ -500,11 +511,11 @@ export default class LangchainProvider
 function chatToString(messages: Message[] = []) {
   return messages.length > 1
     ? // user: test1
-      // assistant: test2
-      // ...
-      messages.map((msg) => `${msg.role}:${msg.content}`).join("\n")
+    // assistant: test2
+    // ...
+    messages.map((msg) => `${msg.role}:${msg.content}`).join("\n")
     : // test1
-      messages[0].content;
+    messages[0].content;
 }
 
 function getChain(chainName: string, llm: any, config: any) {

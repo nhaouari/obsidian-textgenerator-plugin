@@ -2,34 +2,39 @@ import React from "react";
 import debug from "debug";
 import LangchainBase from "./base";
 
-import type { AnthropicInput } from "langchain/chat_models/anthropic";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import { IconExternalLink } from "@tabler/icons-react";
 import { BaseLanguageModelParams } from "langchain/dist/base_language";
 
 import { Input, SettingItem, useGlobal } from "../refs";
+import type { AnthropicInput } from "@langchain/anthropic";
 
 const logger = debug("textgenerator:llmProvider:chatanthropic");
 
 export default class LangchainChatAnthropicProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   static provider = "Langchain";
   static id = "Chat Anthropic (Langchain)" as const;
   static slug = "anthropic" as const;
   static displayName: string = "Chat Anthropic";
 
+  corsBypass = true;
+
   provider = LangchainChatAnthropicProvider.provider;
   id = LangchainChatAnthropicProvider.id;
   originalId = LangchainChatAnthropicProvider.id;
+
+  default_values = {
+    basePath: "https://api.anthropic.com/"
+  }
 
   getConfig(
     options: LLMConfig
   ): Partial<AnthropicInput & BaseLanguageModelParams> {
     return this.cleanConfig({
       anthropicApiKey: options.api_key,
-      anthropicApiUrl: options.otherOptions?.anthropicApiUrl,
+      anthropicApiUrl: options.basePath,
       stopSequences: options.stop,
 
       // ------------Necessary stuff--------------
@@ -47,7 +52,7 @@ export default class LangchainChatAnthropicProvider
   }
 
   async load() {
-    const { ChatAnthropic } = await import("langchain/chat_models/anthropic");
+    const { ChatAnthropic } = await import("@langchain/anthropic");
     this.llmClass = ChatAnthropic;
   }
 
@@ -92,10 +97,10 @@ export default class LangchainChatAnthropicProvider
           sectionId={props.sectionId}
         >
           <Input
-            value={config.anthropicApiUrl}
+            value={config.basePath}
             placeholder="Enter your API BasePath"
             setValue={async (value) => {
-              config.anthropicApiUrl = value;
+              config.basePath = value;
               global.triggerReload();
               // TODO: it could use a debounce here
               await global.plugin.saveSettings();

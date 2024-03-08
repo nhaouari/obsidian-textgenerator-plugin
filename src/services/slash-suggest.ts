@@ -14,11 +14,11 @@ import ContentManagerCls from "../scope/content-manager";
 export class SlashSuggest extends EditorSuggest<PromptTemplate> {
   app: App;
   private plugin: TextGeneratorPlugin;
-  scope: Scope;
   constructor(app: App, plugin: TextGeneratorPlugin) {
     super(app);
     this.app = app;
     this.plugin = plugin;
+
     this.scope.register([], "Tab", () => {
       this.close();
     });

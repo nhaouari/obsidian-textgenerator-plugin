@@ -10,6 +10,7 @@ import { Handlebars } from "../../helpers/handlebars-helpers";
 import clsx from "clsx";
 import CustomProvider, { default_values as baseDefaultValues } from "./base";
 import JSON5 from "json5";
+import { Platform } from "obsidian";
 
 const logger = debug("textgenerator:CustomProvider");
 
@@ -108,8 +109,7 @@ export type CustomConfig = Record<keyof typeof default_values, string>;
 
 export default class DefaultCustomProvider
   extends CustomProvider
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   streamable = true;
   static provider = "Custom";
   static id = "Default (Custom)" as const;
@@ -147,6 +147,10 @@ export default class DefaultCustomProvider
         ${config?.custom_body}`
       ).filter((d) => !globalVars[d]);
     }, [global.trg]);
+
+    const limitedExperiance = config.CORSBypass && !Platform.isDesktop;
+
+    const isStreamable = config.streamable && !limitedExperiance;
 
     return (
       <>
@@ -342,7 +346,7 @@ export default class DefaultCustomProvider
             <SettingItem
               name="Streamable"
               description={
-                config.CORSBypass
+                limitedExperiance
                   ? "Disable CORS Bypass to be able to use this feature"
                   : "If enabled, means this API is streamable"
               }
@@ -350,13 +354,13 @@ export default class DefaultCustomProvider
               sectionId={props.sectionId}
               className={clsx({
                 "plug-tg-pointer-events-none plug-tg-cursor-not-allowed plug-tg-opacity-60":
-                  config.CORSBypass,
+                  limitedExperiance,
               })}
             >
               <Input
                 type="checkbox"
                 value={
-                  !config.CORSBypass && config.streamable ? "true" : "false"
+                  !limitedExperiance && config.streamable ? "true" : "false"
                 }
                 placeholder="Is it Streamable"
                 setValue={async (value) => {
@@ -369,7 +373,7 @@ export default class DefaultCustomProvider
             </SettingItem>
             <SettingItem
               name="CORS Bypass"
-              description="enable this only if you get blocked by CORS, this will result in failure in some functions"
+              description="enable this only if you get blocked by CORS, in mobile this will result in failure in some functions"
               register={props.register}
               sectionId={props.sectionId}
             >
@@ -383,7 +387,7 @@ export default class DefaultCustomProvider
                 }}
               />
             </SettingItem>
-            {!config.CORSBypass && config.streamable && (
+            {isStreamable && (
               <>
                 <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
                   <div className="plug-tg-font-bold">Stream Sanatization:</div>

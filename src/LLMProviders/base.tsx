@@ -12,9 +12,12 @@ export default class ProviderBase implements LLMProviderInterface {
   provider = "default";
   static displayName: string = "default";
   cloned?: boolean | undefined;
-  originalId: string;
+  originalId: string = "";
   plugin: TextGeneratorPlugin;
   config: any;
+
+  corsBypass = false;
+
   constructor(props: { plugin: TextGeneratorPlugin; config?: any }) {
     this.plugin = props.plugin;
     this.config = props.config;
@@ -23,7 +26,7 @@ export default class ProviderBase implements LLMProviderInterface {
   streamable?: boolean | undefined;
   mobileSupport?: boolean | undefined;
 
-  async load() {}
+  async load() { }
 
   async generate(
     messages: Message[],
