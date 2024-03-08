@@ -109,7 +109,8 @@ export type CustomConfig = Record<keyof typeof default_values, string>;
 
 export default class DefaultCustomProvider
   extends CustomProvider
-  implements LLMProviderInterface {
+  implements LLMProviderInterface
+{
   streamable = true;
   static provider = "Custom";
   static id = "Default (Custom)" as const;

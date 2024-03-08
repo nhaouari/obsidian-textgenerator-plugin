@@ -26,7 +26,7 @@ export default class ProviderBase implements LLMProviderInterface {
   streamable?: boolean | undefined;
   mobileSupport?: boolean | undefined;
 
-  async load() { }
+  async load() {}
 
   async generate(
     messages: Message[],

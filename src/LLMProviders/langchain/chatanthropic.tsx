@@ -13,7 +13,8 @@ const logger = debug("textgenerator:llmProvider:chatanthropic");
 
 export default class LangchainChatAnthropicProvider
   extends LangchainBase
-  implements LLMProviderInterface {
+  implements LLMProviderInterface
+{
   static provider = "Langchain";
   static id = "Chat Anthropic (Langchain)" as const;
   static slug = "anthropic" as const;
@@ -26,8 +27,8 @@ export default class LangchainChatAnthropicProvider
   originalId = LangchainChatAnthropicProvider.id;
 
   default_values = {
-    basePath: "https://api.anthropic.com/"
-  }
+    basePath: "https://api.anthropic.com/",
+  };
 
   getConfig(
     options: LLMConfig

@@ -9,7 +9,7 @@ import { Handlebars } from "../helpers/handlebars-helpers";
 import { Platform } from "obsidian";
 import LLMProviderInterface from "../LLMProviders/interface";
 import LLMProviderRegistry from "../LLMProviders/registery";
-import {  defaultProvidersMap } from "../LLMProviders";
+import { defaultProvidersMap } from "../LLMProviders";
 import providerOptionsValidator from "../LLMProviders/providerOptionsValidator";
 import { ProxyService } from "./proxy-service";
 const logger = debug("textgenerator:TextGenerator");
@@ -100,7 +100,7 @@ export default class RequestHandler {
 
     this.plugin.settings.LLMProviderOptions[props.id] = {
       ...this.plugin.settings.LLMProviderOptions[
-      props.extendsDataFrom || props.extends
+        props.extendsDataFrom || props.extends
       ],
     };
 
@@ -178,8 +178,8 @@ export default class RequestHandler {
       let result = provider.providerOptions.estimatingMode
         ? bodyParams.messages.map((m) => m.content).join(",")
         : provider.providerOptions.disableProvider
-          ? ""
-          : await this.LLMProvider.generate(
+        ? ""
+        : await this.LLMProvider.generate(
             bodyParams.messages,
             {
               ...allParams,
@@ -222,9 +222,9 @@ export default class RequestHandler {
       reqParams?: RequestInit | undefined;
       bodyParams?: any;
     } = {
-        showSpinner: true,
-        signal: undefined,
-      }
+      showSpinner: true,
+      signal: undefined,
+    }
   ) {
     try {
       logger("generate", {
@@ -291,42 +291,42 @@ export default class RequestHandler {
         try {
           const k =
             provider.providerOptions.estimatingMode ||
-              provider.providerOptions.disableProvider
+            provider.providerOptions.disableProvider
               ? ""
               : await this.LLMProvider.generate(
-                bodyParams.messages,
-                {
-                  ...allParams,
-                  ...bodyParams,
-                  requestParams: {
-                    // body: JSON.stringify(bodyParams),
-                    ...reqParams,
-                    signal:
-                      additionnalParams.signal ||
-                      this.signalController?.signal,
-                  },
-                  otherOptions: this.LLMProvider.getSettings(),
-                  streaming: true,
-                  llmPredict: bodyParams.messages?.length == 1,
-                } as any,
-                onToken,
-                provider.providerOptions
-              );
+                  bodyParams.messages,
+                  {
+                    ...allParams,
+                    ...bodyParams,
+                    requestParams: {
+                      // body: JSON.stringify(bodyParams),
+                      ...reqParams,
+                      signal:
+                        additionnalParams.signal ||
+                        this.signalController?.signal,
+                    },
+                    otherOptions: this.LLMProvider.getSettings(),
+                    streaming: true,
+                    llmPredict: bodyParams.messages?.length == 1,
+                  } as any,
+                  onToken,
+                  provider.providerOptions
+                );
 
           // output template, template used AFTER the generation happens
           return (
             (provider.providerOptions.output?.length
               ? await Handlebars.compile(
-                provider.providerOptions.output.replaceAll("\\n", "\n"),
-                {
-                  noEscape: true,
-                }
-              )
+                  provider.providerOptions.output.replaceAll("\\n", "\n"),
+                  {
+                    noEscape: true,
+                  }
+                )
               : template?.outputTemplate)?.({
-                requestResults: k,
-                ...options,
-                output: k,
-              }) || k
+              requestResults: k,
+              ...options,
+              output: k,
+            }) || k
           );
         } catch (err: any) {
           onError?.(err);
@@ -497,26 +497,26 @@ export default class RequestHandler {
       console.log({ provider, context, params });
       let result =
         provider.providerOptions.estimatingMode ||
-          provider.providerOptions.disableProvider
+        provider.providerOptions.disableProvider
           ? ""
           : await this.LLMProvider.generate(
-            bodyParams.messages,
-            {
-              ...allParams,
-              ...bodyParams,
-              requestParams: {
-                // body: JSON.stringify(bodyParams),
-                ...reqParams,
-                signal: this.signalController?.signal,
+              bodyParams.messages,
+              {
+                ...allParams,
+                ...bodyParams,
+                requestParams: {
+                  // body: JSON.stringify(bodyParams),
+                  ...reqParams,
+                  signal: this.signalController?.signal,
+                },
+                otherOptions:
+                  this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
+                stream: false,
+                llmPredict: bodyParams.messages?.length == 1,
               },
-              otherOptions:
-                this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
-              stream: false,
-              llmPredict: bodyParams.messages?.length == 1,
-            },
-            undefined,
-            provider.providerOptions
-          );
+              undefined,
+              provider.providerOptions
+            );
 
       // Remove leading/trailing newlines
       //   result = result.trim();
@@ -531,11 +531,11 @@ export default class RequestHandler {
 
       result = provider.providerOptions.output
         ? await Handlebars.compile(
-          provider.providerOptions.output.replaceAll("\\n", "\n"),
-          {
-            noEscape: true,
-          }
-        )(conf)
+            provider.providerOptions.output.replaceAll("\\n", "\n"),
+            {
+              noEscape: true,
+            }
+          )(conf)
         : result;
 
       result =

@@ -103,7 +103,8 @@ export type CustomConfig = Record<keyof typeof default_values, string>;
 
 export default class CustomProvider
   extends BaseProvider
-  implements LLMProviderInterface {
+  implements LLMProviderInterface
+{
   static provider = "Custom";
   static id = "Default (Custom)";
   static displayName: string = "Custom";
@@ -144,39 +145,42 @@ export default class CustomProvider
         typeof requestOptions.body == "string"
           ? JSON.parse(requestOptions.body)
           : requestOptions.body
-            ? requestOptions.body
-            : undefined,
+          ? requestOptions.body
+          : undefined,
       headers:
         typeof requestOptions.headers == "object"
           ? (requestOptions.headers as any)
           : requestOptions.headers
-            ? JSON5.parse(requestOptions.headers)
-            : undefined,
+          ? JSON5.parse(requestOptions.headers)
+          : undefined,
     });
 
     const k = (
       useRequest
         ? await requestWithoutCORS({
-          url: params.url,
-          method: requestOptions.method,
-          body:
-            typeof requestOptions.body == "string"
-              ? requestOptions.body
-              : requestOptions.body
+            url: params.url,
+            method: requestOptions.method,
+            body:
+              typeof requestOptions.body == "string"
+                ? requestOptions.body
+                : requestOptions.body
                 ? JSON.stringify(requestOptions.body)
                 : undefined,
-          headers:
-            typeof requestOptions.headers == "object"
-              ? (requestOptions.headers as any)
-              : requestOptions.headers
+            headers:
+              typeof requestOptions.headers == "object"
+                ? (requestOptions.headers as any)
+                : requestOptions.headers
                 ? JSON5.parse(requestOptions.headers)
                 : undefined,
-        })
+          })
         : await fetch(
-          params.CORSBypass
-            ? await this.plugin.textGenerator.proxyService.getProxiedUrl(params.url)
-            : params.url,
-          requestOptions)
+            params.CORSBypass
+              ? await this.plugin.textGenerator.proxyService.getProxiedUrl(
+                  params.url
+                )
+              : params.url,
+            requestOptions
+          )
     ) as AsyncReturnType<typeof fetch>;
 
     if (!useRequest && params.stream) {
@@ -201,7 +205,7 @@ export default class CustomProvider
 
         const chunkValue = await (0, eval)(
           params.sanatization_streaming ||
-          this.default_values.sanatization_streaming
+            this.default_values.sanatization_streaming
         )(decodedVal);
 
         // try {
@@ -231,7 +235,7 @@ export default class CustomProvider
 
       return await (0, eval)(
         params.sanatization_response ||
-        this.default_values.sanatization_response
+          this.default_values.sanatization_response
       )(resJson, k);
     }
   }
@@ -280,17 +284,17 @@ export default class CustomProvider
           )(handlebarData),
           headers: JSON5.parse(
             "" +
-            (await Handlebars.compile(
-              handlebarData.custom_header || this.default_values.custom_header
-            )(handlebarData))
+              (await Handlebars.compile(
+                handlebarData.custom_header || this.default_values.custom_header
+              )(handlebarData))
           ) as any,
 
           body: JSON.stringify(
             JSON5.parse(
               "" +
-              (await Handlebars.compile(
-                handlebarData.custom_body || this.default_values.custom_body
-              )(handlebarData))
+                (await Handlebars.compile(
+                  handlebarData.custom_body || this.default_values.custom_body
+                )(handlebarData))
             )
           ) as any,
 

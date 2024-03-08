@@ -264,7 +264,7 @@ export default class TextGeneratorPlugin extends Plugin {
   async onunload() {
     this.app.workspace.detachLeavesOfType(VIEW_TOOL_ID);
     this.app.workspace.detachLeavesOfType(VIEW_Playground_ID);
-   await  this.textGenerator.unload();
+    await this.textGenerator.unload();
   }
 
   async loadSettings() {
