@@ -200,6 +200,8 @@ export default class TextGenerator extends RequestHandler {
       // last letter before starting, (used to detirmin if we should add space at the begining)
       const txt = editor.getLastLetterBeforeCursor();
 
+      let addedPrefix = false;
+
       const allText =
         (await strm?.(
           async (cntnt, first) => {
@@ -224,6 +226,7 @@ export default class TextGenerator extends RequestHandler {
 
               // adding prefix here
               if (prefix?.length) {
+                addedPrefix = true;
                 content = prefix + content;
               }
             }
@@ -244,7 +247,11 @@ export default class TextGenerator extends RequestHandler {
 
       streamHandler.end();
 
-      await streamHandler.replaceAllWith(allText);
+      await streamHandler.replaceAllWith(
+        !addedPrefix && prefix.length ?
+          prefix + allText
+          : allText
+      );
 
     } catch (err: any) {
       this.plugin.handelError(err);
@@ -304,6 +311,9 @@ export default class TextGenerator extends RequestHandler {
 
     // if its a template don't bother with adding prefix
     const prefix = context.template?.outputTemplate ? "" : this.plugin.settings.prefix;
+
+
+    console.log({ prefix, config: this.plugin.settings })
 
     await editor.insertText(
       prefix.length ? prefix + text : text,
