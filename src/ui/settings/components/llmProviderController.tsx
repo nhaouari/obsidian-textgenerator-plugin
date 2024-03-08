@@ -190,13 +190,14 @@ export default function LLMProviderController(props: {
                         </SettingItem>
                 }
                 <ExportImportHandler
+                    name={global.plugin.settings.LLMProviderProfiles[selectedLLMId]?.name}
                     // defaultConfig={default_values}
                     id="llm"
                     getConfig={() => {
                         return {
                             id: selectedLLMId,
                             profile: global.plugin.settings.LLMProviderProfiles[selectedLLMId],
-                            config: global.plugin.settings.LLMProviderOptions[selectedLLMId]
+                            config: global.plugin.removeApikeys(global.plugin.settings).LLMProviderOptions[selectedLLMId]
                         }
                     }}
                     onImport={async (data) => {
@@ -207,6 +208,10 @@ export default function LLMProviderController(props: {
                         if (!id) {
                             id = selectedLLM?.id + " " + llmList.filter(l => l.startsWith(d.profile.extends)).length;
                         }
+
+                        // if the apikey is empty, in the attempt of updating profile, it will not override the existing one
+                        if (d.config && "api_key" in d.config && !d.config["api_key"])
+                            d.config["api_key"] = global.plugin.settings.LLMProviderOptions?.[id]?.api_key;
 
                         global.plugin.settings.LLMProviderProfiles[id] = d.profile;
                         global.plugin.settings.LLMProviderOptions[id] = d.config;

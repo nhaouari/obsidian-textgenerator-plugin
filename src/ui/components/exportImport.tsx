@@ -1,12 +1,10 @@
 import React, { useEffect, useId, useState } from "react";
 import useGlobal from "../context/global";
 import clsx from "clsx";
-import Input from "../settings/components/input";
 import JSON5 from "json5"
-import { IconDatabaseImport, IconFileUpload, IconPackageExport, IconPackageImport, IconRestore } from "@tabler/icons-react";
-import { currentDate, extractJsonFromText, getCurrentTime } from "#/utils";
-import SettingItem from "../settings/components/item";
-export default function ExportImportHandler(props: { getConfig: () => any, id: string, onImport: (data: any) => Promise<void> }) {
+import { IconFileUpload, IconPackageExport } from "@tabler/icons-react";
+import { currentDate, getCurrentTime } from "#/utils";
+export default function ExportImportHandler(props: { getConfig: () => any, id: string, onImport: (data: any) => Promise<void>, name: string }) {
     const global = useGlobal();
     const backupsDatasetId = useId();
 
@@ -88,20 +86,22 @@ export default function ExportImportHandler(props: { getConfig: () => any, id: s
                             await global.plugin.app.vault.adapter.mkdir(backupsDirectory);
 
                             const config = { ...await props.getConfig() };
-                            delete config.api_key;
                             const configAsString = `\`\`\`JSON
 ${JSON5.stringify(config, null, 2)}
 \`\`\``;
 
-                            let fileName = `config_${currentDate()}${getCurrentTime()}.json.md`;
+                            let fileName = props.name.replaceAll(" ", "_") || `config_${currentDate()}${getCurrentTime()}`;
 
                             // use the provided name if it doesn't exists already (if it exists it could just be the user selecting one of his configs)
-                            if (selectedBackup?.length && !backups.includes(selectedBackup)) fileName = selectedBackup + (selectedBackup.endsWith(".json.md") ? "" : ".json.md")
+                            if (selectedBackup?.length && !backups.includes(selectedBackup)) fileName = (selectedBackup.endsWith(".json.md") ? selectedBackup.slice(0, -".json.md".length) : selectedBackup)
 
-                            const newPath = `${backupsDirectory}/${fileName}`;
+                            let newPath = `${backupsDirectory}/${fileName}`;
 
-                            await global.plugin.app.vault.adapter.write(newPath, configAsString)
-                        } catch (err) {
+                            if (await global.plugin.app.vault.adapter.exists(newPath + ".json.md"))
+                                newPath = `${backupsDirectory}/${fileName.replace(".json.md", "")}_${getCurrentTime()}`;
+
+                            await global.plugin.app.vault.adapter.write(newPath + ".json.md", configAsString)
+                        } catch (err: any) {
                             setError(err?.message || err)
                         }
                         setExporting(false);
