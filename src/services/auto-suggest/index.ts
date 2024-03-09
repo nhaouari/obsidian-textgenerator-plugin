@@ -29,16 +29,18 @@ export class AutoSuggest {
   process = true;
   delay = 0;
   currentSuggestions: string[] = [];
-  getSuggestionsDebounced: (
-    context: EditorSuggestContext
-  ) => Promise<Completion[]>;
-  scope: Scope & {
-    keys: {
-      key: string;
-      func: any;
-    }[];
-  };
-  isOpen: boolean;
+  getSuggestionsDebounced:
+    | ((context: EditorSuggestContext) => Promise<Completion[]>)
+    | undefined;
+  scope:
+    | (Scope & {
+        keys: {
+          key: string;
+          func: any;
+        }[];
+      })
+    | undefined;
+  isOpen: boolean = false;
   app: App;
   constructor(app: App, plugin: TextGeneratorPlugin) {
     logger("AutoSuggest", app, plugin);
@@ -141,8 +143,9 @@ ${context.query}`;
     return [];
   }
 
-  autoSuggestItem: HTMLElement;
+  autoSuggestItem: HTMLElement | undefined;
   renderStatusBar() {
+    if (!this.autoSuggestItem) return;
     this.autoSuggestItem.innerHTML = "";
     if (!this.plugin.settings.autoSuggestOptions.showStatus) return;
 
@@ -184,6 +187,7 @@ ${context.query}`;
     logger("onTrigger", cursor, editor, file);
     if (
       this.isOpen ||
+      !this.plugin.settings.autoSuggestOptions?.isEnabled ||
       !this.plugin.settings.autoSuggestOptions.triggerPhrase ||
       // @ts-ignore
       (this.app.workspace.activeEditor?.editor?.cm?.state?.vim?.mode &&
@@ -211,7 +215,7 @@ ${context.query}`;
 
     // @ts-ignore
     const CM = ContentManagerCls.compile(
-      this.plugin.app.workspace.activeLeaf?.view,
+      this.plugin.app.workspace.activeLeaf?.view as any,
       this.plugin
     );
 
@@ -246,10 +250,16 @@ ${context.query}`;
     return result;
   }
 
+  dealer?: InlineSuggest | ListSuggest;
+
   public setup() {
     if (this.plugin.settings.autoSuggestOptions.inlineSuggestions)
-      return InlineSuggest.setup(this.app, this.plugin, this);
+      return (this.dealer = InlineSuggest.setup(this.app, this.plugin, this));
 
-    ListSuggest.setup(this.app, this.plugin, this);
+    this.dealer = ListSuggest.setup(this.app, this.plugin, this);
+  }
+
+  public destroy() {
+    // this.dealer?.destroy()
   }
 }

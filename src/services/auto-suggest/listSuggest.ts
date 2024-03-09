@@ -25,27 +25,30 @@ export class ListSuggest extends EditorSuggest<Completion> {
   process = true;
   delay = 0;
   currentSuggestions: string[] = [];
-  getSuggestionsDebounced: (
-    context: EditorSuggestContext
-  ) => Promise<Completion[]>;
+  getSuggestionsDebounced:
+    | ((context: EditorSuggestContext) => Promise<Completion[]>)
+    | undefined;
+  // @ts-expect-error
   scope: Scope & {
     keys: {
       key: string;
       func: any;
     }[];
   };
-  isOpen: boolean;
+  isOpen: boolean = false;
   constructor(app: App, plugin: TextGeneratorPlugin, autoSuggest: AutoSuggest) {
     logger("AutoSuggest", app, plugin);
     super(app);
     this.plugin = plugin;
     this.autoSuggest = autoSuggest;
-    this.scope.register(
+    // @ts-expect-error
+    this.scope?.register(
       [],
       "Tab",
       this.scope.keys.find((k) => k.key === "ArrowDown")?.func
     );
-    this.scope.register(
+    // @ts-expect-error
+    this.scope?.register(
       ["Shift"],
       "Tab",
       this.scope.keys.find((k) => k.key === "ArrowUp")?.func
@@ -130,7 +133,7 @@ export class ListSuggest extends EditorSuggest<Completion> {
 
     // @ts-ignore
     const CM = ContentManagerCls.compile(
-      this.plugin.app.workspace.activeLeaf?.view,
+      this.plugin.app.workspace.activeLeaf?.view as any,
       this.plugin
     );
 
@@ -169,14 +172,14 @@ export class ListSuggest extends EditorSuggest<Completion> {
 
     this.updateSettings();
 
-    const suggestions = await this.getSuggestionsDebounced(context);
+    const suggestions = await this.getSuggestionsDebounced?.(context);
     logger("getSuggestions", suggestions);
 
     if (this.plugin.settings.autoSuggestOptions.inlineSuggestions) {
       this.currentSuggestions = suggestions?.map((s) => s.value) || [];
     }
 
-    return suggestions;
+    return suggestions || [];
   }
 
   public renderSuggestion(value: Completion, el: HTMLElement): void {
@@ -234,8 +237,9 @@ export class ListSuggest extends EditorSuggest<Completion> {
     super.close();
   }
 
-  autoSuggestItem: HTMLElement;
+  autoSuggestItem: HTMLElement | undefined;
   renderStatusBar() {
+    if (!this.autoSuggestItem) return;
     this.autoSuggestItem.innerHTML = "";
     if (!this.plugin.settings.autoSuggestOptions.showStatus) return;
 
@@ -286,4 +290,6 @@ export class ListSuggest extends EditorSuggest<Completion> {
     plugin.registerEditorSuggest(suggest);
     return suggest;
   }
+
+  public destory() {}
 }

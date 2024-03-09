@@ -29,14 +29,16 @@ export class InlineSuggest {
   delay = 0;
   currentSuggestions: string[] = [];
   viewedSuggestion: number = 0;
-  getSuggestionsDebounced: () => void;
-  scope: Scope & {
-    keys: {
-      key: string;
-      func: any;
-    }[];
-  };
-  isOpen: boolean;
+  getSuggestionsDebounced: (() => void) | undefined;
+  scope:
+    | (Scope & {
+        keys: {
+          key: string;
+          func: any;
+        }[];
+      })
+    | undefined;
+  isOpen: boolean = false;
   static delay: number = 200;
   static getSuggestionsDebounced: any;
 
@@ -232,7 +234,7 @@ export class InlineSuggest {
                 return false;
               }
 
-              self.getSuggestionsDebounced();
+              self.getSuggestionsDebounced?.();
 
               return false;
             },
@@ -282,7 +284,7 @@ export class InlineSuggest {
               );
 
               const decoration = Decoration.widget({
-                widget,
+                widget: widget as any,
                 side: 1,
               });
 
@@ -304,8 +306,8 @@ class InlineSuggestionsWidget extends WidgetType {
   onSelect: Function;
   onExit: Function;
   autoSuggest: InlineSuggest;
-  renderedSuggestion: string;
-  exitHandler: Function;
+  renderedSuggestion?: string;
+  exitHandler?: Function;
   constructor(
     autoSuggest: InlineSuggest,
     onSelect: Function,
