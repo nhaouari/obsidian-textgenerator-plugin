@@ -17,6 +17,10 @@ const extendedInfo: Record<
     name: "Slash suggestions",
     description: "modal-suggest",
   },
+  "set-llm": {
+    name: "Chose LLM",
+    description: "set-llm",
+  },
 };
 
 export default function OptionsSetting(props: { register: Register }) {
@@ -85,7 +89,7 @@ export default function OptionsSetting(props: { register: Register }) {
                 value={
                   "" +
                   global.plugin.settings.options[
-                    key as keyof typeof global.plugin.settings.options
+                  key as keyof typeof global.plugin.settings.options
                   ]
                 }
                 setValue={async (val) => {

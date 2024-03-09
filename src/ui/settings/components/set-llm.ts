@@ -5,6 +5,7 @@ const logger = debug("textgenerator:setModel");
 
 interface LLM {
   id: string;
+  name: string;
 }
 
 export class SetLLM extends FuzzySuggestModal<LLM> {
@@ -33,18 +34,24 @@ export class SetLLM extends FuzzySuggestModal<LLM> {
   getItems() {
     logger("getItems");
     const llmList = this.plugin.textGenerator.LLMRegestry.getList().map(
-      (l) => ({ id: l })
+      (l) => ({
+        id: l,
+        name:
+          this.plugin.textGenerator.LLMRegestry.UnProviderNames[
+            l as keyof typeof this.plugin.textGenerator.LLMRegestry.ProviderSlugs
+          ] || "",
+      })
     );
     return llmList;
   }
 
-  getItemText(llm: LLM): string {
-    return llm.id;
+  getItemText(llm: LLM) {
+    return llm.name || llm.id;
   }
 
   onChooseItem(llm: LLM, evt: MouseEvent | KeyboardEvent) {
     logger("onChooseItem", llm);
-    new Notice(`Selected ${llm.id}`);
+    new Notice(`Selected ${llm.name}`);
     this.onChoose(llm.id);
   }
 }
