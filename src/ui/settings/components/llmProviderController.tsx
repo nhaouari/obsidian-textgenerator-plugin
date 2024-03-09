@@ -210,10 +210,12 @@ export default function LLMProviderController(props: {
               />
             </SettingItem>
           )}
+
           <ExportImportHandler
             name={
               global.plugin.settings.LLMProviderProfiles[selectedLLMId]?.name
             }
+            title={"ID: " + selectedLLMId}
             // defaultConfig={default_values}
             id="llm"
             getConfig={() => {

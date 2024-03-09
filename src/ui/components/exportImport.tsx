@@ -7,6 +7,7 @@ import { currentDate, getCurrentTime } from "#/utils";
 export default function ExportImportHandler(props: {
   getConfig: () => any;
   id: string;
+  title: string;
   onImport: (data: any) => Promise<void>;
   name: string;
 }) {
@@ -57,8 +58,9 @@ export default function ExportImportHandler(props: {
             />
         </SettingItem> */}
       <div className="plug-tg-flex plug-tg-w-full plug-tg-items-center plug-tg-justify-between">
-        <div>
+        <div className="plug-tg-text-xs plug-tg-font-thin">
           {/* <Input type="checkbox" value={false} setValue={() => { }} /> */}
+          {props.title}
         </div>
         <div className="plug-tg-flex plug-tg-gap-2">
           {/* <button
