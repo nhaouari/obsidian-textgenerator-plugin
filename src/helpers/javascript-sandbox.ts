@@ -26,6 +26,8 @@ export default async function runJSInSandbox(
   script: string,
   self: { plugin: TextGeneratorPlugin } & Record<any, any>
 ) {
+  let mainNotice:any;
+  
   const sandbox: Record<any, any> = {
     JSON5,
     lodashGet,
@@ -42,7 +44,8 @@ export default async function runJSInSandbox(
     ...self,
 
     notice(context: any, duration: any) {
-      new Notice(context, typeof duration == "object" ? undefined : +duration);
+      if(mainNotice) mainNotice.hide();
+      return mainNotice = new Notice(context, typeof duration == "object" ? undefined : +duration);
     },
     async deleteFile(path: string) {
       return await self.plugin.app.vault.adapter.remove(path);
