@@ -245,11 +245,14 @@ export default class CustomProvider
 
       console.log(rs);
 
-      return rs
-        ?.map((c: Message) =>
-          c.type == "image_url" ? `![${c.image_url}]` : c.content
-        )
-        .join("\n");
+      return rs?.map((c: Message) =>
+        c.type == "image_url"
+          ? {
+              ...c,
+              content: `![${c.image_url}]\n${c.content}`,
+            }
+          : c
+      );
     }
   }
 
@@ -334,7 +337,7 @@ export default class CustomProvider
           },
         });
 
-        if (handlebarData.stream) resultContent = res as string;
+        if (typeof res != "object") resultContent = res as string;
         else {
           const choices = res as any;
           resultContent =
@@ -415,7 +418,7 @@ export default class CustomProvider
 
         if (!handlebarData.stream) {
           s(choices);
-        }
+        } else r("streaming with multiple choices is not implemented");
       } catch (errorRequest: any) {
         logger("generateMultiple error", errorRequest);
         return r(errorRequest);
