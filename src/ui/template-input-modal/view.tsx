@@ -94,7 +94,6 @@ export default function TemplateInputModalView(props: {
       formData={formData}
       validator={validator}
       onChange={(d) => {
-        console.log({ d });
         if (d.formData) setFormData(formData);
       }}
       onSubmit={handleSubmit}

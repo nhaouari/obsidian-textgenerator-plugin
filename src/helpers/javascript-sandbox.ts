@@ -38,9 +38,7 @@ export default async function runJSInSandbox(
     langchain,
     isMap,
     isSet,
-    globalThis: {
-      test: "color",
-    },
+    globalThis: {},
     ...self,
 
     notice(context: any, duration: any) {
@@ -62,7 +60,7 @@ export default async function runJSInSandbox(
 
       ce.setExtractor(
         ExtractorSlug[
-          id as keyof typeof ExtractorSlug
+        id as keyof typeof ExtractorSlug
         ] as keyof typeof Extractors
       );
 
