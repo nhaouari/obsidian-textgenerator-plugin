@@ -228,6 +228,7 @@ export default class CustomProvider
           {
             plugin: this.plugin,
             chunk: decodedVal,
+            data: decodedVal,
             res: k
           }
         );
