@@ -46,27 +46,29 @@ try {
     console.log("to apply versioning, create new tag and push all to origin");
     console.log("run : npm run version:go");
   } else {
-    // always update manifest-beta.json with last version for BRAT users, otherwise they will stay on beta
+    // update manifest
     manifest.version = targetVersion;
+    manifest.minAppVersion = obsidian.minAppVersion;
+
+    // always rewriting manifest-beta.json with last version for BRAT users, otherwise they will stay on beta
     writeFileSync("manifest-beta.json", JSON.stringify(manifest, null, "\t"));
     console.log("writing manifest-beta.json");
 
     if (!isBeta) {
-      // bump version to target version
-      manifest.version = targetVersion;
+      // public release, rewriting manifest.json
       writeFileSync("manifest.json", JSON.stringify(manifest, null, "\t"));
       console.log("writing manifest.json");
 
-      // update versions.json with target version and minAppVersion from manifest
+      // public release, update versions.json with target version and minAppVersion from manifest
       let versions = JSON.parse(readFileSync("versions.json", "utf8"));
-      versions[targetVersion] = manifest.minAppVersion;
+      versions[targetVersion] = obsidian.minAppVersion;
       writeFileSync("versions.json", JSON.stringify(versions, null, "\t"));
       console.log("writing versions.json");
     }
 
     // commit, create tag and push to origin (that will trigger github release action)
     execSync(
-      `git add manifest.json manifest-beta.json versions.json && git commit -m "prepare release ${targetVersion}" && git tag -a ${targetVersion} -m "new release ${targetVersion}"`, // && git push origin ${targetVersion}`,
+      `git add manifest.json manifest-beta.json versions.json && git commit -m "prepare release ${targetVersion}" && git tag -a ${targetVersion} -m "new release ${targetVersion}" && git push && git push origin ${targetVersion}`,
       {
         cwd: ".",
         stdio: "inherit",
