@@ -93,6 +93,7 @@
     "debug": "^2.6.9",
     "esbuild-wasm": "^0.17.19",
     "framer-motion": "^5.6.0",
+    "fs-extra": "^11.2.0",
     "func-cache": "^2.2.62",
     "handlebars": "^4.7.7",
     "handlebars-async-helpers": "^1.0.6",
