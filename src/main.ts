@@ -233,7 +233,7 @@ export default class TextGeneratorPlugin extends Plugin {
           new PackageManagerUI(
             this.app,
             this,
-            async (result: string) => {}
+            async (result: string) => { }
           ).open();
         }
       );

@@ -22,6 +22,12 @@ import JSON5 from "json5";
 import * as langchain from "#/lib/langchain";
 import TextGeneratorPlugin from "#/main";
 
+import { PluginManager } from "../lib/live-plugin-manager";
+
+const manager = new PluginManager({
+  npmInstallMode: "useCache"
+});
+
 export default async function runJSInSandbox(
   script: string,
   self: { plugin: TextGeneratorPlugin } & Record<any, any>
@@ -85,6 +91,8 @@ export default async function runJSInSandbox(
     async read(path: string) {
       return await Read(path, self.plugin);
     },
+
+    manager
   };
 
   const functions = Object.keys(sandbox).filter((k) =>

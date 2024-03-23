@@ -3,6 +3,7 @@ import process from "process";
 import builtins from 'builtin-modules'
 import path from "path";
 import fs from "fs";
+import obsidianAliasPlugin from "./obsidian-alias/index.js";
 import {
 	exec
 } from 'child_process';
@@ -63,9 +64,12 @@ esbuild.build({
 	},
 	entryPoints: ['src/main.ts'],
 	bundle: true,
-	plugins: [wasmPlugin({
-		mode: "embed"
-	})],
+	plugins: [
+		wasmPlugin({
+			mode: "embed"
+		}),
+		obsidianAliasPlugin()
+	],
 	external: [
 		'obsidian',
 		'electron',
@@ -93,6 +97,8 @@ esbuild.build({
 		"node:url",
 		...builtins
 	],
+
+
 	format: 'cjs',
 	watch: prod ? false : {
 		onRebuild(error, result) {
@@ -109,4 +115,6 @@ esbuild.build({
 	sourcemap: prod ? false : 'both',
 	treeShaking: true,
 	outfile: 'main.js',
+
+
 }).catch(() => process.exit(1));
