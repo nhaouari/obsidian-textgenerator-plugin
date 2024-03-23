@@ -69,7 +69,7 @@ try {
 
     // commit, create tag and push to origin (that will trigger github release action)
     execSync(
-      `git add manifest.json manifest-beta.json versions.json && git commit -m "prepare release ${targetVersion}" && git tag -a ${targetVersion} -m "new release ${targetVersion}"`, // && git push origin ${targetVersion}`,
+      `git add manifest.json manifest-beta.json versions.json && git commit -m "prepare release ${targetVersion}"`, // && git push origin ${targetVersion}`,
       {
         cwd: ".",
         stdio: "inherit",
