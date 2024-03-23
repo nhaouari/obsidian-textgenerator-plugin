@@ -1,8 +1,9 @@
 import { readFileSync, writeFileSync } from "fs";
 import { execSync } from "node:child_process";
 import { exit } from "process";
+const packageJSON = JSON.parse(readFileSync("package.json", "utf8"));
 
-const targetVersion = process.env.npm_package_version;
+const targetVersion = packageJSON.version;
 const dryRun = !process.argv[2] || process.argv[2] !== "--go";
 
 try {
@@ -25,8 +26,8 @@ try {
   }
 
   // load manifest and check beta version
-  let manifest = JSON.parse(readFileSync("manifest.json", "utf8"));
-  let obsidian = JSON.parse(readFileSync("package.json", "utf8")).obsidian;
+  const manifest = JSON.parse(readFileSync("manifest.json", "utf8"));
+  const obsidian = packageJSON.obsidian;
   const isBeta = targetVersion.endsWith("beta");
 
   console.log(`new version : ${targetVersion}`);
