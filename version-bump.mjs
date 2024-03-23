@@ -40,6 +40,8 @@ try {
     console.log(` - manifest.json`);
     console.log(` - versions.json`);
   }
+  console.log(`It will commit, push, create tag ${targetVersion} and push tags`);
+
 
   console.log("\n-------------------------------------------------");
   if (dryRun) {
@@ -68,6 +70,31 @@ try {
     // commit, create tag and push to origin (that will trigger github release action)
     execSync(
       `git add manifest.json manifest-beta.json versions.json && git commit -m "prepare release ${targetVersion}" && git tag -a ${targetVersion} -m "new release ${targetVersion}"`, // && git push origin ${targetVersion}`,
+      {
+        cwd: ".",
+        stdio: "inherit",
+      }
+    );
+
+    execSync(
+      `git push`,
+      {
+        cwd: ".",
+        stdio: "inherit",
+      }
+    );
+
+
+    execSync(
+      `git tag ${targetVersion}`,
+      {
+        cwd: ".",
+        stdio: "inherit",
+      }
+    );
+
+    execSync(
+      `git push --tags`,
       {
         cwd: ".",
         stdio: "inherit",
