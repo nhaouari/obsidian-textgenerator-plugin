@@ -1,6 +1,7 @@
 import { Notice } from "obsidian";
 import handlebars, { Exception, createFrame } from "handlebars";
 import { pull } from "langchain/hub";
+import { getAPI as getDataviewApi } from "obsidian-dataview";
 
 import asyncHelpers from "../lib/async-handlebars-helper";
 import {
@@ -666,6 +667,22 @@ export default function Helpersfn(self: ContextManager) {
       if (options.fn) data = await options.fn(options.data.root);
       return await append(vars[0], data);
     },
+
+    async dataview(...vars: any[]) {
+      const options: { data: { root: any }; fn: any } = vars.pop();
+      if (!options.fn) throw new Error("this helper only works in block form ex: {{#dataview}} your dataview {{/dataview}}")
+      const content = options.fn(options.data.root)
+      const api = await getDataviewApi(self.app);
+      const res = await api?.queryMarkdown(content);
+
+      if (!res) throw new Error("Couln't find DataViewApi");
+
+      if (res?.successful) {
+        return res.value;
+      }
+
+      throw new Error(((res || []) as unknown as string[])?.join(", "));
+    }
   } as const;
 
   return Helpers;
