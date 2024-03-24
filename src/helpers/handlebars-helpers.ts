@@ -671,7 +671,7 @@ export default function Helpersfn(self: ContextManager) {
     async dataview(...vars: any[]) {
       const options: { data: { root: any }; fn: any } = vars.pop();
       if (!options.fn) throw new Error("this helper only works in block form ex: {{#dataview}} your dataview {{/dataview}}")
-      const content = options.fn(options.data.root)
+      const content = await options.fn(options.data.root)
       const api = await getDataviewApi(self.app);
       const res = await api?.queryMarkdown(content);
 
@@ -681,7 +681,7 @@ export default function Helpersfn(self: ContextManager) {
         return res.value;
       }
 
-      throw new Error(((res || []) as unknown as string[])?.join(", "));
+      throw new Error(res.error);
     }
   } as const;
 
