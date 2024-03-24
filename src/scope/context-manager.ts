@@ -1245,8 +1245,8 @@ export const contextVariablesObj: Record<
   extractions: {
     example: `{{#each extractions}} {{this}} {{/each}}
 
-    Or
-    {{#each extractions.pdf}} {{this}} {{/each}}
+Or
+{{#each extractions.pdf}} {{this}} {{/each}}
     `,
     hint: `Extracted content from various sources like PDFs, images, audio files, web pages, and YouTube URLs. possible extractons: ${Object.keys(
       ExtractorSlug
@@ -1350,10 +1350,10 @@ Or
   set: {
     example: `{{#set "var1"}}
     text {{selection}}
-  {{/set}}
+{{/set}}
 
   Or
-  {{set "var1" selection}}
+{{set "var1" selection}}
   `,
     hint: "Gets value of a variable",
   },
@@ -1375,6 +1375,13 @@ Or
 
   keys: {
     example: `{{keys.openAIChat}}`,
+    hint: "Gives access to generic provider's api keys",
+  },
+  dataview: {
+    example: `{{#dataview}}
+    TABLE file.name, file.size
+    WHERE file.size > 2048
+{{/dataview}}`,
     hint: "Gives access to generic provider's api keys",
   },
 };
