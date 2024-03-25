@@ -25,7 +25,8 @@ type Options = Record<
   | "reload"
   | "open-playground"
   | "batch-generate-in-right-click-files-menu"
-  | "tg-block-processor",
+  | "tg-block-processor"
+  | "disable-ribbon-icons",
   boolean
 >;
 

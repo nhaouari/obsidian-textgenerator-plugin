@@ -208,35 +208,37 @@ export default class TextGeneratorPlugin extends Plugin {
       }
 
       // This creates an icon in the left ribbon.
-      this.addRibbonIcon(
-        "GENERATE_ICON",
-        "Generate Text!",
-        async (evt: MouseEvent) => {
-          // Called when the user clicks the icon.
-          // const activeFile = this.app.workspace.getActiveFile();
-          const activeView = this.getActiveViewMD();
-          if (activeView !== null) {
-            const CM = ContentManagerCls.compile(activeView, this);
-            try {
-              await this.textGenerator.generateInEditor({}, false, CM);
-            } catch (error) {
-              this.handelError(error);
+      if (!this.settings.options["disable-ribbon-icons"]) {
+        this.addRibbonIcon(
+          "GENERATE_ICON",
+          "Generate Text!",
+          async (evt: MouseEvent) => {
+            // Called when the user clicks the icon.
+            // const activeFile = this.app.workspace.getActiveFile();
+            const activeView = this.getActiveViewMD();
+            if (activeView !== null) {
+              const CM = ContentManagerCls.compile(activeView, this);
+              try {
+                await this.textGenerator.generateInEditor({}, false, CM);
+              } catch (error) {
+                this.handelError(error);
+              }
             }
           }
-        }
-      );
+        );
 
-      this.addRibbonIcon(
-        "boxes",
-        "Text Generator: Templates Packages Manager",
-        async (evt: MouseEvent) => {
-          new PackageManagerUI(
-            this.app,
-            this,
-            async (result: string) => { }
-          ).open();
-        }
-      );
+        this.addRibbonIcon(
+          "boxes",
+          "Text Generator: Templates Packages Manager",
+          async (evt: MouseEvent) => {
+            new PackageManagerUI(
+              this.app,
+              this,
+              async (result: string) => { }
+            ).open();
+          }
+        );
+      }
 
       // add commands
       await this.commands.addCommands();
