@@ -28,7 +28,7 @@ export class InlineSuggest {
   autoSuggest: AutoSuggest;
   delay = 0;
   currentSuggestions: string[] = [];
-  viewedSuggestion: number = 0;
+  viewedSuggestion = 0;
   getSuggestionsDebounced: (() => void) | undefined;
   scope:
     | (Scope & {
@@ -38,8 +38,8 @@ export class InlineSuggest {
         }[];
       })
     | undefined;
-  isOpen: boolean = false;
-  static delay: number = 200;
+  isOpen = false;
+  static delay = 200;
   static getSuggestionsDebounced: any;
 
   constructor(app: App, plugin: TextGeneratorPlugin, autoSuggest: AutoSuggest) {

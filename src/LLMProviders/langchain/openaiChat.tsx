@@ -22,7 +22,7 @@ export default class LangchainOpenAIChatProvider
   static provider = "Langchain";
   static id = "OpenAI Chat (Langchain)" as const;
   static slug = "openAIChat" as const;
-  static displayName: string = "OpenAI Chat";
+  static displayName = "OpenAI Chat";
 
   id = LangchainOpenAIChatProvider.id;
   provider = LangchainOpenAIChatProvider.provider;

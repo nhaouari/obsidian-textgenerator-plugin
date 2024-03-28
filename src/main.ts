@@ -38,7 +38,7 @@ import TokensScope from "./scope/tokens";
 import "./LLMProviders";
 import get from "lodash.get";
 import set from "lodash.set";
-import { ExampleModal } from "./models/model";
+import { TemplatesModal } from "./models/model";
 import { ToolView, VIEW_TOOL_ID } from "./ui/tool";
 import { randomUUID } from "crypto";
 import VersionManager from "./scope/versionManager";
@@ -175,7 +175,7 @@ export default class TextGeneratorPlugin extends Plugin {
                 item.setTitle("Generate");
                 item.onClick(() => {
                   try {
-                    new ExampleModal(
+                    new TemplatesModal(
                       this.app,
                       this,
                       async (result) => {
@@ -662,12 +662,12 @@ export default class TextGeneratorPlugin extends Plugin {
   }
 
   getRelativePathTo(path: string) {
-    let k = this.settings.promptsPath;
-    let d = k.split("/");
+    const k = this.settings.promptsPath;
+    const d = k.split("/");
 
     if (k.endsWith("/")) d.pop();
 
-    let basePath: string = "";
+    let basePath = "";
 
     if (d.length > 1) d.pop();
 

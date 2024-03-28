@@ -78,6 +78,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   }
 
   async function checkForUpdates() {
+    await glob.plugin.packageManager.fetch();
     setPackagesIdsTOUpdate(await glob.plugin.packageManager.checkUpdates());
   }
 
@@ -218,9 +219,8 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                   </div>
                   <div className="setting-item-control">
                     <div
-                      className={`checkbox-container mod-small ${
-                        justInstalled && "is-enabled"
-                      }`}
+                      className={`checkbox-container mod-small ${justInstalled && "is-enabled"
+                        }`}
                       onClick={() => toggleJustInstalled()}
                     >
                       <input type="checkbox" tabIndex={0} />

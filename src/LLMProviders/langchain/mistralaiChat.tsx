@@ -22,10 +22,10 @@ export default class LangchainMistralAIChatProvider
   static provider = "Langchain" as const;
   static id = "MistralAI Chat (Langchain)" as const;
   static slug = "mistralAIChat" as const;
-  static displayName: string = "MistralAI Chat";
+  static displayName = "MistralAI Chat";
 
   llmPredict = false;
-  legacyN: boolean = true;
+  legacyN = true;
   streamable = true;
   defaultHeaders?: Record<string, string | null> | undefined = {
     "X-Stainless-OS": null,

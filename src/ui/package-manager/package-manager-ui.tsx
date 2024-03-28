@@ -6,7 +6,7 @@ import { createRoot } from "react-dom/client";
 import { GlobalProvider } from "../context/global";
 
 export class PackageManagerUI extends Modal {
-  result: string;
+  result: string | undefined;
   plugin: TextGeneratorPlugin;
   onSubmit: (result: string) => void;
   root: any;

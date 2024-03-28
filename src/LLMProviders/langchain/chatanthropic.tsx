@@ -18,7 +18,7 @@ export default class LangchainChatAnthropicProvider
   static provider = "Langchain";
   static id = "Chat Anthropic (Langchain)" as const;
   static slug = "anthropic" as const;
-  static displayName: string = "Chat Anthropic";
+  static displayName = "Chat Anthropic";
 
   corsBypass = true;
 

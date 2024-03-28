@@ -8,7 +8,7 @@ import {
   Scope,
 } from "obsidian";
 import TextGeneratorPlugin from "../main";
-import { ExampleModal } from "../models/model";
+import { TemplatesModal } from "../models/model";
 import ContentManagerCls from "../scope/content-manager";
 
 export class SlashSuggest extends EditorSuggest<PromptTemplate> {
@@ -45,10 +45,10 @@ export class SlashSuggest extends EditorSuggest<PromptTemplate> {
   public async getSuggestions(context: PromptTemplate["context"]) {
     const { query } = context;
 
-    const modal = new ExampleModal(
+    const modal = new TemplatesModal(
       this.app,
       this.plugin,
-      async (result) => {},
+      async (result) => { },
       "Choose a template"
     );
 

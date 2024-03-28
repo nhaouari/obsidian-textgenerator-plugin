@@ -459,7 +459,7 @@ export class PluginManager {
 		return this.addPlugin(pluginInfo);
 	}
 
-	private async installFromCodeLockFree(name: string, code: string, version: string = "0.0.0"): Promise<IPluginInfo> {
+	private async installFromCodeLockFree(name: string, code: string, version = "0.0.0"): Promise<IPluginInfo> {
 		if (!this.isValidPluginName(name)) {
 			throw new Error(`Invalid plugin name '${name}'`);
 		}

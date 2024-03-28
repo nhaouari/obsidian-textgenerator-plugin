@@ -18,7 +18,7 @@ export default class LangchainAzureOpenAIInstructProvider
   static provider = "Langchain";
   static id = "Azure OpenAI Instruct (Langchain)" as const;
   static slug = "azureOpenaiInstruct" as const;
-  static displayName: string = "Azure OpenAI Instruct";
+  static displayName = "Azure OpenAI Instruct";
 
   llmPredict = true;
   provider = LangchainAzureOpenAIInstructProvider.provider;

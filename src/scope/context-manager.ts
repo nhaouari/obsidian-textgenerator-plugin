@@ -575,7 +575,7 @@ export default class ContextManager {
 
     if (!templateFile) throw `Template ${templatePath} couldn't be found`;
 
-    let templateContent =
+    const templateContent =
       _templateContent || (await this.app.vault.read(templateFile as TFile));
 
     const templates = this.splitTemplate(templateContent);
@@ -602,7 +602,7 @@ export default class ContextManager {
     const templateFile =
       await this.app.vault.getAbstractFileByPath(templatePath);
 
-    let templateContent = await this.app.vault.read(templateFile as TFile);
+    const templateContent = await this.app.vault.read(templateFile as TFile);
 
     const templates = this.splitTemplate(templateContent);
 

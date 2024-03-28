@@ -18,7 +18,7 @@ export default class LangchainPalmProvider
   static provider = "Langchain";
   static id = id;
   static slug = "palm" as const;
-  static displayName: string = "Google Palm";
+  static displayName = "Google Palm";
 
   mobileSupport = false;
   streamable = false;

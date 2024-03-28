@@ -445,7 +445,7 @@ export default function Helpersfn(self: ContextManager) {
     async set(...vars: any[]) {
       const additionalOptions = vars.pop();
 
-      const id: string = `vars["${vars[0]}"]`;
+      const id = `vars["${vars[0]}"]`;
 
       let value = vars[1];
 
@@ -633,7 +633,7 @@ export default function Helpersfn(self: ContextManager) {
       };
 
       if (content.startsWith("```")) {
-        let k = content.split("\n");
+        const k = content.split("\n");
         k.pop();
         k.pop();
         k.shift();

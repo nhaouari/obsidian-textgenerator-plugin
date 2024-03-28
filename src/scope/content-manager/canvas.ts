@@ -272,13 +272,13 @@ export default class CanvasManager implements ContentManager {
     replaceAllWith(newData: string): void;
   }> {
     const items = await this.getTextSelectedItems();
-    let selectedItem = items[items.length - 1];
+    const selectedItem = items[items.length - 1];
     let cursor: any;
 
     let postingContent = "";
     let stillPlaying = true;
     let firstTime = true;
-    let previewsLevel = -1;
+    const previewsLevel = -1;
 
     const writerTimer: any = setInterval(async () => {
       if (!stillPlaying) return clearInterval(writerTimer);

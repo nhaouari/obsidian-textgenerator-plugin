@@ -34,7 +34,7 @@ export default class LangchainProvider
   static id = "default (Langchain)";
   static slug = "default" as any;
   static provider = "Langchain";
-  static displayName: string = "Langchain LLM";
+  static displayName = "Langchain LLM";
 
   /** generate candidates in parallel instead of sending the variable n */
   legacyN = false;
@@ -208,6 +208,8 @@ export default class LangchainProvider
         } else {
           let r: any;
           let res: BaseMessageChunk = {} as any;
+
+          console.log({ messages })
           if (reqParams.llmPredict || this.llmPredict)
             r = await (llm as any as ChatOpenAI).invoke(
               messages.length > 1

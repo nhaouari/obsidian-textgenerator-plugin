@@ -1,6 +1,6 @@
 import { Command, Editor, Notice } from "obsidian";
 import TextGeneratorPlugin from "../main";
-import { ExampleModal } from "../models/model";
+import { TemplatesModal } from "../models/model";
 import { PackageManagerUI } from "../ui/package-manager/package-manager-ui";
 import { SetMaxTokens } from "../ui/settings/components/set-max-tokens";
 import { TextExtractorTool } from "../ui/text-extractor-tool";
@@ -61,7 +61,7 @@ export default class Commands {
       async callback() {
         const self: Commands = this as any;
         try {
-          new ExampleModal(
+          new TemplatesModal(
             self.plugin.app,
             self.plugin,
             async (result) => {
@@ -100,7 +100,7 @@ export default class Commands {
       async callback() {
         const self: Commands = this as any;
         try {
-          new ExampleModal(
+          new TemplatesModal(
             self.plugin.app,
             self.plugin,
             async (result) => {
@@ -134,7 +134,7 @@ export default class Commands {
       async callback() {
         const self: Commands = this as any;
         try {
-          new ExampleModal(
+          new TemplatesModal(
             self.plugin.app,
             self.plugin,
             async (result) => {
@@ -172,7 +172,7 @@ export default class Commands {
       async callback() {
         const self: Commands = this as any;
         try {
-          new ExampleModal(
+          new TemplatesModal(
             self.plugin.app,
             self.plugin,
             async (result) => {
@@ -208,7 +208,7 @@ export default class Commands {
       async callback() {
         const self: Commands = this as any;
         try {
-          new ExampleModal(
+          new TemplatesModal(
             self.plugin.app,
             self.plugin,
             async (result) => {
@@ -246,7 +246,7 @@ export default class Commands {
       async callback() {
         const self: Commands = this as any;
         try {
-          new ExampleModal(
+          new TemplatesModal(
             self.plugin.app,
             self.plugin,
             async (result) => {
@@ -285,7 +285,7 @@ export default class Commands {
       async callback() {
         const self: Commands = this as any;
         try {
-          new ExampleModal(
+          new TemplatesModal(
             self.plugin.app,
             self.plugin,
             async (result) => {
@@ -321,7 +321,7 @@ export default class Commands {
         try {
           const activeView = await self.plugin.getActiveView();
           const CM = ContentManagerCls.compile(activeView, self.plugin);
-          new ExampleModal(
+          new TemplatesModal(
             self.plugin.app,
             self.plugin,
             async (result) => {
@@ -420,7 +420,7 @@ export default class Commands {
         new PackageManagerUI(
           self.plugin.app,
           self.plugin,
-          async (result: string) => {}
+          async (result: string) => { }
         ).open();
       },
     },
@@ -580,7 +580,7 @@ export default class Commands {
       async callback() {
         const self: Commands = this as any;
         try {
-          new ExampleModal(
+          new TemplatesModal(
             self.plugin.app,
             self.plugin,
             async (result) => {
@@ -665,7 +665,7 @@ export default class Commands {
     const cmds = this.commands.filter(
       (cmd) =>
         this.plugin.settings.options[
-          cmd.id as keyof typeof this.plugin.settings.options
+        cmd.id as keyof typeof this.plugin.settings.options
         ] === true
     );
 
@@ -679,9 +679,8 @@ export default class Commands {
       template.commands?.forEach((command) => {
         logger("Template commands ", { template, command });
         const cmd: Command = {
-          id: `${template.path.split("/").slice(-2, -1)[0]}-${command}-${
-            template.id
-          }`,
+          id: `${template.path.split("/").slice(-2, -1)[0]}-${command}-${template.id
+            }`,
           name: `${template.id || template.name}: ${command.toUpperCase()}`,
           callback: async () => {
             const self: Commands = this as any;

@@ -20,7 +20,7 @@ export default class LangchainReplicaProvider
   static provider = "Langchain";
   static id = id;
   static slug = "replica" as const;
-  static displayName: string = "Replica";
+  static displayName = "Replica";
 
   streamable = false;
   llmPredict = true;

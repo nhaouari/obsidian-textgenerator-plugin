@@ -17,7 +17,7 @@ export default class LangchainHFProvider
   static provider = "Langchain";
   static id = "Huggingface (Langchain)" as const;
   static slug = "hf" as const;
-  static displayName: string = "Huggingface";
+  static displayName = "Huggingface";
 
   llmPredict = true;
   streamable = false;

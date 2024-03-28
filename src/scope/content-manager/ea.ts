@@ -180,7 +180,7 @@ export default class ExcalidrawManager implements ContentManager {
       if (item.fontFamily) this.ea.style.fontFamily = item.fontFamily;
     }
 
-    let elements = [item];
+    const elements = [item];
 
     let textSize: { width: number; height: number } = this.ea.measureText(
       (elements[0]?.text || "") + text
@@ -234,7 +234,7 @@ export default class ExcalidrawManager implements ContentManager {
     replaceAllWith(newData: string): void;
   }> {
     const items = await this.getTextSelectedItems();
-    let selectedItem = (
+    const selectedItem = (
       items.length
         ? items
         : this.ea
@@ -311,7 +311,7 @@ export default class ExcalidrawManager implements ContentManager {
       replaceAllWith: async (allText) => {
         const sections = allText.split("\n").filter((t) => t.trim());
         let lastPos = pos || this.getCursor("to");
-        let arr: Item[] = [];
+        const arr: Item[] = [];
         for (const section of sections) {
           const item = await this.insertText(section, lastPos, mode);
 

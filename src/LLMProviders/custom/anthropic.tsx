@@ -1,4 +1,3 @@
-import debug from "debug";
 import React, { useEffect, useMemo } from "react";
 import LLMProviderInterface from "../interface";
 import useGlobal from "#/ui/context/global";
@@ -65,12 +64,11 @@ export type CustomConfig = Record<keyof typeof default_values, string>;
 
 export default class AnthropicLegacyProvider
   extends CustomProvider
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   static provider = "Custom";
   static id = "Anthropic Legacy (Custom)" as const;
   static slug = "anthropicLegacy" as const;
-  static displayName: string = "Anthropic Legacy";
+  static displayName = "Anthropic Legacy";
 
   streamable = true;
 

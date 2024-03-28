@@ -19,7 +19,7 @@ export default class LangchainOllamaProvider
 
   static provider = "Langchain";
   static id = "Ollama (Langchain)" as const;
-  static displayName: string = "Ollama";
+  static displayName = "Ollama";
 
   streamable = true;
   llmPredict = true;

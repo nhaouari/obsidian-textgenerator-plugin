@@ -98,7 +98,7 @@ if (res.status >= 300) {
 }
 
 // get choices
-const choices = data.choices.map(c=> c.message);
+const choices = (data.choices || data).map(c=> c.message);
 
 // the return object should be in the format of 
 // { content: string }[] 
@@ -114,7 +114,7 @@ export default class CustomProvider
   implements LLMProviderInterface {
   static provider = "Custom";
   static id = "Default (Custom)";
-  static displayName: string = "Custom";
+  static displayName = "Custom";
 
   streamable = true;
 
@@ -272,7 +272,7 @@ export default class CustomProvider
         c.type == "image_url"
           ? {
             ...c,
-            content: `![${c.image_url}]\n${c.content}`,
+            content: `![](${c.image_url})\n${c.content || ""}`,
           }
           : c
       );
@@ -363,8 +363,8 @@ export default class CustomProvider
         if (typeof res != "object") resultContent = res as string;
         else {
           const choices = res as any;
-          resultContent =
-            (get(choices?.[0] || choices, "content") as string) || choices;
+          if (typeof choices == "string") resultContent = choices;
+          else resultContent = choices.map((c: any) => c.content).join("\n")
         }
 
         logger("generate end", {

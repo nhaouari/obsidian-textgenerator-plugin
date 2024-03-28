@@ -10,9 +10,9 @@ export default class ProviderBase implements LLMProviderInterface {
   id = "default";
   static slug = "default";
   provider = "default";
-  static displayName: string = "default";
+  static displayName = "default";
   cloned?: boolean | undefined;
-  originalId: string = "";
+  originalId = "";
   plugin: TextGeneratorPlugin;
   config: any;
 
