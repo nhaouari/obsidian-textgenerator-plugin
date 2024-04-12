@@ -68,8 +68,8 @@ if (res.status >= 300) {
   const err = data?.error?.message || JSON.stringify(data);
   throw err;
 }
-let resultText = "";
-const lines = chunk.split("\ndata: ");
+let resultTexts = [];
+const lines = this.chunk.split("\\ndata: ");
 
 const parsedLines = lines
     .map((line) => line.replace(/^data: /, "").trim()) // Remove the "data: " prefix
@@ -87,10 +87,10 @@ for (const parsedLine of parsedLines) {
     const { content } = delta;
     // Update the UI with the new content
     if (content) {
-        resultText += content;
+        resultTexts.push(content);
     }
 }
-return resultText;`,
+return resultTexts.join("");`,
   sanatization_response: `// catch error
 if (res.status >= 300) {
   const err = data?.error?.message || JSON.stringify(data);
