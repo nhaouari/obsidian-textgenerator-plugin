@@ -246,7 +246,7 @@ export default class LangchainProvider
           else
             result = res.content
               .map((c) =>
-                c.type == "image_url" ? `![${c.image_url}]` : c.text
+                c.type == "image_url" ? `![](${c.image_url})` : c.text
               )
               .join("\n");
         }
