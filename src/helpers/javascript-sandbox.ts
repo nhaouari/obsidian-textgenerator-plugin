@@ -13,6 +13,7 @@ import {
   ExtractorSlug,
   Extractors,
 } from "#/extractors/content-extractor";
+
 import { isMap, isSet } from "util/types";
 import Read from "#/extractors";
 import lodashSet from "lodash.set";
@@ -23,6 +24,9 @@ import * as langchain from "#/lib/langchain";
 import TextGeneratorPlugin from "#/main";
 
 import { PluginManager } from "../lib/live-plugin-manager";
+
+
+
 
 const manager = new PluginManager({
   npmInstallMode: "useCache"
@@ -42,6 +46,7 @@ export default async function runJSInSandbox(
     Notice,
     pull,
     langchain,
+    splitters: langchain.splitters,
     isMap,
     isSet,
     globalThis: {},
