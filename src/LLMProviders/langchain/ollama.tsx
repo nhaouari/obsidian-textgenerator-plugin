@@ -13,8 +13,7 @@ const logger = debug("textgenerator:llmProvider:ollama");
 
 export default class LangchainOllamaProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   static slug = "ollama" as const;
 
   static provider = "Langchain";
@@ -23,6 +22,8 @@ export default class LangchainOllamaProvider
 
   streamable = true;
   llmPredict = true;
+
+  corsBypass = true;
 
   id = LangchainOllamaProvider.id;
   provider = LangchainOllamaProvider.provider;
