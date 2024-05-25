@@ -25,13 +25,6 @@ import TextGeneratorPlugin from "#/main";
 
 import { PluginManager } from "../lib/live-plugin-manager";
 
-
-
-
-const manager = new PluginManager({
-  npmInstallMode: "useCache"
-});
-
 export default async function runJSInSandbox(
   script: string,
   self: { plugin: TextGeneratorPlugin } & Record<any, any>
@@ -97,7 +90,9 @@ export default async function runJSInSandbox(
       return await Read(path, self.plugin);
     },
 
-    manager
+    manager: new PluginManager({
+      npmInstallMode: "useCache"
+    }),
   };
 
   const functions = Object.keys(sandbox).filter((k) =>

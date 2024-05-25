@@ -3,7 +3,6 @@ import * as path from "path";
 import { NpmRegistryClient, NpmRegistryConfig } from "./NpmRegistryClient";
 import { PluginVm } from "./PluginVm";
 import { IPluginInfo } from "./PluginInfo";
-import * as lockFile from "lockfile";
 import * as semver from "semver";
 import Debug from "debug";
 import { GithubRegistryClient, GithubAuth } from "./GithubRegistryClient";
@@ -40,8 +39,10 @@ export interface PluginSandbox {
 	global?: NodeJSGlobal;
 }
 
-const cwd = process.cwd();
+
 function createDefaultOptions(): PluginManagerOptions {
+	const cwd = process.cwd();
+	
 	return {
 		cwd,
 		npmRegistryUrl: BASE_NPM_URL,
@@ -705,10 +706,12 @@ export class PluginManager {
 		await fs.remove(plugin.location);
 	}
 
-	private syncLock() {
+	private async syncLock() {
 		if (debug.enabled) {
 			debug("Acquiring lock ...");
 		}
+
+		const { default: lockFile } = await import("lockfile");
 
 		const lockLocation = path.join(this.options.pluginsPath, "install.lock");
 		return new Promise<void>((resolve, reject) => {
@@ -725,10 +728,12 @@ export class PluginManager {
 		});
 	}
 
-	private syncUnlock() {
+	private async syncUnlock() {
 		if (debug.enabled) {
 			debug("Releasing lock ...");
 		}
+
+		const { default: lockFile } = await import("lockfile");
 
 		const lockLocation = path.join(this.options.pluginsPath, "install.lock");
 		return new Promise<void>((resolve, reject) => {
