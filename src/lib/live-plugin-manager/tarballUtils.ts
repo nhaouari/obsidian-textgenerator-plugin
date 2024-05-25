@@ -1,7 +1,6 @@
 import * as os from "os";
 import * as path from "path";
 import * as fs from "./fileSystem";
-import * as tar from "tar";
 import Debug from "debug";
 import * as httpUtils from "./httpUtils";
 const debug = Debug("live-plugin-manager.TarballUtils");
@@ -10,6 +9,8 @@ export async function extractTarball(tgzFile: string, destinationDirectory: stri
 	debug(`Extracting ${tgzFile} to ${destinationDirectory} ...`);
 
 	await fs.ensureDir(destinationDirectory);
+
+	const { default: tar } = await import("tar");
 
 	await tar.extract({
 		file: tgzFile,
