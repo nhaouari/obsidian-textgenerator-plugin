@@ -13,14 +13,12 @@ import {
 import LLMProviderInterface, { LLMConfig } from "../interface";
 
 import { PromptTemplate } from "@langchain/core/prompts";
-import { TypedPromptInputValues } from "langchain/dist/prompts/base";
 import type { BaseMessageChunk } from "@langchain/core/messages";
 
 import {
   chains,
   splitters,
   Message,
-  ContextTemplate,
   AI_MODELS,
 } from "../refs";
 import { Callbacks } from "@langchain/core/callbacks/manager";
@@ -416,46 +414,6 @@ export default class LangchainProvider
   //       }
   //     });
   //   }
-
-  async convertToChain(
-    templates: ContextTemplate,
-    reqParams: Partial<LLMConfig>
-  ): Promise<chains.LLMChain<string, any>> {
-    return new Promise(async (s, r) => {
-      try {
-        logger("generateMultiple", reqParams);
-
-        const prompt = new PromptTemplate({
-          template: templates.inputTemplate as any,
-          inputVariables: [],
-        });
-
-        prompt.format = async function format(
-          values: TypedPromptInputValues<any>
-        ): Promise<string> {
-          const allValues = await prompt.mergePartialAndUserVariables(values);
-          return await (prompt.template as any)(allValues);
-        };
-
-        const params = this.configMerger(reqParams);
-        const chat = await this.getLLM(params);
-
-        const llm = new chains.LLMChain({
-          llm: chat,
-          prompt,
-          llmKwargs: {
-            signal: params.requestParams?.signal || undefined,
-            ...this.getReqOptions(params),
-          },
-        });
-
-        return llm;
-      } catch (errorRequest: any) {
-        logger("generateMultiple error", errorRequest);
-        return r(errorRequest);
-      }
-    });
-  }
 
   async calcPrice(
     tokens: number,
