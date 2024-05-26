@@ -261,7 +261,7 @@ export function promiseForceFullfil(item: any) {
   return item.status == "fulfilled" ? item.value : `FAILED: ${item?.reason}`;
 }
 
-import { SystemMessagePromptTemplate } from "langchain/prompts";
+import { SystemMessagePromptTemplate } from "@langchain/core/prompts";
 import get from "lodash.get";
 import { Handlebars } from "#/helpers/handlebars-helpers";
 

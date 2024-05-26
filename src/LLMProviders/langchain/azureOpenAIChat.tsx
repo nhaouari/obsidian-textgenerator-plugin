@@ -3,8 +3,8 @@ import LangchainBase from "./base";
 import type {
   AzureOpenAIInput,
   OpenAIChatInput,
-} from "langchain/chat_models/openai";
-import { BaseChatModelParams } from "langchain/dist/chat_models/base";
+} from "@langchain/openai";
+import { BaseChatModelParams } from "@langchain/core/language_models/chat_models";
 
 import { IconExternalLink } from "@tabler/icons-react";
 import LLMProviderInterface, { LLMConfig } from "../interface";

@@ -3,7 +3,7 @@ import debug from "debug";
 import React from "react";
 
 import { ChatOpenAI, OpenAIChatInput } from "@langchain/openai";
-import { HuggingFaceInference } from "langchain/llms/hf";
+import { HuggingFaceInference } from "@langchain/community/llms/hf";
 
 import BaseProvider from "../base";
 import {
@@ -12,9 +12,9 @@ import {
 } from "../../utils";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 
-import { PromptTemplate } from "langchain/prompts";
+import { PromptTemplate } from "@langchain/core/prompts";
 import { TypedPromptInputValues } from "langchain/dist/prompts/base";
-import type { BaseMessageChunk } from "langchain/schema";
+import type { BaseMessageChunk } from "@langchain/core/messages";
 
 import {
   chains,
@@ -97,7 +97,7 @@ export default class LangchainProvider
       ...this.defaultHeaders,
     };
 
-    return new (this.llmClass as typeof ChatOpenAI)(this.getConfig(options), {
+    return new this.llmClass(this.getConfig(options), {
       basePath: options.basePath?.length
         ? options.basePath.endsWith("/")
           ? options.basePath.substring(0, options.basePath.length - 1)
@@ -107,7 +107,7 @@ export default class LangchainProvider
       defaultQuery: options.bodyParams,
 
       defaultHeaders: headers,
-    }) as any;
+    });
   }
 
   configMerger(options: Partial<LLMConfig>) {
@@ -246,7 +246,7 @@ export default class LangchainProvider
           else
             result = res.content
               .map((c) =>
-                c.type == "image_url" ? `![](${c.image_url})` : c.text
+                c.type == "image_url" ? `![](${c.image_url})` : c.type == "text" ? c.text : ""
               )
               .join("\n");
         }

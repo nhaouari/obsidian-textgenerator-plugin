@@ -1,13 +1,12 @@
 import LangchainBase from "./base";
-import { Replicate, ReplicateInput } from "langchain/llms/replicate";
+import { Replicate, ReplicateInput } from "@langchain/community/llms/replicate";
 import React from "react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import SettingItem from "#/ui/settings/components/item";
 import useGlobal from "#/ui/context/global";
 import { IconExternalLink } from "@tabler/icons-react";
-import { useToggle } from "usehooks-ts";
 import Input from "#/ui/settings/components/input";
-import { BaseLLMParams } from "langchain/dist/llms/base";
+import { BaseLLMParams } from "@langchain/core/language_models/llms";
 import debug from "debug";
 
 const logger = debug("textgenerator:llmProvider:replicated");
@@ -39,7 +38,7 @@ export default class LangchainReplicaProvider
     });
   }
 
-  getLLM(options: LLMConfig) {
+  async getLLM(options: LLMConfig) {
     return new Replicate({
       ...this.getConfig(options),
     } as any);

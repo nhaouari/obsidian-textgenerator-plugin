@@ -1,6 +1,6 @@
 import React from "react";
 import LangchainBase from "./base";
-import type { AzureOpenAIInput, OpenAIInput } from "langchain/llms/openai";
+import type { AzureOpenAIInput, OpenAIInput } from "@langchain/openai";
 import { IconExternalLink } from "@tabler/icons-react";
 
 import LLMProviderInterface, { LLMConfig } from "../interface";
@@ -56,7 +56,7 @@ export default class LangchainAzureOpenAIInstructProvider
   }
 
   async load() {
-    const { OpenAI } = await import("langchain/llms/openai");
+    const { OpenAI } = await import("@langchain/openai");
     this.llmClass = OpenAI;
   }
 
