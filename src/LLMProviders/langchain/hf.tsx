@@ -3,8 +3,8 @@ import debug from "debug";
 import LangchainBase from "./base";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import { IconExternalLink } from "@tabler/icons-react";
-import { BaseLLMParams } from "langchain/llms/base";
-import type { HFInput } from "langchain/llms/hf";
+import { BaseLLMParams } from "@langchain/core/language_models/llms";
+import type { HFInput } from "@langchain/community/llms/hf";
 
 const logger = debug("textgenerator:llmProvider:hf");
 
@@ -46,7 +46,7 @@ export default class LangchainHFProvider
   }
 
   async load() {
-    const { HuggingFaceInference } = await import("langchain/llms/hf");
+    const { HuggingFaceInference } = await import("@langchain/community/llms/hf");
     this.llmClass = HuggingFaceInference;
   }
 

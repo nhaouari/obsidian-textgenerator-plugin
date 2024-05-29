@@ -67,14 +67,6 @@ export default class ProviderBase implements LLMProviderInterface {
     return cleanedOptions;
   }
 
-  async convertToChain(
-    templates: ContextTemplate,
-    reqParams: Partial<LLMConfig>,
-    customConfig?: any
-  ): Promise<any> {
-    throw new Error("Convert to chain is not supported outside of langchain");
-  }
-
   async generateBatch(
     batches: { messages: Message[]; reqParams: Partial<LLMConfig> }[],
     customConfig?: any,

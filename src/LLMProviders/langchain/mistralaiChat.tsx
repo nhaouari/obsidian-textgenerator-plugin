@@ -5,7 +5,7 @@ import { IconExternalLink } from "@tabler/icons-react";
 
 import debug from "debug";
 import { ModelsHandler } from "../utils";
-import { OpenAIChatInput } from "langchain/chat_models/openai";
+import { OpenAIChatInput } from "@langchain/openai";
 
 const logger = debug("textgenerator:llmProvider:mistralChat");
 

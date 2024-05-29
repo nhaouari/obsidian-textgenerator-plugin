@@ -4,7 +4,7 @@ import LangchainBase from "./base";
 
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import { IconExternalLink } from "@tabler/icons-react";
-import { BaseLanguageModelParams } from "langchain/dist/base_language";
+import { BaseLanguageModelParams } from "@langchain/core/language_models/base";
 
 import { Input, SettingItem, useGlobal } from "../refs";
 import type { AnthropicInput } from "@langchain/anthropic";
