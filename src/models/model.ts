@@ -5,7 +5,7 @@ import debug from "debug";
 
 const logger = debug("textgenerator:model");
 
-export class ExampleModal extends FuzzySuggestModal<PromptTemplate> {
+export class TemplatesModal extends FuzzySuggestModal<PromptTemplate> {
   plugin: TextGeneratorPlugin;
   title: string;
   onChoose: (result: PromptTemplate) => void;

@@ -63,58 +63,58 @@ export const default_values = {
   // stream: false,
   // temperature: 0.7,
 
-  sanatization_streaming: `(chunk) => {
-    console.log({ chunk })
-    let resultText = "";
-    const lines = chunk.split("\ndata: ");
+  sanatization_streaming: `// catch error
+if (res.status >= 300) {
+  const err = data?.error?.message || JSON.stringify(data);
+  throw err;
+}
+let resultTexts = [];
+const lines = this.chunk.split("\\ndata: ");
 
-    const parsedLines = lines
-        .map((line) => line.replace(/^data: /, "").trim()) // Remove the "data: " prefix
-        .filter((line) => line !== "" && line !== "[DONE]") // Remove empty lines and "[DONE]"
-        .map((line) => {
-            try {
-                return JSON.parse(line)
-            } catch { }
-        }) // Parse the JSON string
-        .filter(Boolean);
+const parsedLines = lines
+    .map((line) => line.replace(/^data: /, "").trim()) // Remove the "data: " prefix
+    .filter((line) => line !== "" && line !== "[DONE]") // Remove empty lines and "[DONE]"
+    .map((line) => {
+        try {
+            return JSON.parse(line)
+        } catch { }
+    }) // Parse the JSON string
+    .filter(Boolean);
 
-    for (const parsedLine of parsedLines) {
-        const { choices } = parsedLine;
-        const { delta } = choices[0];
-        const { content } = delta;
-        // Update the UI with the new content
-        if (content) {
-            resultText += content;
-        }
+for (const parsedLine of parsedLines) {
+    const { choices } = parsedLine;
+    const { delta } = choices[0];
+    const { content } = delta;
+    // Update the UI with the new content
+    if (content) {
+        resultTexts.push(content);
     }
-    return resultText;
-}`,
-  sanatization_response: `async (data, res)=>{
-  // catch error
-  if (res.status >= 300) {
-    const err = data?.error?.message || JSON.stringify(data);
-    throw err;
-  }
+}
+return resultTexts.join("");`,
+  sanatization_response: `// catch error
+if (res.status >= 300) {
+  const err = data?.error?.message || JSON.stringify(data);
+  throw err;
+}
 
-  // get choices
-  const choices = data.choices.map(c=> c.message);
+// get choices
+const choices = (data.choices || data).map(c=> c.message);
 
-  // the return object should be in the format of 
-  // { content: string }[] 
-  // if there's only one response, put it in the array of choices.
-  return choices;
-}`,
+// the return object should be in the format of 
+// { content: string }[] 
+// if there's only one response, put it in the array of choices.
+return choices;`,
 };
+
 
 export type CustomConfig = Record<keyof typeof default_values, string>;
 
 export default class CustomProvider
   extends BaseProvider
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   static provider = "Custom";
   static id = "Default (Custom)";
-  static displayName: string = "Custom";
+  static displayName = "Custom";
 
   streamable = true;
 
@@ -152,40 +152,47 @@ export default class CustomProvider
         typeof requestOptions.body == "string"
           ? JSON.parse(requestOptions.body)
           : requestOptions.body
-          ? requestOptions.body
-          : undefined,
+            ? requestOptions.body
+            : undefined,
       headers:
         typeof requestOptions.headers == "object"
           ? (requestOptions.headers as any)
           : requestOptions.headers
-          ? JSON5.parse(requestOptions.headers)
-          : undefined,
+            ? JSON5.parse(requestOptions.headers)
+            : undefined,
     });
 
     const url = params.CORSBypass
       ? await this.plugin.textGenerator.proxyService.getProxiedUrl(params.url)
       : params.url;
 
-    const k = (
-      useRequest
-        ? await requestWithoutCORS({
+    let k;
+
+    try {
+      k = (
+        useRequest
+          ? await requestWithoutCORS({
             url: params.url,
             method: requestOptions.method,
+            throw: false,
             body:
               typeof requestOptions.body == "string"
                 ? requestOptions.body
                 : requestOptions.body
-                ? JSON.stringify(requestOptions.body)
-                : undefined,
+                  ? JSON.stringify(requestOptions.body)
+                  : undefined,
             headers:
               typeof requestOptions.headers == "object"
                 ? (requestOptions.headers as any)
                 : requestOptions.headers
-                ? JSON5.parse(requestOptions.headers)
-                : undefined,
+                  ? JSON5.parse(requestOptions.headers)
+                  : undefined,
           })
-        : await fetch(url, requestOptions)
-    ) as AsyncReturnType<typeof fetch>;
+          : await fetch(url, requestOptions)
+      ) as AsyncReturnType<typeof fetch>;
+    } catch (e: any) {
+      k = e;
+    }
 
     if (!useRequest && params.stream) {
       if (!k.body) return;
@@ -207,13 +214,22 @@ export default class CustomProvider
 
         const decodedVal = decoder.decode(value, { stream: true });
 
+        // backward compatibilty with the old way
+        const c = params.sanatization_streaming ||
+          this.default_values.sanatization_streaming;
+        const n = c.split('\n')
+        if (n[0]?.trim().startsWith("async")) {
+          n.shift();
+          n.pop();
+        }
+
         const chunkValue = await runJSInSandbox(
-          `return await (${
-            params.sanatization_streaming ||
-            this.default_values.sanatization_streaming
-          })(${JSON.stringify(decodedVal)})`,
+          n.join("\n"),
           {
             plugin: this.plugin,
+            chunk: decodedVal,
+            data: decodedVal,
+            res: k
           }
         );
 
@@ -233,13 +249,20 @@ export default class CustomProvider
         resJson = resText;
       }
 
+      const c = params.sanatization_response ||
+        this.default_values.sanatization_response;
+      const n = c.split('\n')
+      if (n[0]?.trim().startsWith("async")) {
+        n.shift();
+        n.pop();
+      }
+
       const rs = await runJSInSandbox(
-        `return await (${
-          params.sanatization_response ||
-          this.default_values.sanatization_response
-        })(${JSON.stringify(resJson)}, ${JSON.stringify(k)})`,
+        n.join("\n"),
         {
           plugin: this.plugin,
+          res: k,
+          data: resJson
         }
       );
 
@@ -248,9 +271,9 @@ export default class CustomProvider
       return rs?.map((c: Message) =>
         c.type == "image_url"
           ? {
-              ...c,
-              content: `![${c.image_url}]\n${c.content}`,
-            }
+            ...c,
+            content: `![](${c.image_url})\n${c.content || ""}`,
+          }
           : c
       );
     }
@@ -303,10 +326,10 @@ export default class CustomProvider
           headers: cleanConfig(
             JSON5.parse(
               "" +
-                (await Handlebars.compile(
-                  handlebarData.custom_header ||
-                    this.default_values.custom_header
-                )(handlebarData))
+              (await Handlebars.compile(
+                handlebarData.custom_header ||
+                this.default_values.custom_header
+              )(handlebarData))
             ) as any
           ),
 
@@ -314,9 +337,9 @@ export default class CustomProvider
             cleanConfig(
               JSON5.parse(
                 "" +
-                  (await Handlebars.compile(
-                    handlebarData.custom_body || this.default_values.custom_body
-                  )(handlebarData))
+                (await Handlebars.compile(
+                  handlebarData.custom_body || this.default_values.custom_body
+                )(handlebarData))
               )
             ) as any
           ),
@@ -340,8 +363,8 @@ export default class CustomProvider
         if (typeof res != "object") resultContent = res as string;
         else {
           const choices = res as any;
-          resultContent =
-            (get(choices?.[0] || choices, "content") as string) || choices;
+          if (typeof choices == "string") resultContent = choices;
+          else resultContent = choices.map((c: any) => c.content).join("\n")
         }
 
         logger("generate end", {

@@ -175,7 +175,7 @@ export default class RequestHandler {
         provider.providerOptions
       );
 
-      let result = provider.providerOptions.estimatingMode
+      const result = provider.providerOptions.estimatingMode
         ? bodyParams.messages.map((m) => m.content).join(",")
         : provider.providerOptions.disableProvider
         ? ""

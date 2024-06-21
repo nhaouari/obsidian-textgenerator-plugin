@@ -13,6 +13,7 @@ import {
   ExtractorSlug,
   Extractors,
 } from "#/extractors/content-extractor";
+
 import { isMap, isSet } from "util/types";
 import Read from "#/extractors";
 import lodashSet from "lodash.set";
@@ -21,6 +22,8 @@ import JSON5 from "json5";
 
 import * as langchain from "#/lib/langchain";
 import TextGeneratorPlugin from "#/main";
+
+import { PluginManager } from "../lib/live-plugin-manager";
 
 export default async function runJSInSandbox(
   script: string,
@@ -36,11 +39,10 @@ export default async function runJSInSandbox(
     Notice,
     pull,
     langchain,
+    splitters: langchain.splitters,
     isMap,
     isSet,
-    globalThis: {
-      test: "color",
-    },
+    globalThis: {},
     ...self,
 
     notice(context: any, duration: any) {
@@ -62,7 +64,7 @@ export default async function runJSInSandbox(
 
       ce.setExtractor(
         ExtractorSlug[
-          id as keyof typeof ExtractorSlug
+        id as keyof typeof ExtractorSlug
         ] as keyof typeof Extractors
       );
 
@@ -87,6 +89,10 @@ export default async function runJSInSandbox(
     async read(path: string) {
       return await Read(path, self.plugin);
     },
+
+    manager: new PluginManager({
+      npmInstallMode: "useCache"
+    }),
   };
 
   const functions = Object.keys(sandbox).filter((k) =>

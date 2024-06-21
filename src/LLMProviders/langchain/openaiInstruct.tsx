@@ -1,7 +1,7 @@
 import React from "react";
 import debug from "debug";
 import LangchainBase from "./base";
-import type { OpenAI, OpenAIInput } from "langchain/llms/openai";
+import type { OpenAI, OpenAIInput } from "@langchain/openai";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import { IconExternalLink } from "@tabler/icons-react";
 import { ModelsHandler } from "../utils";
@@ -48,7 +48,7 @@ export default class LangchainOpenAIInstructProvider
   }
 
   async load() {
-    const { OpenAI } = await import("langchain/llms/openai");
+    const { OpenAI } = await import("@langchain/openai");
     this.llmClass = OpenAI;
   }
 
@@ -76,7 +76,7 @@ export default class LangchainOpenAIInstructProvider
           ),
         };
 
-        const llm = this.getLLM(params);
+        const llm = await this.getLLM(params);
 
         const requestResults = await (llm as OpenAI).generate(
           messages.map((m) => m.content),

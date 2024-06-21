@@ -40,7 +40,7 @@ export class AutoSuggest {
         }[];
       })
     | undefined;
-  isOpen: boolean = false;
+  isOpen = false;
   app: App;
   constructor(app: App, plugin: TextGeneratorPlugin) {
     logger("AutoSuggest", app, plugin);

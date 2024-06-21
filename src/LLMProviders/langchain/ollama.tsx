@@ -3,9 +3,9 @@ import debug from "debug";
 import LangchainBase from "./base";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import { IconExternalLink } from "@tabler/icons-react";
-import { BaseLLMParams } from "langchain/llms/base";
+import { BaseLLMParams } from "@langchain/core/language_models/llms";
 
-import { OllamaInput } from "langchain/llms/ollama";
+import { OllamaInput } from "@langchain/community/llms/ollama";
 
 import { Input, SettingItem, useGlobal } from "../refs";
 
@@ -13,16 +13,17 @@ const logger = debug("textgenerator:llmProvider:ollama");
 
 export default class LangchainOllamaProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   static slug = "ollama" as const;
 
   static provider = "Langchain";
   static id = "Ollama (Langchain)" as const;
-  static displayName: string = "Ollama";
+  static displayName = "Ollama";
 
   streamable = true;
   llmPredict = true;
+
+  corsBypass = true;
 
   id = LangchainOllamaProvider.id;
   provider = LangchainOllamaProvider.provider;
@@ -48,7 +49,7 @@ export default class LangchainOllamaProvider
   }
 
   async load() {
-    const { Ollama } = await import("langchain/llms/ollama");
+    const { Ollama } = await import("@langchain/community/llms/ollama");
     this.llmClass = Ollama;
   }
 

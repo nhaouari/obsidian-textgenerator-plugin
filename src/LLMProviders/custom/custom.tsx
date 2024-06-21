@@ -63,7 +63,7 @@ export default class DefaultCustomProvider
   static provider = "Custom";
   static id = "Default (Custom)" as const;
   static slug = "custom" as const;
-  static displayName: string = "Custom";
+  static displayName = "Custom";
 
   provider = DefaultCustomProvider.provider;
   id = DefaultCustomProvider.id;

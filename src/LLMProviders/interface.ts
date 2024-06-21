@@ -36,12 +36,6 @@ export default interface LLMProviderInterface {
     onOneFinishs?: (content: string, index: number) => void
   ): Promise<string[]>;
 
-  convertToChain(
-    templates: ContextTemplate,
-    reqParams: Partial<LLMConfig>,
-    customConfig?: any
-  ): Promise<LLMChain<string, any>>;
-
   RenderSettings(props: {
     sectionId: string;
     register: Register;

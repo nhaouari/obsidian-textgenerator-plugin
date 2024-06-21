@@ -15,7 +15,7 @@
 }
 
 .plug-tg-packageManager {
-  @apply plug-tg-w-[800px];
+  /* @apply plug-tg-w-[800px]; */
 }
 
 .plug-tg-upsidedown {
@@ -56,7 +56,7 @@
 
 /* ---  --- */
 
-.cm-embed-block:hover > .plug-tg-tgmenu {
+.cm-embed-block:hover>.plug-tg-tgmenu {
   opacity: 1;
 }
 
@@ -80,11 +80,11 @@
   --callout-icon: bot;
 }
 
-.callout[data-callout="ai"] > .callout-title {
+.callout[data-callout="ai"]>.callout-title {
   margin-left: -1rem;
 }
 
-.callout[data-callout="ai"] > .callout-content {
+.callout[data-callout="ai"]>.callout-content {
   margin-left: 2rem;
 }
 
@@ -171,11 +171,11 @@ body.react-confirm-alert-body-element {
   left: 0;
 }
 
-.react-confirm-alert-body > h1 {
+.react-confirm-alert-body>h1 {
   margin-top: 0;
 }
 
-.react-confirm-alert-body > h3 {
+.react-confirm-alert-body>h3 {
   margin: 0;
   font-size: 16px;
 }
@@ -190,7 +190,7 @@ body.react-confirm-alert-body-element {
   margin-top: 20px;
 }
 
-.react-confirm-alert-button-group > button {
+.react-confirm-alert-button-group>button {
   outline: none;
   background: #333;
   border: none;

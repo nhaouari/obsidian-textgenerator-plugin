@@ -63,6 +63,7 @@ Starred Blocks: {{starredBlocks}}
     "batch-generate-in-right-click-files-menu": true,
     "tg-block-processor": true,
     reload: true,
+    "disable-ribbon-icons": false,
   },
 
   advancedOptions: {

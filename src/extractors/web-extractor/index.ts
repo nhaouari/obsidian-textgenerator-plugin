@@ -39,8 +39,8 @@ export default class WebPageExtractor extends Extractor {
       response = await new Promise(async (s) => {
         win.webContents.on("dom-ready", async () => {
           // in seconds
-          let maxTotal = 10;
-          let fac = 0.2;
+          const maxTotal = 10;
+          const fac = 0.2;
 
           let tries = maxTotal / fac;
           const timer = setInterval(async () => {
@@ -103,7 +103,7 @@ export default class WebPageExtractor extends Extractor {
 
     // Loop through each element and change the origin
     for (let i = 0; i < elements.length; i++) {
-      let currentHref = elements[i].getAttribute("href");
+      const currentHref = elements[i].getAttribute("href");
       if (currentHref?.startsWith("app://obsidian.md")) {
         elements[i].setAttribute(
           "href",

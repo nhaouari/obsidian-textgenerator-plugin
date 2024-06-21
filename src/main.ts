@@ -38,7 +38,7 @@ import TokensScope from "./scope/tokens";
 import "./LLMProviders";
 import get from "lodash.get";
 import set from "lodash.set";
-import { ExampleModal } from "./models/model";
+import { TemplatesModal } from "./models/model";
 import { ToolView, VIEW_TOOL_ID } from "./ui/tool";
 import { randomUUID } from "crypto";
 import VersionManager from "./scope/versionManager";
@@ -175,7 +175,7 @@ export default class TextGeneratorPlugin extends Plugin {
                 item.setTitle("Generate");
                 item.onClick(() => {
                   try {
-                    new ExampleModal(
+                    new TemplatesModal(
                       this.app,
                       this,
                       async (result) => {
@@ -208,35 +208,37 @@ export default class TextGeneratorPlugin extends Plugin {
       }
 
       // This creates an icon in the left ribbon.
-      this.addRibbonIcon(
-        "GENERATE_ICON",
-        "Generate Text!",
-        async (evt: MouseEvent) => {
-          // Called when the user clicks the icon.
-          // const activeFile = this.app.workspace.getActiveFile();
-          const activeView = this.getActiveViewMD();
-          if (activeView !== null) {
-            const CM = ContentManagerCls.compile(activeView, this);
-            try {
-              await this.textGenerator.generateInEditor({}, false, CM);
-            } catch (error) {
-              this.handelError(error);
+      if (!this.settings.options["disable-ribbon-icons"]) {
+        this.addRibbonIcon(
+          "GENERATE_ICON",
+          "Generate Text!",
+          async (evt: MouseEvent) => {
+            // Called when the user clicks the icon.
+            // const activeFile = this.app.workspace.getActiveFile();
+            const activeView = this.getActiveViewMD();
+            if (activeView !== null) {
+              const CM = ContentManagerCls.compile(activeView, this);
+              try {
+                await this.textGenerator.generateInEditor({}, false, CM);
+              } catch (error) {
+                this.handelError(error);
+              }
             }
           }
-        }
-      );
+        );
 
-      this.addRibbonIcon(
-        "boxes",
-        "Text Generator: Templates Packages Manager",
-        async (evt: MouseEvent) => {
-          new PackageManagerUI(
-            this.app,
-            this,
-            async (result: string) => {}
-          ).open();
-        }
-      );
+        this.addRibbonIcon(
+          "boxes",
+          "Text Generator: Templates Packages Manager",
+          async (evt: MouseEvent) => {
+            new PackageManagerUI(
+              this.app,
+              this,
+              async (result: string) => { }
+            ).open();
+          }
+        );
+      }
 
       // add commands
       await this.commands.addCommands();
@@ -660,12 +662,12 @@ export default class TextGeneratorPlugin extends Plugin {
   }
 
   getRelativePathTo(path: string) {
-    let k = this.settings.promptsPath;
-    let d = k.split("/");
+    const k = this.settings.promptsPath;
+    const d = k.split("/");
 
     if (k.endsWith("/")) d.pop();
 
-    let basePath: string = "";
+    let basePath = "";
 
     if (d.length > 1) d.pop();
 

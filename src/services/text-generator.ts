@@ -477,8 +477,8 @@ export default class TextGenerator extends RequestHandler {
               const [errorFile, file] = await safeAwait(
                 createFileWithInput(
                   path +
-                    `/${text?.startsWith("FAILED:") ? "FAILED-" : ""}` +
-                    files[i].path,
+                  `/${text?.startsWith("FAILED:") ? "FAILED-" : ""}` +
+                  files[i].path,
                   text,
                   this.plugin.app
                 )
@@ -696,7 +696,7 @@ ${removeYAML(content)}
   getTemplates(promptsPath: string = this.plugin.settings.promptsPath) {
     const templateFolder = this.plugin.app.vault.getFolderByPath(promptsPath);
 
-    let templates: (ReturnType<typeof this.getMetadata> & {
+    const templates: (ReturnType<typeof this.getMetadata> & {
       title: string;
       ctime: number;
       path: string;
@@ -704,7 +704,7 @@ ${removeYAML(content)}
 
     if (templateFolder) {
       Vault.recurseChildren(templateFolder, (file) => {
-        if (file instanceof TFile) {
+        if (file instanceof TFile && !file.path.includes("/trash/")) {
           templates.push({
             ...this.getMetadata(file.path),
             title: file.path.substring(promptsPath.length + 1),
@@ -886,9 +886,8 @@ ${removeYAML(content)}
 
     const promptsPath = this.plugin.settings.promptsPath;
 
-    const guessPath = `${promptsPath}${
-      promptsPath.endsWith("/") ? "" : "/"
-    }${id}.md`;
+    const guessPath = `${promptsPath}${promptsPath.endsWith("/") ? "" : "/"
+      }${id}.md`;
 
     // test if the guess is actually a file
     if (await this.plugin.app.vault.adapter.exists(guessPath)) return guessPath;

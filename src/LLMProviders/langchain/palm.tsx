@@ -1,6 +1,6 @@
 import LangchainBase from "./base";
 
-import { GooglePaLMChatInput } from "langchain/chat_models/googlepalm";
+import { GooglePaLMChatInput } from "@langchain/community/chat_models/googlepalm";
 import React from "react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import { IconExternalLink } from "@tabler/icons-react";
@@ -18,7 +18,7 @@ export default class LangchainPalmProvider
   static provider = "Langchain";
   static id = id;
   static slug = "palm" as const;
-  static displayName: string = "Google Palm";
+  static displayName = "Google Palm";
 
   mobileSupport = false;
   streamable = false;
@@ -45,7 +45,7 @@ export default class LangchainPalmProvider
   }
 
   async load() {
-    const { ChatGooglePaLM } = await import("langchain/chat_models/googlepalm");
+    const { ChatGooglePaLM } = await import("@langchain/community/chat_models/googlepalm");
     this.llmClass = ChatGooglePaLM;
   }
 

@@ -100,7 +100,7 @@ ${JSON5.stringify(config, null, 2)}
 \`\`\``;
 
                 let fileName =
-                  props.name.replaceAll(" ", "_") ||
+                  props.name?.replaceAll(" ", "_") ||
                   `config_${currentDate()}${getCurrentTime()}`;
 
                 // use the provided name if it doesn't exists already (if it exists it could just be the user selecting one of his configs)

@@ -22,7 +22,7 @@ export default class LangchainChatGoogleGenerativeAIProvider
   static provider = "Langchain";
   static id = "Google GenerativeAI (Langchain)" as const;
   static slug = "googleGenerativeAI" as const;
-  static displayName: string = "Google GenerativeAI";
+  static displayName = "Google GenerativeAI";
 
   mobileSupport = true;
   streamable = true;

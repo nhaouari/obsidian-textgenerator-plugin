@@ -3,8 +3,8 @@ import LangchainBase from "./base";
 import type {
   AzureOpenAIInput,
   OpenAIChatInput,
-} from "langchain/chat_models/openai";
-import { BaseChatModelParams } from "langchain/dist/chat_models/base";
+} from "@langchain/openai";
+import { BaseChatModelParams } from "@langchain/core/language_models/chat_models";
 
 import { IconExternalLink } from "@tabler/icons-react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
@@ -22,7 +22,7 @@ export default class LangchainAzureOpenAIChatProvider
   static provider = "Langchain";
   static id = "Azure OpenAI Chat (Langchain)" as const;
   static slug = "azureOpenaiChat" as const;
-  static displayName: string = "Azure OpenAI Chat";
+  static displayName = "Azure OpenAI Chat";
 
   provider = LangchainAzureOpenAIChatProvider.provider;
   id = LangchainAzureOpenAIChatProvider.id;

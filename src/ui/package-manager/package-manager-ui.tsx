@@ -6,7 +6,7 @@ import { createRoot } from "react-dom/client";
 import { GlobalProvider } from "../context/global";
 
 export class PackageManagerUI extends Modal {
-  result: string;
+  result: string | undefined;
   plugin: TextGeneratorPlugin;
   onSubmit: (result: string) => void;
   root: any;
@@ -23,8 +23,8 @@ export class PackageManagerUI extends Modal {
   }
 
   async onOpen() {
-    // this.containerEl.createEl("div", { cls: "plug-tg-packageManager" });
-    this.root = createRoot(this.containerEl);
+    this.containerEl.createEl("div", { cls: "PackageManager" });
+    this.root = createRoot(this.containerEl.children[1]);
     this.root.render(
       <React.StrictMode>
         <GlobalProvider plugin={this.plugin}>

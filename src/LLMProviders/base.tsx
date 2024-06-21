@@ -10,9 +10,9 @@ export default class ProviderBase implements LLMProviderInterface {
   id = "default";
   static slug = "default";
   provider = "default";
-  static displayName: string = "default";
+  static displayName = "default";
   cloned?: boolean | undefined;
-  originalId: string = "";
+  originalId = "";
   plugin: TextGeneratorPlugin;
   config: any;
 
@@ -65,14 +65,6 @@ export default class ProviderBase implements LLMProviderInterface {
     }
 
     return cleanedOptions;
-  }
-
-  async convertToChain(
-    templates: ContextTemplate,
-    reqParams: Partial<LLMConfig>,
-    customConfig?: any
-  ): Promise<any> {
-    throw new Error("Convert to chain is not supported outside of langchain");
   }
 
   async generateBatch(

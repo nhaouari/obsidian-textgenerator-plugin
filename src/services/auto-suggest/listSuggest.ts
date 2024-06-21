@@ -35,7 +35,7 @@ export class ListSuggest extends EditorSuggest<Completion> {
       func: any;
     }[];
   };
-  isOpen: boolean = false;
+  isOpen = false;
   constructor(app: App, plugin: TextGeneratorPlugin, autoSuggest: AutoSuggest) {
     logger("AutoSuggest", app, plugin);
     super(app);

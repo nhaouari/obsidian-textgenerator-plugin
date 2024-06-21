@@ -1,6 +1,7 @@
 import { Notice } from "obsidian";
 import handlebars, { Exception, createFrame } from "handlebars";
 import { pull } from "langchain/hub";
+import { getAPI as getDataviewApi } from "obsidian-dataview";
 
 import asyncHelpers from "../lib/async-handlebars-helper";
 import {
@@ -25,12 +26,8 @@ import lodashGet from "lodash.get";
 import JSON5 from "json5";
 
 import runJsInSandbox from "./javascript-sandbox";
-import * as langchain from "#/lib/langchain";
 
 export default function Helpersfn(self: ContextManager) {
-  // they are being used by the eval
-  const { chains, splitters } = langchain;
-
   const extract = async (id: string, cntn: string, other: any) => {
     const ce = new ContentExtractor(self.app, self.plugin);
 
@@ -379,8 +376,8 @@ export default function Helpersfn(self: ContextManager) {
           innerResult = innerTxt.trim().startsWith("{")
             ? JSON5.parse(innerTxt)
             : {
-                [param]: innerTxt,
-              };
+              [param]: innerTxt,
+            };
         } catch (err: any) {
           innerResult = {
             [param]: innerTxt,
@@ -433,11 +430,11 @@ export default function Helpersfn(self: ContextManager) {
 
       const id: string = templateId?.contains("/")
         ? // if it has a slash that means it already have the packageId
-          `["${templateId}"]`
+        `["${templateId}"]`
         : // checking for vars
         Object.keys(additionalOptions.data.root.vars || {}).includes(templateId)
-        ? `vars["${templateId}"]`
-        : // make packageId/templateId
+          ? `vars["${templateId}"]`
+          : // make packageId/templateId
           `["${parentPackageId}/${templateId}"]`;
 
       const val = lodashGet(additionalOptions.data.root, id);
@@ -448,7 +445,7 @@ export default function Helpersfn(self: ContextManager) {
     async set(...vars: any[]) {
       const additionalOptions = vars.pop();
 
-      const id: string = `vars["${vars[0]}"]`;
+      const id = `vars["${vars[0]}"]`;
 
       let value = vars[1];
 
@@ -630,13 +627,13 @@ export default function Helpersfn(self: ContextManager) {
           ...(typeof metadata == "object"
             ? metadata
             : {
-                tg_selection: metadata,
-              }),
+              tg_selection: metadata,
+            }),
         });
       };
 
       if (content.startsWith("```")) {
-        let k = content.split("\n");
+        const k = content.split("\n");
         k.pop();
         k.pop();
         k.shift();
@@ -670,6 +667,22 @@ export default function Helpersfn(self: ContextManager) {
       if (options.fn) data = await options.fn(options.data.root);
       return await append(vars[0], data);
     },
+
+    async dataview(...vars: any[]) {
+      const options: { data: { root: any }; fn: any } = vars.pop();
+      if (!options.fn) throw new Error("this helper only works in block form ex: {{#dataview}} your dataview {{/dataview}}")
+      const content = await options.fn(options.data.root)
+      const api = await getDataviewApi(self.app);
+      const res = await api?.queryMarkdown(content);
+
+      if (!res) throw new Error("Couln't find DataViewApi");
+
+      if (res?.successful) {
+        return res.value;
+      }
+
+      throw new Error(res.error);
+    }
   } as const;
 
   return Helpers;
@@ -695,16 +708,16 @@ export async function langPull(rep: string) {
 
   const data = compileLangMessages(
     k.kwargs.messages ||
-      (k.kwargs.template
-        ? [
-            {
-              prompt: {
-                template: k.kwargs.template,
-                inputVariables: k.kwargs.input_variables,
-              },
-            },
-          ]
-        : [])
+    (k.kwargs.template
+      ? [
+        {
+          prompt: {
+            template: k.kwargs.template,
+            inputVariables: k.kwargs.input_variables,
+          },
+        },
+      ]
+      : [])
   );
 
   return data;

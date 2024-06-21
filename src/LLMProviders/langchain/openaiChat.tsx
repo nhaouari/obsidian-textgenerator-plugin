@@ -16,14 +16,13 @@ const default_values = {
 
 export default class LangchainOpenAIChatProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   /** for models to know what provider is that, for example if this class is being extended. and the id changes. */
 
   static provider = "Langchain";
   static id = "OpenAI Chat (Langchain)" as const;
   static slug = "openAIChat" as const;
-  static displayName: string = "OpenAI Chat";
+  static displayName = "OpenAI Chat";
 
   id = LangchainOpenAIChatProvider.id;
   provider = LangchainOpenAIChatProvider.provider;
@@ -58,7 +57,8 @@ export default class LangchainOpenAIChatProvider
             type="password"
             value={config.api_key || ""}
             setValue={async (value) => {
-              global.plugin.settings.api_key = value;
+              if (props.self.originalId == id)
+                global.plugin.settings.api_key = value;
               config.api_key = value;
 
               global.triggerReload();

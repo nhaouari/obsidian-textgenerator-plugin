@@ -1,6 +1,6 @@
 import React from "react";
 import LangchainBase from "./base";
-import type { AzureOpenAIInput, OpenAIInput } from "langchain/llms/openai";
+import type { AzureOpenAIInput, OpenAIInput } from "@langchain/openai";
 import { IconExternalLink } from "@tabler/icons-react";
 
 import LLMProviderInterface, { LLMConfig } from "../interface";
@@ -18,7 +18,7 @@ export default class LangchainAzureOpenAIInstructProvider
   static provider = "Langchain";
   static id = "Azure OpenAI Instruct (Langchain)" as const;
   static slug = "azureOpenaiInstruct" as const;
-  static displayName: string = "Azure OpenAI Instruct";
+  static displayName = "Azure OpenAI Instruct";
 
   llmPredict = true;
   provider = LangchainAzureOpenAIInstructProvider.provider;
@@ -56,7 +56,7 @@ export default class LangchainAzureOpenAIInstructProvider
   }
 
   async load() {
-    const { OpenAI } = await import("langchain/llms/openai");
+    const { OpenAI } = await import("@langchain/openai");
     this.llmClass = OpenAI;
   }
 

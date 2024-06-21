@@ -123,7 +123,7 @@ export default class ContextManager {
 
       const contextTemplate = this.plugin.settings.context.customInstructEnabled
         ? this.plugin.settings.context.customInstruct ||
-          this.plugin.defaultSettings.context.customInstruct
+        this.plugin.defaultSettings.context.customInstruct
         : "{{tg_selection}}";
 
       const options = await this.getDefaultContext(
@@ -385,7 +385,7 @@ export default class ContextManager {
       keys?: ReturnType<InstanceType<typeof TextGeneratorPlugin>["getApiKeys"]>;
       _variables: Record<string, true>;
     } = {
-      _variables: {},
+      _variables: {}
     };
 
     const vars =
@@ -395,9 +395,9 @@ export default class ContextManager {
     const title =
       vars["title"] || vars["mentions"]
         ? (filePath
-            ? this.app.vault.getAbstractFileByPath(filePath)?.name ||
-              this.getActiveFileTitle()
-            : this.getActiveFileTitle()) || ""
+          ? this.app.vault.getAbstractFileByPath(filePath)?.name ||
+          this.getActiveFileTitle()
+          : this.getActiveFileTitle()) || ""
         : "";
 
     const activeDocCache = this.getMetaData(filePath || "");
@@ -526,18 +526,18 @@ export default class ContextManager {
 
     const preRunnerTemplate = preRunnerContent
       ? this.handlebarsMiddleware(
-          Handlebars.compile(preRunnerContent, {
-            noEscape: true,
-          })
-        )
+        Handlebars.compile(preRunnerContent, {
+          noEscape: true,
+        })
+      )
       : null;
 
     const outputTemplate = outputContent
       ? this.handlebarsMiddleware(
-          Handlebars.compile(outputContent, {
-            noEscape: true,
-          })
-        )
+        Handlebars.compile(outputContent, {
+          noEscape: true,
+        })
+      )
       : null;
 
     return {
@@ -575,7 +575,7 @@ export default class ContextManager {
 
     if (!templateFile) throw `Template ${templatePath} couldn't be found`;
 
-    let templateContent =
+    const templateContent =
       _templateContent || (await this.app.vault.read(templateFile as TFile));
 
     const templates = this.splitTemplate(templateContent);
@@ -602,7 +602,7 @@ export default class ContextManager {
     const templateFile =
       await this.app.vault.getAbstractFileByPath(templatePath);
 
-    let templateContent = await this.app.vault.read(templateFile as TFile);
+    const templateContent = await this.app.vault.read(templateFile as TFile);
 
     const templates = this.splitTemplate(templateContent);
 
@@ -847,13 +847,13 @@ export default class ContextManager {
     const extractorMethods = getExtractorMethods().filter(
       (e) =>
         this.plugin.settings.extractorsOptions[
-          e as keyof typeof this.plugin.settings.extractorsOptions
+        e as keyof typeof this.plugin.settings.extractorsOptions
         ]
     );
 
     const targetFile = filePath
       ? app.vault.getAbstractFileByPath(filePath) ||
-        this.app.workspace.getActiveFile()
+      this.app.workspace.getActiveFile()
       : this.app.workspace.getActiveFile();
 
     const targetFileContent = editor
@@ -1245,8 +1245,8 @@ export const contextVariablesObj: Record<
   extractions: {
     example: `{{#each extractions}} {{this}} {{/each}}
 
-    Or
-    {{#each extractions.pdf}} {{this}} {{/each}}
+Or
+{{#each extractions.pdf}} {{this}} {{/each}}
     `,
     hint: `Extracted content from various sources like PDFs, images, audio files, web pages, and YouTube URLs. possible extractons: ${Object.keys(
       ExtractorSlug
@@ -1350,10 +1350,10 @@ Or
   set: {
     example: `{{#set "var1"}}
     text {{selection}}
-  {{/set}}
+{{/set}}
 
   Or
-  {{set "var1" selection}}
+{{set "var1" selection}}
   `,
     hint: "Gets value of a variable",
   },
@@ -1371,5 +1371,17 @@ Or
   error: {
     example: `{{error "Selection was empty"}}`,
     hint: "Shows a error notice to the user, and it will stop the execution.",
+  },
+
+  keys: {
+    example: `{{keys.openAIChat}}`,
+    hint: "Gives access to generic provider's api keys",
+  },
+  dataview: {
+    example: `{{#dataview}}
+    TABLE file.name, file.size
+    WHERE file.size > 2048
+{{/dataview}}`,
+    hint: "Gives access to generic provider's api keys",
   },
 };

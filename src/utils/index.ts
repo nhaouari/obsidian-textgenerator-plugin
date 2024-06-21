@@ -239,7 +239,7 @@ export async function processPromisesSetteledBatch<
 >(
   items: Array<AsyncReturnType<T>>,
   limit: number,
-  waitingBetween: number = 10
+  waitingBetween = 10
 ): Promise<PromiseSettledResult<any>[]> {
   let results: PromiseSettledResult<Awaited<AsyncReturnType<T>>>[] = [];
   for (let batchNum = 0; batchNum < items.length; batchNum += limit) {
@@ -261,7 +261,7 @@ export function promiseForceFullfil(item: any) {
   return item.status == "fulfilled" ? item.value : `FAILED: ${item?.reason}`;
 }
 
-import { SystemMessagePromptTemplate } from "langchain/prompts";
+import { SystemMessagePromptTemplate } from "@langchain/core/prompts";
 import get from "lodash.get";
 import { Handlebars } from "#/helpers/handlebars-helpers";
 
@@ -351,7 +351,7 @@ export function nFormatter(n?: number, digits = 1) {
     { value: 1e18, symbol: "E" },
   ];
   const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
-  var item = lookup
+  const item = lookup
     .slice()
     .reverse()
     .find(function (item) {
@@ -390,14 +390,14 @@ const syncWait = (ms: number) => {
 export function walkUntilTrigger(
   inputStr: string,
   triggerStrings: string[],
-  reversedWalk: boolean = false
+  reversedWalk = false
 ): string {
   if (reversedWalk) {
     inputStr = inputStr.split("").reverse().join("");
   }
 
-  let walkedStr: string = "";
-  let index: number = 0;
+  let walkedStr = "";
+  let index = 0;
 
   while (index < inputStr.length) {
     const currentChar: string = inputStr[index];
