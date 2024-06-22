@@ -48,9 +48,9 @@ export default function TemplateDetails(inProps: {
         ownedOrReq:
           pkg?.price || !pkg?.packageId
             ? {
-                allowed: true,
-                oneRequired: [],
-              }
+              allowed: true,
+              oneRequired: [],
+            }
             : await packageManager.validateOwnership(pkg?.packageId),
       });
 
@@ -60,13 +60,13 @@ export default function TemplateDetails(inProps: {
         ownedOrReq:
           pkg?.price || !pkg?.packageId
             ? {
-                allowed: true,
-                oneRequired: [],
-              }
+              allowed: true,
+              oneRequired: [],
+            }
             : {
-                allowed: false,
-                oneRequired: [],
-              },
+              allowed: false,
+              oneRequired: [],
+            },
       });
 
       packageManager.getInstalledPackageById(packageId).then((installed) => {
@@ -85,8 +85,8 @@ export default function TemplateDetails(inProps: {
     try {
       const ownedOrReq = props.installed
         ? {
-            allowed: true,
-          }
+          allowed: true,
+        }
         : await packageManager.validateOwnership(packageId);
 
       setProps((props) => ({
@@ -194,10 +194,18 @@ export default function TemplateDetails(inProps: {
   }
 
   async function update() {
-    await packageManager.updatePackage(packageId);
-    updateLocalView();
-    updateView();
-    checkForUpdates();
+    setInstalling(true);
+    try {
+
+      await packageManager.updatePackage(packageId);
+      updateLocalView();
+      updateView();
+      checkForUpdates();
+    } catch (err: any) {
+      throw err;
+    } finally {
+      setInstalling(false)
+    }
   }
 
   async function updateLocalView() {
@@ -233,8 +241,8 @@ export default function TemplateDetails(inProps: {
     }
   }
 
-  // @ts-ignore
   const enabledFeature =
+    // @ts-ignore
     !!packageManager.app.plugins.plugins["obsidian-tg-chat"];
 
   useEffect(() => {
@@ -378,9 +386,9 @@ export default function TemplateDetails(inProps: {
                 {props.installed.version !== props.package?.version && (
                   <button
                     className="mod-cta plug-tg-cursor-pointer"
-                    onClick={() => update()}
+                    onClick={() => !installing && update()}
                   >
-                    Update
+                    Update{installing ? "ing..." : ""}
                   </button>
                 )}
               </>

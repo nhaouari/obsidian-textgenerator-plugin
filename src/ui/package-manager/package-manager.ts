@@ -36,6 +36,13 @@ export default class PackageManager {
   constructor(app: App, plugin: TextGeneratorPlugin) {
     this.app = app;
     this.plugin = plugin;
+
+    this.configuration ??= {
+      installedPackagesHash: {},
+      packagesHash: {},
+      resources: {},
+      subscriptions: [],
+    };
   }
 
   getPromptsPath() {
@@ -461,9 +468,10 @@ export default class PackageManager {
   }
 
   getPackagesList() {
-    const list = Object.values(this.configuration.packagesHash).map((p) => ({
+    const list = Object.entries(this.configuration.packagesHash).map(([id, p]) => ({
       ...p,
       installed: !!this.configuration.installedPackagesHash[p.packageId],
+      packageId: id,
     }));
     return list;
   }
@@ -532,7 +540,7 @@ export default class PackageManager {
 
   getPromptById(packageId: string, promptId: string) {
     return this.configuration.installedPackagesHash[packageId]?.prompts?.find(
-      (prompt) => prompt.promptId === promptId
+      (prompt) => (prompt.promptId||prompt.id) === promptId
     );
   }
 
@@ -744,7 +752,7 @@ export default class PackageManager {
     try {
       // Read the contents of the source directory
       await this.app.vault.adapter.trashLocal(sourcePath);
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error moving folder: ${error.message}`);
     }
   }

@@ -63,6 +63,9 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
         .getPackagesList()
         .filter((p) => !p.desktopOnly || Platform.isDesktop)
     );
+
+    console.log(glob.plugin.packageManager
+      .getPackagesList())
   }
 
   function handleChange(value: string) {
