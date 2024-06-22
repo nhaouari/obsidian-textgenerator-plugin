@@ -26,6 +26,7 @@ import lodashGet from "lodash.get";
 import JSON5 from "json5";
 
 import runJsInSandbox from "./javascript-sandbox";
+import { AvailableContext } from "#/scope/context-manager";
 
 export default function Helpersfn(self: ContextManager) {
   const extract = async (id: string, cntn: string, other: any) => {
@@ -367,7 +368,7 @@ export default function Helpersfn(self: ContextManager) {
         const param = otherVariables[1] || "tg_selection";
 
         const innerTxt =
-          (await await options.fn?.({
+          (await options.fn?.({
             ...this,
             ...TemplateMetadata,
           })) || "{}";
@@ -457,6 +458,49 @@ export default function Helpersfn(self: ContextManager) {
       return "";
     },
 
+    async setProperty(...vars: any[]) {
+      const self2 = this as any as AvailableContext;
+
+      if(!self2.noteFile?.path) return;
+
+      const additionalOptions = vars.pop();
+
+      const id = vars[0];
+
+      let value = vars[1];
+
+      if (additionalOptions.fn) {
+        value = (await additionalOptions.fn(this)).trim();
+      }
+
+      self.app.fileManager.processFrontMatter(self2.noteFile,
+        (frontMatter)=>{
+          frontMatter[id] = value;
+          return frontMatter;
+        }
+      )
+
+      // lodashSet(additionalOptions.data.root, id, value);
+      return "";
+    },
+
+    async setTitle(...vars: any[]) {
+      const self2 = this as any as AvailableContext;
+
+      if(!self2.noteFile?.path) return;
+      console.log(vars.length)
+      const additionalOptions = vars.pop();
+
+      let value = vars[0];
+
+      if (additionalOptions?.fn) {
+        value = (""+await additionalOptions.fn(this))?.trim();
+      }
+      console.log({n:self2.noteFile , value})
+      await self.app.fileManager.renameFile(self2.noteFile , value)
+      return "";
+    },
+
     async extract(...vars: any[]) {
       const options: { data: { root: any }; fn: any } = vars.pop();
 
@@ -475,7 +519,7 @@ export default function Helpersfn(self: ContextManager) {
       let varname = id;
       let other = "";
       if (options.fn) {
-        cntn = await await options.fn?.(this);
+        cntn = await options.fn?.(this);
         if (otherVariables[0]) varname = `vars["${otherVariables[0]}"]`;
         other = otherVariables[1];
       } else {
@@ -502,7 +546,7 @@ export default function Helpersfn(self: ContextManager) {
 
       const otherVariables = vars;
 
-      const cntn = ((await await options.fn?.(this)) + "") as string;
+      const cntn = ((await options.fn?.(this)) + "") as string;
 
       const reg = new RegExp(otherVariables[0], otherVariables[1]);
 
@@ -682,7 +726,8 @@ export default function Helpersfn(self: ContextManager) {
       }
 
       throw new Error(res.error);
-    }
+    },
+  
   } as const;
 
   return Helpers;
