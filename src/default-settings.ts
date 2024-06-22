@@ -64,12 +64,15 @@ Starred Blocks: {{starredBlocks}}
     "tg-block-processor": true,
     reload: true,
     "disable-ribbon-icons": false,
+
   },
 
   advancedOptions: {
     generateTitleInstructEnabled: false,
     generateTitleInstruct: `Generate a title for the current document (do not use * " \\ / < > : | ? .):
 {{substring content 0 255}}`,
+
+    includeAttachmentsInRequest: false,
   },
 
   autoSuggestOptions: {

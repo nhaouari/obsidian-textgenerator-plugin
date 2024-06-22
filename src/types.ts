@@ -1,3 +1,4 @@
+import { MessageContent } from "@langchain/core/messages";
 import { llmSlugType, llmType } from "./LLMProviders";
 
 type Options = Record<
@@ -66,6 +67,8 @@ type TextGeneratorSettings = {
   advancedOptions?: {
     generateTitleInstruct?: string;
     generateTitleInstructEnabled?: boolean;
+    /** EXPERIMENTAL: in supported models, it will include images's base64 in the request  */
+    includeAttachmentsInRequest?: boolean;
   };
   autoSuggestOptions: {
     customInstructEnabled: boolean;
@@ -202,9 +205,10 @@ export type AsyncReturnType<T extends (...args: any) => Promise<any>> =
 type LiteralUnion<T extends U, U = string> = T | (U & { zz_IGNORE_ME?: never });
 
 export type Role = LiteralUnion<"assistant" | "user" | "system" | "admin">;
+
 export type Message = {
   type?: string;
   image_url?: string;
   role: Role;
-  content: string;
+  content: MessageContent;
 };

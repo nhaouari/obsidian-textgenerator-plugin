@@ -511,7 +511,7 @@ export default class TextGenerator extends RequestHandler {
         await new Promise((s) => setTimeout(s, 500));
         app.workspace.openLinkText(
           "",
-          `${path}/${contexts[0].options.templatePath}`,
+          `${path}/${contexts[0].options?.templatePath}`,
           true
         );
       },
@@ -806,10 +806,9 @@ ${removeYAML(content)}
       additionalProps?: any;
     }
   ): Promise<string> {
-    const templatePath = await await this.getTemplatePath(id);
+    const templatePath = await this.getTemplatePath(id);
     // this.plugin.endProcessing(true);
     this.plugin.startProcessing();
-    console.log({ templatePath, id });
     const [errorContext, context] = await safeAwait(
       this.plugin.contextManager.getContext({
         editor: options.editor,

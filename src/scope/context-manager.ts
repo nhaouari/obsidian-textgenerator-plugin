@@ -5,8 +5,9 @@ import {
   TFile,
   HeadingCache,
   EditorPosition,
+  arrayBufferToBase64,
 } from "obsidian";
-import { AsyncReturnType, Context } from "../types";
+import { AsyncReturnType, Context, Message } from "../types";
 import TextGeneratorPlugin from "../main";
 import { IGNORE_IN_YAML } from "../constants";
 
@@ -34,6 +35,10 @@ import { getHBValues } from "../utils/barhandles";
 
 import JSON5 from "json5";
 import type { ContentManager } from "./content-manager/types";
+import { convertArrayBufferToBase64Link } from "#/LLMProviders/utils";
+
+
+import mime from "mime-types"
 
 interface CodeBlock {
   type: string;
@@ -51,8 +56,49 @@ export interface ContextTemplate {
 export interface InputContext {
   template?: ContextTemplate;
   templatePath?: string;
-  options?: any;
+  options?: AvailableContext;
   context?: string;
+}
+
+
+export interface AvailableContext {
+  title?: string;
+  starredBlocks?: any;
+  tg_selection?: string;
+  selections?: string[];
+  selection?: string;
+  previousWord?: string;
+  nextWord?: string;
+  afterCursor?: string;
+  beforeCursor?: string;
+  inverseSelection?: string;
+  cursorParagraph?: string;
+  cursorSentence?: string;
+  frontmatter?: Record<string, any>;
+  yaml?: Record<string, any>;
+  metadata?: string;
+  content?: string;
+  headings?: AsyncReturnType<
+    InstanceType<typeof ContextManager>["getHeadingContent"]
+  >;
+  children?: AsyncReturnType<
+    InstanceType<typeof ContextManager>["getChildrenContent"]
+  >;
+  highlights?: AsyncReturnType<
+    InstanceType<typeof ContextManager>["getHighlights"]
+  >;
+  mentions?: AsyncReturnType<
+    InstanceType<typeof ContextManager>["getMentions"]
+  >;
+  extractions?: AsyncReturnType<
+    InstanceType<typeof ContextManager>["getExtractions"]
+  >;
+
+  keys: ReturnType<InstanceType<typeof TextGeneratorPlugin>["getApiKeys"]>;
+  _variables: Record<string, true>;
+
+  noteFile?: TFile;
+  templatePath?: string;
 }
 
 export default class ContextManager {
@@ -78,7 +124,7 @@ export default class ContextManager {
     templatePath?: string;
     templateContent?: string;
     addtionalOpts?: any;
-  }) {
+  }) : Promise<InputContext>{
     const templatePath = props.templatePath || "";
     const templateContent = props.templateContent || "";
 
@@ -105,6 +151,7 @@ export default class ContextManager {
       if (!templatePath.length)
         return {
           options,
+          templatePath: ""
         };
 
       const { context, inputTemplate, outputTemplate } =
@@ -115,9 +162,9 @@ export default class ContextManager {
       return {
         context,
         options,
-        template: { inputTemplate, outputTemplate },
+        template: { inputTemplate, outputTemplate: outputTemplate as any },
         templatePath: props.templatePath,
-      } as InputContext;
+      };
     } else {
       /* Without template */
 
@@ -151,7 +198,7 @@ export default class ContextManager {
       }
 
       logger("Context without template", { context, options });
-      return { context, options } as InputContext;
+      return { context, options };
     }
   }
 
@@ -268,6 +315,7 @@ export default class ContextManager {
   }) {
     const templatePath = props.templatePath || "";
     logger("getTemplateContext", props.editor, props.templatePath);
+
     const contextOptions: Context = this.plugin.settings.context;
 
     let templateContent = props.templateContent || "";
@@ -349,42 +397,9 @@ export default class ContextManager {
     contextTemplate?: string
   ) {
     logger("getDefaultContext", editor, contextTemplate);
-
-    const context: {
-      title?: string;
-      starredBlocks?: any;
-      tg_selection?: string;
-      selections?: string[];
-      selection?: string;
-      previousWord?: string;
-      nextWord?: string;
-      afterCursor?: string;
-      beforeCursor?: string;
-      inverseSelection?: string;
-      cursorParagraph?: string;
-      cursorSentence?: string;
-      frontmatter?: Record<string, any>;
-      yaml?: Record<string, any>;
-      metadata?: string;
-      content?: string;
-      headings?: AsyncReturnType<
-        InstanceType<typeof ContextManager>["getHeadingContent"]
-      >;
-      children?: AsyncReturnType<
-        InstanceType<typeof ContextManager>["getChildrenContent"]
-      >;
-      highlights?: AsyncReturnType<
-        InstanceType<typeof ContextManager>["getHighlights"]
-      >;
-      mentions?: AsyncReturnType<
-        InstanceType<typeof ContextManager>["getMentions"]
-      >;
-      extractions?: AsyncReturnType<
-        InstanceType<typeof ContextManager>["getExtractions"]
-      >;
-      keys?: ReturnType<InstanceType<typeof TextGeneratorPlugin>["getApiKeys"]>;
-      _variables: Record<string, true>;
-    } = {
+  
+    const context:  AvailableContext= {
+      keys:{},
       _variables: {}
     };
 
@@ -392,12 +407,16 @@ export default class ContextManager {
       this.getHBVariablesObjectOfTemplate(contextTemplate || "") || {};
     context["_variables"] = vars;
 
+
+    const activeFile = this.getActiveFile()
+    context.noteFile = activeFile || undefined;
+
     const title =
       vars["title"] || vars["mentions"]
         ? (filePath
           ? this.app.vault.getAbstractFileByPath(filePath)?.name ||
-          this.getActiveFileTitle()
-          : this.getActiveFileTitle()) || ""
+          activeFile?.basename
+          : activeFile?.basename) || ""
         : "";
 
     const activeDocCache = this.getMetaData(filePath || "");
@@ -484,6 +503,77 @@ export default class ContextManager {
     logger("getDefaultContext", { context });
     return context;
   }
+
+  async splitContent(markdownText: string, source?:TFile): Promise<Message["content"]> {
+    if(!source) return markdownText;
+    const metadata = app.metadataCache.getFileCache(source);
+    if(!metadata?.embeds) return markdownText;
+
+    const elements: Message["content"] = [];
+
+    // splitting
+    let lastIndex = 0;
+
+    // Sort the embeds by the length of the original text in descending order to prevent substring conflicts
+    metadata.embeds.sort((a, b) => b.original.length - a.original.length);
+
+    // Create a function to escape regex special characters in strings
+    const escapeRegex = (string:string) => string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+
+    // Replace each embed in the markdown text
+    metadata.embeds.forEach(embed => {
+        const regex = new RegExp(escapeRegex(embed.original), 'g');
+
+        markdownText.replace(regex, (match, index) => {
+            // Add text segment before the embed if there is any
+            if (index > lastIndex) {
+                elements.push({ type: "text", text: markdownText.substring(lastIndex, index) });
+            }
+
+            // Add embed segment
+            elements.push({ type: "image_url", image_url: embed.link });
+
+            lastIndex = index + match.length;
+
+            return match
+        });
+    });
+
+    // Add remaining text after the last embed
+    if (lastIndex < markdownText.length) {
+        elements.push({ type: "text", text: markdownText.substring(lastIndex) });
+    }
+
+    // making base64 for
+    for (let i = 0; i < elements.length; i++) {
+      if(elements[i].type == "image_url"){
+        // @ts-ignore
+        const path = elements[i].image_url;
+
+        const tfile = await this.app.vault.getFileByPath(path);
+        console.log({path, tfile, e:`${path}`})
+
+        if(!tfile) continue;
+        const mimtype = mime.lookup(tfile.extension) || ""
+
+
+        const buff = convertArrayBufferToBase64Link(await this.app.vault.readBinary(tfile as any), mimtype) 
+
+        if(mimtype){
+           // @ts-ignore
+          elements[i].image_url = buff
+        } else{
+          elements[i] = {
+            type:"text",
+            // @ts-ignore
+            text: elements[i].image_url
+          }
+        }
+      }
+    }
+
+    return elements;
+}
 
   overProcessTemplate(templateContent: string) {
     // ignore all scripts content
@@ -882,8 +972,8 @@ export default class ContextManager {
     return extractedContent;
   }
 
-  getActiveFileTitle() {
-    return `${this.app.workspace.getActiveFile()?.basename}`;
+  getActiveFile() {
+    return this.app.workspace.getActiveFile();
   }
 
   getMetaData(path?: string, withoutCompatibility?: boolean) {
@@ -904,12 +994,12 @@ export default class ContextManager {
         ...(!withoutCompatibility && {
           PromptInfo: {
             ...cache?.frontmatter,
-            ...(cache?.frontmatter?.PromptInfo || {}),
+            ...(cache?.frontmatter?.PromptInfo),
           },
 
           config: {
             ...cache?.frontmatter,
-            ...(cache?.frontmatter?.config || {}),
+            ...(cache?.frontmatter?.config),
             path_to_choices:
               cache?.frontmatter?.choices ||
               cache?.frontmatter?.path_to_choices,

@@ -36,7 +36,7 @@ export default class ReqFormatter {
   }
 
   getRequestParameters(
-    _params: Partial<TextGeneratorSettings>,
+    _params: Partial<TextGeneratorSettings & {prompt: Message["content"]}>,
     insertMetadata: boolean,
     templatePath = "",
     additionnalParams: {
@@ -44,6 +44,13 @@ export default class ReqFormatter {
       bodyParams?: any;
     } = {}
   ) {
+
+    console.log({
+      _params,
+      insertMetadata,
+      templatePath,
+      additionnalParams
+    })
     logger("prepareReqParameters", _params, insertMetadata, templatePath);
     const frontmatter: any = this.getFrontmatter(templatePath, insertMetadata);
 
@@ -71,7 +78,8 @@ export default class ReqFormatter {
 
     if (
       !params.messages?.length &&
-      params.prompt?.replaceAll?.("\n", "").trim().length
+     (typeof  params.prompt == "object"||  
+      params.prompt?.replaceAll?.("\n", "").trim().length)
     ) {
       bodyParams.messages.push({ role: "user", content: params.prompt || "" });
     }

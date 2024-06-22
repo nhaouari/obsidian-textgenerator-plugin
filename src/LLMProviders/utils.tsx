@@ -13,6 +13,7 @@ import {
   fetchWithoutCORS,
   useGlobal,
 } from "./refs";
+import { arrayBufferToBase64 } from "obsidian";
 
 export function ModelsHandler(props: {
   register: Parameters<LLMProviderInterface["RenderSettings"]>[0]["register"];
@@ -47,9 +48,8 @@ export function ModelsHandler(props: {
         body: "",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${
-            config.api_key || global.plugin.settings.api_key
-          }`,
+          Authorization: `Bearer ${config.api_key || global.plugin.settings.api_key
+            }`,
         },
       };
 
@@ -174,4 +174,15 @@ export function cleanConfig<T>(options: T): T {
   }
 
   return cleanedOptions;
+}
+
+
+
+
+export function convertArrayBufferToBase64Link(arrayBuffer: ArrayBuffer, type: string) {
+  // Convert the number array to a Base64 string using btoa and String.fromCharCode
+  const base64String = arrayBufferToBase64(arrayBuffer);
+
+  // Format as a data URL
+  return `data:${type || ""};base64,${base64String}`;
 }

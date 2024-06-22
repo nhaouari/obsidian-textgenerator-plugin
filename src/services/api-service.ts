@@ -4,7 +4,7 @@ import TextGeneratorPlugin from "../main";
 import ReqFormatter from "../utils/api-request-formatter";
 import ContextManager, { InputContext } from "../scope/context-manager";
 import debug from "debug";
-import { TextGeneratorSettings } from "../types";
+import { Message, TextGeneratorSettings } from "../types";
 import { Handlebars } from "../helpers/handlebars-helpers";
 import { Platform } from "obsidian";
 import LLMProviderInterface from "../LLMProviders/interface";
@@ -100,7 +100,7 @@ export default class RequestHandler {
 
     this.plugin.settings.LLMProviderOptions[props.id] = {
       ...this.plugin.settings.LLMProviderOptions[
-        props.extendsDataFrom || props.extends
+      props.extendsDataFrom || props.extends
       ],
     };
 
@@ -145,12 +145,16 @@ export default class RequestHandler {
       settings,
     });
 
-    const comp = await Handlebars.compile(
+    let promp: Message["content"]  = await Handlebars.compile(
       this.plugin.contextManager.overProcessTemplate(prompt)
     )({
       ...settings,
       templatePath: "default/default",
     });
+
+
+    if (settings.advancedOptions?.includeAttachmentsInRequest ?? this.plugin.settings.advancedOptions?.includeAttachmentsInRequest)
+      promp = await this.plugin.contextManager.splitContent(prompt)
 
     try {
       const { reqParams, bodyParams, provider, allParams } =
@@ -159,7 +163,7 @@ export default class RequestHandler {
             ...this.LLMProvider.getSettings(),
             ...settings,
             //@ts-ignore
-            prompt: comp,
+            prompt: promp,
           },
           false
         );
@@ -178,8 +182,8 @@ export default class RequestHandler {
       const result = provider.providerOptions.estimatingMode
         ? bodyParams.messages.map((m) => m.content).join(",")
         : provider.providerOptions.disableProvider
-        ? ""
-        : await this.LLMProvider.generate(
+          ? ""
+          : await this.LLMProvider.generate(
             bodyParams.messages,
             {
               ...allParams,
@@ -192,7 +196,7 @@ export default class RequestHandler {
               otherOptions:
                 this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
               stream: false,
-              llmPredict: bodyParams.messages?.length == 1,
+              llmPredict: bodyParams.messages?.length == 1 && !this.plugin.settings.advancedOptions?.includeAttachmentsInRequest,
             },
             undefined,
             provider.providerOptions
@@ -222,11 +226,12 @@ export default class RequestHandler {
       reqParams?: RequestInit | undefined;
       bodyParams?: any;
     } = {
-      showSpinner: true,
-      signal: undefined,
-    }
+        showSpinner: true,
+        signal: undefined,
+      }
   ) {
     try {
+      console.log("calling stream generate")
       logger("generate", {
         context,
         insertMetadata,
@@ -241,28 +246,25 @@ export default class RequestHandler {
       }
 
       const { options, template } = context;
+      
+      let prompt: Message["content"] = (typeof template != "undefined" && !context.context
+        ? template.inputTemplate(options)
+        : context.context) as string;
+
+        if (this.plugin.settings.advancedOptions?.includeAttachmentsInRequest)
+        prompt = await this.plugin.contextManager.splitContent(prompt, context.options?.noteFile)
 
       const { reqParams, bodyParams, provider, allParams } =
         this.reqFormatter.getRequestParameters(
           {
             ...context.options,
             ...params,
-            prompt:
-              typeof template != "undefined" && !context.context
-                ? await template.inputTemplate(options)
-                : context.context,
+            prompt,
           },
           insertMetadata,
           templatePath,
           additionnalParams
         );
-
-      console.log({
-        bodyParams,
-        options,
-        template,
-        comp: context.context,
-      });
 
       if (
         !this.LLMProvider ||
@@ -291,42 +293,42 @@ export default class RequestHandler {
         try {
           const k =
             provider.providerOptions.estimatingMode ||
-            provider.providerOptions.disableProvider
+              provider.providerOptions.disableProvider
               ? ""
               : await this.LLMProvider.generate(
-                  bodyParams.messages,
-                  {
-                    ...allParams,
-                    ...bodyParams,
-                    requestParams: {
-                      // body: JSON.stringify(bodyParams),
-                      ...reqParams,
-                      signal:
-                        additionnalParams.signal ||
-                        this.signalController?.signal,
-                    },
-                    otherOptions: this.LLMProvider.getSettings(),
-                    streaming: true,
-                    llmPredict: bodyParams.messages?.length == 1,
-                  } as any,
-                  onToken,
-                  provider.providerOptions
-                );
+                bodyParams.messages,
+                {
+                  ...allParams,
+                  ...bodyParams,
+                  requestParams: {
+                    // body: JSON.stringify(bodyParams),
+                    ...reqParams,
+                    signal:
+                      additionnalParams.signal ||
+                      this.signalController?.signal,
+                  },
+                  otherOptions: this.LLMProvider.getSettings(),
+                  streaming: true,
+                  llmPredict: bodyParams.messages?.length == 1 && !this.plugin.settings.advancedOptions?.includeAttachmentsInRequest,
+                } as any,
+                onToken,
+                provider.providerOptions
+              );
 
           // output template, template used AFTER the generation happens
           return (
             (provider.providerOptions.output?.length
               ? await Handlebars.compile(
-                  provider.providerOptions.output.replaceAll("\\n", "\n"),
-                  {
-                    noEscape: true,
-                  }
-                )
+                provider.providerOptions.output.replaceAll("\\n", "\n"),
+                {
+                  noEscape: true,
+                }
+              )
               : template?.outputTemplate)?.({
-              requestResults: k,
-              ...options,
-              output: k,
-            }) || k
+                requestResults: k,
+                ...options,
+                output: k,
+              }) || k
           );
         } catch (err: any) {
           onError?.(err);
@@ -452,6 +454,7 @@ export default class RequestHandler {
     }
   ) {
     try {
+      console.log("calling generate")
       logger("generate", {
         context,
         insertMetadata,
@@ -467,15 +470,20 @@ export default class RequestHandler {
         return Promise.reject(new Error("There is another generation process"));
       }
 
+      let prompt: Message["content"] | undefined = (typeof template != "undefined" && !context.context?.trim()
+        ? await template.inputTemplate(options)
+        : context.context) as string;
+
+        if (this.plugin.settings.advancedOptions?.includeAttachmentsInRequest)
+        prompt = await this.plugin.contextManager.splitContent(prompt)
+
+      console.log({ prompt })
       const { reqParams, bodyParams, provider, allParams } =
         this.reqFormatter.getRequestParameters(
           {
             ...context.options,
             ...params,
-            prompt:
-              typeof template != "undefined" && !context.context?.trim()
-                ? await template.inputTemplate(options)
-                : context.context,
+            prompt,
           },
           insertMetadata,
           templatePath
@@ -494,29 +502,28 @@ export default class RequestHandler {
 
       this.startLoading(additionnalParams?.showSpinner);
 
-      console.log({ provider, context, params });
       let result =
         provider.providerOptions.estimatingMode ||
-        provider.providerOptions.disableProvider
+          provider.providerOptions.disableProvider
           ? ""
           : await this.LLMProvider.generate(
-              bodyParams.messages,
-              {
-                ...allParams,
-                ...bodyParams,
-                requestParams: {
-                  // body: JSON.stringify(bodyParams),
-                  ...reqParams,
-                  signal: this.signalController?.signal,
-                },
-                otherOptions:
-                  this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
-                stream: false,
-                llmPredict: bodyParams.messages?.length == 1,
+            bodyParams.messages,
+            {
+              ...allParams,
+              ...bodyParams,
+              requestParams: {
+                // body: JSON.stringify(bodyParams),
+                ...reqParams,
+                signal: this.signalController?.signal,
               },
-              undefined,
-              provider.providerOptions
-            );
+              otherOptions:
+                this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
+              stream: false,
+              llmPredict: bodyParams.messages?.length == 1 && !this.plugin.settings.advancedOptions?.includeAttachmentsInRequest,
+            },
+            undefined,
+            provider.providerOptions
+          );
 
       // Remove leading/trailing newlines
       //   result = result.trim();
@@ -531,11 +538,11 @@ export default class RequestHandler {
 
       result = provider.providerOptions.output
         ? await Handlebars.compile(
-            provider.providerOptions.output.replaceAll("\\n", "\n"),
-            {
-              noEscape: true,
-            }
-          )(conf)
+          provider.providerOptions.output.replaceAll("\\n", "\n"),
+          {
+            noEscape: true,
+          }
+        )(conf)
         : result;
 
       result =
