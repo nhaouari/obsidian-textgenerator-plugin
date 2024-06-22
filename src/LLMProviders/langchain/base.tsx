@@ -207,16 +207,11 @@ export default class LangchainProvider
           let r: any;
           let res: BaseMessageChunk = {} as any;
 
-          console.log({ messages })
+          console.log({ messages, k: "invoked", llmpredict: reqParams.llmPredict, llmPredict2: this.llmPredict })
           if (reqParams.llmPredict || this.llmPredict)
             r = await (llm as any as ChatOpenAI).invoke(
-              messages.length > 1
-                ? // user: test1
-                // assistant: test2
-                // ...
-                messages.map((msg) => `${msg.role}:${msg.content}`).join("\n")
-                : // test1
-                messages[0].content,
+              chatToString(messages)
+              ,
               {
                 signal: params.requestParams?.signal || undefined,
                 ...this.getReqOptions(params),
@@ -285,17 +280,7 @@ export default class LangchainProvider
                 ...(
                   await (llm as HuggingFaceInference).generate(
                     reqParams.llmPredict || this.llmPredict
-                      ? messages.length > 1
-                        ? // user: test1
-                        // assistant: test2
-                        // ...
-                        [
-                          messages
-                            .map((msg) => `${msg.role}:${msg.content}`)
-                            .join("\n"),
-                        ]
-                        : // test1
-                        [messages[0].content]
+                      ? [chatToString(messages)]
                       : [
                         mapMessagesToLangchainMessages(
                           messages
@@ -315,17 +300,7 @@ export default class LangchainProvider
           requestResults = (
             await (llm as HuggingFaceInference).generate(
               reqParams.llmPredict || this.llmPredict
-                ? messages.length > 1
-                  ? // user: test1
-                  // assistant: test2
-                  // ...
-                  [
-                    messages
-                      .map((msg) => `${msg.role}:${msg.content}`)
-                      .join("\n"),
-                  ]
-                  : // test1
-                  [messages[0].content]
+                ? [chatToString(messages)]
                 : [mapMessagesToLangchainMessages(messages) as any as string],
               {
                 signal: params.requestParams?.signal || undefined,
@@ -475,14 +450,23 @@ export default class LangchainProvider
   }
 }
 
+
+
+function contentToString(content: Message["content"]) {
+  return typeof content == "string" ? content : Object.values(content).join(' ')
+}
+
 function chatToString(messages: Message[] = []) {
   return messages.length > 1
     ? // user: test1
     // assistant: test2
     // ...
-    messages.map((msg) => `${msg.role}:${msg.content}`).join("\n")
+    messages.map((msg) => {
+      return `${msg.role}:${contentToString(msg.content)}`
+    }).join("\n")
     : // test1
-    messages[0].content;
+    contentToString(messages[0].content)
+    ;
 }
 
 function getChain(chainName: string, llm: any, config: any) {
