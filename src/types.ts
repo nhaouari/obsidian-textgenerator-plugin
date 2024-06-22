@@ -167,6 +167,7 @@ type PackageTemplate = {
 };
 
 type PromptTemplate = {
+  promptId:string;
   id: string;
   name?: string;
   path?: string;

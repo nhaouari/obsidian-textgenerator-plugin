@@ -166,7 +166,7 @@ export default function ChatComp(props: {
     >
 
       <div className={clsx(
-        "plug-tg-flex plug-tg-min-h-[200px] plug-tg-w-full plug-tg-resize-y plug-tg-flex-col plug-tg-justify-end plug-tg-gap-2 plug-tg-overflow-x-hidden plug-tg-overflow-y-scroll plug-tg-pb-2 plug-tg-bg-gray-400/10 plug-tg-outline-1",
+        "plug-tg-flex plug-tg-min-h-[200px] plug-tg-w-full plug-tg-resize-y plug-tg-flex-col plug-tg-justify-end plug-tg-gap-2 plug-tg-overflow-x-hidden plug-tg-overflow-y-scroll plug-tg-bg-gray-400/10 plug-tg-pb-2 plug-tg-outline-1",
         {
           "plug-tg-tooltip plug-tg-tooltip-bottom": warn,
         }
