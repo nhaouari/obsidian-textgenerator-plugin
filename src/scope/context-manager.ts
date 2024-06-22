@@ -531,7 +531,9 @@ export default class ContextManager {
             }
 
             // Add embed segment
-            elements.push({ type: "image_url", image_url: embed.link });
+            elements.push({ type: "image_url", image_url: {
+              url: embed.link
+            } });
 
             lastIndex = index + match.length;
 
@@ -546,9 +548,10 @@ export default class ContextManager {
 
     // making base64 for
     for (let i = 0; i < elements.length; i++) {
-      if(elements[i].type == "image_url"){
+       // @ts-ignore
+      if(elements[i].type == "image_url" && elements[i].image_url){
         // @ts-ignore
-        const path = elements[i].image_url;
+        const path = elements[i].image_url?.url;
 
         const tfile = await this.app.vault.getFileByPath(path);
         console.log({path, tfile, e:`${path}`})
@@ -559,14 +562,14 @@ export default class ContextManager {
 
         const buff = convertArrayBufferToBase64Link(await this.app.vault.readBinary(tfile as any), mimtype) 
 
-        if(mimtype){
+        if(mimtype.startsWith("image")){
            // @ts-ignore
-          elements[i].image_url = buff
+          elements[i].image_url.url = buff
         } else{
           elements[i] = {
             type:"text",
             // @ts-ignore
-            text: elements[i].image_url
+            text: elements[i].image_url.url
           }
         }
       }
