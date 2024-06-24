@@ -1,5 +1,5 @@
 import { App, PluginSettingTab } from "obsidian";
-import TextGeneratorPlugin from "src/main";
+import TextGeneratorPlugin from "#/main";
 
 import { createRoot } from "react-dom/client";
 import React from "react";
@@ -15,29 +15,6 @@ export default class TextGeneratorSettingTab extends PluginSettingTab {
     super(app, plugin);
     this.plugin = plugin;
     this.app = app;
-    let models = new Map();
-    if (this.plugin.settings.models?.size > 0) {
-      models = this.plugin.settings.models;
-    } else {
-      [
-        "gpt-3.5-turbo",
-        "gpt-4",
-        "gpt-3.5-turbo-16k",
-        "gpt-3.5-turbo-16k-0613",
-        "gpt-3.5-turbo-0613",
-        "gpt-4-0314",
-        "gpt-4-0613",
-        "gpt-4-32k-0613",
-        "text-davinci-003",
-        "text-davinci-002",
-        "text-davinci-001",
-        "text-curie-001",
-        "text-babbage-001",
-        "text-ada-001",
-      ].forEach((e) => models.set(e, ""));
-      this.plugin.settings.models = models;
-      this.plugin.saveSettings();
-    }
   }
 
   async reloadPlugin() {
