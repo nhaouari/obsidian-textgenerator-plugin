@@ -3,10 +3,10 @@ import useGlobal from "../../context/global";
 import SettingsSection from "../components/section";
 import { useToggle } from "usehooks-ts";
 import type { Register } from ".";
-import attemptLogin, { attemptLogout } from "#/ui/package-manager/login";
-import Profile from "#/ui/package-manager/profile";
+import attemptLogin, { attemptLogout } from "#/scope/package-manager/login";
+import Profile from "#/scope/package-manager/profile";
 import SettingItem from "../components/item";
-import { ProviderServer } from "#/ui/package-manager/package-manager";
+import { ProviderServer } from "#/scope/package-manager/package-manager";
 
 export default function AccountSetting(props: { register: Register }) {
   const global = useGlobal();

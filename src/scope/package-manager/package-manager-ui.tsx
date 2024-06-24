@@ -3,7 +3,7 @@ import TextGeneratorPlugin from "src/main";
 import * as React from "react";
 import { PackageManagerView } from "./package-manager-view";
 import { createRoot } from "react-dom/client";
-import { GlobalProvider } from "../context/global";
+import { GlobalProvider } from "#/ui/context/global";
 
 export class PackageManagerUI extends Modal {
   result: string | undefined;

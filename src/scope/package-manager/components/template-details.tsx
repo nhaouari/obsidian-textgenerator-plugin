@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import DownloadSVG from "./svgs/download";
-import BadgeCheckSVG from "./svgs/badge-check";
+import DownloadSVG from "#/ui/svgs/download";
+import BadgeCheckSVG from "#/ui/svgs/badge-check";
 import { nFormatter } from "#/utils";
 import PackageManager, { ProviderServer } from "../package-manager";
 import { PackageTemplate } from "#/types";

@@ -1,16 +1,17 @@
 import { Command, Editor, Notice } from "obsidian";
 import TextGeneratorPlugin from "../main";
 import { TemplatesModal } from "../models/model";
-import { PackageManagerUI } from "../ui/package-manager/package-manager-ui";
-import { SetMaxTokens } from "../ui/settings/components/set-max-tokens";
-import { TextExtractorTool } from "../ui/text-extractor-tool";
 
-import { SetLLM } from "../ui/settings/components/set-llm";
+import { PackageManagerUI } from "#/scope/package-manager/package-manager-ui";
+import ContentManagerCls from "#/scope/content-manager";
+
+import { SetMaxTokens } from "#/ui/settings/components/set-max-tokens";
+import { TextExtractorTool } from "#/ui/text-extractor-tool";
+import { SetLLM } from "#/ui/settings/components/set-llm";
+import { VIEW_Playground_ID } from "#/ui/playground";
+import { VIEW_TOOL_ID } from "#/ui/tool";
 
 import debug from "debug";
-import { VIEW_TOOL_ID } from "#/ui/tool";
-import { VIEW_Playground_ID } from "#/ui/playground";
-import ContentManagerCls from "#/scope/content-manager";
 const logger = debug("textgenerator:main");
 
 export default class Commands {

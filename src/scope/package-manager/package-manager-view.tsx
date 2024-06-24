@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import TemplateItem from "./components/template-item";
 import TemplateDetails from "./components/template-details";
 import { PackageTemplate } from "#/types";
-import useglobal from "../context/global";
+import useglobal from "#/ui/context/global";
 import type { PackageManagerUI } from "./package-manager-ui";
 import attemptLogin, { attemptLogout } from "./login";
 import Profile from "./profile";

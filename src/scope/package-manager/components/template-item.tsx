@@ -1,8 +1,8 @@
 import { PackageTemplate } from "#/types";
 import { nFormatter } from "#/utils";
 import React from "react";
-import DownloadSVG from "./svgs/download";
-import BadgeCheckSVG from "./svgs/badge-check";
+import DownloadSVG from "#/ui/svgs/download";
+import BadgeCheckSVG from "#/ui/svgs/badge-check";
 import clsx from "clsx";
 
 function TemplateItem(props: {

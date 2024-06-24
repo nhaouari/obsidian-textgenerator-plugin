@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import useGlobal from "../../context/global";
+import useGlobal from "#/ui/context/global";
 import type { LoginUI } from "./login-ui";
 import { request } from "obsidian";
 import { ProviderServer } from "../package-manager";

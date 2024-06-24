@@ -1,7 +1,7 @@
 import React from "react";
-import useGlobal from "../../context/global";
+import useGlobal from "#/ui/context/global";
 import type GratitudeUI from "./ui";
-import GratitudeSvg from "../components/svgs/gratitude";
+import GratitudeSvg from "#/ui/svgs/gratitude";
 import TemplateDetails from "../components/template-details";
 
 export default function GratitudeView(p: { parent: GratitudeUI; data: any }) {
@@ -25,8 +25,8 @@ export default function GratitudeView(p: { parent: GratitudeUI; data: any }) {
               <TemplateDetails
                 packageId={p.data.packageId}
                 packageManager={global.plugin.packageManager}
-                checkForUpdates={() => {}}
-                updateView={() => {}}
+                checkForUpdates={() => { }}
+                updateView={() => { }}
                 mini
               />
             </div>

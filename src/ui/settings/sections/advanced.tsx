@@ -3,8 +3,8 @@ import useGlobal from "../../context/global";
 import SettingItem from "../components/item";
 import SettingsSection from "../components/section";
 import Input from "../components/input";
+import Confirm from "#/ui/components/confirm";
 import type { Register } from ".";
-import Confirm from "#/ui/package-manager/components/confirm";
 export default function AdvancedSetting(props: { register: Register }) {
   const global = useGlobal();
 

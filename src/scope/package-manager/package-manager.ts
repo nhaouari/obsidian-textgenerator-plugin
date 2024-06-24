@@ -14,7 +14,7 @@ import {
 import TextGeneratorPlugin from "src/main";
 import { gt } from "semver";
 import debug from "debug";
-import Confirm from "./components/confirm";
+import Confirm from "#/ui/components/confirm";
 import { createFolder, processPromisesSetteledBatch } from "#/utils";
 import set from "lodash.set";
 import JSON5 from "json5";
@@ -120,7 +120,7 @@ export default class PackageManager {
           await self.plugin.packageManager.setApiKey(apikey);
         }
       );
-    } catch {}
+    } catch { }
 
     try {
       this.plugin.registerAction<{ packageId?: string }>(
@@ -142,7 +142,7 @@ export default class PackageManager {
             );
         }
       );
-    } catch {}
+    } catch { }
   }
 
   async initConfigFlie() {
@@ -398,7 +398,7 @@ export default class PackageManager {
         if (await adapter.exists(to))
           if (promptId) await adapter.remove(to);
           else await adapter.rmdir(to, true);
-      } catch {}
+      } catch { }
 
       if (!promptId) {
         const list = (await adapter.list(from)).files;
@@ -540,7 +540,7 @@ export default class PackageManager {
 
   getPromptById(packageId: string, promptId: string) {
     return this.configuration.installedPackagesHash[packageId]?.prompts?.find(
-      (prompt) => (prompt.promptId||prompt.id) === promptId
+      (prompt) => (prompt.promptId || prompt.id) === promptId
     );
   }
 
@@ -809,7 +809,7 @@ export default class PackageManager {
       (p) =>
         !this.getPackageById(p.packageId) ||
         JSON.stringify(p) !=
-          JSON.stringify(this.configuration.packagesHash[p.packageId])
+        JSON.stringify(this.configuration.packagesHash[p.packageId])
     );
 
     newPackages.forEach((e) => {

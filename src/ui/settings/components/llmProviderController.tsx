@@ -7,7 +7,7 @@ import useGlobal from "../../context/global";
 import Input from "./input";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import clsx from "clsx";
-import Confirm from "#/ui/package-manager/components/confirm";
+import Confirm from "#/ui/components/confirm";
 import ExportImportHandler from "#/ui/components/exportImport";
 import { z } from "zod";
 
@@ -188,12 +188,12 @@ export default function LLMProviderController(props: {
                 className="plug-tg-input-sm"
                 placeholder={
                   global.plugin.textGenerator.LLMRegestry.UnProviderNames[
-                    selectedLLMId
+                  selectedLLMId
                   ]
                 }
                 value={
                   global.plugin.textGenerator.LLMRegestry.UnProviderNames[
-                    selectedLLMId
+                  selectedLLMId
                   ]
                 }
                 setValue={async (val) => {
