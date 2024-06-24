@@ -142,51 +142,51 @@ export default function ConsideredContextSetting(props: {
         </SettingItem>
         {global.plugin.settings.advancedOptions
           ?.generateTitleInstructEnabled && (
-          <>
-            <SettingItem
-              name=""
-              description=""
-              register={props.register}
-              sectionId={sectionId}
-              textArea
-            >
-              <textarea
-                placeholder="Textarea will autosize to fit the content"
-                className="plug-tg-input plug-tg-h-fit plug-tg-w-full plug-tg-resize-y plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none"
-                value={
-                  global.plugin.settings.advancedOptions
-                    ?.generateTitleInstruct ||
-                  global.plugin.defaultSettings.advancedOptions
-                    ?.generateTitleInstruct
-                }
-                onChange={async (e) => {
-                  if (!global.plugin.settings.advancedOptions)
-                    global.plugin.settings.advancedOptions = {
-                      generateTitleInstructEnabled: true,
-                      generateTitleInstruct: e.target.value,
-                    };
+            <>
+              <SettingItem
+                name=""
+                description=""
+                register={props.register}
+                sectionId={sectionId}
+                textArea
+              >
+                <textarea
+                  placeholder="Textarea will autosize to fit the content"
+                  className="plug-tg-input plug-tg-h-fit plug-tg-w-full plug-tg-resize-y plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none"
+                  value={
+                    global.plugin.settings.advancedOptions
+                      ?.generateTitleInstruct ||
+                    global.plugin.defaultSettings.advancedOptions
+                      ?.generateTitleInstruct
+                  }
+                  onChange={async (e) => {
+                    if (!global.plugin.settings.advancedOptions)
+                      global.plugin.settings.advancedOptions = {
+                        generateTitleInstructEnabled: true,
+                        generateTitleInstruct: e.target.value,
+                      };
 
-                  global.plugin.settings.advancedOptions.generateTitleInstruct =
-                    e.target.value;
+                    global.plugin.settings.advancedOptions.generateTitleInstruct =
+                      e.target.value;
 
-                  global.triggerReload();
-                  await global.plugin.saveSettings();
+                    global.triggerReload();
+                    await global.plugin.saveSettings();
+                  }}
+                  spellCheck={false}
+                  rows={10}
+                />
+              </SettingItem>
+              <AvailableVars
+                vars={{
+                  ...contextVariablesObj,
+                  query: {
+                    example: "{{content255}}",
+                    hint: "first 255 letters of trimmed content of the note",
+                  },
                 }}
-                spellCheck={false}
-                rows={10}
               />
-            </SettingItem>
-            <AvailableVars
-              vars={{
-                ...contextVariablesObj,
-                query: {
-                  example: "{{content255}}",
-                  hint: "first 255 letters of trimmed content of the note",
-                },
-              }}
-            />
-          </>
-        )}
+            </>
+          )}
 
         <SettingItem
           name="TG Selection Limiter(regex)"
@@ -238,7 +238,7 @@ export default function ConsideredContextSetting(props: {
 
         {(["includeClipboard"] as (keyof Context)[])
           //   .filter((d) => !contextNotForTemplate.contains(d as any))
-          .map((key) => {
+          .map((key: any) => {
             const moreData = extendedInfo[key];
             return (
               <SettingItem
@@ -256,7 +256,7 @@ export default function ConsideredContextSetting(props: {
                   value={
                     "" +
                     global.plugin.settings.context[
-                      key as keyof typeof global.plugin.settings.context
+                    key as keyof typeof global.plugin.settings.context
                     ]
                   }
                   setValue={async (val) => {

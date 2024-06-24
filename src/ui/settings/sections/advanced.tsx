@@ -135,8 +135,8 @@ export default function AdvancedSetting(props: { register: Register }) {
         />
       </SettingItem>
 
-      {!!global.plugin.settings.experiment && <SettingItem
-        name="include Attachments In Request"
+      <SettingItem
+        name="include Attachments"
         description="EXPERIMENTAL: adds the images that are referenced in the request, IT MIGHT CONSUME ALOT OF TOKENS"
         register={props.register}
         sectionId={sectionId}
@@ -152,7 +152,7 @@ export default function AdvancedSetting(props: { register: Register }) {
             global.triggerReload();
           }}
         />
-      </SettingItem>}
+      </SettingItem>
 
 
       <SettingItem
