@@ -10,12 +10,13 @@
     "dev": "npm run build:css && node esbuild.config.mjs",
     "build": "npm run build:css && node esbuild.config.mjs production",
     "version": "node version-bump.mjs",
-    "version:go": "node version-bump.mjs --go",
+    "version:go": "node ./scripts/version-bump.mjs --go",
     "eslint": "eslint  --fix ./src/**/*.{js,jsx,ts,tsx,json}",
     "build:css": "postcss ./src/css/global.css -o styles.css",
     "dev:css": "postcss ./src/css/global.css -o styles.css --watch",
     "prettier:check": "prettier --check \"**/*.{ts,tsx,js,md,mdx,css,yaml}\"",
-    "prettier:format": "prettier --write \"**/*.{ts,tsx,js,md,mdx,css,yaml}\""
+    "prettier:format": "prettier --write \"**/*.{ts,tsx,js,md,mdx,css,yaml}\"",
+    "remove-tag": "node ./scripts/remove-tag.js"
   },
   "keywords": [],
   "author": "",
