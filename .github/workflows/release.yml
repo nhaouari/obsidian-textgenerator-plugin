@@ -4,8 +4,10 @@ on:
         # Sequence of patterns matched against refs/tags
         tags:
             - "*"
+
 permissions:
     contents: write
+
 jobs:
     build:
         runs-on: ubuntu-latest
@@ -13,19 +15,21 @@ jobs:
             - uses: actions/checkout@v3
               with:
                   fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
+
             - uses: actions/setup-node@v3
               with:
-                  node-version: "16.x" # You might need to adjust this value to your own version
+                  node-version: "21.x" # You might need to adjust this value to your own version
 
             - uses: pnpm/action-setup@v2
               name: Install pnpm
               with:
-                  version: 6
+                  version: 8
                   run_install: false
 
             - name: Git Submodule Update
               run: |
                 git submodule update --init
+
             # Build the plugin
             - name: Build
               run: |
