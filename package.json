@@ -69,7 +69,7 @@
     "@langchain/anthropic": "^0.1.21",
     "@langchain/community": "^0.2.3",
     "@langchain/core": "^0.2.1",
-    "@langchain/google-genai": "^0.0.16",
+    "@langchain/google-genai": "^0.0.21",
     "@langchain/openai": "^0.0.33",
     "@mozilla/readability": "^0.4.4",
     "@react-icons/all-files": "^4.1.0",
