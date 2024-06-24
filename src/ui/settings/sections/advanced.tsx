@@ -136,7 +136,7 @@ export default function AdvancedSetting(props: { register: Register }) {
       </SettingItem>
 
       {!!global.plugin.settings.experiment && <SettingItem
-        name="include Attachments InRequest"
+        name="include Attachments In Request"
         description="EXPERIMENTAL: adds the images that are referenced in the request, IT MIGHT CONSUME ALOT OF TOKENS"
         register={props.register}
         sectionId={sectionId}
