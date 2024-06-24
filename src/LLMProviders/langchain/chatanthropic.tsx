@@ -8,13 +8,20 @@ import { BaseLanguageModelParams } from "@langchain/core/language_models/base";
 
 import { Input, SettingItem, useGlobal } from "../refs";
 import type { AnthropicInput } from "@langchain/anthropic";
+import { ModelsHandler } from "../utils";
 
 const logger = debug("textgenerator:llmProvider:chatanthropic");
 
+
+const default_values = {
+  model: "claude-3-5-sonnet-20240620",
+};
+
+
+
 export default class LangchainChatAnthropicProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   static provider = "Langchain";
   static id = "Chat Anthropic (Langchain)" as const;
   static slug = "anthropic" as const;
@@ -108,22 +115,12 @@ export default class LangchainChatAnthropicProvider
             }}
           />
         </SettingItem>
-        <SettingItem
-          name="model"
+        <ModelsHandler
           register={props.register}
           sectionId={props.sectionId}
-        >
-          <Input
-            value={config.model}
-            placeholder="Enter your Model name"
-            setValue={async (value) => {
-              config.model = value;
-              global.triggerReload();
-              // TODO: it could use a debounce here
-              await global.plugin.saveSettings();
-            }}
-          />
-        </SettingItem>
+          llmProviderId={props.self.originalId || id}
+          default_values={default_values}
+        />
         <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">
           <div className="plug-tg-text-lg plug-tg-opacity-70">Useful links</div>
           <a href="https://docs.anthropic.com/claude/reference/getting-started-with-the-api">

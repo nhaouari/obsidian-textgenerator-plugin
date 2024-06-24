@@ -167,7 +167,7 @@ type PackageTemplate = {
 };
 
 type PromptTemplate = {
-  promptId:string;
+  promptId: string;
   id: string;
   name?: string;
   path?: string;
@@ -205,7 +205,7 @@ export type AsyncReturnType<T extends (...args: any) => Promise<any>> =
 
 type LiteralUnion<T extends U, U = string> = T | (U & { zz_IGNORE_ME?: never });
 
-export type Role = LiteralUnion<"assistant" | "user" | "system" | "admin">;
+export type Role = LiteralUnion<"assistant" | "user" | "human" | "system" | "admin">;
 
 export type Message = {
   type?: string;

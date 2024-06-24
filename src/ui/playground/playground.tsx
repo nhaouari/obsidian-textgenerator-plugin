@@ -120,7 +120,7 @@ export default function ChatComp(props: {
           await props.plugin.textGenerator.LLMProvider.generate(
             [
               {
-                role: "user",
+                role: "human",
                 content: result,
               },
             ],

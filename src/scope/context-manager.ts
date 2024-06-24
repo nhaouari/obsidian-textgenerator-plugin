@@ -39,6 +39,7 @@ import { convertArrayBufferToBase64Link } from "#/LLMProviders/utils";
 
 
 import mime from "mime-types"
+import { InputOptions } from "#/lib/models";
 
 interface CodeBlock {
   type: string;
@@ -124,7 +125,7 @@ export default class ContextManager {
     templatePath?: string;
     templateContent?: string;
     addtionalOpts?: any;
-  }) : Promise<InputContext>{
+  }): Promise<InputContext> {
     const templatePath = props.templatePath || "";
     const templateContent = props.templateContent || "";
 
@@ -397,9 +398,9 @@ export default class ContextManager {
     contextTemplate?: string
   ) {
     logger("getDefaultContext", editor, contextTemplate);
-  
-    const context:  AvailableContext= {
-      keys:{},
+
+    const context: AvailableContext = {
+      keys: {},
       _variables: {}
     };
 
@@ -504,10 +505,10 @@ export default class ContextManager {
     return context;
   }
 
-  async splitContent(markdownText: string, source?:TFile): Promise<Message["content"]> {
-    if(!source) return markdownText;
+  async splitContent(markdownText: string, source?: TFile, options?: InputOptions): Promise<Message["content"]> {
+    if (!source) return markdownText;
     const metadata = app.metadataCache.getFileCache(source);
-    if(!metadata?.embeds) return markdownText;
+    if (!metadata?.embeds) return markdownText;
 
     const elements: Message["content"] = [];
 
@@ -518,56 +519,62 @@ export default class ContextManager {
     metadata.embeds.sort((a, b) => b.original.length - a.original.length);
 
     // Create a function to escape regex special characters in strings
-    const escapeRegex = (string:string) => string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const escapeRegex = (string: string) => string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 
     // Replace each embed in the markdown text
     metadata.embeds.forEach(embed => {
-        const regex = new RegExp(escapeRegex(embed.original), 'g');
+      const regex = new RegExp(escapeRegex(embed.original), 'g');
 
-        markdownText.replace(regex, (match, index) => {
-            // Add text segment before the embed if there is any
-            if (index > lastIndex) {
-                elements.push({ type: "text", text: markdownText.substring(lastIndex, index) });
-            }
+      markdownText.replace(regex, (match, index) => {
+        // Add text segment before the embed if there is any
+        if (index > lastIndex) {
+          elements.push({ type: "text", text: markdownText.substring(lastIndex, index) });
+        }
 
-            // Add embed segment
-            elements.push({ type: "image_url", image_url: {
-              url: embed.link
-            } });
-
-            lastIndex = index + match.length;
-
-            return match
+        // Add embed segment
+        elements.push({
+          type: "image_url",
+          image_url: {
+            url: embed.link
+          }
         });
+
+        lastIndex = index + match.length;
+
+        return match
+      });
     });
 
     // Add remaining text after the last embed
     if (lastIndex < markdownText.length) {
-        elements.push({ type: "text", text: markdownText.substring(lastIndex) });
+      elements.push({ type: "text", text: markdownText.substring(lastIndex) });
     }
 
     // making base64 for
     for (let i = 0; i < elements.length; i++) {
-       // @ts-ignore
-      if(elements[i].type == "image_url" && elements[i].image_url){
+      // @ts-ignore
+      if (elements[i].type == "image_url" && elements[i].image_url?.url && !elements[i].image_url.url.startsWith("http")) {
         // @ts-ignore
         const path = elements[i].image_url?.url;
 
         const tfile = await this.app.vault.getFileByPath(path);
-        console.log({path, tfile, e:`${path}`})
 
-        if(!tfile) continue;
+        if (!tfile) continue;
         const mimtype = mime.lookup(tfile.extension) || ""
 
 
-        const buff = convertArrayBufferToBase64Link(await this.app.vault.readBinary(tfile as any), mimtype) 
+        const buff = convertArrayBufferToBase64Link(await this.app.vault.readBinary(tfile as any), mimtype)
 
-        if(mimtype.startsWith("image")){
-           // @ts-ignore
+        if (
+          (options?.images && mimtype.startsWith("image"))
+          || (options?.audio && mimtype.startsWith("audio"))
+          || (options?.videos && mimtype.startsWith("video"))
+        ) {
+          // @ts-ignore
           elements[i].image_url.url = buff
-        } else{
+        } else {
           elements[i] = {
-            type:"text",
+            type: "text",
             // @ts-ignore
             text: elements[i].image_url.url
           }
@@ -576,7 +583,7 @@ export default class ContextManager {
     }
 
     return elements;
-}
+  }
 
   overProcessTemplate(templateContent: string) {
     // ignore all scripts content
@@ -594,6 +601,7 @@ export default class ContextManager {
     let inputContent, outputContent, preRunnerContent;
     if (templateContent.includes("***")) {
       const splitContent = templateContent
+        // @ts-ignore
         .replaceAll("\\***", "")
         .split("\n***");
       inputContent = this.overProcessTemplate(

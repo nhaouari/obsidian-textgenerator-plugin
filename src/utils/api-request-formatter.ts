@@ -5,6 +5,7 @@ import ContextManager from "../scope/context-manager";
 import debug from "debug";
 import { transformStringsToChatFormat } from ".";
 import { LLMConfig } from "../LLMProviders/interface";
+import { AI_MODELS } from "#/constants";
 const logger = debug("textgenerator:ReqFormatter");
 export default class ReqFormatter {
   plugin: TextGeneratorPlugin;
@@ -35,8 +36,8 @@ export default class ReqFormatter {
     };
   }
 
-  getRequestParameters(
-    _params: Partial<TextGeneratorSettings & {prompt: Message["content"]}>,
+  async getRequestParameters(
+    _params: Partial<TextGeneratorSettings & { prompt: string }>,
     insertMetadata: boolean,
     templatePath = "",
     additionnalParams: {
@@ -56,13 +57,22 @@ export default class ReqFormatter {
 
     const params = {
       ...this.plugin.settings,
+      ...this.plugin.defaultSettings.LLMProviderOptions[
+      frontmatter?.config?.provider ||
+      (this.plugin.settings.selectedProvider as any)],
       ...this.plugin.settings.LLMProviderOptions[
-        frontmatter?.config?.provider ||
-          (this.plugin.settings.selectedProvider as any)
+      frontmatter?.config?.provider ||
+      (this.plugin.settings.selectedProvider as any)
       ],
       ...this.getFrontmatter(templatePath, insertMetadata),
       ..._params,
+
     };
+
+    if (params.includeAttachmentsInRequest ?? params.advancedOptions?.includeAttachmentsInRequest)
+
+      console.log(AI_MODELS[params.model], AI_MODELS, params.model)
+    params.promp = await this.plugin.contextManager.splitContent(params.prompt, params.noteFile, AI_MODELS[params.model]?.inputOptions || {})
 
     let bodyParams: Partial<LLMConfig & { prompt: string }> & {
       messages: Message[];
@@ -78,10 +88,10 @@ export default class ReqFormatter {
 
     if (
       !params.messages?.length &&
-     (typeof  params.prompt == "object"||  
-      params.prompt?.replaceAll?.("\n", "").trim().length)
+      (typeof params.prompt == "object" ||
+        params.prompt?.replaceAll?.("\n", "").trim().length)
     ) {
-      bodyParams.messages.push({ role: "user", content: params.prompt || "" });
+      bodyParams.messages.push({ role: "human", content: params.prompt || "" });
     }
 
     const provider: {

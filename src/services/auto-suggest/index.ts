@@ -34,11 +34,11 @@ export class AutoSuggest {
     | undefined;
   scope:
     | (Scope & {
-        keys: {
-          key: string;
-          func: any;
-        }[];
-      })
+      keys: {
+        key: string;
+        func: any;
+      }[];
+    })
     | undefined;
   isOpen = false;
   app: App;
@@ -103,7 +103,7 @@ ${context.query}`;
           autoSuggestOptions.selectedProvider
         );
       const re = await this.plugin.textGenerator.LLMProvider.generateMultiple(
-        [{ role: "user", content: prompt }],
+        [{ role: "human", content: prompt }],
         {
           stream: false,
           n: parseInt(

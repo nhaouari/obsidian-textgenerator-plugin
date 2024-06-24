@@ -12,30 +12,6 @@ import runJSInSandbox from "#/helpers/javascript-sandbox";
 
 const logger = debug("textgenerator:CustomProvider");
 
-const globalVars: Record<string, boolean> = {
-  n: true,
-  temperature: true,
-  timeout: true,
-  stream: true,
-  messages: true,
-  max_tokens: true,
-  stop: true,
-};
-
-const testMessages = [
-  {
-    role: "user",
-    content: "test",
-  },
-  {
-    role: "assistant",
-    content: `test2
-test3
-
-test4`,
-  },
-];
-
 export const default_values = {
   endpoint: "https://api.openai.com/v1/chat/completions",
   custom_header: `{

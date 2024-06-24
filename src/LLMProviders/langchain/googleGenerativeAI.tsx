@@ -12,13 +12,12 @@ import { Input, SettingItem, useGlobal } from "../refs";
 const logger = debug("textgenerator:llmProvider:gemini");
 
 const default_values = {
-  model: "models/gemini-pro",
+  model: "gemini-1.5-pro",
 };
 
 export default class LangchainChatGoogleGenerativeAIProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   static provider = "Langchain";
   static id = "Google GenerativeAI (Langchain)" as const;
   static slug = "googleGenerativeAI" as const;
