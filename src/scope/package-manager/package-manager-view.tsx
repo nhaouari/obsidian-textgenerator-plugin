@@ -8,6 +8,8 @@ import attemptLogin, { attemptLogout } from "./login";
 import Profile from "./profile";
 import { Platform } from "obsidian";
 import { ProviderServer } from "./package-manager";
+import { useDebounceCallback } from "usehooks-ts";
+import clsx from "clsx";
 
 export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   const glob = useglobal();
@@ -22,6 +24,8 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   const [justInstalled, setJustInstalled] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [packagesIdsToUpdate, setPackagesIdsTOUpdate] = useState<string[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string>();
 
   const pacakgeIdsToUpdateHash = useMemo(() => {
     const hash: Record<string, boolean> = {};
@@ -63,9 +67,6 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
         .getPackagesList()
         .filter((p) => !p.desktopOnly || Platform.isDesktop)
     );
-
-    console.log(glob.plugin.packageManager
-      .getPackagesList())
   }
 
   function handleChange(value: string) {
@@ -81,9 +82,17 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
   }
 
   async function checkForUpdates() {
-    await glob.plugin.packageManager.fetch();
     setPackagesIdsTOUpdate(await glob.plugin.packageManager.checkUpdates());
   }
+
+  async function reload() {
+    await glob.plugin.packageManager.fetch();
+    await checkForUpdates();
+    await glob.plugin.packageManager.updatePackagesStats();
+    await updateView();
+  }
+
+  const reloadDebounced = useDebounceCallback(reload, 1000);
 
   useEffect(() => {
     setSelectedIndex(-1);
@@ -95,7 +104,7 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
       try {
         await glob.plugin.packageManager.updateBoughtResources();
       } catch (err: any) {
-        console.warn("couldn't updateBoughtResources");
+        setError(err.message);
       }
       await updateView();
     })();
@@ -190,7 +199,19 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                       <button
                         aria-label="Check for updates"
                         className="clickable-icon"
-                        onClick={() => checkForUpdates()}
+                        disabled={refreshing}
+                        onClick={async () => {
+                          setRefreshing(true);
+                          try {
+                            await reloadDebounced();
+
+                            await new Promise((s) => setTimeout(s, 1000));
+                          } catch (err: any) {
+                            setError(err.message);
+                          }
+
+                          setRefreshing(false);
+                        }}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -202,7 +223,10 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                           strokeWidth="2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          className="svg-icon lucide-refresh-cw"
+                          className={clsx("svg-icon lucide-refresh-cw", {
+                            // tailwind spin
+                            "plug-tg-animate-spin plug-tg-duration-700": refreshing,
+                          })}
                         >
                           <path d="M21 2v6h-6"></path>
                           <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
@@ -210,6 +234,10 @@ export const PackageManagerView = (p: { parent: PackageManagerUI }) => {
                           <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
                         </svg>
                       </button>
+
+                      <div className="plug-tg-text-sm plug-tg-text-red-500">
+                        {error}
+                      </div>
                     </div>
                   </div>
                   {!(selectedIndex !== -1 && items[selectedIndex]) &&

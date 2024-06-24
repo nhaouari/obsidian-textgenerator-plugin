@@ -29,6 +29,7 @@ export const PackageProviderid = "package-provider";
 
 export const ProviderServer = "";
 
+
 export default class PackageManager {
   configuration: TextGeneratorConfiguration;
   app: App;
@@ -202,8 +203,8 @@ export default class PackageManager {
     logger("fetch start");
     await this.updatePackagesList(); // new packageIds
     logger("fetch updatePackagesList OK");
-    await this.updatePackagesStats(); // update download states
-    logger("fetch updatePackagesStats OK");
+    // await this.updatePackagesStats(); // update download states
+    // logger("fetch updatePackagesStats OK");
     await this.updatePackagesInfo(); // update of packages in their repo
     logger("fetch updatePackagesInfo OK");
     try {
@@ -503,7 +504,7 @@ export default class PackageManager {
         //const release = await this.getReleaseByRepo(repo);
         //const manifest= await this.getAsset(release,'manifest.json');
         const url = `https://raw.githubusercontent.com/${repo}/master/manifest.json`;
-        manifest = JSON5.parse(await request({ url: url })) as any;
+        manifest = JSON5.parse(await request({ url: url, throw: true })) as any;
         // console.log(manifest);
         this.setPackageInfo(packageId, manifest as any);
       } catch (err: any) {
@@ -560,7 +561,7 @@ export default class PackageManager {
     logger("getReleaseByRepo", { repo });
     const rawReleases = JSON5.parse(
       await request({
-        url: `https://api.github.com/repos/${repo}/releases`,
+        url: `https://api.github.com/repos/${repo}/releases`, throw: true
       })
     ) as any;
 
@@ -597,7 +598,7 @@ export default class PackageManager {
     logger("getAsset end", { release, name });
 
     const txt = await request({
-      url: asset.url,
+      url: asset.url, throw: true
     });
     return JSON5.parse(txt) as {
       packageId: string;
@@ -610,7 +611,7 @@ export default class PackageManager {
     const repo = await this.getPackageById(packageId)?.repo;
     const url = `https://raw.githubusercontent.com/${repo}/main/README.md`;
     try {
-      const readmeMD = await request({ url: url });
+      const readmeMD = await request({ url: url, throw: true });
       const el = document.createElement("div");
       MarkdownRenderer.render(this.app, readmeMD, el, "", this.plugin);
       logger(" getReadme end", { packageId });
@@ -637,7 +638,7 @@ export default class PackageManager {
       await this.writePrompt(
         packageId,
         promptId,
-        await request({ url: url }),
+        await request({ url: url, throw: true }),
         overwrite
       );
       this.configuration.installedPackagesHash[
@@ -796,12 +797,12 @@ export default class PackageManager {
   async updatePackagesList() {
     logger("updatePackagesList");
     const remotePackagesList: PackageTemplate[] = [
-      ...((JSON5.parse(await request({ url: packageRegistry })) || []) as any)
+      ...((JSON5.parse(await request({ url: packageRegistry, throw: true })) || []) as any)
         // to exclude any community features or labled as core
         .filter((p: PackageTemplate) => p.type !== "feature" && !p.core),
 
       // core packages can be templates or features
-      ...((JSON5.parse(await request({ url: corePackageRegistry })) ||
+      ...((JSON5.parse(await request({ url: corePackageRegistry, throw: true })) ||
         []) as any),
     ];
 
@@ -839,12 +840,22 @@ export default class PackageManager {
     logger("updatePackagesStats");
     const stats: any = await this.getStats();
 
+    console.log({
+      stats,
+      packagesHash: this.configuration.packagesHash,
+    })
+
     Object.values(this.configuration.packagesHash).forEach((p) => {
       this.configuration.packagesHash[p.packageId] = {
         ...this.configuration.packagesHash[p.packageId],
-        downloads: stats[p.packageId] ? stats[p.packageId].downloads : 0,
+        downloads: stats[p.packageId] ? stats[p.packageId].downloads : this.configuration.packagesHash[p.packageId]?.downloads || 0,
       };
     });
+
+    console.log({
+      stats,
+      packagesHash: this.configuration.packagesHash,
+    })
 
     this.save();
     logger("updatePackagesStats end");
@@ -854,7 +865,7 @@ export default class PackageManager {
     logger("getStats");
     const remotePackagesListUrl = `https://raw.githubusercontent.com/text-gen/text-generator-packages/master/community-packages-stats.json`;
     const stats: any[] = JSON5.parse(
-      await request({ url: remotePackagesListUrl })
+      await request({ url: remotePackagesListUrl, throw: true })
     ) as any;
     logger("getStats end");
     return stats;

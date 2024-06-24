@@ -1,6 +1,5 @@
 import { App, PluginSettingTab } from "obsidian";
 import TextGeneratorPlugin from "src/main";
-import packageJson from "package.json";
 
 import { createRoot } from "react-dom/client";
 import React from "react";

@@ -5,7 +5,7 @@ import SettingsSection from "../components/section";
 import Input from "../components/input";
 import type { Register } from ".";
 import { z } from "zod";
-import { useDebounce } from "usehooks-ts";
+import { useDebounceValue } from "usehooks-ts";
 
 const MaxTokensSchema = z.number().min(0);
 const TemperatureSchema = z.number().min(0).max(2);
@@ -16,7 +16,7 @@ export default function DMPSetting(props: { register: Register }) {
   const global = useGlobal();
   const sectionId = useId();
 
-  const debouncedMaxTokens = useDebounce(
+  const [debouncedMaxTokens] = useDebounceValue(
     global.plugin.settings.max_tokens,
     400
   );
