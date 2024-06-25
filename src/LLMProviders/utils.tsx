@@ -1,4 +1,4 @@
-import { IconList, IconPencil, IconReload } from "@tabler/icons-react";
+import { IconList, IconPencil, IconReload, IconScreenshot, IconVideo, IconWaveSine } from "@tabler/icons-react";
 import clsx from "clsx";
 import React, { useState, useEffect, useId } from "react";
 import LLMProviderInterface from "./interface";
@@ -87,7 +87,10 @@ export function ModelsHandler(props: {
     );
   }, []);
 
-  const modelsDatasetId = useId();
+  const modelName = ("" + config.model as string).toLowerCase();
+  const model = AI_MODELS[modelName] || AI_MODELS["models" + modelName];
+
+  const supportedInputs = Object.keys(model?.inputOptions || {}).filter(e => !!e);
   return (
     <>
       <SettingItem
@@ -95,46 +98,54 @@ export function ModelsHandler(props: {
         register={props.register}
         sectionId={props.sectionId}
       >
-        <div className="plug-tg-flex plug-tg-items-center plug-tg-gap-2">
-          {global.plugin.settings.experiment || edit ? (
-            <DropdownSearch
-              value={config.model}
-              setValue={async (selectedModel) => {
-                config.model = selectedModel;
-                await global.plugin.saveSettings();
-                global.triggerReload();
-              }}
-              values={models}
-            />
-          ) : (
-            <Dropdown
-              value={config.model}
-              setValue={async (selectedModel) => {
-                config.model = selectedModel;
-                await global.plugin.saveSettings();
-                global.triggerReload();
-              }}
-              values={models}
-            />
-          )}
+        <div className="plug-tg-flex plug-tg-flex-col">
+          <div className="plug-tg-flex plug-tg-items-center plug-tg-gap-2">
+            {global.plugin.settings.experiment || edit ? (
+              <DropdownSearch
+                value={config.model}
+                setValue={async (selectedModel) => {
+                  config.model = selectedModel;
+                  await global.plugin.saveSettings();
+                  global.triggerReload();
+                }}
+                values={models}
+              />
+            ) : (
+              <Dropdown
+                value={config.model}
+                setValue={async (selectedModel) => {
+                  config.model = selectedModel;
+                  await global.plugin.saveSettings();
+                  global.triggerReload();
+                }}
+                values={models}
+              />
+            )}
 
-          <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
-            <button
-              className="plug-tg-btn plug-tg-btn-xs"
-              onClick={() => setEdit((i) => !i)}
-            >
-              {edit ? <IconList size={11} /> : <IconPencil size={11} />}
-            </button>
-            <button
-              className={clsx("plug-tg-btn plug-tg-btn-xs", {
-                "plug-tg-loading": loadingUpdate,
-              })}
-              onClick={updateModels}
-              disabled={loadingUpdate}
-            >
-              <IconReload size={11} />
-            </button>
+            <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
+              <button
+                className="plug-tg-btn plug-tg-btn-xs"
+                onClick={() => setEdit((i) => !i)}
+              >
+                {edit ? <IconList size={11} /> : <IconPencil size={11} />}
+              </button>
+              <button
+                className={clsx("plug-tg-btn plug-tg-btn-xs", {
+                  "plug-tg-loading": loadingUpdate,
+                })}
+                onClick={updateModels}
+                disabled={loadingUpdate}
+              >
+                <IconReload size={11} />
+              </button>
+            </div>
           </div>
+
+          {!!supportedInputs.length && <div className="plug-tg-flex plug-tg-gap-2 plug-tg-items-center">
+            {model?.inputOptions?.images && <IconScreenshot size={16} />}
+            {model?.inputOptions?.audio && <IconWaveSine size={16} />}
+            {model?.inputOptions?.videos && <IconVideo size={16} />}
+          </div>}
         </div>
       </SettingItem>
     </>
