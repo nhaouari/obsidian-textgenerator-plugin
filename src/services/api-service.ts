@@ -2,7 +2,7 @@
 // import { App, Notice, Editor, RequestUrlParam, EditorPosition } from "obsidian";
 import TextGeneratorPlugin from "../main";
 import ReqFormatter from "../utils/api-request-formatter";
-import ContextManager, { InputContext } from "../scope/context-manager";
+import type { InputContext } from "../scope/context-manager";
 import debug from "debug";
 import { Message, TextGeneratorSettings } from "../types";
 import { Handlebars } from "../helpers/handlebars-helpers";
