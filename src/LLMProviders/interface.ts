@@ -1,6 +1,8 @@
 import type { LLMChain } from "langchain/chains";
 import type { Message } from "src/types";
 import type { ContextTemplate, Register } from "./refs";
+import { AI_MODELS } from "#/constants";
+import { ModelType } from "#/lib/models";
 
 export default interface LLMProviderInterface {
   streamable?: boolean;
@@ -50,6 +52,8 @@ export default interface LLMProviderInterface {
   calcPrice(tokens: number, reqParams: Partial<LLMConfig>): Promise<number>;
 
   getSettings(): Record<string, any>;
+
+  getModels(): (ModelType & { id: string })[];
 }
 
 export interface LLMConfig {

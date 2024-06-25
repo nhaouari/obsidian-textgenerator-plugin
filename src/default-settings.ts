@@ -50,6 +50,7 @@ Starred Blocks: {{starredBlocks}}
     "open-playground": true,
     set_max_tokens: true,
     "set-llm": true,
+    "set-model": true,
     packageManager: true,
     "create-template": false,
     "get-title": true,

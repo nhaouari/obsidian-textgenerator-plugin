@@ -12,6 +12,7 @@ import { VIEW_Playground_ID } from "#/ui/playground";
 import { VIEW_TOOL_ID } from "#/ui/tool";
 
 import debug from "debug";
+import { SetModel } from "#/ui/settings/components/set-model";
 const logger = debug("textgenerator:main");
 
 export default class Commands {
@@ -401,6 +402,33 @@ export default class Commands {
               }
 
               self.plugin.textGenerator.load();
+              await self.plugin.saveSettings();
+            },
+            "Choose a LLM"
+          ).open();
+        } catch (error) {
+          self.plugin.handelError(error);
+        }
+      },
+    },
+
+    {
+      id: "set-model",
+      name: "Choose a Model",
+      icon: "list-start",
+      //hotkeys: [{ modifiers: ["Alt"], key: "2" }],
+      async callback() {
+        const self: Commands = this as any;
+        try {
+          new SetModel(
+            self.plugin.app,
+            self.plugin,
+            async (selectedModel) => {
+              console.log(selectedModel);
+              const provider = self.plugin.settings.selectedProvider as string;
+              if (!provider || !self.plugin.settings.LLMProviderOptions[provider]) return;
+
+              self.plugin.settings.LLMProviderOptions[provider].model = selectedModel;
               await self.plugin.saveSettings();
             },
             "Choose a LLM"

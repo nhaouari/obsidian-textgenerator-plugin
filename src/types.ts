@@ -13,6 +13,7 @@ type Options = Record<
   | "open-template-as-tool"
   | "set_max_tokens"
   | "set-llm"
+  | "set-model"
   | "packageManager"
   | "create-template"
   | "get-title"

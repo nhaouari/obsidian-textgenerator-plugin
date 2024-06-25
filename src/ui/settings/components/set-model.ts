@@ -1,4 +1,4 @@
-import { App, Notice, FuzzySuggestModal, FuzzyMatch } from "obsidian";
+import { App, Notice, FuzzySuggestModal } from "obsidian";
 import TextGeneratorPlugin from "src/main";
 import { Model } from "src/types";
 import debug from "debug";
@@ -28,10 +28,7 @@ export class SetModel extends FuzzySuggestModal<Model> {
 
   getItems() {
     logger("getItems");
-    const templates = Array.from(this.plugin.settings.models.keys()).map(
-      (e: Model["id"]) => ({ id: e })
-    );
-    return templates;
+    return this.plugin.textGenerator.LLMProvider?.getModels() || [];
   }
 
   getItemText(model: Model): string {

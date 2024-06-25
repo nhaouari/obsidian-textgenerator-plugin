@@ -5,6 +5,7 @@ import TextGeneratorPlugin from "src/main";
 import type { ContextTemplate } from "./refs";
 import LLMProviderInterface, { LLMConfig } from "./interface";
 import { processPromisesSetteledBatch, promiseForceFullfil } from "#/utils";
+import { AI_MODELS } from "#/constants";
 
 export default class ProviderBase implements LLMProviderInterface {
   id = "default";
@@ -26,7 +27,7 @@ export default class ProviderBase implements LLMProviderInterface {
   streamable?: boolean | undefined;
   mobileSupport?: boolean | undefined;
 
-  async load() {}
+  async load() { }
 
   async generate(
     messages: Message[],
@@ -117,5 +118,17 @@ export default class ProviderBase implements LLMProviderInterface {
 
   calcPrice(tokens: number, reqParams: Partial<LLMConfig>): Promise<number> {
     throw new Error("calcPrice Method not implemented." + this.id);
+  }
+
+
+  getModels() {
+    const models = Array.from(Object.entries(AI_MODELS))
+      .filter(k => k[1].llm.includes(this.plugin.textGenerator.LLMProvider?.originalId as any))
+      .map(k => {
+        k[1].id = k[0];
+        return k[1];
+      })
+
+    return models;
   }
 }
