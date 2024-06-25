@@ -527,8 +527,9 @@ export default class ContextManager {
 
       markdownText.replace(regex, (match, index) => {
         // Add text segment before the embed if there is any
+        const content = markdownText.substring(lastIndex, index)
         if (index > lastIndex) {
-          elements.push({ type: "text", text: markdownText.substring(lastIndex, index) });
+          elements.push({ type: "text", text: content.trim() ? content : "_" });
         }
 
         // Add embed segment
