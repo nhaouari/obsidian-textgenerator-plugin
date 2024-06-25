@@ -562,7 +562,6 @@ export default class ContextManager {
         if (!tfile) continue;
         const mimtype = mime.lookup(tfile.extension) || ""
 
-
         const buff = convertArrayBufferToBase64Link(await this.app.vault.readBinary(tfile as any), mimtype)
 
         if (

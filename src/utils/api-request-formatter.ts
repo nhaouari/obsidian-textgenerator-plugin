@@ -66,13 +66,10 @@ export default class ReqFormatter {
       ],
       ...this.getFrontmatter(templatePath, insertMetadata),
       ..._params,
-
     };
 
     if (params.includeAttachmentsInRequest ?? params.advancedOptions?.includeAttachmentsInRequest)
-
-      console.log(AI_MODELS[params.model], AI_MODELS, params.model)
-    params.promp = await this.plugin.contextManager.splitContent(params.prompt, params.noteFile, AI_MODELS[params.model]?.inputOptions || {})
+      params.prompt = await this.plugin.contextManager.splitContent(params.prompt, params.noteFile, AI_MODELS[params.model]?.inputOptions || {})
 
     let bodyParams: Partial<LLMConfig & { prompt: string }> & {
       messages: Message[];
