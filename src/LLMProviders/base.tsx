@@ -131,4 +131,11 @@ export default class ProviderBase implements LLMProviderInterface {
 
     return models;
   }
+
+  makeMessage(content: any, role: "system" | "user" | "assistant"): Message {
+    return {
+      role,
+      content
+    };
+  }
 }

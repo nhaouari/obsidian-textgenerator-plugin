@@ -45,13 +45,6 @@ export default class ReqFormatter {
       bodyParams?: any;
     } = {}
   ) {
-
-    console.log({
-      _params,
-      insertMetadata,
-      templatePath,
-      additionnalParams
-    })
     logger("prepareReqParameters", _params, insertMetadata, templatePath);
     const frontmatter: any = this.getFrontmatter(templatePath, insertMetadata);
 
@@ -67,6 +60,16 @@ export default class ReqFormatter {
       ...this.getFrontmatter(templatePath, insertMetadata),
       ..._params,
     };
+
+
+    if (
+      !this.plugin.textGenerator.LLMProvider ||
+      frontmatter.config?.provider !== this.plugin.textGenerator.LLMProvider.id
+    )
+      // load the provider
+      await this.plugin.textGenerator.loadllm(frontmatter.config?.provider);
+
+    if (!this.plugin.textGenerator.LLMProvider) throw "LLM Provider not intialized";
 
     params.model = params.model?.toLowerCase();
 
@@ -90,13 +93,9 @@ export default class ReqFormatter {
       (typeof params.prompt == "object" ||
         params.prompt?.replaceAll?.("\n", "").trim().length)
     ) {
-      bodyParams.messages.push({ role: "human", content: params.prompt || "" });
+      bodyParams.messages.push(this.plugin.textGenerator.LLMProvider.makeMessage(params.prompt || "", "user"));
     }
 
-    const provider: {
-      selectedProvider?: string;
-      providerOptions?: any;
-    } = {};
 
     let reqParams: RequestInit & {
       // url: string,
@@ -119,6 +118,12 @@ export default class ReqFormatter {
     //   };
     // }
 
+    const provider: {
+      selectedProvider?: string;
+      providerOptions?: any;
+    } = {};
+
+
     // on insertMetadata
     if (frontmatter) {
       // -- provider options
@@ -137,10 +142,7 @@ export default class ReqFormatter {
         }
 
         if (params.system || params.config?.system) {
-          bodyParams.messages.unshift({
-            role: "system",
-            content: params.system || params.config.system,
-          });
+          bodyParams.messages.unshift(this.plugin.textGenerator.LLMProvider.makeMessage(params.system || params.config.system, "system"));
         }
       }
 

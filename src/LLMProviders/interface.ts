@@ -54,6 +54,8 @@ export default interface LLMProviderInterface {
   getSettings(): Record<string, any>;
 
   getModels(): (ModelType & { id: string })[];
+
+  makeMessage(content: any, role: "system" | "user" | "assistant"): Message;
 }
 
 export interface LLMConfig {

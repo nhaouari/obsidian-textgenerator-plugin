@@ -6,7 +6,7 @@ import LLMProviderInterface, { LLMConfig } from "../interface";
 import { IconExternalLink } from "@tabler/icons-react";
 import { BaseLanguageModelParams } from "@langchain/core/language_models/base";
 
-import { Input, SettingItem, useGlobal } from "../refs";
+import { Input, Message, SettingItem, useGlobal } from "../refs";
 import type { AnthropicInput } from "@langchain/anthropic";
 import { ModelsHandler } from "../utils";
 
@@ -146,5 +146,13 @@ export default class LangchainChatAnthropicProvider
         </div>
       </>
     );
+  }
+
+
+  makeMessage(content: any, role: "system" | "user" | "assistant"): Message {
+    return {
+      role: role === "user" ? "human" : role,
+      content
+    };
   }
 }

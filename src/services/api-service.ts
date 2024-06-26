@@ -164,12 +164,6 @@ export default class RequestHandler {
           false
         );
 
-      if (
-        !this.LLMProvider ||
-        provider.selectedProvider !== this.LLMProvider.id
-      )
-        await this.loadllm(provider.selectedProvider);
-
       await providerOptionsValidator(
         this.LLMProvider.provider,
         provider.providerOptions
@@ -259,12 +253,6 @@ export default class RequestHandler {
           templatePath,
           additionnalParams
         );
-
-      if (
-        !this.LLMProvider ||
-        provider.selectedProvider !== this.LLMProvider.id
-      )
-        await this.loadllm(provider.selectedProvider);
 
       await providerOptionsValidator(
         this.LLMProvider.provider,
@@ -478,12 +466,6 @@ export default class RequestHandler {
           insertMetadata,
           templatePath
         );
-
-      if (
-        !this.LLMProvider ||
-        provider.selectedProvider !== this.LLMProvider.id
-      )
-        await this.loadllm(provider.selectedProvider);
 
       await providerOptionsValidator(
         this.LLMProvider.provider,
