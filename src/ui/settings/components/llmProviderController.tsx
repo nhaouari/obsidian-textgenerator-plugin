@@ -117,10 +117,10 @@ export default function LLMProviderController(props: {
   return (
     <>
       <SettingItem
-        name={`LLM Provider`}
+        name={`Provider Profile`}
         description={
           selectedLLM?.cloned
-            ? `${selectedLLM.originalId}`
+            ? `Based on ${selectedLLM.originalId}`
             : selectedLLMId?.split("(")?.[1]?.split(")")?.[0] || ""
         }
         register={props.register}
