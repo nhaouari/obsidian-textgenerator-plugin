@@ -47,7 +47,7 @@ jobs:
                   if [[ "${{ contains(steps.version.outputs.name, '-beta') }}" == 'true' ]]; then
                     cp manifest-beta.json manifest.json
                   else
-                    cp manifest.json manifest.json
+                    echo "do nothing"
                   fi
               shell: bash
 
