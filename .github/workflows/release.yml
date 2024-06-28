@@ -42,15 +42,14 @@ jobs:
               run: |
                   echo "name=$(git describe --abbrev=0 --tags)" >> $GITHUB_OUTPUT
 
-
-             # Package the manifest-beta.json if its a beta version
             - name: Prepare manifest file
-              run: |
-                if [[ "${{ steps.version.outputs.name }}" == *"-beta" ]]; then
-                  cp manifest-beta.json manifest.json
-                else
-                  cp manifest.json manifest.json
-                fi
+                run: |
+                  if [[ "${{ contains(steps.version.outputs.name, '-beta') }}" == 'true' ]]; then
+                    cp manifest-beta.json manifest.json
+                  else
+                    cp manifest.json manifest.json
+                  fi
+                shell: bash
 
             # Package the required files into a zip
             - name: Package plugin archive
