@@ -3,7 +3,7 @@
   "version": "0.7.27-beta",
   "description": "Text generator is a handy plugin that helps you generate text content using GPT-3 (OpenAI).",
   "obsidian": {
-    "minAppVersion": "1.6.5"
+    "minAppVersion": "1.6.0"
   },
   "main": "main.js",
   "scripts": {
