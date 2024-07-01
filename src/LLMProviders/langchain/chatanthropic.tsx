@@ -14,6 +14,7 @@ const logger = debug("textgenerator:llmProvider:chatanthropic");
 
 
 const default_values = {
+  basePath: "https://api.anthropic.com/",
   model: "claude-3-5-sonnet-20240620",
 };
 
@@ -33,9 +34,7 @@ export default class LangchainChatAnthropicProvider
   id = LangchainChatAnthropicProvider.id;
   originalId = LangchainChatAnthropicProvider.id;
 
-  default_values = {
-    basePath: "https://api.anthropic.com/",
-  };
+  default_values = default_values;
 
   getConfig(
     options: LLMConfig
@@ -75,9 +74,7 @@ export default class LangchainChatAnthropicProvider
 
     const id = props.self.id;
 
-    const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
-      model: "claude-2",
-    });
+    const config = (global.plugin.settings.LLMProviderOptions[id] ??= { ...props.self.default_values });
 
     return (
       <>
