@@ -3,7 +3,7 @@
 <div align="center">
   <a href="https://bit.ly/3ORwT00">Documentation</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://discord.gg/BRYqetyjag">Discord</a>
+  <a href="https://discord.gg/mEhvhkRfq5">Discord</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
   <a href="https://img.shields.io/twitter/follow/TextGenPlugin?style=social)](https://twitter.com/intent/follow?screen_name=TextGenPlugin">Twitter</a>
   <br />
