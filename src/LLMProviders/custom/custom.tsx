@@ -57,8 +57,7 @@ export type CustomConfig = Record<keyof typeof default_values, string>;
 
 export default class DefaultCustomProvider
   extends CustomProvider
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   streamable = true;
   static provider = "Custom";
   static id = "Default (Custom)" as const;
@@ -131,6 +130,7 @@ export default class DefaultCustomProvider
               placeholder="Enter your API endpoint"
               setValue={async (value) => {
                 config.api_key = value;
+                global.plugin.encryptAllKeys();
                 global.triggerReload();
                 await global.plugin.saveSettings();
               }}
