@@ -46,21 +46,22 @@ export default class ReqFormatter {
     } = {}
   ) {
     logger("prepareReqParameters", _params, insertMetadata, templatePath);
+
     const frontmatter: any = this.getFrontmatter(templatePath, insertMetadata);
+    const providerId = this.plugin.textGenerator.LLMRegestry.get(frontmatter?.config?.provider)?.id as string
 
     const params = {
       ...this.plugin.settings,
       ...this.plugin.defaultSettings.LLMProviderOptions[
-      frontmatter?.config?.provider ||
+      providerId ||
       (this.plugin.settings.selectedProvider as any)],
       ...this.plugin.settings.LLMProviderOptions[
-      frontmatter?.config?.provider ||
+      providerId ||
       (this.plugin.settings.selectedProvider as any)
       ],
       ...this.getFrontmatter(templatePath, insertMetadata),
       ..._params,
     };
-
 
     if (
       !this.plugin.textGenerator.LLMProvider ||
@@ -68,6 +69,8 @@ export default class ReqFormatter {
     )
       // load the provider
       await this.plugin.textGenerator.loadllm(frontmatter.config?.provider);
+
+
 
     if (!this.plugin.textGenerator.LLMProvider) throw "LLM Provider not intialized";
 
