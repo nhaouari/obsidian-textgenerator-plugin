@@ -13,6 +13,7 @@ export default function SlashSuggestSetting(props: { register: Register }) {
   const global = useGlobal();
   const sectionId = useId();
   const [resized, triggerResize] = useToggle();
+
   useEffect(() => {
     global.plugin.settings.slashSuggestOptions = {
       ...global.plugin.defaultSettings.slashSuggestOptions,

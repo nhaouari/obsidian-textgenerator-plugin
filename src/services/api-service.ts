@@ -517,11 +517,13 @@ export default class RequestHandler {
         )(conf)
         : result;
 
-      result =
-        (await template?.outputTemplate?.({
-          ...conf,
-          output: result,
-        })) || result;
+      const res = (await template?.outputTemplate?.({
+        ...conf,
+        output: result,
+      }))
+
+      result = res
+        || result;
 
       logger("generate end", {
         result,

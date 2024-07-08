@@ -54,7 +54,7 @@ export default class LLMProviderRegistry<
   get(name: string): T | undefined {
     // return this.plugins.get(name);
     return this.plugins[
-      this.ProviderSlugs[name as keyof typeof this.ProviderSlugs] || name
-    ];
+      this.ProviderSlugs[name as keyof typeof this.ProviderSlugs] as any
+    ] || this.plugins[name]
   }
 }

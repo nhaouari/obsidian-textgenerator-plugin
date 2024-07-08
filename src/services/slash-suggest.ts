@@ -80,6 +80,7 @@ export class SlashSuggest extends EditorSuggest<PromptTemplate> {
     const CM = ContentManagerCls.compile(activeView, this.plugin);
 
     activeView.editor.replaceRange("", value.context.start, value.context.end);
+
     await this.plugin.textGenerator.tempalteToModal({
       params: {},
       templatePath: value.path,

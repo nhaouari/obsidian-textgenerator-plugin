@@ -314,8 +314,6 @@ export default class TextGenerator extends RequestHandler {
       ? ""
       : this.plugin.settings.prefix;
 
-    console.log({ prefix, config: this.plugin.settings });
-
     await editor.insertText(prefix.length ? prefix + text : text, cursor, mode);
 
     logger("generateInEditor end");
@@ -662,6 +660,8 @@ ${removeYAML(content)}
     const metadata = this.getMetadata(props.templatePath || "");
     const templateContext =
       await this.plugin.contextManager.getTemplateContext(props);
+
+    console.log({ templateContext });
 
     const onSubmit = async (results: any) => {
       try {
