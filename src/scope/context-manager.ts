@@ -40,6 +40,7 @@ import { convertArrayBufferToBase64Link } from "#/LLMProviders/utils";
 
 import mime from "mime-types"
 import { InputOptions } from "#/lib/models";
+import { c } from "tar";
 
 interface CodeBlock {
   type: string;
@@ -557,10 +558,16 @@ export default class ContextManager {
       if (elements[i].type == "image_url" && elements[i].image_url?.url && !elements[i].image_url.url.startsWith("http")) {
         // @ts-ignore
         const path = elements[i].image_url?.url;
+        const attachmentFolderPath = this.app.vault.getConfig("attachmentFolderPath"); // it works to getConfig in obsidian v1.6.5 
+        console.log(path,attachmentFolderPath)
 
-        const tfile = await this.app.vault.getFileByPath(path);
-
-        if (!tfile) continue;
+        let tfile = await this.app.vault.getFileByPath(path);
+        if (!tfile) {
+          // try to find in attachment folder, base user's preferences
+          tfile = await this.app.vault.getFileByPath(attachmentFolderPath + "/" + path);
+          if (!tfile) continue;
+        }
+        
         const mimtype = mime.lookup(tfile.extension) || ""
 
         const buff = convertArrayBufferToBase64Link(await this.app.vault.readBinary(tfile as any), mimtype)
