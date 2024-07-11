@@ -40,7 +40,6 @@ import { convertArrayBufferToBase64Link } from "#/LLMProviders/utils";
 
 import mime from "mime-types"
 import { InputOptions } from "#/lib/models";
-import { c } from "tar";
 
 interface CodeBlock {
   type: string;
