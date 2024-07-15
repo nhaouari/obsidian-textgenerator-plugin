@@ -549,4 +549,5 @@ export default class RequestHandler {
     this.signalController = undefined;
     this.plugin.endProcessing(showSpinner);
   }
+
 }

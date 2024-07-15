@@ -3,6 +3,7 @@ import debug from "debug";
 import React from "react";
 
 import { ChatOpenAI, OpenAIChatInput } from "@langchain/openai";
+
 import { HuggingFaceInference } from "@langchain/community/llms/hf";
 
 import BaseProvider from "../base";
@@ -22,9 +23,9 @@ import {
   AI_MODELS,
 } from "../refs";
 import { Callbacks } from "@langchain/core/callbacks/manager";
-import { Platform } from "obsidian";
 
 const logger = debug("textgenerator:LangchainProvider");
+
 
 export default class LangchainProvider
   extends BaseProvider
@@ -73,20 +74,8 @@ export default class LangchainProvider
     this.llmClass = ChatOpenAI;
   }
 
-  async getLLM(_options: LLMConfig) {
+  async getLLM(_options: LLMConfig): Promise<any> {
     const options = { ..._options };
-    const originalBasePath = options.basePath || this.default_values.basePath;
-
-    if (
-      Platform.isDesktop &&
-      (this.corsBypass ||
-        this.default_values.corsBypass ||
-        options.otherOptions.corsBypass)
-    )
-      options.basePath =
-        await this.plugin.textGenerator.proxyService.getProxiedUrl(
-          originalBasePath
-        );
 
     const headers = {
       "User-Agent": undefined,
@@ -95,7 +84,14 @@ export default class LangchainProvider
       ...this.defaultHeaders,
     };
 
-    return new this.llmClass(this.getConfig(options), {
+
+    const Fetch = this.plugin.textGenerator.proxyService.getFetch(
+      this.corsBypass ||
+      this.default_values.corsBypass ||
+      options.otherOptions.corsBypass
+    )
+
+    const llm = new (this.llmClass as typeof ChatOpenAI)(this.getConfig(options), {
       basePath: options.basePath?.length
         ? options.basePath.endsWith("/")
           ? options.basePath.substring(0, options.basePath.length - 1)
@@ -104,8 +100,17 @@ export default class LangchainProvider
 
       defaultQuery: options.bodyParams,
 
+      fetch: Fetch,
+
       defaultHeaders: headers,
     });
+
+    // @ts-ignore
+    llm.clientOptions ??= {};
+    // @ts-ignore
+    llm.clientOptions.fetch = Fetch;
+
+    return llm;
   }
 
   configMerger(options: Partial<LLMConfig>) {
@@ -199,6 +204,13 @@ export default class LangchainProvider
             },
             {
               callbacks: llmFuncs,
+              configurable: {
+                fetch: this.plugin.textGenerator.proxyService.getFetch(
+                  this.corsBypass ||
+                  this.default_values.corsBypass ||
+                  customConfig.corsBypass
+                ),
+              },
             }
           );
 
@@ -320,75 +332,6 @@ export default class LangchainProvider
       }
     });
   }
-
-  // old code
-  //   async generateBatch(
-  //     messages: Message[][],
-  //     reqParams: Partial<LLMConfig>,
-  //     customConfig?: any,
-  //     onOneFinishs?: (content: string, index: number) => void
-  //   ): Promise<string[]> {
-  //     return new Promise(async (s, r) => {
-  //       try {
-  //         const arrDocs =
-  //           reqParams.llmPredict || this.llmPredict || customConfig?.chain?.type
-  //             ? messages.map((msgs) => chatToString(msgs))
-  //             : (messages.map((msgs) =>
-  //                 mapMessagesToLangchainMessages(msgs)
-  //               ) as any as string[]);
-
-  //         console.log({ arrDocs });
-
-  //         logger("generateMultiple", reqParams);
-
-  //         const params = this.configMerger(reqParams);
-  //         const chat = await this.getLLM(params);
-
-  //         let results: string[] = [];
-  //         if (customConfig?.chain?.type)
-  //           results = await chainGenrate(chat, arrDocs, {
-  //             chain: customConfig.chain,
-  //             splitter: customConfig.splitter,
-  //             signal: reqParams.requestParams?.signal,
-  //             onOneFinishs,
-  //           });
-  //         else
-  //           results = (
-  //             await processPromisesSetteledBatch(
-  //               arrDocs.map(async (doc, i) => {
-  //                 const [err, res] = await safeAwait(
-  //                   (chat as HuggingFaceInference).generate([doc], {
-  //                     signal: reqParams.requestParams?.signal || undefined,
-  //                     ...this.getReqOptions(reqParams),
-  //                     n: 1,
-  //                   })
-  //                 );
-
-  //                 const content = err
-  //                   ? "fAILED:" + err.message
-  //                   : res.generations[0][0].text;
-
-  //                 await onOneFinishs?.(content, i);
-
-  //                 if (err) throw err;
-
-  //                 return content;
-  //               }),
-  //               3
-  //             )
-  //           ).map(promiseForceFullfil);
-
-  //         logger("generateMultiple end", {
-  //           results,
-  //         });
-
-  //         s(results);
-  //       } catch (errorRequest: any) {
-  //         logger("generateMultiple error", errorRequest);
-  //         return r(errorRequest);
-  //       }
-  //     });
-  //   }
 
   async calcPrice(
     tokens: number,

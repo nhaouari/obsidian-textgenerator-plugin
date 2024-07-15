@@ -109,7 +109,6 @@ export default class CustomProvider
       CORSBypass?: boolean;
     }
   ) {
-    const useRequest = params.CORSBypass && !Platform.isDesktop;
 
     const requestOptions: RequestInit = {
       method: params.method || "POST",
@@ -121,56 +120,27 @@ export default class CustomProvider
       signal: params.signal,
     };
 
-    console.log("request options", {
-      url: params.url,
-      method: requestOptions.method,
-      body:
-        typeof requestOptions.body == "string"
-          ? JSON.parse(requestOptions.body)
-          : requestOptions.body
-            ? requestOptions.body
-            : undefined,
-      headers:
-        typeof requestOptions.headers == "object"
-          ? (requestOptions.headers as any)
-          : requestOptions.headers
-            ? JSON5.parse(requestOptions.headers)
-            : undefined,
-    });
-
-    const url = params.CORSBypass
-      ? await this.plugin.textGenerator.proxyService.getProxiedUrl(params.url)
-      : params.url;
-
     let k;
 
     try {
-      k = (
-        useRequest
-          ? await requestWithoutCORS({
-            url: params.url,
-            method: requestOptions.method,
-            throw: false,
-            body:
-              typeof requestOptions.body == "string"
-                ? requestOptions.body
-                : requestOptions.body
-                  ? JSON.stringify(requestOptions.body)
-                  : undefined,
-            headers:
-              typeof requestOptions.headers == "object"
-                ? (requestOptions.headers as any)
-                : requestOptions.headers
-                  ? JSON5.parse(requestOptions.headers)
-                  : undefined,
-          })
-          : await fetch(url, requestOptions)
-      ) as AsyncReturnType<typeof fetch>;
+      k = await this.plugin.textGenerator.proxyService.getFetch(params.CORSBypass)(params.url, requestOptions)
     } catch (e: any) {
       k = e;
     }
 
-    if (!useRequest && params.stream) {
+    if (!k.ok) {
+      const resText = await k.text();
+      let resJson = {};
+
+      try {
+        resJson = JSON5.parse(resText as any);
+      } catch (err: any) {
+        resJson = resText;
+      }
+      throw JSON5.stringify(resJson);
+    }
+
+    if (params.stream) {
       if (!k.body) return;
       const reader = k.body.getReader();
       const decoder = new TextDecoder();
@@ -216,7 +186,7 @@ export default class CustomProvider
 
       return text as string;
     } else {
-      const resText = useRequest ? await k.text : await k.text();
+      const resText = await k.text();
       let resJson = {};
 
       try {

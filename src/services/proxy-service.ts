@@ -1,11 +1,20 @@
 import type net from "net";
 
+import { Platform } from "obsidian"
+import { fetchWithRequestUrl, requestToObject } from "#/lib/fetch";
+
 // Shout out to https://github.com/luixaviles/cors-proxy-server-koa
 
 export class ProxyService {
   private started = false;
   private address: string;
   private server?: net.Server;
+
+  fetchWithRequestUrl = fetchWithRequestUrl;
+
+  get isSupported() {
+    return Platform.isDesktop
+  }
 
   constructor() {
     this.address = "localhost";
@@ -73,5 +82,41 @@ export class ProxyService {
   async stop() {
     this.server?.close();
     this.started = false;
+  }
+
+
+
+
+
+  getFetch(corsBypass = false) {
+    return async (urlOrrequest: RequestInfo, init?: RequestInit) => {
+      let request = new Request(urlOrrequest, init);
+
+      if (corsBypass) {
+        if (this.isSupported) {
+          const newURL = new URL(await this.getProxiedUrl(request.url));
+          console.log({ newURL });
+          request = new Request(newURL, await requestToObject(request));
+          console.log("step 2222", request)
+        } else {
+          console.log("fallback to using requestUrl");
+          return this.fetchWithRequestUrl(request);
+        }
+      }
+
+      try {
+        console.log("the request", { request })
+        return await fetch(request);
+      } catch (e: any) {
+        console.log("FALLBACK: ", this.isSupported ? "proxied" : "requestUrl");
+        if (this.isSupported) {
+          const newURL = new URL(await this.getProxiedUrl(request.url));
+          request = new Request(newURL, request);
+          return await fetch(request);
+        } else {
+          return this.fetchWithRequestUrl(request);
+        }
+      }
+    };
   }
 }
