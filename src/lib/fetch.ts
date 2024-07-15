@@ -1,5 +1,8 @@
 import { requestUrl, RequestUrlParam, RequestUrlResponse } from "obsidian"
 
+// feel free to use this function in your obsidian plugin.
+// Original: https://github.com/nhaouari/obsidian-textgenerator-plugin
+// Credit: https://github.com/haouarihk
 
 // Polyfill for fetch using requestUrl with simulated streaming
 export async function fetchWithRequestUrl(input: RequestInfo, init?: RequestInit & { throw?: boolean }): Promise<Response> {
