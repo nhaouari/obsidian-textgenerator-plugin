@@ -4,8 +4,6 @@ import {
   Component,
   TFile,
   HeadingCache,
-  EditorPosition,
-  arrayBufferToBase64,
 } from "obsidian";
 import { AsyncReturnType, Context, Message } from "../types";
 import TextGeneratorPlugin from "../main";
@@ -507,7 +505,7 @@ export default class ContextManager {
 
   async splitContent(markdownText: string, source?: TFile, options?: InputOptions): Promise<Message["content"]> {
     if (!source) return markdownText;
-    const metadata = app.metadataCache.getFileCache(source);
+    const metadata = this.app.metadataCache.getFileCache(source);
     if (!metadata?.embeds) return markdownText;
 
     const elements: Message["content"] = [];
@@ -557,8 +555,8 @@ export default class ContextManager {
       if (elements[i].type == "image_url" && elements[i].image_url?.url && !elements[i].image_url.url.startsWith("http")) {
         // @ts-ignore
         const path = elements[i].image_url?.url;
-        const attachmentFolderPath = this.app.vault.getConfig("attachmentFolderPath"); // it works to getConfig in obsidian v1.6.5 
-        console.log(path,attachmentFolderPath)
+        // @ts-ignore
+        const attachmentFolderPath: string = this.app.vault.getConfig?.("attachmentFolderPath"); // it works to getConfig in obsidian v1.6.5 
 
         let tfile = await this.app.vault.getFileByPath(path);
         if (!tfile) {
@@ -566,7 +564,7 @@ export default class ContextManager {
           tfile = await this.app.vault.getFileByPath(attachmentFolderPath + "/" + path);
           if (!tfile) continue;
         }
-        
+
         const mimtype = mime.lookup(tfile.extension) || ""
 
         const buff = convertArrayBufferToBase64Link(await this.app.vault.readBinary(tfile as any), mimtype)
@@ -811,8 +809,9 @@ export default class ContextManager {
       (e) => e.original.substring(0, 2) === "[["
     );
 
-    //remove duplicates from links
-    const uniqueLinks = [...new Set(links)];
+    // remove duplicate links
+    const uniqueLinks = links?.filter((v, i, a) => a.findIndex(t => t.original === v.original) === i) || [];
+
 
     if (!uniqueLinks) return children;
 
