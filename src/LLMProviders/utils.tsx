@@ -87,8 +87,8 @@ export function ModelsHandler(props: {
     );
   }, []);
 
-  const modelName = ("" + config.model as string).toLowerCase();
-  const model = AI_MODELS[modelName] || AI_MODELS["models" + modelName];
+  const modelName = "" + config.model as string;
+  const model = AI_MODELS[modelName.toLowerCase()] || AI_MODELS["models" + modelName.toLowerCase()];
 
   const supportedInputs = Object.keys(model?.inputOptions || {}).filter(e => !!e);
   return (
