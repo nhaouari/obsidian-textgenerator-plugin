@@ -101,6 +101,7 @@
     "lodash.merge": "^4.6.2",
     "lodash.set": "^4.3.2",
     "mime-types": "^2.1.35",
+    "moment": "^2.30.1",
     "obsidian-dataview": "^0.5.67",
     "postcss-cli": "^10.1.0",
     "postcss-import": "^15.1.0",

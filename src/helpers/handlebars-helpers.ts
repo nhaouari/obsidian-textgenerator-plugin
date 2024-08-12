@@ -2,7 +2,7 @@ import { Notice } from "obsidian";
 import handlebars, { Exception, createFrame } from "handlebars";
 import { pull } from "langchain/hub";
 import { getAPI as getDataviewApi } from "obsidian-dataview";
-
+import moment from "moment";
 import asyncHelpers from "../lib/async-handlebars-helper";
 import {
   compileLangMessages,
@@ -55,6 +55,7 @@ export default function Helpersfn(self: ContextManager) {
     if (dirMatch) dirName = dirMatch[1];
 
     if (!(await self.app.vault.adapter.exists(dirName)))
+      // @ts-expect-error
       await createFolder(dirName, app);
 
     return await self.plugin.app.vault.adapter.append(path, `\n${data}`);
@@ -461,7 +462,7 @@ export default function Helpersfn(self: ContextManager) {
     async setProperty(...vars: any[]) {
       const self2 = this as any as AvailableContext;
 
-      if(!self2.noteFile?.path) return;
+      if (!self2.noteFile?.path) return;
 
       const additionalOptions = vars.pop();
 
@@ -474,7 +475,7 @@ export default function Helpersfn(self: ContextManager) {
       }
 
       self.app.fileManager.processFrontMatter(self2.noteFile,
-        (frontMatter)=>{
+        (frontMatter) => {
           frontMatter[id] = value;
           return frontMatter;
         }
@@ -487,17 +488,17 @@ export default function Helpersfn(self: ContextManager) {
     async setTitle(...vars: any[]) {
       const self2 = this as any as AvailableContext;
 
-      if(!self2.noteFile?.path) return;
+      if (!self2.noteFile?.path) return;
       console.log(vars.length)
       const additionalOptions = vars.pop();
 
       let value = vars[0];
 
       if (additionalOptions?.fn) {
-        value = (""+await additionalOptions.fn(this))?.trim();
+        value = ("" + await additionalOptions.fn(this))?.trim();
       }
-      console.log({n:self2.noteFile , value})
-      await self.app.fileManager.renameFile(self2.noteFile , value)
+      console.log({ n: self2.noteFile, value })
+      await self.app.fileManager.renameFile(self2.noteFile, value)
       return "";
     },
 
@@ -727,7 +728,18 @@ export default function Helpersfn(self: ContextManager) {
 
       throw new Error(res.error);
     },
-  
+
+
+    // get time now
+    async timeNow() {
+      return moment().format("HH:mm:ss");
+    },
+
+    // get date now
+    async dateNow() {
+      return moment().format("YYYY-MM-DD");
+    },
+
   } as const;
 
   return Helpers;
