@@ -507,7 +507,7 @@ export default class TextGenerator extends RequestHandler {
         }
 
         await new Promise((s) => setTimeout(s, 500));
-        app.workspace.openLinkText(
+        this.plugin.app.workspace.openLinkText(
           "",
           `${path}/${contexts[0].options?.templatePath}`,
           true
@@ -649,7 +649,7 @@ ${removeYAML(content)}
     }
 
     const { inputContent, outputContent, preRunnerContent } =
-      this.plugin.contextManager.splitTemplate(templateContent);
+      this.plugin.contextManager.splitTemplate(templateContent as any);
 
     const variables = this.plugin.contextManager.getHBVariablesOfTemplate(
       preRunnerContent,
@@ -660,8 +660,6 @@ ${removeYAML(content)}
     const metadata = this.getMetadata(props.templatePath || "");
     const templateContext =
       await this.plugin.contextManager.getTemplateContext(props);
-
-    console.log({ templateContext });
 
     const onSubmit = async (results: any) => {
       try {
