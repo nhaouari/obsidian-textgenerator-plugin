@@ -88,13 +88,14 @@ export default function ChatComp(props: {
     setLoading(true);
     try {
       const editor = ContentManagerCls.compile(
-        app.workspace.getLeaf().view,
+        props.plugin.app.workspace.getLeaf().view,
         props.plugin
       );
       const selection = await props.plugin.contextManager.getSelection(editor);
       const selections =
         await props.plugin.contextManager.getSelections(editor);
       const templateContent = input;
+
       const context = await props.plugin.contextManager.getContext({
         insertMetadata: false,
         editor: editor,
@@ -106,12 +107,20 @@ export default function ChatComp(props: {
         },
       });
 
+      const inputContext = {
+        ...props.plugin.textGenerator.LLMProvider.getSettings(),
+        requestParams: {
+          signal: abortController.signal,
+        },
+      }
+
       const result = await props.plugin.contextManager.execDataview(
         await Handlebars.compile(
           props.plugin.contextManager.overProcessTemplate(templateContent)
         )({
           ...context.options,
           templatePath: "default/default",
+          inputContext
         })
       );
 
@@ -124,12 +133,7 @@ export default function ChatComp(props: {
                 content: result,
               },
             ],
-            {
-              ...props.plugin.textGenerator.LLMProvider.getSettings(),
-              requestParams: {
-                signal: abortController.signal,
-              },
-            },
+            inputContext,
             async (token, first) => {
               if (first) setAnswer("");
               setAnswer((a) => a + token);
