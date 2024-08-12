@@ -273,45 +273,54 @@ export default class RequestHandler {
         onError?: (error: any) => void
       ): Promise<string> => {
         try {
+          const innerContext = {
+            ...allParams,
+            ...bodyParams,
+            requestParams: {
+              // body: JSON.stringify(bodyParams),
+              ...reqParams,
+              signal:
+                additionnalParams.signal ||
+                this.signalController?.signal,
+            },
+            otherOptions: this.LLMProvider.getSettings(),
+            streaming: true,
+            llmPredict: bodyParams.messages?.length == 1 && !this.plugin.settings.advancedOptions?.includeAttachmentsInRequest,
+          } as any;
+
           const k =
             provider.providerOptions.estimatingMode ||
               provider.providerOptions.disableProvider
               ? ""
               : await this.LLMProvider.generate(
                 bodyParams.messages,
-                {
-                  ...allParams,
-                  ...bodyParams,
-                  requestParams: {
-                    // body: JSON.stringify(bodyParams),
-                    ...reqParams,
-                    signal:
-                      additionnalParams.signal ||
-                      this.signalController?.signal,
-                  },
-                  otherOptions: this.LLMProvider.getSettings(),
-                  streaming: true,
-                  llmPredict: bodyParams.messages?.length == 1 && !this.plugin.settings.advancedOptions?.includeAttachmentsInRequest,
-                } as any,
+                innerContext,
                 onToken,
                 provider.providerOptions
               );
 
           // output template, template used AFTER the generation happens
-          return (
-            (provider.providerOptions.output?.length
-              ? await Handlebars.compile(
-                provider.providerOptions.output.replaceAll("\\n", "\n"),
-                {
-                  noEscape: true,
-                }
-              )
-              : template?.outputTemplate)?.({
-                requestResults: k,
-                ...options,
-                output: k,
-              }) || k
-          );
+
+
+          const t = (provider.providerOptions.output?.length
+            ? await Handlebars.compile(
+              provider.providerOptions.output.replaceAll("\\n", "\n"),
+              {
+                noEscape: true,
+              }
+            ) : await template?.outputTemplate)
+
+          delete innerContext.LLMProviderOptions;
+          delete innerContext.LLMProviderOptionsKeysHashed;
+          delete innerContext.LLMProviderProfiles;
+
+          return t?.({
+            requestResults: k,
+            ...options,
+            output: k,
+            inputContext: innerContext,
+          }) || k
+
         } catch (err: any) {
           onError?.(err);
           return err.message;
@@ -382,7 +391,12 @@ export default class RequestHandler {
               ...context[i].options,
               output: "",
               requestResults: "",
+              inputContext: { ...b.allParams },
             };
+
+            delete conf.inputContext.LLMProviderOptions;
+            delete conf.inputContext.LLMProviderOptionsKeysHashed;
+            delete conf.inputContext.LLMProviderProfiles;
 
             onOneFinishs?.(
               (await context[0].template?.outputTemplate?.(conf)) || "",
@@ -474,25 +488,27 @@ export default class RequestHandler {
 
       this.startLoading(additionnalParams?.showSpinner);
 
+      const innerContext = {
+        ...allParams,
+        ...bodyParams,
+        requestParams: {
+          // body: JSON.stringify(bodyParams),
+          ...reqParams,
+          signal: this.signalController?.signal,
+        },
+        otherOptions:
+          this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
+        stream: false,
+        llmPredict: bodyParams.messages?.length == 1 && !this.plugin.settings.advancedOptions?.includeAttachmentsInRequest,
+      }
+
       let result =
         provider.providerOptions.estimatingMode ||
           provider.providerOptions.disableProvider
           ? ""
           : await this.LLMProvider.generate(
             bodyParams.messages,
-            {
-              ...allParams,
-              ...bodyParams,
-              requestParams: {
-                // body: JSON.stringify(bodyParams),
-                ...reqParams,
-                signal: this.signalController?.signal,
-              },
-              otherOptions:
-                this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
-              stream: false,
-              llmPredict: bodyParams.messages?.length == 1 && !this.plugin.settings.advancedOptions?.includeAttachmentsInRequest,
-            },
+            innerContext,
             undefined,
             provider.providerOptions
           );
@@ -506,7 +522,12 @@ export default class RequestHandler {
         ...options,
         output: result,
         requestResults: result,
+        inputContext: innerContext
       };
+
+      delete conf.inputContext.LLMProviderOptions;
+      delete conf.inputContext.LLMProviderOptionsKeysHashed;
+      delete conf.inputContext.LLMProviderProfiles;
 
       result = provider.providerOptions.output
         ? await Handlebars.compile(
@@ -549,5 +570,4 @@ export default class RequestHandler {
     this.signalController = undefined;
     this.plugin.endProcessing(showSpinner);
   }
-
 }
