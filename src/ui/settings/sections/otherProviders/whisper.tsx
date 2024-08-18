@@ -11,6 +11,7 @@ export const WhisperProviderName = "whisper";
 export const default_values = {
   base_path: "https://api.openai.com/v1",
   model: "whisper-1",
+  api_key: ""
 };
 
 export default function WhisperProviderSetting(props: { register: Register }) {
@@ -41,6 +42,23 @@ export default function WhisperProviderSetting(props: { register: Register }) {
             value={config.basePath || default_values.base_path}
             setValue={async (val) => {
               config.basePath = val;
+              await global.plugin.saveSettings();
+              global.triggerReload();
+            }}
+          />
+        </SettingItem>
+
+        <SettingItem
+          name="API Key"
+          description="default to whisper-1"
+          register={props.register}
+          sectionId={sectionId}
+        >
+          <Input
+            type="password"
+            value={config.api_key || default_values.api_key}
+            setValue={async (val) => {
+              config.api_key = val;
               await global.plugin.saveSettings();
               global.triggerReload();
             }}

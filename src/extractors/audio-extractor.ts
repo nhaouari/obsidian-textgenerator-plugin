@@ -66,19 +66,20 @@ export default class AudioExtractor extends Extractor {
   }
 
   async generateTranscript(audioBuffer: ArrayBuffer, filetype: string) {
+    const whisperApiKey = this.plugin.settings.LLMProviderOptions[WhisperProviderName]?.api_key || this.plugin.settings.api_key;
     try {
       const endpoint = new URL(
         this.plugin.settings.LLMProviderOptions[WhisperProviderName]?.basePath
           ?.length
           ? this.plugin.settings.LLMProviderOptions[WhisperProviderName]
-              ?.basePath
+            ?.basePath
           : this.plugin.settings.endpoint ||
-            this.plugin.defaultSettings.endpoint
+          this.plugin.defaultSettings.endpoint
       );
 
       if (
         endpoint.host.contains("openai") &&
-        this.plugin.settings.api_key.length < 1
+        whisperApiKey.length < 1
       )
         throw new Error("OpenAI API Key is not provided.");
 
@@ -92,7 +93,7 @@ export default class AudioExtractor extends Extractor {
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${this.plugin.settings.api_key}`,
+            Authorization: `Bearer ${whisperApiKey}`,
           },
           body: formData,
         }
@@ -119,7 +120,7 @@ export default class AudioExtractor extends Extractor {
     formData.append(
       "model",
       this.plugin.settings.LLMProviderOptions[WhisperProviderName]?.model ||
-        default_values.model
+      default_values.model
     );
 
     const lang =
