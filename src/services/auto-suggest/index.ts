@@ -3,10 +3,8 @@ import {
   App,
   Editor,
   EditorPosition,
-  EditorSuggest,
   EditorSuggestContext,
   EditorSuggestTriggerInfo,
-  MarkdownView,
   Notice,
   Scope,
   TFile,
@@ -103,7 +101,7 @@ ${context.query}`;
           autoSuggestOptions.selectedProvider
         );
       const re = await this.plugin.textGenerator.LLMProvider.generateMultiple(
-        [{ role: "human", content: prompt }],
+        [this.plugin.textGenerator.LLMProvider.makeMessage(prompt, "user")],
         {
           stream: false,
           n: parseInt(
