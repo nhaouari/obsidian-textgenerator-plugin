@@ -20,6 +20,7 @@ import {
 import TextGeneratorSettingTab from "./ui/settings/settings-page";
 import { SetMaxTokens } from "./ui/settings/components/set-max-tokens";
 import TextGenerator from "./services/text-generator";
+import PluginServiceAPI from "./services/pluginAPI-service";
 import PackageManager from "./scope/package-manager/package-manager";
 import { PackageManagerUI } from "./scope/package-manager/package-manager-ui";
 import { EditorView } from "@codemirror/view";
@@ -62,6 +63,7 @@ const logger = debug("textgenerator:main");
 export default class TextGeneratorPlugin extends Plugin {
   settings: TextGeneratorSettings = undefined as any;
   textGenerator: TextGenerator = undefined as any;
+  pluginAPIService: PluginServiceAPI = undefined as any;
   packageManager: PackageManager = undefined as any;
   versionManager: VersionManager = undefined as any;
   contextManager: ContextManager = undefined as any;
@@ -93,7 +95,7 @@ export default class TextGeneratorPlugin extends Plugin {
       this.versionManager = new VersionManager(this);
       await this.versionManager.load();
 
-      this.contextManager = new ContextManager(app, this);
+      this.contextManager = new ContextManager(this.app, this);
       this.packageManager = new PackageManager(this.app, this);
 
       // Register Services
@@ -248,7 +250,10 @@ export default class TextGeneratorPlugin extends Plugin {
         console.trace("error in packageManager", err);
       }
 
-      registerAPI("tg", this.textGenerator, this as any);
+
+      this.pluginAPIService = new PluginServiceAPI(this);
+
+      registerAPI("tg", this.pluginAPIService, this as any);
     } catch (err: any) {
       this.handelError(err);
     }
@@ -483,12 +488,12 @@ export default class TextGeneratorPlugin extends Plugin {
 
   getFilesOnLoad(): Promise<TFile[]> {
     return new Promise(async (resolve, reject) => {
-      let testFiles = app.vault.getFiles();
+      let testFiles = this.app.vault.getFiles();
       if (testFiles.length === 0) {
         let retryTimes = 30;
         const timer = setInterval(() => {
           console.log("attempting to get files", retryTimes);
-          testFiles = app.vault.getFiles();
+          testFiles = this.app.vault.getFiles();
           retryTimes--;
 
           if (retryTimes <= 0) {

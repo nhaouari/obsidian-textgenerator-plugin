@@ -7,7 +7,7 @@ import { IconExternalLink } from "@tabler/icons-react";
 import { BaseLanguageModelParams } from "@langchain/core/language_models/base";
 
 import { Input, Message, SettingItem, useGlobal } from "../refs";
-// @ts-expect-error
+
 import type { AnthropicInput } from "@langchain/anthropic";
 import { ModelsHandler } from "../utils";
 

@@ -27,7 +27,7 @@ export default class RequestHandler {
   constructor(plugin: TextGeneratorPlugin) {
     this.plugin = plugin;
     this.reqFormatter = new ReqFormatter(
-      app,
+      plugin.app,
       plugin,
       this.plugin.contextManager
     );

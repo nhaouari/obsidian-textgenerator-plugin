@@ -120,11 +120,12 @@ export default class ProviderBase implements LLMProviderInterface {
     throw new Error("calcPrice Method not implemented." + this.id);
   }
 
-
+  // @ts-ignore
   getModels() {
-    const models = Array.from(Object.entries(AI_MODELS))
+    const models: any[] = Array.from(Object.entries(AI_MODELS))
       .filter(k => k[1].llm.includes(this.plugin.textGenerator.LLMProvider?.originalId as any))
       .map(k => {
+        // @ts-ignore
         k[1].id = k[0];
         return k[1];
       })
