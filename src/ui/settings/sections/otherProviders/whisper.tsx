@@ -50,7 +50,7 @@ export default function WhisperProviderSetting(props: { register: Register }) {
 
         <SettingItem
           name="API Key"
-          description="default to whisper-1"
+          description="default to openai provider's apikey"
           register={props.register}
           sectionId={sectionId}
         >
