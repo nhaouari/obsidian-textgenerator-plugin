@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-textgenerator-plugin",
 	"name": "Text Generator",
-	"version": "0.7.35",
+	"version": "0.7.36",
 	"minAppVersion": "1.6.0",
 	"description": "Text generation using AI",
 	"author": "Noureddine Haouari",
