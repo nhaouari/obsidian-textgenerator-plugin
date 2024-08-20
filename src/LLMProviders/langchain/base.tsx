@@ -97,11 +97,9 @@ export default class LangchainProvider
           ? options.basePath.substring(0, options.basePath.length - 1)
           : options.basePath
         : undefined,
-
+      dangerouslyAllowBrowser: true,
       defaultQuery: options.bodyParams,
-
       fetch: Fetch,
-
       defaultHeaders: headers,
     });
 
