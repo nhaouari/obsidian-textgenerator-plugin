@@ -97,6 +97,12 @@ export default class LangchainProvider
           ? options.basePath.substring(0, options.basePath.length - 1)
           : options.basePath
         : undefined,
+
+      // @ts-ignore
+      clientOptions: {
+        dangerouslyAllowBrowser: true,
+      },
+
       dangerouslyAllowBrowser: true,
       defaultQuery: options.bodyParams,
       fetch: Fetch,

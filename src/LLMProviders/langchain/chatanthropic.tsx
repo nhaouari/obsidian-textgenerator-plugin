@@ -60,7 +60,6 @@ export default class LangchainChatAnthropicProvider
   }
 
   async load() {
-    // @ts-expect-error
     const { ChatAnthropic } = await import("@langchain/anthropic");
     this.llmClass = ChatAnthropic;
   }
