@@ -246,10 +246,12 @@ export default function TemplateDetails(inProps: {
     !!packageManager.app.plugins.plugins["obsidian-tg-chat"];
 
   useEffect(() => {
-    // @ts-ignore
-    if (global.k) return;
-    // @ts-ignore
-    global.k = true;
+    if (globalThis) {
+      // @ts-ignore
+      if (globalThis?.k) return;
+      // @ts-ignore
+      globalThis.k = true;
+    }
 
     const onFocus = async () => {
       try {
