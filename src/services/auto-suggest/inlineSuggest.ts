@@ -32,11 +32,11 @@ export class InlineSuggest {
   getSuggestionsDebounced: (() => void) | undefined;
   scope:
     | (Scope & {
-        keys: {
-          key: string;
-          func: any;
-        }[];
-      })
+      keys: {
+        key: string;
+        func: any;
+      }[];
+    })
     | undefined;
   isOpen = false;
   static delay = 200;
@@ -221,8 +221,8 @@ export class InlineSuggest {
               // ["Backspace", "Tab", "ArrowRight", "Escape"].includes(evt.key) ...etc
               const lastletterOfTrigger =
                 self.plugin.settings.autoSuggestOptions.triggerPhrase[
-                  self.plugin.settings.autoSuggestOptions.triggerPhrase.length -
-                    1
+                self.plugin.settings.autoSuggestOptions.triggerPhrase.length -
+                1
                 ];
               if (
                 evt.key.length > 1 ||
@@ -253,7 +253,7 @@ export class InlineSuggest {
   getInlineSuggestionsExtension(
     autoSuggest: InlineSuggest,
     onSelect: (all?: boolean) => void,
-    onExit: Function
+    onExit: () => void
   ) {
     return Prec.lowest(
       // must be lowest else you get infinite loop with state changes by our plugin
@@ -303,15 +303,15 @@ export class InlineSuggest {
 }
 
 class InlineSuggestionsWidget extends WidgetType {
-  onSelect: Function;
-  onExit: Function;
+  onSelect: () => void;
+  onExit: () => void;
   autoSuggest: InlineSuggest;
   renderedSuggestion?: string;
-  exitHandler?: Function;
+  exitHandler?: () => void;
   constructor(
     autoSuggest: InlineSuggest,
-    onSelect: Function,
-    onExit: Function,
+    onSelect: () => void,
+    onExit: () => void,
     readonly view: EditorView
   ) {
     super();
@@ -359,9 +359,8 @@ class InlineSuggestionsWidget extends WidgetType {
     else span.textContent = content;
 
     const span2 = spanMAM.createEl("span");
-    span2.textContent = ` (${this.autoSuggest.viewedSuggestion + 1}/${
-      this.autoSuggest.currentSuggestions.length
-    })`;
+    span2.textContent = ` (${this.autoSuggest.viewedSuggestion + 1}/${this.autoSuggest.currentSuggestions.length
+      })`;
     span2.onselect = span2.onclick = () => {
       span.style.display = "hidden";
       this.onSelect(true);

@@ -13,7 +13,7 @@ export function useReloder() {
   return [setDidChangeAnything, _] as const;
 }
 
-export default function ReloadPluginPopup(props: {}) {
+export default function ReloadPluginPopup(props: object) {
   const global = useGlobal();
   const [didChangeAnything, setDidChangeAnything] = useLocalStorage(
     requiresReloadLSName,

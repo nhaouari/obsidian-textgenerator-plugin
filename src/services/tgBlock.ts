@@ -36,17 +36,20 @@ export default class TGBlock {
 
         if (!activeView) throw "active view wasn't detected";
 
-        const CM = ContentManagerCls.compile(activeView, this.plugin);
+        const CM = ContentManagerCls.compile(activeView, this.plugin, {
+          templateContent: source
+        });
 
         const context = {
           ...(activeView
             ? await this.plugin.contextManager.getContext({
-                editor: CM,
-                filePath: activeView?.file?.path,
-                templateContent: inputContent,
-              })
+              editor: CM,
+              filePath: activeView?.file?.path,
+              templateContent: inputContent,
+            })
             : {}),
         };
+
 
         const markdown = await inputTemplate(context.options);
 

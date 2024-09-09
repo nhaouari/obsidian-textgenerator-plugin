@@ -12,6 +12,7 @@ export type Options = {
 };
 
 export interface ContentManager {
+  options: Options;
   getValue(): Promise<string> | string;
 
   getSelection(): Promise<string>;

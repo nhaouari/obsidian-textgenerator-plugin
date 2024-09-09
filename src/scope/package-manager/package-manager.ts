@@ -121,7 +121,9 @@ export default class PackageManager {
           await self.plugin.packageManager.setApiKey(apikey);
         }
       );
-    } catch { }
+    } catch {
+      /** EMPTY */
+    }
 
     try {
       this.plugin.registerAction<{ packageId?: string }>(
@@ -143,7 +145,9 @@ export default class PackageManager {
             );
         }
       );
-    } catch { }
+    } catch {
+      /** EMPTY */
+    }
   }
 
   async initConfigFlie() {
@@ -399,7 +403,9 @@ export default class PackageManager {
         if (await adapter.exists(to))
           if (promptId) await adapter.remove(to);
           else await adapter.rmdir(to, true);
-      } catch { }
+      } catch {
+        /** EMPTY */
+      }
 
       if (!promptId) {
         const list = (await adapter.list(from)).files;

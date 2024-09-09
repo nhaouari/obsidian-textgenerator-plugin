@@ -1,14 +1,26 @@
 import { TFile, View } from "obsidian";
-import { ContentManager, Mode } from "./types";
+import { ContentManager, Mode, Options } from "./types";
 
 type Item = any;
 export default class ExcalidrawManager implements ContentManager {
   ea: any;
   view: View;
 
-  constructor(ea: any, view: View) {
+  constructor(ea: any, view: View, options: Options) {
     this.ea = ea;
     this.view = view;
+    this.options = options;
+  }
+
+  options: Options = {
+    wrapInBlockQuote: false
+  };
+
+  getRange(from?: any, to?: any) {
+    throw new Error("Method not implemented.");
+  }
+  getCurrentLine(): string {
+    throw new Error("Method not implemented.");
   }
 
   protected async getSelectedItems(): Promise<Item[]> {
@@ -91,7 +103,7 @@ export default class ExcalidrawManager implements ContentManager {
     return txt;
   }
 
-  selectTgSelection(tgSelectionLimiter?: string) {}
+  selectTgSelection(tgSelectionLimiter?: string) { }
 
   getLastLetterBeforeCursor(): string {
     return "";
@@ -154,12 +166,12 @@ export default class ExcalidrawManager implements ContentManager {
         id: undefined,
         box: pos?.type
           ? {
-              width: Math.min(
-                textSize.width + 2,
-                Math.max(this.ea.style.fontSize * 20, 200)
-              ),
-              boxPadding: 0,
-            }
+            width: Math.min(
+              textSize.width + 2,
+              Math.max(this.ea.style.fontSize * 20, 200)
+            ),
+            boxPadding: 0,
+          }
           : { boxPadding: 2 },
       });
 
@@ -238,9 +250,9 @@ export default class ExcalidrawManager implements ContentManager {
       items.length
         ? items
         : this.ea
-            .getViewElements()
-            .map((e: Item) => e.rawText)
-            .filter(Boolean)
+          .getViewElements()
+          .map((e: Item) => e.rawText)
+          .filter(Boolean)
     )[items.length - 1];
 
     // if (!selectedItem) throw "no selected items";

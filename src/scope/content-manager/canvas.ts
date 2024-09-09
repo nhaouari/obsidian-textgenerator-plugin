@@ -43,11 +43,11 @@ export default class CanvasManager implements ContentManager {
       Math.max(
         MIN_HEIGHT,
         parentNode &&
-          calculateNoteHeight({
-            text,
-            width: parentNode.width,
-            parentHeight: parentNode.height,
-          })
+        calculateNoteHeight({
+          text,
+          width: parentNode.width,
+          parentHeight: parentNode.height,
+        })
       );
 
     const siblings =
@@ -132,7 +132,7 @@ export default class CanvasManager implements ContentManager {
     return Promise.all(extractedText);
   }
 
-  protected getParentOfNode(id: string) {}
+  protected getParentOfNode(id: string) { }
 
   async getSelections(): Promise<string[]> {
     // @ts-ignore
@@ -213,7 +213,7 @@ export default class CanvasManager implements ContentManager {
 
         break;
 
-      case "insert":
+      case "insert": {
         selectedItem = this.createNewNode(
           parent,
           {
@@ -238,7 +238,7 @@ export default class CanvasManager implements ContentManager {
             x: parent.x,
             y: parent.y + parent.height + NEW_NOTE_MARGIN,
           });
-        break;
+      } break;
 
       case "stream":
         if (!selectedItem?.id) throw "no item to update";
@@ -248,10 +248,10 @@ export default class CanvasManager implements ContentManager {
         selectedItem.moveAndResize({
           height: selectedItem?.height
             ? calculateNoteHeight({
-                parentHeight: selectedItem?.height,
-                width: selectedItem.width,
-                text,
-              })
+              parentHeight: selectedItem?.height,
+              width: selectedItem.width,
+              text,
+            })
             : undefined,
           width: selectedItem.width,
           x: selectedItem.x,
@@ -349,7 +349,7 @@ const calculateNoteHeight = ({
     parentHeight,
     Math.round(
       TEXT_PADDING_HEIGHT +
-        (PX_PER_LINE * text.length) / ((width || MIN_WIDTH) / PX_PER_CHAR)
+      (PX_PER_LINE * text.length) / ((width || MIN_WIDTH) / PX_PER_CHAR)
     )
   );
 

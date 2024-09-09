@@ -196,13 +196,10 @@ export default function TemplateDetails(inProps: {
   async function update() {
     setInstalling(true);
     try {
-
       await packageManager.updatePackage(packageId);
       updateLocalView();
       updateView();
       checkForUpdates();
-    } catch (err: any) {
-      throw err;
     } finally {
       setInstalling(false)
     }

@@ -87,14 +87,20 @@ export default function ChatComp(props: {
     event.preventDefault();
     setLoading(true);
     try {
+      const templateContent = input;
+
       const editor = ContentManagerCls.compile(
         props.plugin.app.workspace.getLeaf().view,
-        props.plugin
+        props.plugin,
+        {
+          templateContent
+        }
       );
+
       const selection = await props.plugin.contextManager.getSelection(editor);
       const selections =
         await props.plugin.contextManager.getSelections(editor);
-      const templateContent = input;
+
 
       const context = await props.plugin.contextManager.getContext({
         insertMetadata: false,

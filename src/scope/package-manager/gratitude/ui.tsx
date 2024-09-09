@@ -6,7 +6,7 @@ import { createRoot } from "react-dom/client";
 import { GlobalProvider } from "#/ui/context/global";
 
 export default class GratitudeUI extends Modal {
-  result: string = "";
+  result = "";
   plugin: TextGeneratorPlugin;
   onSubmit: (result: string) => void;
   onReject: (error: any) => void;

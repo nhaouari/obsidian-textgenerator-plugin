@@ -5,27 +5,45 @@ import CanvasManager from "./canvas";
 import { ContentManager, Options } from "./types";
 import TextGeneratorPlugin from "#/main";
 export default class ContentManagerCls {
-  static compile(view: View, plugin: TextGeneratorPlugin): ContentManager {
+  static compile(
+    view: View,
+    plugin: TextGeneratorPlugin,
+    otherOptions?: {
+      templatePath?: string;
+      templateContent?: string;
+    }
+  ): ContentManager {
     const type = view.getViewType();
 
+    let wrapInBlockQuote = plugin.settings.outputToBlockQuote;
+
+    if (otherOptions?.templatePath) {
+      const templateMetadata = plugin.contextManager.getMetaData(otherOptions.templatePath);
+      wrapInBlockQuote = templateMetadata?.frontmatter?.outputToBlockQuote ?? wrapInBlockQuote;
+    } else if (otherOptions?.templateContent) {
+      const templateFrontmatter = plugin.contextManager.extractFrontmatterFromTemplateContent(otherOptions.templateContent);
+      wrapInBlockQuote = templateFrontmatter?.outputToBlockQuote ?? wrapInBlockQuote;
+    }
+
     const options: Options = {
-      wrapInBlockQuote: plugin.settings.outputToBlockQuote,
+      wrapInBlockQuote: wrapInBlockQuote,
     };
 
     switch (type) {
-      case "markdown":
+      case "markdown": {
         // @ts-ignore
         const editor = view?.editor || view.app.workspace.activeEditor?.editor;
         if (!editor) throw "couldn't find the editor fsr";
         return new MarkdownManager(editor, view, options);
-
-      case "excalidraw":
+      }
+      case "excalidraw": {
         // @ts-ignore
         const ea = view.app.plugins?.plugins["obsidian-excalidraw-plugin"]?.ea;
         if (!ea) throw "couldn't find the Escalidraw plugin fsr";
         ea.setView(view);
         ea.clear();
-        return new ExcalidrawManager(ea, view);
+        return new ExcalidrawManager(ea, view, options);
+      }
       case "canvas":
         // @ts-ignore
         if (!view.canvas) throw "couldn't find the canvas plugin fsr";

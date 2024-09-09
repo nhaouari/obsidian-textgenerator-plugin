@@ -145,7 +145,7 @@ export default class RequestHandler {
       settings,
     });
 
-    let promp: Message["content"] = await Handlebars.compile(
+    const promp: Message["content"] = await Handlebars.compile(
       this.plugin.contextManager.overProcessTemplate(prompt)
     )({
       ...settings,

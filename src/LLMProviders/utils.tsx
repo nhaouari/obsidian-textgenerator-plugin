@@ -141,7 +141,7 @@ export function ModelsHandler(props: {
             </div>
           </div>
 
-          {!!supportedInputs.length && <div className="plug-tg-flex plug-tg-gap-2 plug-tg-items-center">
+          {!!supportedInputs.length && <div className="plug-tg-flex plug-tg-items-center plug-tg-gap-2">
             {model?.inputOptions?.images && <IconScreenshot size={16} />}
             {model?.inputOptions?.audio && <IconWaveSine size={16} />}
             {model?.inputOptions?.videos && <IconVideo size={16} />}

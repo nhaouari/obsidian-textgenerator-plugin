@@ -7,7 +7,7 @@ export default async function read(
   plugin: TextGeneratorPlugin,
   otherOptions?: any
 ) {
-  if (!app.vault.adapter.exists(path)) throw "file doesn't exist";
+  if (!plugin.app.vault.adapter.exists(path)) throw "file doesn't exist";
 
   const extension = path.split(".").reverse()[0].toLowerCase();
 
@@ -30,11 +30,13 @@ export default async function read(
       extractor.setExtractor("ImageExtractor");
       break;
 
-    default:
-      const p = self.app.vault.getAbstractFileByPath(path);
+    default: {
+      const p = plugin.app.vault.getAbstractFileByPath(path);
+
       if (!p) throw new Error("file doesn't exist");
       // @ts-ignore
-      return self.app.vault.cachedRead(p);
+      return plugin.app.vault.cachedRead(p);
+    }
   }
 
   return await extractor.convert(path, otherOptions);

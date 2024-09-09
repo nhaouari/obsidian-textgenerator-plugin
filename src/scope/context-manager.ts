@@ -958,13 +958,13 @@ export default class ContextManager {
     );
 
     const targetFile = filePath
-      ? app.vault.getAbstractFileByPath(filePath) ||
+      ? this.app.vault.getAbstractFileByPath(filePath) ||
       this.app.workspace.getActiveFile()
       : this.app.workspace.getActiveFile();
 
     const targetFileContent = editor
       ? await editor.getValue()
-      : await app.vault.cachedRead(targetFile as any);
+      : await this.app.vault.cachedRead(targetFile as any);
 
     if (!targetFile) throw new Error("ActiveFile was undefined");
 
@@ -1006,6 +1006,7 @@ export default class ContextManager {
 
       frontmatter: {
         ...cache?.frontmatter,
+        outputToBlockQuote: undefined || cache?.frontmatter?.outputToBlockQuote,
 
         ...(!withoutCompatibility && {
           PromptInfo: {
@@ -1063,10 +1064,7 @@ export default class ContextManager {
 
   getMetaDataAsStr(frontmatter: Record<string, string | any[]>) {
     let cleanFrontMatter = "";
-    for (const [key, value] of Object.entries(frontmatter) as [
-      string,
-      string, // or array
-    ]) {
+    for (const [key, value] of Object.entries(frontmatter) as Array<[string, string | any[]]>) {
       if (
         !value ||
         key.includes(".") ||
@@ -1242,6 +1240,34 @@ export default class ContextManager {
       hbd = await this.execDataview(hbd);
       return hbd;
     }) as any;
+  }
+
+
+  extractFrontmatterFromTemplateContent(templateContent: string) {
+    const regex = /---([\s\S]*?)---/;
+    const match = templateContent.match(regex);
+
+
+    // turn yaml it into an object
+    const yaml = match ? match[1] : "";
+    const obj = this.yamlToObj(yaml);
+    return obj;
+  }
+
+  /** Simple yaml parser, as fallback */
+  yamlToObj(yaml: string) {
+    const frontmatterRegex = /---\n([\s\S]+?)\n---/;
+    const match = yaml.match(frontmatterRegex);
+    if (!match) return {};
+
+    const frontmatterStr = match[1];
+    const lines = frontmatterStr.split("\n");
+    const frontmatter: Record<string, any> = {};
+    lines.forEach(line => {
+      const [key, value] = line.split(": ").map(s => s.trim());
+      frontmatter[key] = value;
+    });
+    return frontmatter;
   }
 }
 
