@@ -133,6 +133,7 @@ export default class RequestHandler {
 
       this.LLMProvider = instance;
     }
+    return this.LLMProvider;
   }
 
   async gen(

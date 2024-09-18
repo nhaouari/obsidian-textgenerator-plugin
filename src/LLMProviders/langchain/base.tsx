@@ -2,9 +2,9 @@
 import debug from "debug";
 import React from "react";
 
-import { ChatOpenAI, OpenAIChatInput } from "@langchain/openai";
+import { ChatOpenAI, ClientOptions, OpenAIChatInput } from "@langchain/openai";
 
-import { HuggingFaceInference } from "@langchain/community/llms/hf";
+// import { HuggingFaceInference } from "@langchain/community/llms/hf";
 
 import BaseProvider from "../base";
 import {
@@ -91,12 +91,19 @@ export default class LangchainProvider
       options.otherOptions.corsBypass
     )
 
-    const llm = new (this.llmClass as typeof ChatOpenAI)(this.getConfig(options), {
-      basePath: options.basePath?.length
-        ? options.basePath.endsWith("/")
-          ? options.basePath.substring(0, options.basePath.length - 1)
-          : options.basePath
-        : undefined,
+
+    const baseURL = options.basePath?.length
+      ? options.basePath.endsWith("/")
+        ? options.basePath.substring(0, options.basePath.length - 1)
+        : options.basePath
+      : undefined;
+
+
+
+    const clientOptions: ClientOptions & OpenAIChatInput = {
+      baseURL,
+      // @ts-ignore
+      basePath: baseURL,
 
       // @ts-ignore
       clientOptions: {
@@ -107,7 +114,14 @@ export default class LangchainProvider
       defaultQuery: options.bodyParams,
       fetch: Fetch,
       defaultHeaders: headers,
-    });
+    }
+
+    console.log({ clientOptions })
+    const llm = new (this.llmClass as typeof ChatOpenAI)({
+      ...this.getConfig(options),
+      // @ts-ignore
+      clientOptions
+    }, clientOptions);
 
     // @ts-ignore
     llm.clientOptions ??= {};
@@ -159,7 +173,7 @@ export default class LangchainProvider
         // if the model is streamable
         params.stream = params.stream && this.streamable;
 
-        const llm = (await this.getLLM(params)) as HuggingFaceInference;
+        const llm = (await this.getLLM(params));
 
         let first = true;
         let allText = "";
@@ -294,7 +308,7 @@ export default class LangchainProvider
             Array.from({ length: reqParams.n || 1 }).map(async () => {
               requestResults.push(
                 ...(
-                  await (llm as HuggingFaceInference).generate(
+                  await (llm).generate(
                     reqParams.llmPredict || this.llmPredict
                       ? [chatToString(messages)]
                       : [
@@ -314,7 +328,7 @@ export default class LangchainProvider
           );
         } else
           requestResults = (
-            await (llm as HuggingFaceInference).generate(
+            await (llm).generate(
               reqParams.llmPredict || this.llmPredict
                 ? [chatToString(messages)]
                 : [mapMessagesToLangchainMessages(messages) as any as string],
@@ -377,7 +391,7 @@ export default class LangchainProvider
     for (const message of messages) {
       numTokens += tokensPerMessage;
       for (const [key, value] of Object.entries(message)) {
-        numTokens += encoder.encode(value).length;
+        numTokens += encoder.encode(value as any).length;
         if (key === "name") {
           numTokens += tokensPerName;
         }
@@ -419,6 +433,7 @@ function chatToString(messages: Message[] = []) {
 function getChain(chainName: string, llm: any, config: any) {
   const loader = chains[
     (chainName as keyof typeof chains) || "loadSummarizationChain"
+    // @ts-ignore
   ] as typeof chains.loadSummarizationChain;
 
   const chain = loader(llm, {

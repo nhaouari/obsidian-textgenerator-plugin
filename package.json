@@ -1,6 +1,6 @@
 {
   "name": "obsidian-textgenerator-plugin",
-  "version": "0.7.37-beta",
+  "version": "0.7.38",
   "description": "Text generator is a handy plugin that helps you generate text content using GPT-3 (OpenAI).",
   "obsidian": {
     "minAppVersion": "1.6.0"
@@ -59,6 +59,7 @@
     "typescript": "5.2.2"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.3",
     "@codemirror/language": "^6.10.2",
     "@codemirror/state": "^6.4.1",
     "@codemirror/view": "^6.32.0",
@@ -66,11 +67,11 @@
     "@google-ai/generativelanguage": "^1.1.0",
     "@huggingface/inference": "2.7.0",
     "@koa/cors": "^5.0.0",
-    "@langchain/anthropic": "^0.2.14",
+    "@langchain/anthropic": "^0.3.1",
     "@langchain/community": "^0.2.25",
-    "@langchain/core": "^0.2.23",
-    "@langchain/google-genai": "^0.0.21",
-    "@langchain/openai": "^0.2.6",
+    "@langchain/core": "^0.3.1",
+    "@langchain/google-genai": "^0.1.0",
+    "@langchain/openai": "^0.3.0",
     "@mozilla/readability": "^0.4.4",
     "@react-icons/all-files": "^4.1.0",
     "@rjsf/core": "^5.20.0",
@@ -91,10 +92,11 @@
     "func-cache": "^2.2.62",
     "handlebars": "^4.7.8",
     "handlebars-async-helpers": "^1.0.6",
+    "hyperswarm": "^4.8.2",
     "json5": "^2.2.3",
     "koa": "^2.15.3",
     "koa-proxies": "^0.12.4",
-    "langchain": "^0.2.15",
+    "langchain": "^0.3.2",
     "live-plugin-manager": "^0.18.1",
     "lockfile": "^1.0.4",
     "lodash.get": "^4.4.2",
