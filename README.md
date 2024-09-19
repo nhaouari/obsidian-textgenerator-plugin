@@ -1,7 +1,7 @@
 <h1 align="center">obsidian-textgenerator-plugin</h1>
 
 <div align="center">
-  <a href="https://bit.ly/3ORwT00">Documentation</a>
+  <a href="https://bit.ly/tg_docs">Documentation</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
   <a href="https://discord.gg/mEhvhkRfq5">Discord</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
