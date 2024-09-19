@@ -243,11 +243,14 @@ export default class TextGeneratorPlugin extends Plugin {
       }
 
       // add commands
-      await this.commands.addCommands();
+
       try {
-        await this.packageManager.load();
+        await Promise.all([
+          this.commands.addCommands(),
+          this.packageManager.load(),
+        ]);
       } catch (err: any) {
-        console.trace("error in packageManager", err);
+        console.trace("error in packageManager or commands", err);
       }
 
 
@@ -487,26 +490,28 @@ export default class TextGeneratorPlugin extends Plugin {
   }
 
   getFilesOnLoad(): Promise<TFile[]> {
-    return new Promise(async (resolve, reject) => {
-      let testFiles = this.app.vault.getFiles();
-      if (testFiles.length === 0) {
-        let retryTimes = 30;
-        const timer = setInterval(() => {
-          console.log("attempting to get files", retryTimes);
-          testFiles = this.app.vault.getFiles();
-          retryTimes--;
+    return new Promise((resolve, reject) => {
+      const checkFiles = () => {
+        const files = this.app.vault.getFiles();
+        if (files.length > 0) {
+          resolve(files);
+        } else {
+          this.app.workspace.onLayoutReady(() => {
+            const filesAfterLayout = this.app.vault.getFiles();
+            if (filesAfterLayout.length > 0) {
+              resolve(filesAfterLayout);
+            } else {
+              reject("Couldn't retrieve files after layout is ready");
+            }
+          });
+        }
+      };
 
-          if (retryTimes <= 0) {
-            clearInterval(timer);
-            reject("Couldn't retrive files");
-          }
-
-          if (testFiles.length > 0) {
-            clearInterval(timer);
-            resolve(testFiles);
-          }
-        }, 3 * 1000);
-      } else resolve(testFiles);
+      if (this.app.workspace.layoutReady) {
+        checkFiles();
+      } else {
+        this.app.workspace.onLayoutReady(checkFiles);
+      }
     });
   }
 
