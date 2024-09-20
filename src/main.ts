@@ -491,27 +491,14 @@ export default class TextGeneratorPlugin extends Plugin {
 
   getFilesOnLoad(): Promise<TFile[]> {
     return new Promise((resolve, reject) => {
-      const checkFiles = () => {
-        const files = this.app.vault.getFiles();
-        if (files.length > 0) {
-          resolve(files);
+      this.app.workspace.onLayoutReady(() => {
+        const filesAfterLayout = this.app.vault.getFiles();
+        if (filesAfterLayout.length > 0) {
+          resolve(filesAfterLayout);
         } else {
-          this.app.workspace.onLayoutReady(() => {
-            const filesAfterLayout = this.app.vault.getFiles();
-            if (filesAfterLayout.length > 0) {
-              resolve(filesAfterLayout);
-            } else {
-              reject("Couldn't retrieve files after layout is ready");
-            }
-          });
+          reject("Couldn't retrieve files after layout is ready");
         }
-      };
-
-      if (this.app.workspace.layoutReady) {
-        checkFiles();
-      } else {
-        this.app.workspace.onLayoutReady(checkFiles);
-      }
+      });
     });
   }
 
