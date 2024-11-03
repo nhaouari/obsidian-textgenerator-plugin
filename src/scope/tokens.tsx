@@ -57,7 +57,7 @@ export default class TokensScope {
         ? await template.inputTemplate(options)
         : context.context;
 
-    const { bodyParams } =
+    const { bodyParams } = await
       this.plugin.textGenerator.reqFormatter.getRequestParameters(
         {
           ...this.plugin.settings,
