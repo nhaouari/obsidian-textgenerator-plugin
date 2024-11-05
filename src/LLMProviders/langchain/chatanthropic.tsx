@@ -135,7 +135,7 @@ export default class LangchainChatAnthropicProvider
               <IconExternalLink />
             </SettingItem>
           </a>
-          <a href="https://docs.anthropic.com/claude/reference/selecting-a-model">
+          <a href="https://docs.anthropic.com/en/docs/about-claude/models">
             <SettingItem
               name="Available models"
               className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
