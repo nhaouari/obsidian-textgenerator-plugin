@@ -16,7 +16,7 @@ const logger = debug("textgenerator:llmProvider:chatanthropic");
 
 const default_values = {
   basePath: "https://api.anthropic.com/",
-  model: "claude-3-5-sonnet-20240620",
+  model: "claude-3-5-sonnet-latest",
 };
 
 
