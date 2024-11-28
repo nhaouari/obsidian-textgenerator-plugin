@@ -19,7 +19,15 @@ import {
   ExtractorSlug,
   Extractors,
 } from "#/extractors/content-extractor";
-import { isMap, isSet } from "util/types";
+
+const isMap = (value: any): value is Map<any, any> => {
+  return value instanceof Map;
+};
+
+const isSet = (value: any): value is Set<any> => {
+  return value instanceof Set;
+};
+
 import Read from "#/extractors";
 import lodashSet from "lodash.set";
 import lodashGet from "lodash.get";
