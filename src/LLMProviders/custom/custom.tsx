@@ -138,6 +138,32 @@ export default class DefaultCustomProvider
           </SettingItem>
         )}
 
+        {vars.map((v: string) =>
+          v == "api_key" ? null : (
+            <SettingItem
+              key={v}
+              name={v}
+              register={props.register}
+              sectionId={props.sectionId}
+            >
+              <Input
+                value={config[v]}
+                placeholder={`Enter your ${v}`}
+                type={v.toLowerCase().contains("key") ? "password" : "text"}
+                setValue={async (value) => {
+                  config[v] = value;
+                  global.triggerReload();
+                  if (v.toLowerCase().contains("key"))
+                    global.plugin.encryptAllKeys();
+                  // TODO: it could use a debounce here
+                  await global.plugin.saveSettings();
+                }}
+              />
+            </SettingItem>
+          )
+        )}
+
+
         <SettingItem
           name="Advance mode"
           register={props.register}
@@ -152,7 +178,6 @@ export default class DefaultCustomProvider
             }}
           />
         </SettingItem>
-
         {showAdvanced && (
           <>
             <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
@@ -247,31 +272,6 @@ export default class DefaultCustomProvider
               <div className="plug-tg-text-red-300">{bodyValidityError}</div>
             </div>
 
-            <div className="plug-tg-opacity-70">Variables</div>
-            {vars.map((v: string) =>
-              v == "api_key" ? null : (
-                <SettingItem
-                  key={v}
-                  name={v}
-                  register={props.register}
-                  sectionId={props.sectionId}
-                >
-                  <Input
-                    value={config[v]}
-                    placeholder={`Enter your ${v}`}
-                    type={v.toLowerCase().contains("key") ? "password" : "text"}
-                    setValue={async (value) => {
-                      config[v] = value;
-                      global.triggerReload();
-                      if (v.toLowerCase().contains("key"))
-                        global.plugin.encryptAllKeys();
-                      // TODO: it could use a debounce here
-                      await global.plugin.saveSettings();
-                    }}
-                  />
-                </SettingItem>
-              )
-            )}
 
             <div className="plug-tg-w-full plug-tg-pb-8"></div>
 
