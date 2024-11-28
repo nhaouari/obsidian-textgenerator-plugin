@@ -74,6 +74,7 @@ type TextGeneratorSettings = {
   autoSuggestOptions: {
     customInstructEnabled: boolean;
     customInstruct: string;
+    systemPrompt: string;
     isEnabled: boolean;
     allowInNewLine: boolean;
     delay: number;

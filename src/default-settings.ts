@@ -65,7 +65,6 @@ Starred Blocks: {{starredBlocks}}
     "tg-block-processor": true,
     reload: true,
     "disable-ribbon-icons": false,
-
   },
 
   advancedOptions: {
@@ -81,6 +80,7 @@ Starred Blocks: {{starredBlocks}}
     customInstruct: `Continue the follwing text:
 Title: {{title}}
 {{query}}`,
+    systemPrompt: "",
     isEnabled: false,
     allowInNewLine: false,
     delay: 300,

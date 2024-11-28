@@ -59,20 +59,26 @@ export class AutoSuggest {
   ): Promise<Completion[] | []> {
     logger("getGPTSuggestions", context);
     try {
-      let prompt = `continue the follwing text:
-${context.query}`;
+      let prompt = this.plugin.defaultSettings.autoSuggestOptions.customInstruct;
+      let system = this.plugin.defaultSettings.autoSuggestOptions.systemPrompt;
+
       if (this.plugin.settings.autoSuggestOptions.customInstructEnabled) {
         try {
           const templateContent =
             this.plugin.settings.autoSuggestOptions.customInstruct ||
             this.plugin.defaultSettings.autoSuggestOptions.customInstruct;
 
+          if (this.plugin.settings.autoSuggestOptions.systemPrompt)
+            system = this.plugin.settings.autoSuggestOptions.systemPrompt;
+
+          const editor = ContentManagerCls.compile(
+            await this.plugin.getActiveView(),
+            this.plugin
+          )
+
           const templateContext =
             await this.plugin.contextManager.getTemplateContext({
-              editor: ContentManagerCls.compile(
-                await this.plugin.getActiveView(),
-                this.plugin
-              ),
+              editor,
               templateContent,
               filePath: context.file?.path,
             });
@@ -101,7 +107,10 @@ ${context.query}`;
           autoSuggestOptions.selectedProvider
         );
       const re = await this.plugin.textGenerator.LLMProvider.generateMultiple(
-        [this.plugin.textGenerator.LLMProvider.makeMessage(prompt, "user")],
+        [
+          this.plugin.textGenerator.LLMProvider.makeMessage(system, "system"),
+          this.plugin.textGenerator.LLMProvider.makeMessage(prompt, "user")
+        ],
         {
           stream: false,
           n: parseInt(

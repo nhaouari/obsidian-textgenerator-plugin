@@ -287,6 +287,45 @@ export default function AutoSuggestSetting(props: { register: Register }) {
             </>
           )}
 
+          {global.plugin.settings.autoSuggestOptions.customInstructEnabled && (
+            <>
+              <SettingItem
+                name=""
+                register={props.register}
+                sectionId={sectionId}
+                textArea
+              >
+                <textarea
+                  placeholder="Textarea will autosize to fit the content"
+                  className="plug-tg-input plug-tg-h-fit plug-tg-w-full plug-tg-resize-y plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none"
+                  value={
+                    global.plugin.settings.autoSuggestOptions.systemPrompt ||
+                    global.plugin.defaultSettings.autoSuggestOptions
+                      .systemPrompt
+                  }
+                  onChange={async (e) => {
+                    global.plugin.settings.autoSuggestOptions.systemPrompt =
+                      e.target.value;
+                    global.triggerReload();
+                    await global.plugin.saveSettings();
+                  }}
+                  spellCheck={false}
+                  rows={10}
+                />
+              </SettingItem>
+              <AvailableVars
+                vars={{
+                  ...contextVariablesObj,
+                  query: {
+                    example: "{{query}}",
+                    hint: "query text that triggered auto-suggest",
+                  },
+                }}
+              />
+            </>
+          )}
+
+
           <SettingItem
             name="Custom Provider"
             description={`use a different LLM provider than the one you're generating with.\
@@ -317,8 +356,8 @@ export default function AutoSuggestSetting(props: { register: Register }) {
                 global.plugin.settings.autoSuggestOptions.selectedProvider || ""
               }
               setSelectedProvider={(newVal) =>
-                (global.plugin.settings.autoSuggestOptions.selectedProvider =
-                  (newVal as any) || "")
+              (global.plugin.settings.autoSuggestOptions.selectedProvider =
+                (newVal as any) || "")
               }
               triggerResize={triggerResize}
               mini
