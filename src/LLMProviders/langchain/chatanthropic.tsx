@@ -47,7 +47,7 @@ export default class LangchainChatAnthropicProvider
     return this.cleanConfig({
       anthropicApiKey: options.api_key,
       anthropicApiUrl: options.basePath,
-      stopSequences: options.stop,
+      // stopSequences: options.stop,
 
       // ------------Necessary stuff--------------
       modelKwargs: options.modelKwargs,
