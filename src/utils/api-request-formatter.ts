@@ -74,10 +74,8 @@ export default class ReqFormatter {
 
     if (!this.plugin.textGenerator.LLMProvider) throw "LLM Provider not intialized";
 
-    params.model = params.model?.toLowerCase();
-
     if (params.includeAttachmentsInRequest ?? params.advancedOptions?.includeAttachmentsInRequest)
-      params.prompt = await this.plugin.contextManager.splitContent(params.prompt, params.noteFile, (AI_MODELS[params.model] || AI_MODELS["models/" + params.model])?.inputOptions || {})
+      params.prompt = await this.plugin.contextManager.splitContent(params.prompt, params.noteFile, (AI_MODELS[params.model?.toLowerCase()] || AI_MODELS["models/" + params.model?.toLowerCase()])?.inputOptions || {})
 
     let bodyParams: Partial<LLMConfig & { prompt: string }> & {
       messages: Message[];
