@@ -9,7 +9,7 @@ import { BaseLanguageModelParams } from "@langchain/core/language_models/base";
 import { Input, Message, SettingItem, useGlobal } from "../refs";
 
 import type { AnthropicInput } from "@langchain/anthropic";
-import { ModelsHandler } from "../utils";
+import { HeaderEditor, ModelsHandler } from "../utils";
 
 const logger = debug("textgenerator:llmProvider:chatanthropic");
 
@@ -60,6 +60,7 @@ export default class LangchainChatAnthropicProvider
       stop: options.stop,
       streaming: options.stream,
       maxRetries: 3,
+      headers: options.headers || undefined,
     });
   }
 
@@ -123,6 +124,23 @@ export default class LangchainChatAnthropicProvider
           llmProviderId={props.self.originalId || id}
           default_values={default_values}
         />
+
+        <HeaderEditor
+          enabled={!!config.headers}
+          setEnabled={async (value) => {
+            if (!value) config.headers = undefined;
+            else config.headers = "{}";
+            global.triggerReload();
+            await global.plugin.saveSettings();
+          }}
+          headers={config.headers}
+          setHeaders={async (value) => {
+            config.headers = value;
+            global.triggerReload();
+            await global.plugin.saveSettings();
+          }}
+        />
+
         <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">
           <div className="plug-tg-text-lg plug-tg-opacity-70">Useful links</div>
           <a href="https://docs.anthropic.com/claude/reference/getting-started-with-the-api">

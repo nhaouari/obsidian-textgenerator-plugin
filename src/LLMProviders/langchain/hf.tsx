@@ -12,8 +12,7 @@ import { Input, SettingItem, useGlobal } from "../refs";
 
 export default class LangchainHFProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   static provider = "Langchain";
   static id = "Huggingface (Langchain)" as const;
   static slug = "hf" as const;
@@ -42,6 +41,7 @@ export default class LangchainHFProvider
       parameters: {
         candidate_labels: ["refund", "legal", "faq"],
       },
+      headers: options.headers || undefined,
     });
   }
 

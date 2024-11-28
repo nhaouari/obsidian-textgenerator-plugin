@@ -75,4 +75,5 @@ export interface LLMConfig {
   llmPredict: boolean;
   bodyParams?: any;
   modelKwargs?: any;
+  headers?: string;
 }

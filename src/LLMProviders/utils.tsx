@@ -1,4 +1,4 @@
-import { IconList, IconPencil, IconReload, IconScreenshot, IconVideo, IconWaveSine } from "@tabler/icons-react";
+import { IconList, IconPencil, IconPlus, IconReload, IconScreenshot, IconVideo, IconWaveSine } from "@tabler/icons-react";
 import clsx from "clsx";
 import React, { useState, useEffect, useId } from "react";
 import LLMProviderInterface from "./interface";
@@ -9,11 +9,13 @@ import {
   AI_MODELS,
   Dropdown,
   DropdownSearch,
+  Input,
   SettingItem,
   fetchWithoutCORS,
   useGlobal,
 } from "./refs";
 import { arrayBufferToBase64 } from "obsidian";
+import { default_values } from "./custom/custom";
 
 export function ModelsHandler(props: {
   register: Parameters<LLMProviderInterface["RenderSettings"]>[0]["register"];
@@ -197,3 +199,104 @@ export function convertArrayBufferToBase64Link(arrayBuffer: ArrayBuffer, type: s
   // Format as a data URL
   return `data:${type || ""};base64,${base64String}`;
 }
+
+
+export function HeaderEditor({
+  headers,
+  setHeaders,
+  enabled,
+  setEnabled,
+}: {
+  headers?: string;
+  setHeaders: (headers: string) => void;
+  enabled?: boolean;
+  setEnabled: (enabled: boolean) => void;
+}) {
+  const [error, setError] = useState<string>();
+
+  const validateAndSetHeaders = (value: string) => {
+    try {
+      if (!value) {
+        setHeaders("");
+        setError(undefined);
+        return;
+      }
+
+      // Try parsing as JSON to validate
+      const parsed = JSON5.parse(value) as Record<string, unknown>;
+
+      // Verify it's an object
+      if (typeof parsed !== "object" || Array.isArray(parsed) || parsed === null) {
+        throw new Error("Headers must be a JSON object");
+      }
+
+      // Verify all values are strings
+      for (const [key, val] of Object.entries(parsed)) {
+        if (typeof val !== "string") {
+          throw new Error("Header values must be strings");
+        }
+      }
+
+      setHeaders(value);
+      setError(undefined);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Invalid JSON");
+    }
+  };
+
+  return (
+    <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
+      <SettingItem
+        name="Enable Custom Headers"
+        register={undefined}
+        sectionId={undefined}
+      >
+        <Input
+          type="checkbox"
+          value={enabled ? "true" : "false"}
+          placeholder="Enable Custom Headers"
+          setValue={async (value) => {
+            setEnabled(value == "true");
+          }}
+        />
+      </SettingItem>
+
+      {enabled && (
+        <>
+
+          <textarea
+            placeholder="Headers"
+            className="plug-tg-resize-none plug-tg-w-full"
+            defaultValue={headers}
+            onChange={async (e) => {
+              validateAndSetHeaders(e.target.value);
+
+              const compiled = await Handlebars.compile(
+                headers
+              )({
+                ...cleanConfig(default_values),
+                n: 1,
+              });
+
+              console.log("------ PREVIEW OF HEADER ------\n", compiled);
+              setError(undefined);
+              try {
+                console.log(
+                  "------ PREVIEW OF HEADER COMPILED ------\n",
+                  JSON5.parse(compiled)
+                );
+              } catch (err: any) {
+                setError(err.message || err);
+                console.warn(err);
+              }
+            }}
+            spellCheck={false}
+            rows={5}
+          />
+          <div className="plug-tg-text-red-300">{error}</div>
+        </>
+      )}
+    </div>
+  );
+}
+

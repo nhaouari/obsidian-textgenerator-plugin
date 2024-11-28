@@ -17,8 +17,7 @@ const default_values = {
 
 export default class LangchainMistralAIChatProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   static provider = "Langchain" as const;
   static id = "MistralAI Chat (Langchain)" as const;
   static slug = "mistralAIChat" as const;
@@ -69,6 +68,7 @@ export default class LangchainMistralAIChatProvider
       stop: options.stop,
       streaming: options.stream,
       maxRetries: 3,
+      headers: options.headers || undefined,
     } as Partial<OpenAIChatInput>);
   }
 

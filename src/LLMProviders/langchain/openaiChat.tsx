@@ -3,7 +3,7 @@ import LangchainBase from "./base";
 
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import { IconExternalLink } from "@tabler/icons-react";
-import { ModelsHandler } from "../utils";
+import { HeaderEditor, ModelsHandler } from "../utils";
 import debug from "debug";
 
 import { AI_MODELS, Input, Message, SettingItem, useGlobal } from "../refs";
@@ -94,6 +94,22 @@ export default class LangchainOpenAIChatProvider
           llmProviderId={props.self.originalId || id}
           default_values={default_values}
           config={config}
+        />
+
+        <HeaderEditor
+          enabled={!!config.headers}
+          setEnabled={async (value) => {
+            if (!value) config.headers = undefined;
+            else config.headers = "{}";
+            global.triggerReload();
+            await global.plugin.saveSettings();
+          }}
+          headers={config.headers}
+          setHeaders={async (value) => {
+            config.headers = value;
+            global.triggerReload();
+            await global.plugin.saveSettings();
+          }}
         />
 
         <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">

@@ -23,6 +23,9 @@ import {
   AI_MODELS,
 } from "../refs";
 import { Callbacks } from "@langchain/core/callbacks/manager";
+import handlebars from "react-syntax-highlighter/dist/esm/languages/hljs/handlebars";
+import JSON5 from "json5";
+import { Handlebars } from "#/helpers/handlebars-helpers";
 
 const logger = debug("textgenerator:LangchainProvider");
 
@@ -67,6 +70,7 @@ export default class LangchainProvider
       stop: options.stop || undefined,
       streaming: options.stream || false,
       maxRetries: 3,
+      headers: options.headers || undefined,
     } as Partial<OpenAIChatInput>);
   }
 
@@ -77,11 +81,21 @@ export default class LangchainProvider
   async getLLM(_options: LLMConfig): Promise<any> {
     const options = { ..._options };
 
+    let nh = {};
+
+    try {
+      if (options.headers)
+        nh = JSON5.parse(await Handlebars.compile(options.headers)(options));
+    } catch (e) {
+      console.error(e);
+    }
+
     const headers = {
       "User-Agent": undefined,
       "HTTP-Referer": location.origin,
       "X-Title": "obsidian-text-generator",
       ...this.defaultHeaders,
+      ...nh
     };
 
 

@@ -5,7 +5,7 @@ import React from "react";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import { IconExternalLink } from "@tabler/icons-react";
 import debug from "debug";
-import { ModelsHandler } from "../utils";
+import { HeaderEditor, ModelsHandler } from "../utils";
 
 import { Input, SettingItem, useGlobal } from "../refs";
 
@@ -48,6 +48,7 @@ export default class LangchainChatGoogleGenerativeAIProvider
       stopSequences: options.stop,
       streaming: options.stream,
       maxRetries: 3,
+      headers: options.headers || undefined,
     });
   }
 
@@ -104,6 +105,22 @@ export default class LangchainChatGoogleGenerativeAIProvider
           sectionId={props.sectionId}
           llmProviderId={props.self.originalId || id}
           default_values={default_values}
+        />
+
+        <HeaderEditor
+          enabled={!!config.headers}
+          setEnabled={async (value) => {
+            if (!value) config.headers = undefined;
+            else config.headers = "{}";
+            global.triggerReload();
+            await global.plugin.saveSettings();
+          }}
+          headers={config.headers}
+          setHeaders={async (value) => {
+            config.headers = value;
+            global.triggerReload();
+            await global.plugin.saveSettings();
+          }}
         />
         <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">
           <div className="plug-tg-text-lg plug-tg-opacity-70">Useful links</div>

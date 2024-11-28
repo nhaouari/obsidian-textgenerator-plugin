@@ -4,7 +4,7 @@ import LangchainBase from "./base";
 import type { OpenAI, OpenAIInput } from "@langchain/openai";
 import LLMProviderInterface, { LLMConfig } from "../interface";
 import { IconExternalLink } from "@tabler/icons-react";
-import { ModelsHandler } from "../utils";
+import { HeaderEditor, ModelsHandler } from "../utils";
 
 import { AI_MODELS, Input, Message, SettingItem, useGlobal } from "../refs";
 
@@ -17,8 +17,7 @@ const default_values = {
 
 export default class LangchainOpenAIInstructProvider
   extends LangchainBase
-  implements LLMProviderInterface
-{
+  implements LLMProviderInterface {
   static provider = "Langchain";
   static id = "OpenAI Instruct (Langchain)" as const;
   static slug = "openAIInstruct" as const;
@@ -44,6 +43,7 @@ export default class LangchainOpenAIInstructProvider
       stop: options.stop,
       streaming: options.stream,
       maxRetries: 3,
+      headers: options.headers || undefined as any,
     } as Partial<OpenAIInput>);
   }
 
@@ -64,14 +64,14 @@ export default class LangchainOpenAIInstructProvider
           ...this.cleanConfig(this.plugin.settings),
           ...this.cleanConfig(
             this.plugin.settings.LLMProviderOptions[
-              this.id as keyof typeof this.plugin.settings
+            this.id as keyof typeof this.plugin.settings
             ]
           ),
           ...this.cleanConfig(reqParams.otherOptions),
           ...this.cleanConfig(reqParams),
           otherOptions: this.cleanConfig(
             this.plugin.settings.LLMProviderOptions[
-              this.id as keyof typeof this.plugin.settings
+            this.id as keyof typeof this.plugin.settings
             ]
           ),
         };
@@ -79,7 +79,7 @@ export default class LangchainOpenAIInstructProvider
         const llm = await this.getLLM(params);
 
         const requestResults = await (llm as OpenAI).generate(
-          messages.map((m) => m.content),
+          messages.map((m) => m.content as any),
           {
             signal: params.requestParams?.signal || undefined,
             ...this.getReqOptions(params),
@@ -150,6 +150,22 @@ export default class LangchainOpenAIInstructProvider
           sectionId={props.sectionId}
           llmProviderId={props.self.originalId || id}
           default_values={default_values}
+        />
+
+        <HeaderEditor
+          enabled={!!config.headers}
+          setEnabled={async (value) => {
+            if (!value) config.headers = undefined;
+            else config.headers = "{}";
+            global.triggerReload();
+            await global.plugin.saveSettings();
+          }}
+          headers={config.headers}
+          setHeaders={async (value) => {
+            config.headers = value;
+            global.triggerReload();
+            await global.plugin.saveSettings();
+          }}
         />
         <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">
           <div className="plug-tg-text-lg plug-tg-opacity-70">Useful links</div>
