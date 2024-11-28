@@ -16,7 +16,7 @@ const logger = debug("textgenerator:llmProvider:chatanthropic");
 
 const default_values = {
   basePath: "https://api.anthropic.com/",
-  model: "claude-3-5-sonnet-20240620",
+  model: "claude-3-5-sonnet-latest",
 };
 
 
@@ -135,7 +135,7 @@ export default class LangchainChatAnthropicProvider
               <IconExternalLink />
             </SettingItem>
           </a>
-          <a href="https://docs.anthropic.com/claude/reference/selecting-a-model">
+          <a href="https://docs.anthropic.com/en/docs/about-claude/models">
             <SettingItem
               name="Available models"
               className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
