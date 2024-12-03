@@ -5,13 +5,15 @@ import SettingsSection from "../../components/section";
 import type { Register } from "..";
 import Input from "../../components/input";
 import DropdownSearch from "../../components/dropdownSearch";
+import clsx from "clsx";
 
 export const WhisperProviderName = "whisper";
 
 export const default_values = {
   base_path: "https://api.openai.com/v1",
   model: "whisper-1",
-  api_key: ""
+  api_key: "",
+  api_version: "",
 };
 
 export default function WhisperProviderSetting(props: { register: Register }) {
@@ -40,6 +42,7 @@ export default function WhisperProviderSetting(props: { register: Register }) {
         >
           <Input
             value={config.basePath || default_values.base_path}
+            placeholder={default_values.base_path}
             setValue={async (val) => {
               config.basePath = val;
               await global.plugin.saveSettings();
@@ -65,6 +68,8 @@ export default function WhisperProviderSetting(props: { register: Register }) {
           />
         </SettingItem>
 
+
+
         <SettingItem
           name="Model"
           description="default to whisper-1"
@@ -75,6 +80,27 @@ export default function WhisperProviderSetting(props: { register: Register }) {
             value={config.model || default_values.model}
             setValue={async (val) => {
               config.model = val;
+              await global.plugin.saveSettings();
+              global.triggerReload();
+            }}
+          />
+        </SettingItem>
+
+
+        <SettingItem
+          name="API Version"
+          description="Api version (Azure only)"
+          register={props.register}
+          className={clsx({
+            "plug-tg-opacity-60": !config.api_version,
+          })}
+          sectionId={sectionId}
+        >
+          <Input
+            value={config.api_version || default_values.api_version}
+            placeholder="2024-02-01"
+            setValue={async (val) => {
+              config.api_version = val;
               await global.plugin.saveSettings();
               global.triggerReload();
             }}

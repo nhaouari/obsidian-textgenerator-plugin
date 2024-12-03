@@ -66,16 +66,18 @@ export default class AudioExtractor extends Extractor {
   }
 
   async generateTranscript(audioBuffer: ArrayBuffer, filetype: string) {
-    const whisperApiKey = this.plugin.settings.LLMProviderOptions[WhisperProviderName]?.api_key || this.plugin.settings.api_key;
+    const whisperProvider = this.plugin.settings.LLMProviderOptions[WhisperProviderName];
+
+    const whisperApiKey = whisperProvider?.api_key || this.plugin.settings.api_key;
     try {
       const endpoint = new URL(
-        this.plugin.settings.LLMProviderOptions[WhisperProviderName]?.basePath
-          ?.length
-          ? this.plugin.settings.LLMProviderOptions[WhisperProviderName]
-            ?.basePath
-          : this.plugin.settings.endpoint ||
-          this.plugin.defaultSettings.endpoint
+        whisperProvider?.basePath || this.plugin.settings.endpoint ||
+        this.plugin.defaultSettings.endpoint
       );
+
+      if (whisperProvider?.api_version?.length) {
+        endpoint.searchParams.set("api-version", whisperProvider.api_version);
+      }
 
       if (
         endpoint.host.contains("openai") &&
