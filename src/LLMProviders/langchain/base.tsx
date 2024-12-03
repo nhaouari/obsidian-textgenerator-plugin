@@ -23,7 +23,6 @@ import {
   AI_MODELS,
 } from "../refs";
 import { Callbacks } from "@langchain/core/callbacks/manager";
-import handlebars from "react-syntax-highlighter/dist/esm/languages/hljs/handlebars";
 import JSON5 from "json5";
 import { Handlebars } from "#/helpers/handlebars-helpers";
 
