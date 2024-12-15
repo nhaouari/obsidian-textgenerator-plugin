@@ -49,11 +49,12 @@ export class ProxyService {
     app.use(
       proxy("/:targetURL/", (_, ctx) => {
         const target = _.targetURL;
-        console.log({ target, path: target + ctx.path });
+        console.log({ target, path: target, ctxPath: ctx.path });
         return {
           // Target URL
           target,
           rewrite(path) {
+            console.log({ path, rewritePath: path.slice(`/${encodeURIComponent(target)}`.length) })
             return path.slice(`/${encodeURIComponent(target)}`.length);
           },
           changeOrigin: true,
