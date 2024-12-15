@@ -1,9 +1,12 @@
+
+const pathbrowserify = require("path-browserify");
+
 /** @type {import('fs/promises')} */
 const path = app.vault.adapter.path;
 
 
 const exported = {
-    ...path,
+    ...(path || pathbrowserify),
     isUsingObsidian: true
 }
 

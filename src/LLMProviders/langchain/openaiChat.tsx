@@ -27,6 +27,7 @@ export default class LangchainOpenAIChatProvider
   id = LangchainOpenAIChatProvider.id;
   provider = LangchainOpenAIChatProvider.provider;
   originalId = LangchainOpenAIChatProvider.id;
+
   async load() {
     const { ChatOpenAI } = await import("@langchain/openai");
     this.llmClass = ChatOpenAI;

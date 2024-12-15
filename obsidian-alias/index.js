@@ -9,5 +9,6 @@ module.exports = function ObsidianAliasPlugin() {
         'fs/promises': path.resolve(__dirname, `./fsPromises.js`),
         'path': path.resolve(__dirname, `./path.js`),
         'node-fetch': path.resolve(__dirname, `./node-fetch.js`),
+        "process": path.resolve(__dirname, `./process.js`),
     })
 }

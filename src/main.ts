@@ -1,3 +1,6 @@
+import fallbackProcess from "obsidian-alias/process";
+globalThis.process = globalThis.process || fallbackProcess;
+
 // import { TextExtractorTool } from "./ui/text-extractor-tool";
 // import Tesseract from "tesseract.js";
 import {
@@ -49,6 +52,9 @@ import { PlaygroundView, VIEW_Playground_ID } from "./ui/playground";
 import ContentManagerCls from "./scope/content-manager";
 import ContextManager from "./scope/context-manager";
 import TGBlock from "./services/tgBlock";
+
+
+
 
 //    @ts-ignore
 let safeStorage: Electron.SafeStorage;
