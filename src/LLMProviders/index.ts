@@ -11,6 +11,7 @@ import LangchainAzureOpenAIChatProvider from "./langchain/azureOpenAIChat";
 import LangchainAzureOpenAIInstructProvider from "./langchain/azureOpenAIInstruct";
 import LangchainPalmProvider from "./langchain/palm";
 import LangchainChatGoogleGenerativeAIProvider from "./langchain/googleGenerativeAI";
+import LangchainOpenAIAgentProvider from "./langchain/openaiAgent";
 // import LangchainReplicaProvider from "./langchain/replica"
 
 // import { LOCClone1, LOCClone2 } from "./langchain/clones";
@@ -19,6 +20,7 @@ export const defaultProviders = [
   // openai
   LangchainOpenAIChatProvider,
   LangchainOpenAIInstructProvider,
+  LangchainOpenAIAgentProvider,
 
   // google
   LangchainChatGoogleGenerativeAIProvider,

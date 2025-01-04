@@ -4,7 +4,9 @@ import builtins from 'builtin-modules'
 import path from "path";
 import fs from "fs";
 import obsidianAliasPlugin from "./obsidian-alias/index.js";
+import processFallback from './obsidian-alias/process.js';
 import { exec } from 'child_process';
+import { definePlugin } from 'esbuild-plugin-define';
 
 const banner =
 	`/*
@@ -66,8 +68,12 @@ const esbuildConfig = {
 		wasmPlugin({
 			mode: "embed",
 		}),
-		obsidianAliasPlugin()
+		obsidianAliasPlugin(),
+		definePlugin({
+			'process': processFallback
+		})
 	],
+
 	external: [
 		'obsidian',
 		'electron',
