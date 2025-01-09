@@ -68,10 +68,7 @@ const esbuildConfig = {
 		wasmPlugin({
 			mode: "embed",
 		}),
-		obsidianAliasPlugin(),
-		definePlugin({
-			'process': processFallback
-		})
+		obsidianAliasPlugin()
 	],
 
 	external: [
