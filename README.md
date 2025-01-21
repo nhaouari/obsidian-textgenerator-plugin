@@ -29,7 +29,7 @@ There are many benefits to using a Text Generator Plugin, including the followin
 
 - **Beside Obsidian**: Obsidian is very powerful and extensible Personal Knowledge Management software so you can use Text Generator Plugin alongside Obsidian to create a more powerful Personal Knowledge Management system.
 
-- **Flexible Prompts**: The context of the prompt is straightforward using all the available options in the Considered Context which gives you a higher filexibilty.
+- **Flexible Prompts**: The context of the prompt is straightforward using all the available options in the Considered Context which gives you a higher flexibility.
 
 - **Template Engine**: You can create templates to make repetitive tasks more manageable.
 
