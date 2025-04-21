@@ -65,6 +65,7 @@ Starred Blocks: {{starredBlocks}}
     "tg-block-processor": true,
     reload: true,
     "disable-ribbon-icons": false,
+    "overlay-toolbar": false,
   },
 
   advancedOptions: {

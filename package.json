@@ -72,6 +72,7 @@
     "@langchain/google-genai": "^0.1.4",
     "@langchain/openai": "^0.3.16",
     "@mozilla/readability": "^0.4.4",
+    "@radix-ui/react-tooltip": "^1.2.3",
     "@react-icons/all-files": "^4.1.0",
     "@rjsf/core": "^5.20.0",
     "@rjsf/utils": "^5.20.0",

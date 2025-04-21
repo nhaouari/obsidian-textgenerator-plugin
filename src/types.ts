@@ -28,7 +28,8 @@ type Options = Record<
   | "open-playground"
   | "batch-generate-in-right-click-files-menu"
   | "tg-block-processor"
-  | "disable-ribbon-icons",
+  | "disable-ribbon-icons"
+  | "overlay-toolbar",
   boolean
 >;
 
