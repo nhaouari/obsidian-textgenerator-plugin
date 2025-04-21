@@ -40,3 +40,54 @@ There are many benefits to using a Text Generator Plugin, including the followin
 ## Demonstration
 
 [![Youtube Demonstration](https://img.youtube.com/vi/OergqWCdFKc/0.jpg)](https://www.youtube.com/watch?v=OergqWCdFKc)
+
+
+## Installation
+
+### Method 1: From Obsidian Community Plugins
+
+1. Open Obsidian
+2. Go to Settings > Community plugins
+3. Turn off Safe mode if it's on
+4. Click on "Browse" and search for "Text Generator"
+5. Click Install and then Enable
+
+### Method 2: Manual Installation
+
+If you prefer to install the plugin manually or want to use the latest development version:
+
+1. Clone this repository to your Obsidian vault's plugins folder:
+   ```bash
+   git clone --recurse-submodules https://github.com/nhaouari/obsidian-textgenerator-plugin.git
+   ```
+
+2. Navigate to the plugin directory:
+   ```bash
+   cd /path/to/your/vault/.obsidian/plugins/obsidian-textgenerator-plugin
+   ```
+
+3. Install dependencies and build the plugin:
+   ```bash
+   npm install
+   npm run build
+   ```
+
+4. Restart Obsidian and enable the plugin in Settings > Community plugins
+
+### Troubleshooting
+
+If you encounter any issues during installation, please:
+- Check our [documentation](https://bit.ly/tg_docs)
+- Join our [Discord server](https://discord.gg/mEhvhkRfq5) for community support
+- Open an issue on our [GitHub repository](https://github.com/nhaouari/obsidian-textgenerator-plugin/issues)
+
+
+
+## Contributors
+
+<a href="https://github.com/nhaouari/obsidian-textgenerator-plugin/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=nhaouari/obsidian-textgenerator-plugin" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
+
