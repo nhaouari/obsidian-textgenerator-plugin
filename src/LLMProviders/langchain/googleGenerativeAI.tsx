@@ -105,6 +105,34 @@ export default class LangchainChatGoogleGenerativeAIProvider
           sectionId={props.sectionId}
           llmProviderId={props.self.originalId || id}
           default_values={default_values}
+          getModels={async ()=>{
+            // Fetch models from Google Generative AI API
+            try {
+              if (!config.api_key) {
+                throw new Error("Please provide a valid API key");
+              }
+              
+              const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models?key=${config.api_key}`
+              );
+              
+              if (!response.ok) {
+                throw new Error(`API request failed with status ${response.status}`);
+              }
+              
+              const data = await response.json() as { models: { name: string }[] };
+              
+              if (!data.models || !Array.isArray(data.models)) {
+                throw new Error("Invalid response format from API");
+              }
+              
+              // Extract model names from the response
+              return data.models.map(model => model.name.replace("models/", ""));
+            } catch (error) {
+              global.plugin.handelError(error);
+              return [];
+            }
+          }}
         />
 
         <HeaderEditor

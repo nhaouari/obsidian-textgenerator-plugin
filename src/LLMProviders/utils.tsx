@@ -17,12 +17,33 @@ import {
 import { arrayBufferToBase64 } from "obsidian";
 import { default_values } from "./custom/custom";
 
+type LLMProviderType = "Default (Custom)" | "OpenAI Chat (Langchain)" | "OpenAI Instruct (Langchain)" | "OpenAI Agent (Langchain)" | "Google GenerativeAI (Langchain)" | "Google Palm (Langchain)" | "MistralAI Chat (Langchain)" | "Anthropic Chat (Langchain)" | "Anthropic Legacy (Custom)";
+
+interface ModelType {
+  encoding: string;
+  prices: {
+    prompt: number;
+    completion: number;
+  };
+  maxTokens: number;
+  llm: LLMProviderType[];
+  order?: number;
+  inputOptions?: {
+    images?: boolean;
+    audio?: boolean;
+    videos?: boolean;
+  };
+}
+
+type AI_MODELS_Type = Record<string, ModelType>;
+
 export function ModelsHandler(props: {
   register: Parameters<LLMProviderInterface["RenderSettings"]>[0]["register"];
   sectionId: Parameters<LLMProviderInterface["RenderSettings"]>[0]["sectionId"];
   default_values: any;
   llmProviderId: string;
   config?: any;
+  getModels?: () => Promise<string[]>;
 }) {
   const default_values = props.default_values;
   const id = props.llmProviderId;
@@ -41,33 +62,50 @@ export function ModelsHandler(props: {
   const updateModels = async () => {
     setLoadingUpdate(true);
     try {
-      if (!config.api_key && !global.plugin.settings.api_key)
-        throw "Please provide a valid api key.";
+      if (props.getModels) {
+        const newModels = await props.getModels();
+        const postingModels: string[] = [];
 
-      const reqParams = {
-        url: `${config.basePath || default_values.basePath}/models`,
-        method: "GET",
-        body: "",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${config.api_key || global.plugin.settings.api_key
-            }`,
-        },
-      };
+        newModels.forEach(async (model) => {
+          if (!models.includes(model)) postingModels.push(model);
+        });
 
-      const requestResults: {
-        data: {
-          id: string;
-        }[];
-      } = JSON5.parse(await fetchWithoutCORS(reqParams));
+        setModels([...models, ...postingModels.sort()]);
+      } else {
+        if (!config.api_key && !global.plugin.settings.api_key)
+          throw "Please provide a valid api key.";
 
-      const postingModels: string[] = [];
 
-      requestResults.data.forEach(async (model) => {
-        if (!models.includes(model.id)) postingModels.push(model.id);
-      });
+        let basePath = config.basePath || default_values.basePath || "https://api.anthropic.com";
 
-      setModels([...models, ...postingModels.sort()]);
+        if (basePath.endsWith("/")) {
+          basePath = basePath.slice(0, -1);
+        }
+
+        const reqParams = {
+          url: `${basePath}/models`,
+          method: "GET",
+          body: "",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${config.api_key || global.plugin.settings.api_key}`,
+          },
+        };
+
+        const requestResults: {
+          data: {
+            id: string;
+          }[];
+        } = JSON5.parse(await fetchWithoutCORS(reqParams));
+
+        const postingModels: string[] = [];
+
+        requestResults.data.forEach(async (model) => {
+          if (!models.includes(model.id)) postingModels.push(model.id);
+        });
+
+        setModels([...models, ...postingModels.sort()]);
+      }
     } catch (err: any) {
       global.plugin.handelError(err);
     }
@@ -75,8 +113,8 @@ export function ModelsHandler(props: {
   };
 
   useEffect(() => {
-    Object.entries(AI_MODELS).forEach(
-      ([e, o]) => o.llm.contains(id) && models.push(e)
+    Object.entries(AI_MODELS as AI_MODELS_Type).forEach(
+      ([e, o]) => o.llm.includes(id) && models.push(e)
     );
 
     setModels(
@@ -84,13 +122,13 @@ export function ModelsHandler(props: {
         .sort()
         .sort(
           (m1: keyof typeof AI_MODELS, m2: keyof typeof AI_MODELS) =>
-            (AI_MODELS[m2]?.order || 0) - (AI_MODELS[m1]?.order || 0)
+            ((AI_MODELS as AI_MODELS_Type)[m2]?.order || 0) - ((AI_MODELS as AI_MODELS_Type)[m1]?.order || 0)
         )
     );
   }, []);
 
   const modelName = "" + config.model as string;
-  const model = AI_MODELS[modelName.toLowerCase()] || AI_MODELS["models" + modelName.toLowerCase()];
+  const model = (AI_MODELS as AI_MODELS_Type)[modelName.toLowerCase()] || (AI_MODELS as AI_MODELS_Type)["models" + modelName.toLowerCase()];
 
   const supportedInputs = Object.keys(model?.inputOptions || {}).filter(e => !!e);
   return (
@@ -189,9 +227,6 @@ export function cleanConfig<T>(options: T): T {
   return cleanedOptions;
 }
 
-
-
-
 export function convertArrayBufferToBase64Link(arrayBuffer: ArrayBuffer, type: string) {
   // Convert the number array to a Base64 string using btoa and String.fromCharCode
   const base64String = arrayBufferToBase64(arrayBuffer);
@@ -199,7 +234,6 @@ export function convertArrayBufferToBase64Link(arrayBuffer: ArrayBuffer, type: s
   // Format as a data URL
   return `data:${type || ""};base64,${base64String}`;
 }
-
 
 export function HeaderEditor({
   headers,
@@ -263,7 +297,6 @@ export function HeaderEditor({
 
       {enabled && (
         <>
-
           <textarea
             placeholder="Headers"
             className="plug-tg-resize-none plug-tg-w-full"

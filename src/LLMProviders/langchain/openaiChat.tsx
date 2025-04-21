@@ -209,9 +209,19 @@ export default class LangchainOpenAIChatProvider
     for (const message of messages) {
       numTokens += tokensPerMessage;
       for (const [key, value] of Object.entries(message)) {
-        numTokens += encoder.encode(value).length;
-        if (key === "name") {
-          numTokens += tokensPerName;
+        if (typeof value === 'string') {
+          numTokens += encoder.encode(value).length;
+          if (key === "name") {
+            numTokens += tokensPerName;
+          }
+        } else if (Array.isArray(value)) {
+          // Handle complex message content (like with images)
+          for (const content of value) {
+            if (typeof content === 'object' && content.type === 'text') {
+              numTokens += encoder.encode(content.text).length;
+            }
+            // Add additional token estimates for non-text content if needed
+          }
         }
       }
     }

@@ -6,7 +6,7 @@ import LLMProviderInterface, { LLMConfig } from "../interface";
 import { IconExternalLink } from "@tabler/icons-react";
 import { BaseLanguageModelParams } from "@langchain/core/language_models/base";
 
-import { Input, Message, SettingItem, useGlobal } from "../refs";
+import { fetchWithoutCORS, Input, Message, SettingItem, useGlobal } from "../refs";
 
 import type { AnthropicInput } from "@langchain/anthropic";
 import { HeaderEditor, ModelsHandler } from "../utils";
@@ -123,6 +123,47 @@ export default class LangchainChatAnthropicProvider
           sectionId={props.sectionId}
           llmProviderId={props.self.originalId || id}
           default_values={default_values}
+          getModels={async () => {
+            try {
+              if (!config.api_key) {
+                throw new Error("Please provide a valid api key.");
+              }
+              
+              let basePath = config.basePath || default_values.basePath || "https://api.anthropic.com";
+
+              if (basePath.endsWith("/")) {
+                basePath = basePath.slice(0, -1);
+              }
+
+              const reqParams = {
+                url: `${basePath}/v1/models`,
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-api-key": config.api_key,
+                  "anthropic-version": "2023-06-01",
+                },
+              };
+
+              const response = await fetchWithoutCORS(reqParams);
+              const data = JSON.parse(response) as { data: { id: string }[] };
+              
+              if (!data.data || !Array.isArray(data.data)) {
+                throw new Error("Invalid response format from API");
+              }
+              
+              const postingModels: string[] = [];
+              
+              data.data.forEach(model => {
+                postingModels.push(model.id);
+              });
+              
+              return postingModels.sort();
+            } catch (err: any) {
+              global.plugin.handelError(err);
+              return [];
+            }
+          }}
         />
 
         <HeaderEditor
