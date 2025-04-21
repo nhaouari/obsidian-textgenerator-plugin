@@ -63,16 +63,28 @@ If you prefer to install the plugin manually or want to use the latest developme
 
 2. Navigate to the plugin directory:
    ```bash
-   cd /path/to/your/vault/.obsidian/plugins/obsidian-textgenerator-plugin
+   cd obsidian-textgenerator-plugin
    ```
 
-3. Install dependencies and build the plugin:
+3. Install dependencies:
    ```bash
-   npm install
-   npm run build
+   pnpm install
    ```
 
-4. Restart Obsidian and enable the plugin in Settings > Community plugins
+4. Build the plugin:
+   ```bash
+   pnpm run build
+   ```
+
+   Alternatively, for development:
+   ```bash
+   pnpm run dev
+   ```
+
+
+5. Restart Obsidian and enable the plugin in Settings > Community plugins
+   
+   Alternatively, You can use the [Hot-Reload plugin](https://github.com/pjeby/hot-reload) to reload plugins without restarting Obsidian
 
 ### Troubleshooting
 
