@@ -66,6 +66,7 @@ Starred Blocks: {{starredBlocks}}
     reload: true,
     "disable-ribbon-icons": false,
     "overlay-toolbar": false,
+    "log-slowest-operations": false,
   },
 
   advancedOptions: {

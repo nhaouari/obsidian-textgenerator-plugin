@@ -96,3 +96,64 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
     [callback, delay]
   )
 }
+
+/**
+ * Performance tracking utility to help identify bottlenecks
+ */
+export class PerformanceTracker {
+  private static instance: PerformanceTracker;
+  private timings: Map<string, number[]> = new Map();
+  private startTimes: Map<string, number> = new Map();
+
+  private constructor() {}
+
+  static getInstance(log = false): PerformanceTracker {
+    if (!PerformanceTracker.instance) {
+      PerformanceTracker.instance = new PerformanceTracker();
+    }
+    return PerformanceTracker.instance;
+  }
+
+  start(label: string) {
+    this.startTimes.set(label, performance.now());
+  }
+
+  end(label: string, log = false) {
+    const startTime = this.startTimes.get(label);
+    if (!startTime) return;
+
+    const duration = performance.now() - startTime;
+    const timings = this.timings.get(label) || [];
+    timings.push(duration);
+    this.timings.set(label, timings);
+    this.startTimes.delete(label);
+    
+    if (log) {
+      console.log(`[TG:Performance] ${label}: ${duration.toFixed(2)}ms`);
+    }
+  }
+
+  getAverage(label: string): number {
+    const timings = this.timings.get(label);
+    if (!timings || timings.length === 0) return 0;
+    return timings.reduce((a, b) => a + b, 0) / timings.length;
+  }
+
+  getSlowestOperations(count = 5): { label: string; average: number }[] {
+    const operations = Array.from(this.timings.entries())
+      .map(([label, timings]) => ({
+        label,
+        average: timings.reduce((a, b) => a + b, 0) / timings.length,
+      }))
+      .sort((a, b) => b.average - a.average)
+      .slice(0, count);
+
+    console.log('\n[TG:Performance] Top 5 Slowest Operations:');
+    operations.forEach((op, i) => {
+      console.log(`${i + 1}. ${op.label}: ${op.average.toFixed(2)}ms avg`);
+    });
+    console.log('');
+
+    return operations;
+  }
+}

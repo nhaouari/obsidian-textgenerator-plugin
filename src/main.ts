@@ -53,6 +53,7 @@ import ContentManagerCls from "./scope/content-manager";
 import ContextManager from "./scope/context-manager";
 import TGBlock from "./services/tgBlock";
 import OverlayToolbar from "./services/overlayToolbar-service.ts";
+import { PerformanceTracker } from "./lib/utils";
 
 
 
@@ -90,29 +91,31 @@ export default class TextGeneratorPlugin extends Plugin {
   temp: Record<string, any> = {};
 
   async onload() {
+    const perf = PerformanceTracker.getInstance();
+    perf.start("Total Plugin Load");
+
     logger("loading textGenerator plugin");
+    perf.start("Icons");
     addIcon("GENERATE_ICON", GENERATE_ICON);
     addIcon("GENERATE_META_ICON", GENERATE_META_ICON);
+    perf.end("Icons");
 
+    perf.start("Settings");
     this.defaultSettings = DEFAULT_SETTINGS;
     await this.loadSettings();
     await this.addStatusBar();
+    perf.end("Settings");
 
-    // This adds a settings tab so the user can configure various aspects of the plugin
+    perf.start("Settings Tab");
     this.addSettingTab(new TextGeneratorSettingTab(this.app, this));
+    perf.end("Settings Tab");
 
-    // registering different views
-    // Playground view
-    this.registerView(
-      VIEW_Playground_ID,
-      (leaf) => new PlaygroundView(leaf, this)
-    );
-
-    // "open template as tool" view
+    perf.start("Views");
+    this.registerView(VIEW_Playground_ID, (leaf) => new PlaygroundView(leaf, this));
     this.registerView(VIEW_TOOL_ID, (leaf) => new ToolView(leaf, this));
+    perf.end("Views");
 
-
-    // register events such as right click
+    perf.start("Events");
     if (this.settings.options["generate-in-right-click-menu"])
       this.registerEvent(
         this.app.workspace.on("editor-menu", async (menu) => {
@@ -170,21 +173,22 @@ export default class TextGeneratorPlugin extends Plugin {
           }
         )
       );
+    perf.end("Events");
 
-
-
-    // tg codeblock
     if (this.settings.options["tg-block-processor"]) {
+      perf.start("TG Block");
       new TGBlock(this);
+      perf.end("TG Block");
     }
 
-    // tg overlay
     if (this.settings.options["overlay-toolbar"]) {
+      perf.start("Overlay Toolbar");
       new OverlayToolbar(this);
+      perf.end("Overlay Toolbar");
     }
 
-    // This creates an icon in the left ribbon.
     if (!this.settings.options["disable-ribbon-icons"]) {
+      perf.start("Ribbon Icons");
       this.addRibbonIcon(
         "GENERATE_ICON",
         "Generate Text!",
@@ -214,71 +218,108 @@ export default class TextGeneratorPlugin extends Plugin {
           ).open();
         }
       );
+      perf.end("Ribbon Icons");
     }
 
+    perf.start("API Registration");
     this.pluginAPIService = new PluginServiceAPI(this);
-
     registerAPI("tg", this.pluginAPIService, this as any);
+    perf.end("API Registration");
 
-
+    perf.start("Layout Ready Setup");
     this.app.workspace.onLayoutReady(async () => {
+      const layoutPerf = PerformanceTracker.getInstance();
+      layoutPerf.start("Total Layout Ready");
+
       try {
-        // register managers
+        layoutPerf.start("Version Manager");
         this.versionManager = new VersionManager(this);
         await this.versionManager.load();
+        layoutPerf.end("Version Manager");
 
+        layoutPerf.start("Context Manager");
         this.contextManager = new ContextManager(this.app, this);
+        layoutPerf.end("Context Manager");
+
+        layoutPerf.start("Package Manager");
         this.packageManager = new PackageManager(this.app, this);
+        layoutPerf.end("Package Manager");
 
-        // Register Services
-        // text generator
+        layoutPerf.start("Text Generator");
         this.textGenerator = new TextGenerator(this.app, this);
+        layoutPerf.end("Text Generator");
 
-        // auto suggest
+        layoutPerf.start("Auto Suggest");
         if (this.settings.autoSuggestOptions?.isEnabled)
           this.autoSuggest = new AutoSuggest(this.app, this);
+        layoutPerf.end("Auto Suggest");
 
-        // modal suggest
+        layoutPerf.start("Slash Suggest");
         if (this.settings.slashSuggestOptions?.isEnabled) {
           this.registerEditorSuggest(new SlashSuggest(this.app, this));
         }
+        layoutPerf.end("Slash Suggest");
 
-        // register scopes
+        layoutPerf.start("Scopes");
         this.commands = new Commands(this);
         this.tokensScope = new TokensScope(this);
+        layoutPerf.end("Scopes");
 
-        // add loading spinner
+        layoutPerf.start("Spinner Plugin");
         this.registerEditorExtension(spinnersPlugin);
+        layoutPerf.end("Spinner Plugin");
 
         this.app.workspace.updateOptions();
 
-        // add commands
-
+        layoutPerf.start("Final Setup");
         try {
-          await Promise.all([
-            this.tokensScope.setup(),
-            this.textGenerator.load(),
-            this.commands.addCommands(),
-            this.packageManager.load(),
-          ]);
+          // Execute each operation separately and track performance
+          layoutPerf.start("Tokens Scope Setup");
+          await this.tokensScope.setup();
+          layoutPerf.end("Tokens Scope Setup");
+          
+          layoutPerf.start("Text Generator Load");
+          await this.textGenerator.load();
+          layoutPerf.end("Text Generator Load");
+          
+          layoutPerf.start("Commands Setup");
+          await this.commands.addCommands();
+          layoutPerf.end("Commands Setup");
+          
+          layoutPerf.start("Package Manager Load");
+          await this.packageManager.load();
+          layoutPerf.end("Package Manager Load");
         } catch (err: any) {
           console.trace("[TG:Error] in Loading a Service", err);
         }
-
+        layoutPerf.end("Final Setup");
 
       } catch (err: any) {
         this.handelError(err);
       }
 
       try {
+        layoutPerf.start("Protocol Handler");
         this.registerObsidianProtocolHandler(`text-gen`, async (params) => {
           console.log(params.intent, this.actions, this.actions[params.intent]);
           this.actions[params.intent]?.(params);
         });
+        layoutPerf.end("Protocol Handler");
       } catch (err: any) {
         this.handelError(err);
       }
+      
+      layoutPerf.end("Total Layout Ready");
+      if (this.settings.options["log-slowest-operations"]) {
+        layoutPerf.getSlowestOperations();
+      }
     });
+    perf.end("Layout Ready Setup");
+    
+    perf.end("Total Plugin Load");
+    if (this.settings.options["log-slowest-operations"]) {
+      perf.getSlowestOperations();
+    }
   }
 
 

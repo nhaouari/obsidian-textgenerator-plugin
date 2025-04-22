@@ -29,7 +29,8 @@ type Options = Record<
   | "batch-generate-in-right-click-files-menu"
   | "tg-block-processor"
   | "disable-ribbon-icons"
-  | "overlay-toolbar",
+  | "overlay-toolbar"
+  | "log-slowest-operations",
   boolean
 >;
 
