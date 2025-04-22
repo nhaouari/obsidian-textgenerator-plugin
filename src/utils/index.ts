@@ -456,8 +456,9 @@ export function debounce<T extends unknown[], R>(
   };
 }
 
-export function getFilePathByName(name: string): string | undefined {
-  return app.metadataCache.getFirstLinkpathDest(name, "")?.path;
+// @ts-ignore
+export function getFilePathByName(name: string, _app?: App = app): string | undefined {
+  return _app.metadataCache.getFirstLinkpathDest(name, "")?.path;
 }
 
 export function currentDate() {

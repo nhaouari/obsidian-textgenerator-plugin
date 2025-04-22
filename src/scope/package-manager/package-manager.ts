@@ -181,7 +181,7 @@ export default class PackageManager {
     const packagesIdsToUpdate: string[] = [];
     await Promise.all(
       Object.entries(this.configuration.installedPackagesHash).map(
-        async ([installedPackage, promptId], i: number) => {
+        async ([promptId, installedPackage], i: number) => {
           try {
             const pkg = this.getPackageById(installedPackage.packageId);
             if (
@@ -707,8 +707,8 @@ export default class PackageManager {
   async installFeatureExternal(p: PackageTemplate) {
     // create feature folder
     const dirPath = `.obsidian/plugins/${p.packageId}`;
-    if (!(await app.vault.adapter.exists(dirPath)))
-      await createFolder(dirPath, app);
+    if (!(await this.app.vault.adapter.exists(dirPath)))
+      await createFolder(dirPath, this.app);
 
     const files = this.getResourcesOfFolder(p.packageId);
 
@@ -729,7 +729,7 @@ export default class PackageManager {
           throw res.text;
         }
 
-        await app.vault.adapter.writeBinary(
+        await this.app.vault.adapter.writeBinary(
           `${dirPath}/${file.name}`,
           await res.arrayBuffer
         );
