@@ -237,6 +237,7 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           >
             <Input
               type="checkbox"
+              placeholder="Custom auto-suggest prompt"
               value={
                 "" +
                 global.plugin.settings.autoSuggestOptions.customInstructEnabled
@@ -252,13 +253,13 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           {global.plugin.settings.autoSuggestOptions.customInstructEnabled && (
             <>
               <SettingItem
-                name=""
+                name="Custom auto-suggest prompt"
                 register={props.register}
                 sectionId={sectionId}
                 textArea
               >
                 <textarea
-                  placeholder="Textarea will autosize to fit the content"
+                  placeholder="Custom auto-suggest prompt"
                   className="plug-tg-input plug-tg-h-fit plug-tg-w-full plug-tg-resize-y plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none"
                   value={
                     global.plugin.settings.autoSuggestOptions.customInstruct ||
@@ -290,13 +291,13 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           {global.plugin.settings.autoSuggestOptions.customInstructEnabled && (
             <>
               <SettingItem
-                name=""
+                name="Custom Auto-suggest System Prompt"
                 register={props.register}
                 sectionId={sectionId}
                 textArea
               >
                 <textarea
-                  placeholder="Textarea will autosize to fit the content"
+                  placeholder="System Prompt"
                   className="plug-tg-input plug-tg-h-fit plug-tg-w-full plug-tg-resize-y plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none"
                   value={
                     global.plugin.settings.autoSuggestOptions.systemPrompt ||
