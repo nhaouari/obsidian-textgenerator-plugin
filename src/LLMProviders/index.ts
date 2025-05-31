@@ -2,6 +2,7 @@ import CustomProvider from "./custom/custom";
 import AnthropicCustomProvider from "./custom/anthropic";
 
 import LangchainOpenAIChatProvider from "./langchain/openaiChat";
+import LangchainOpenRouterChatProvider from "./langchain/openRouter";
 import LangchainMistralAIChatProvider from "./langchain/mistralaiChat";
 import LangchainOpenAIInstructProvider from "./langchain/openaiInstruct";
 import LangchainHFProvider from "./langchain/hf";
@@ -21,6 +22,9 @@ export const defaultProviders = [
   LangchainOpenAIChatProvider,
   LangchainOpenAIInstructProvider,
   LangchainOpenAIAgentProvider,
+
+  // openrouter
+  LangchainOpenRouterChatProvider,
 
   // google
   LangchainChatGoogleGenerativeAIProvider,
