@@ -58,7 +58,7 @@ If you prefer to install the plugin manually or want to use the latest developme
 
 1. Clone this repository to your Obsidian vault's plugins folder:
    ```bash
-   git clone --recurse-submodules https://github.com/nhaouari/obsidian-textgenerator-plugin.git
+   git clone https://github.com/nhaouari/obsidian-textgenerator-plugin.git
    ```
 
 2. Navigate to the plugin directory:
