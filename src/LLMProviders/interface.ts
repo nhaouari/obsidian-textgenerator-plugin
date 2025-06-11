@@ -1,8 +1,6 @@
-import type { LLMChain } from "langchain/chains";
 import type { Message } from "src/types";
-import type { ContextTemplate, Register } from "./refs";
-import { AI_MODELS } from "#/constants";
-import { ModelType } from "#/lib/models";
+import type { Register } from "./refs";
+import type { ModelType } from "#/lib/models";
 
 export default interface LLMProviderInterface {
   streamable?: boolean;
@@ -76,4 +74,5 @@ export interface LLMConfig {
   bodyParams?: any;
   modelKwargs?: any;
   headers?: string;
+  apiVersion?: string;
 }
