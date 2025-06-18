@@ -1,3 +1,0 @@
-[submodule "src/lib/models"]
-	path = src/lib/models
-	url = https://github.com/bgreenawald/obsidian-textgeneration-models.git
