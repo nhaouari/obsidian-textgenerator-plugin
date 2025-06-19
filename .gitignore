@@ -27,3 +27,7 @@ data.json
 .history
 
 pnpm-lock.yaml
+
+# Python
+*.pyc
+__pycache__

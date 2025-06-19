@@ -1,17 +1,20 @@
 import type {{ LLMProviderType }} from "../types";
 
+export type ModelType = {{
+  encoding: string;
+  prices: {{
+    prompt: number;
+    completion: number;
+  }};
+  maxTokens: number;
+  llm: LLMProviderType[];
+  order?: number;
+}};
+
+
 const AI_MODELS: Record<
   string,
-  {{
-    encoding: string;
-    prices: {{
-      prompt: number;
-      completion: number;
-    }};
-    maxTokens: number;
-    llm: LLMProviderType[];
-    order?: number;
-  }}
+  ModelType
 > = {{
   "gpt-4o": {{
     encoding: "cl100k_base",

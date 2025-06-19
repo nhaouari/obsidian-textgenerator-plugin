@@ -1615,7 +1615,7 @@ const AI_MODELS: Record<
       prompt: 0.0,
       completion: 0.0,
     },
-    maxTokens: 200000,
+    maxTokens: 128000,
     llm: ["OpenRouter Chat (Langchain)"],
     order: -1,
   },
