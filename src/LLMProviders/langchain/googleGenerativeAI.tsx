@@ -12,7 +12,7 @@ import { Input, SettingItem, useGlobal } from "../refs";
 const logger = debug("textgenerator:llmProvider:gemini");
 
 const default_values = {
-  model: "gemini-1.5-pro",
+  model: "gemini-2.0-flash",
 };
 
 export default class LangchainChatGoogleGenerativeAIProvider
@@ -33,7 +33,7 @@ export default class LangchainChatGoogleGenerativeAIProvider
   getConfig(options: LLMConfig): Partial<GoogleGenerativeAIChatInput> {
     return this.cleanConfig({
       apiKey: options.api_key,
-      modelName: options.model,
+      model: options.model,
 
       // candidateCount is not supported yet by langchain
       candidateCount: options.n,
@@ -49,6 +49,8 @@ export default class LangchainChatGoogleGenerativeAIProvider
       streaming: options.stream,
       maxRetries: 3,
       headers: options.headers || undefined,
+      baseUrl: options.basePath || undefined,
+      apiVersion: options.apiVersion || undefined,
     });
   }
 
@@ -105,29 +107,35 @@ export default class LangchainChatGoogleGenerativeAIProvider
           sectionId={props.sectionId}
           llmProviderId={props.self.originalId || id}
           default_values={default_values}
-          getModels={async ()=>{
+          getModels={async () => {
             // Fetch models from Google Generative AI API
             try {
               if (!config.api_key) {
                 throw new Error("Please provide a valid API key");
               }
-              
+
               const response = await fetch(
                 `https://generativelanguage.googleapis.com/v1beta/models?key=${config.api_key}`
               );
-              
+
               if (!response.ok) {
-                throw new Error(`API request failed with status ${response.status}`);
+                throw new Error(
+                  `API request failed with status ${response.status}`
+                );
               }
-              
-              const data = await response.json() as { models: { name: string }[] };
-              
+
+              const data = (await response.json()) as {
+                models: { name: string }[];
+              };
+
               if (!data.models || !Array.isArray(data.models)) {
                 throw new Error("Invalid response format from API");
               }
-              
+
               // Extract model names from the response
-              return data.models.map(model => model.name.replace("models/", ""));
+              return data.models.map((model) =>
+                model.name.replace("models/", "")
+              );
             } catch (error) {
               global.plugin.handelError(error);
               return [];
