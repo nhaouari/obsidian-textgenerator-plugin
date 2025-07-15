@@ -161,7 +161,7 @@ export default class ContextManager {
 
       const contextTemplate = this.plugin.settings.context.customInstructEnabled
         ? this.plugin.settings.context.customInstruct ||
-        this.plugin.defaultSettings.context.customInstruct
+          this.plugin.defaultSettings.context.customInstruct
         : "{{tg_selection}}";
 
       const options = await this.getDefaultContext(
@@ -404,9 +404,9 @@ export default class ContextManager {
     const title =
       vars["title"] || vars["mentions"]
         ? (filePath
-          ? this.app.vault.getAbstractFileByPath(filePath)?.name ||
-          activeFile?.basename
-          : activeFile?.basename) || ""
+            ? this.app.vault.getAbstractFileByPath(filePath)?.name ||
+              activeFile?.basename
+            : activeFile?.basename) || ""
         : "";
 
     const activeDocCache = this.getMetaData(filePath || "");
@@ -638,18 +638,18 @@ export default class ContextManager {
 
     const preRunnerTemplate = preRunnerContent
       ? this.handlebarsMiddleware(
-        Handlebars.compile(preRunnerContent, {
-          noEscape: true,
-        })
-      )
+          Handlebars.compile(preRunnerContent, {
+            noEscape: true,
+          })
+        )
       : null;
 
     const outputTemplate = outputContent
       ? this.handlebarsMiddleware(
-        Handlebars.compile(outputContent, {
-          noEscape: true,
-        })
-      )
+          Handlebars.compile(outputContent, {
+            noEscape: true,
+          })
+        )
       : null;
 
     return {
@@ -967,13 +967,13 @@ export default class ContextManager {
     const extractorMethods = getExtractorMethods().filter(
       (e) =>
         this.plugin.settings.extractorsOptions[
-        e as keyof typeof this.plugin.settings.extractorsOptions
+          e as keyof typeof this.plugin.settings.extractorsOptions
         ]
     );
 
     const targetFile = filePath
       ? this.app.vault.getAbstractFileByPath(filePath) ||
-      this.app.workspace.getActiveFile()
+        this.app.workspace.getActiveFile()
       : this.app.workspace.getActiveFile();
 
     const targetFileContent = editor
