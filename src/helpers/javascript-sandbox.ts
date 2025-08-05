@@ -71,7 +71,7 @@ export default async function runJSInSandbox(
 
       ce.setExtractor(
         ExtractorSlug[
-        id as keyof typeof ExtractorSlug
+          id as keyof typeof ExtractorSlug
         ] as keyof typeof Extractors
       );
 
@@ -88,6 +88,7 @@ export default async function runJSInSandbox(
       if (dirMatch) dirName = dirMatch[1];
 
       if (!(await self.app.vault.adapter.exists(dirName)))
+        // @ts-ignore
         await createFolder(dirName, app);
 
       return await self.plugin.app.vault.adapter.append(path, `\n${data}`);
@@ -98,7 +99,7 @@ export default async function runJSInSandbox(
     },
 
     manager: new PluginManager({
-      npmInstallMode: "useCache"
+      npmInstallMode: "useCache",
     }),
   };
 
