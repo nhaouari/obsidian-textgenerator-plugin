@@ -173,7 +173,6 @@ export default class TextGenerator extends RequestHandler {
     customContext?: InputContext
   ) {
     logger("generateStreamInEditor");
-
     const context =
       customContext ||
       (await this.plugin.contextManager.getContext({ editor, insertMetadata }));
@@ -193,6 +192,7 @@ export default class TextGenerator extends RequestHandler {
 
     try {
       const streamHandler = await editor.insertStream(startingCursor, mode);
+
       const strm = await this.streamGenerate(
         context,
         insertMetadata,
