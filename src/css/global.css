@@ -81,11 +81,11 @@
 }
 
 .callout[data-callout="ai"]>.callout-title {
-  margin-left: -1rem;
+  margin-left: 0;
 }
 
 .callout[data-callout="ai"]>.callout-content {
-  margin-left: 2rem;
+  margin-left: 0;
 }
 
 .plug-tg-summary {
