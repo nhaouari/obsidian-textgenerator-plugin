@@ -9,6 +9,14 @@ export type ModelType = {
   maxTokens: number;
   llm: LLMProviderType[];
   order?: number;
+  /** Indicates if this is a thinking/reasoning model (o1, o3, Claude with extended thinking) */
+  isThinking?: boolean;
+  /** Input modalities supported by the model */
+  inputOptions?: {
+    images?: boolean;
+    audio?: boolean;
+    videos?: boolean;
+  };
 };
 
 
@@ -24,6 +32,9 @@ const AI_MODELS: Record<
     },
     maxTokens: 128000,
     llm: ["OpenAI Chat (Langchain)"],
+    inputOptions: {
+      images: true,
+    },
   },
   "gpt-4": {
     encoding: "cl100k_base",
@@ -297,6 +308,237 @@ const AI_MODELS: Record<
     llm: ["MistralAI Chat (Langchain)"],
     // order: -1
   },
+  "mistral-large-latest": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.002,
+      completion: 0.006,
+    },
+    maxTokens: 128000,
+    llm: ["MistralAI Chat (Langchain)"],
+  },
+
+  // ============= Anthropic Claude Models =============
+  "claude-3-5-sonnet-latest": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.003,
+      completion: 0.015,
+    },
+    maxTokens: 200000,
+    llm: ["Chat Anthropic (Langchain)"],
+    inputOptions: {
+      images: true,
+    },
+  },
+  "claude-3-5-sonnet-20241022": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.003,
+      completion: 0.015,
+    },
+    maxTokens: 200000,
+    llm: ["Chat Anthropic (Langchain)"],
+    inputOptions: {
+      images: true,
+    },
+    order: -1,
+  },
+  "claude-3-5-haiku-latest": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.0008,
+      completion: 0.004,
+    },
+    maxTokens: 200000,
+    llm: ["Chat Anthropic (Langchain)"],
+    inputOptions: {
+      images: true,
+    },
+  },
+  "claude-3-5-haiku-20241022": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.0008,
+      completion: 0.004,
+    },
+    maxTokens: 200000,
+    llm: ["Chat Anthropic (Langchain)"],
+    inputOptions: {
+      images: true,
+    },
+    order: -1,
+  },
+  "claude-3-opus-latest": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.015,
+      completion: 0.075,
+    },
+    maxTokens: 200000,
+    llm: ["Chat Anthropic (Langchain)"],
+    inputOptions: {
+      images: true,
+    },
+  },
+  "claude-3-opus-20240229": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.015,
+      completion: 0.075,
+    },
+    maxTokens: 200000,
+    llm: ["Chat Anthropic (Langchain)"],
+    inputOptions: {
+      images: true,
+    },
+    order: -1,
+  },
+  "claude-3-sonnet-20240229": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.003,
+      completion: 0.015,
+    },
+    maxTokens: 200000,
+    llm: ["Chat Anthropic (Langchain)"],
+    inputOptions: {
+      images: true,
+    },
+    order: -1,
+  },
+  "claude-3-haiku-20240307": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.00025,
+      completion: 0.00125,
+    },
+    maxTokens: 200000,
+    llm: ["Chat Anthropic (Langchain)"],
+    inputOptions: {
+      images: true,
+    },
+    order: -1,
+  },
+  // Claude 4 models (Thinking models with extended thinking)
+  "claude-sonnet-4-20250514": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.003,
+      completion: 0.015,
+    },
+    maxTokens: 200000,
+    llm: ["Chat Anthropic (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+    },
+  },
+  "claude-opus-4-20250514": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.015,
+      completion: 0.075,
+    },
+    maxTokens: 200000,
+    llm: ["Chat Anthropic (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+    },
+  },
+
+  // ============= Gemini 2.0+ Models =============
+  "gemini-2.0-flash": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.0001,
+      completion: 0.0004,
+    },
+    maxTokens: 1000000,
+    llm: ["Google GenerativeAI (Langchain)"],
+    inputOptions: {
+      images: true,
+      audio: true,
+      videos: true,
+    },
+  },
+  "gemini-2.0-flash-exp": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0,
+      completion: 0,
+    },
+    maxTokens: 1000000,
+    llm: ["Google GenerativeAI (Langchain)"],
+    inputOptions: {
+      images: true,
+      audio: true,
+      videos: true,
+    },
+    order: -1,
+  },
+  "gemini-2.0-flash-thinking-exp": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0,
+      completion: 0,
+    },
+    maxTokens: 1000000,
+    llm: ["Google GenerativeAI (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+      audio: true,
+      videos: true,
+    },
+  },
+  "gemini-2.5-pro-preview-05-06": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.00125,
+      completion: 0.01,
+    },
+    maxTokens: 1000000,
+    llm: ["Google GenerativeAI (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+      audio: true,
+      videos: true,
+    },
+  },
+  "gemini-2.5-flash-preview-05-20": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.00015,
+      completion: 0.0035,
+    },
+    maxTokens: 1000000,
+    llm: ["Google GenerativeAI (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+      audio: true,
+      videos: true,
+    },
+  },
+  "gemini-exp-1206": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0,
+      completion: 0,
+    },
+    maxTokens: 2000000,
+    llm: ["Google GenerativeAI (Langchain)"],
+    inputOptions: {
+      images: true,
+      audio: true,
+      videos: true,
+    },
+    order: -1,
+  },
+
   "gpt-4.1": {
     encoding: "cl100k_base",
     prices: {
@@ -486,6 +728,10 @@ const AI_MODELS: Record<
     },
     maxTokens: 60000,
     llm: ["OpenAI Agent (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+    },
   },
   "o1-2024-12-17": {
     encoding: "cl100k_base",
@@ -495,6 +741,10 @@ const AI_MODELS: Record<
     },
     maxTokens: 60000,
     llm: ["OpenAI Agent (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+    },
     order: -1,
   },
   "o1-pro": {
@@ -505,6 +755,10 @@ const AI_MODELS: Record<
     },
     maxTokens: 600000,
     llm: ["OpenAI Agent (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+    },
   },
   "o1-pro-2025-03-19": {
     encoding: "cl100k_base",
@@ -514,6 +768,10 @@ const AI_MODELS: Record<
     },
     maxTokens: 600000,
     llm: ["OpenAI Agent (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+    },
     order: -1,
   },
   "o3": {
@@ -524,6 +782,10 @@ const AI_MODELS: Record<
     },
     maxTokens: 40000,
     llm: ["OpenAI Agent (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+    },
   },
   "o3-2025-04-16": {
     encoding: "cl100k_base",
@@ -533,6 +795,10 @@ const AI_MODELS: Record<
     },
     maxTokens: 40000,
     llm: ["OpenAI Agent (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+    },
     order: -1,
   },
   "o4-mini": {
@@ -543,6 +809,10 @@ const AI_MODELS: Record<
     },
     maxTokens: 4400,
     llm: ["OpenAI Agent (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+    },
   },
   "o4-mini-2025-04-16": {
     encoding: "cl100k_base",
@@ -552,6 +822,10 @@ const AI_MODELS: Record<
     },
     maxTokens: 4400,
     llm: ["OpenAI Agent (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+    },
     order: -1,
   },
   "o3-mini": {
@@ -562,6 +836,7 @@ const AI_MODELS: Record<
     },
     maxTokens: 4400,
     llm: ["OpenAI Agent (Langchain)"],
+    isThinking: true,
   },
   "o3-mini-2025-01-31": {
     encoding: "cl100k_base",
@@ -571,6 +846,7 @@ const AI_MODELS: Record<
     },
     maxTokens: 4400,
     llm: ["OpenAI Agent (Langchain)"],
+    isThinking: true,
     order: -1,
   },
   "o1-mini": {
@@ -581,6 +857,7 @@ const AI_MODELS: Record<
     },
     maxTokens: 4400,
     llm: ["OpenAI Agent (Langchain)"],
+    isThinking: true,
   },
   "o1-mini-2024-09-12": {
     encoding: "cl100k_base",
@@ -590,6 +867,7 @@ const AI_MODELS: Record<
     },
     maxTokens: 4400,
     llm: ["OpenAI Agent (Langchain)"],
+    isThinking: true,
     order: -1,
   },
   "gpt-4o-mini-search-preview": {

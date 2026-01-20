@@ -80,13 +80,8 @@
   --callout-icon: bot;
 }
 
-.callout[data-callout="ai"]>.callout-title {
-  margin-left: -1rem;
-}
-
-.callout[data-callout="ai"]>.callout-content {
-  margin-left: 2rem;
-}
+/* Removed custom margins to use Obsidian's default callout styling */
+/* This fixes layout issues with lists and nested content */
 
 .plug-tg-summary {
   padding: 10px;

@@ -13,6 +13,7 @@ const logger = debug("textgenerator:llmProvider:gemini");
 
 const default_values = {
   model: "gemini-2.0-flash",
+  enableThinking: false,
 };
 
 export default class LangchainChatGoogleGenerativeAIProvider
@@ -31,6 +32,14 @@ export default class LangchainChatGoogleGenerativeAIProvider
   id = LangchainChatGoogleGenerativeAIProvider.id;
   originalId = LangchainChatGoogleGenerativeAIProvider.id;
   getConfig(options: LLMConfig): Partial<GoogleGenerativeAIChatInput> {
+    // Check if this is a thinking model (Gemini 2.0 thinking or 2.5)
+    const isThinkingModel = options.model?.includes("thinking") ||
+      options.model?.includes("gemini-2.5");
+
+    const enableThinking = options.enableThinking ||
+      options.otherOptions?.enableThinking ||
+      isThinkingModel;
+
     return this.cleanConfig({
       apiKey: options.api_key,
       model: options.model,
@@ -39,7 +48,17 @@ export default class LangchainChatGoogleGenerativeAIProvider
       candidateCount: options.n,
 
       // ------------Necessary stuff--------------
-      modelKwargs: options.modelKwargs,
+      modelKwargs: {
+        ...options.modelKwargs,
+        // Enable thinking for thinking models
+        ...(enableThinking && {
+          generationConfig: {
+            thinkingConfig: {
+              thinkingBudget: options.thinkingBudget || options.otherOptions?.thinkingBudget || 8192,
+            },
+          },
+        }),
+      },
       //   modelName: options.model,
       maxOutputTokens: options.max_tokens,
       temperature: options.temperature,

@@ -18,6 +18,7 @@ export default function ProviderSetting(props: { register: Register }) {
         id={sectionId}
         triggerResize={resized}
         alwaysOpen
+        hideTitle
       >
         <LLMProviderController
           register={props.register}

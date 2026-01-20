@@ -42,7 +42,7 @@ export default function SectionsMain() {
       !searchTerm.length
         ? Object.entries(items)
         : Object.entries(items).filter(([key, val]) =>
-          `${val.term} ${items[val.sectionId]?.term}`
+          `${val.term} ${items[val.sectionId as any]?.term}`
             .toLocaleLowerCase()
             .includes(searchTerm.toLocaleLowerCase())
         ),

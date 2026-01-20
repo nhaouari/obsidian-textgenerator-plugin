@@ -30,7 +30,9 @@ export default class LangchainOpenAIInstructProvider
   originalId = LangchainOpenAIInstructProvider.id;
   getConfig(options: LLMConfig) {
     return this.cleanConfig({
-      openAIApiKey: options.api_key,
+      // In langchain v1, use apiKey instead of openAIApiKey
+      apiKey: options.api_key,
+      openAIApiKey: options.api_key, // Keep for backward compatibility
 
       // ------------Necessary stuff--------------
       modelKwargs: options.modelKwargs,

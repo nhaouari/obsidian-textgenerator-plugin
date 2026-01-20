@@ -50,8 +50,8 @@ export default class LangchainOllamaProvider
   }
 
   async load() {
-    const { Ollama } = await import("@langchain/community/llms/ollama");
-    this.llmClass = Ollama;
+    const { ChatOllama } = await import("@langchain/ollama");
+    this.llmClass = ChatOllama;
   }
 
   //   getLLM(options: LLMConfig) {

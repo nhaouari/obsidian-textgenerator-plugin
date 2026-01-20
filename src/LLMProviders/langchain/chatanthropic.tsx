@@ -6,7 +6,7 @@ import LLMProviderInterface, { LLMConfig } from "../interface";
 import { IconExternalLink } from "@tabler/icons-react";
 import { BaseLanguageModelParams } from "@langchain/core/language_models/base";
 
-import { fetchWithoutCORS, Input, Message, SettingItem, useGlobal } from "../refs";
+import { Dropdown, fetchWithoutCORS, Input, Message, SettingItem, useGlobal } from "../refs";
 
 import type { AnthropicInput } from "@langchain/anthropic";
 import { HeaderEditor, ModelsHandler } from "../utils";
@@ -17,6 +17,8 @@ const logger = debug("textgenerator:llmProvider:chatanthropic");
 const default_values = {
   basePath: "https://api.anthropic.com/",
   model: "claude-3-5-sonnet-latest",
+  enableThinking: false,
+  thinkingBudget: 10000,
 };
 
 
@@ -44,16 +46,36 @@ export default class LangchainChatAnthropicProvider
   getConfig(
     options: LLMConfig
   ): Partial<AnthropicInput & BaseLanguageModelParams> {
+    // Check if thinking is enabled (for Claude 4 models)
+    const enableThinking = options.enableThinking ||
+      options.otherOptions?.enableThinking ||
+      false;
+
+    const thinkingBudget = options.thinkingBudget ||
+      options.otherOptions?.thinkingBudget ||
+      default_values.thinkingBudget;
+
+    // Build thinking config if enabled
+    const thinkingConfig = enableThinking ? {
+      thinking: {
+        type: "enabled" as const,
+        budget_tokens: thinkingBudget,
+      },
+    } : {};
+
     return this.cleanConfig({
       anthropicApiKey: options.api_key,
       anthropicApiUrl: options.basePath,
       // stopSequences: options.stop,
 
       // ------------Necessary stuff--------------
-      modelKwargs: options.modelKwargs,
+      modelKwargs: {
+        ...options.modelKwargs,
+        ...thinkingConfig,
+      },
       modelName: options.model,
       maxTokens: options.max_tokens,
-      temperature: options.temperature,
+      temperature: enableThinking ? 1 : options.temperature, // Temperature must be 1 for thinking models
       frequencyPenalty: +options.frequency_penalty || 0,
       presencePenalty: +options.presence_penalty || 0,
       n: options.n,
@@ -81,6 +103,10 @@ export default class LangchainChatAnthropicProvider
     const id = props.self.id;
 
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= { ...props.self.default_values });
+
+    // Check if current model is a thinking model (Claude 4)
+    const isThinkingModel = config.model?.includes("claude-opus-4") ||
+      config.model?.includes("claude-sonnet-4");
 
     return (
       <>
@@ -128,7 +154,7 @@ export default class LangchainChatAnthropicProvider
               if (!config.api_key) {
                 throw new Error("Please provide a valid api key.");
               }
-              
+
               let basePath = config.basePath || default_values.basePath || "https://api.anthropic.com";
 
               if (basePath.endsWith("/")) {
@@ -147,17 +173,17 @@ export default class LangchainChatAnthropicProvider
 
               const response = await fetchWithoutCORS(reqParams);
               const data = JSON.parse(response) as { data: { id: string }[] };
-              
+
               if (!data.data || !Array.isArray(data.data)) {
                 throw new Error("Invalid response format from API");
               }
-              
+
               const postingModels: string[] = [];
-              
+
               data.data.forEach(model => {
                 postingModels.push(model.id);
               });
-              
+
               return postingModels.sort();
             } catch (err: any) {
               global.plugin.handelError(err);
@@ -165,6 +191,50 @@ export default class LangchainChatAnthropicProvider
             }
           }}
         />
+
+        {/* Extended Thinking Options - only show for Claude 4 thinking models */}
+        {isThinkingModel && (
+          <>
+            <div className="plug-tg-text-lg plug-tg-opacity-70 plug-tg-mt-4">Extended Thinking</div>
+            <SettingItem
+              name="Enable Extended Thinking"
+              description="Allows Claude to think through complex problems step by step"
+              register={props.register}
+              sectionId={props.sectionId}
+            >
+              <Input
+                type="checkbox"
+                value={config.enableThinking ? "true" : "false"}
+                setValue={async (value) => {
+                  config.enableThinking = value === "true";
+                  global.triggerReload();
+                  await global.plugin.saveSettings();
+                }}
+              />
+            </SettingItem>
+
+            {config.enableThinking && (
+              <SettingItem
+                name="Thinking Budget"
+                description="Maximum tokens for the thinking process (1,024 - 100,000)"
+                register={props.register}
+                sectionId={props.sectionId}
+              >
+                <Input
+                  type="number"
+                  value={String(config.thinkingBudget || default_values.thinkingBudget)}
+                  placeholder="10000"
+                  setValue={async (value) => {
+                    const budget = Math.max(1024, Math.min(100000, parseInt(value) || 10000));
+                    config.thinkingBudget = budget;
+                    global.triggerReload();
+                    await global.plugin.saveSettings();
+                  }}
+                />
+              </SettingItem>
+            )}
+          </>
+        )}
 
         <HeaderEditor
           enabled={!!config.headers}
@@ -197,6 +267,16 @@ export default class LangchainChatAnthropicProvider
           <a href="https://docs.anthropic.com/en/docs/about-claude/models">
             <SettingItem
               name="Available models"
+              className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
+              register={props.register}
+              sectionId={props.sectionId}
+            >
+              <IconExternalLink />
+            </SettingItem>
+          </a>
+          <a href="https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking">
+            <SettingItem
+              name="Extended Thinking Guide"
               className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
               register={props.register}
               sectionId={props.sectionId}
