@@ -45,8 +45,10 @@ export default class LangchainPalmProvider
   }
 
   async load() {
-    const { ChatGooglePaLM } = await import("@langchain/community/chat_models/googlepalm");
-    this.llmClass = ChatGooglePaLM;
+    // PaLM has been deprecated by Google. Use Google GenerativeAI provider instead.
+    // Fallback to GoogleGenerativeAI for compatibility
+    const { ChatGoogleGenerativeAI } = await import("@langchain/google-genai");
+    this.llmClass = ChatGoogleGenerativeAI;
   }
 
   //   async getLLM(options: LLMConfig) {

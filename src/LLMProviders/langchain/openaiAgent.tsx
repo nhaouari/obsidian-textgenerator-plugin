@@ -6,17 +6,18 @@ import { IconExternalLink } from "@tabler/icons-react";
 import { HeaderEditor, ModelsHandler } from "../utils";
 import debug from "debug";
 
-import { AI_MODELS, Input, Message, SettingItem, useGlobal } from "../refs";
+import { AI_MODELS, Dropdown, Input, Message, SettingItem, useGlobal } from "../refs";
 import { OpenAIChatInput } from "@langchain/openai";
 
-const logger = debug("textgenerator:llmProvider:openaiChat");
+const logger = debug("textgenerator:llmProvider:openaiAgent");
 
 const default_values = {
   basePath: "https://api.openai.com/v1",
   model: "o1-mini",
+  reasoningEffort: "medium" as "low" | "medium" | "high",
 };
 
-export default class LangchainOpenAIChatProvider
+export default class LangchainOpenAIAgentProvider
   extends LangchainBase
   implements LLMProviderInterface {
   /** for models to know what provider is that, for example if this class is being extended. and the id changes. */
@@ -24,11 +25,13 @@ export default class LangchainOpenAIChatProvider
   static provider = "Langchain";
   static id = "OpenAI Agent (Langchain)" as const;
   static slug = "openAIAgent" as const;
-  static displayName = "OpenAI Agent";
+  static displayName = "OpenAI Agent (Thinking Models)";
 
-  id = LangchainOpenAIChatProvider.id;
-  provider = LangchainOpenAIChatProvider.provider;
-  originalId = LangchainOpenAIChatProvider.id;
+  id = LangchainOpenAIAgentProvider.id;
+  provider = LangchainOpenAIAgentProvider.provider;
+  originalId = LangchainOpenAIAgentProvider.id;
+
+  default_values = default_values;
 
   async load() {
     const { ChatOpenAI } = await import("@langchain/openai");
@@ -36,11 +39,19 @@ export default class LangchainOpenAIChatProvider
   }
 
   getConfig(options: LLMConfig) {
+    const reasoningEffort = options.reasoningEffort || this.default_values.reasoningEffort || "medium";
+
     return this.cleanConfig({
-      openAIApiKey: options.api_key,
+      // In langchain v1, use apiKey instead of openAIApiKey
+      apiKey: options.api_key,
+      openAIApiKey: options.api_key, // Keep for backward compatibility
 
       // ------------Necessary stuff--------------
-      modelKwargs: options.modelKwargs,
+      modelKwargs: {
+        ...options.modelKwargs,
+        // Add reasoning effort for o-series thinking models
+        reasoning_effort: reasoningEffort,
+      },
       modelName: options.model,
       // frequencyPenalty: +options.frequency_penalty || 0,
       presencePenalty: +options.presence_penalty || 0,
@@ -121,6 +132,23 @@ export default class LangchainOpenAIChatProvider
           config={config}
         />
 
+        <SettingItem
+          name="Reasoning Effort"
+          description="Controls how much effort the model spends on reasoning (for thinking models)"
+          register={props.register}
+          sectionId={props.sectionId}
+        >
+          <Dropdown
+            value={config.reasoningEffort || default_values.reasoningEffort}
+            setValue={async (value) => {
+              config.reasoningEffort = value;
+              global.triggerReload();
+              await global.plugin.saveSettings();
+            }}
+            values={["low", "medium", "high"]}
+          />
+        </SettingItem>
+
         <HeaderEditor
           enabled={!!config.headers}
           setEnabled={async (value) => {
@@ -138,8 +166,16 @@ export default class LangchainOpenAIChatProvider
         />
 
         <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">
+          <div className="plug-tg-text-lg plug-tg-opacity-70">Thinking Models</div>
+          <p className="plug-tg-text-sm plug-tg-opacity-60">
+            This provider is optimized for OpenAI's reasoning models (o1, o3, o4 series).
+            These models use extended thinking to provide more thorough responses.
+          </p>
+        </div>
+
+        <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2">
           <div className="plug-tg-text-lg plug-tg-opacity-70">Useful links</div>
-          <a href="https://beta.openai.com/signup/">
+          <a href="https://platform.openai.com/signup/">
             <SettingItem
               name="Create account OpenAI"
               className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
@@ -149,9 +185,9 @@ export default class LangchainOpenAIChatProvider
               <IconExternalLink />
             </SettingItem>
           </a>
-          <a href="https://beta.openai.com/docs/api-reference/introduction">
+          <a href="https://platform.openai.com/docs/guides/reasoning">
             <SettingItem
-              name="API documentation"
+              name="Reasoning Models Guide"
               className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
               register={props.register}
               sectionId={props.sectionId}
@@ -159,19 +195,9 @@ export default class LangchainOpenAIChatProvider
               <IconExternalLink />
             </SettingItem>
           </a>
-          <a href="https://discord.com/channels/1083485983879741572/1159894948636799126">
+          <a href="https://platform.openai.com/docs/models">
             <SettingItem
-              name="You can use LM Studio"
-              className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
-              register={props.register}
-              sectionId={props.sectionId}
-            >
-              <IconExternalLink />
-            </SettingItem>
-          </a>
-          <a href="https://beta.openai.com/docs/models/overview">
-            <SettingItem
-              name="more information"
+              name="Available Models"
               className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
               register={props.register}
               sectionId={props.sectionId}

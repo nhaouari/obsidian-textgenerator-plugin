@@ -75,4 +75,14 @@ export interface LLMConfig {
   modelKwargs?: any;
   headers?: string;
   apiVersion?: string;
+
+  // ============= Thinking Model Parameters =============
+  /** Enable extended thinking for thinking models (o1, o3, Claude with extended thinking) */
+  enableThinking?: boolean;
+  /** Maximum tokens to use for thinking/reasoning (budget for internal reasoning) */
+  thinkingBudget?: number;
+  /** Include the thinking/reasoning process in the output */
+  includeThinking?: boolean;
+  /** Reasoning effort for OpenAI o-series models: "low" | "medium" | "high" */
+  reasoningEffort?: "low" | "medium" | "high";
 }

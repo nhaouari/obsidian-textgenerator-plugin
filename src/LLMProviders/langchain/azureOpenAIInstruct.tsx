@@ -26,7 +26,9 @@ export default class LangchainAzureOpenAIInstructProvider
 
   getConfig(options: LLMConfig): Partial<OpenAIInput & AzureOpenAIInput> {
     return this.cleanConfig({
-      azureOpenAIApiKey: options.api_key,
+      // In langchain v1, use apiKey instead of azureOpenAIApiKey
+      apiKey: options.api_key,
+      azureOpenAIApiKey: options.api_key, // Keep for backward compatibility
       azureOpenAIBasePath:
         options.otherOptions?.azureOpenAIBasePath?.endsWith?.("/")
           ? options.otherOptions?.azureOpenAIBasePath.slice(0, -1)

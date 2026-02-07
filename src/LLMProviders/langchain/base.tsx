@@ -50,7 +50,9 @@ export default class LangchainProvider
 
   getConfig(options: LLMConfig) {
     return this.cleanConfig({
-      openAIApiKey: options.api_key,
+      // In langchain v1, use apiKey instead of openAIApiKey
+      apiKey: options.api_key,
+      openAIApiKey: options.api_key, // Keep for backward compatibility
 
       // ------------Necessary stuff--------------
       modelKwargs: options.modelKwargs,
@@ -103,36 +105,24 @@ export default class LangchainProvider
         : options.basePath
       : undefined;
 
-    const clientOptions: ClientOptions & OpenAIChatInput = {
-      baseURL,
-      // @ts-ignore
-      basePath: baseURL,
+    // In langchain v1, the configuration structure changed
+    // The 'configuration' property is for OpenAI SDK client options
+    const config = this.getConfig(options);
 
-      // @ts-ignore
-      clientOptions: {
+    const llmConfig = {
+      ...config,
+      // Add configuration object for custom baseURL and fetch
+      configuration: {
+        ...(baseURL && { baseURL }),
         dangerouslyAllowBrowser: true,
+        ...(options.bodyParams && { defaultQuery: options.bodyParams }),
+        fetch: Fetch,
+        defaultHeaders: headers,
       },
-
-      dangerouslyAllowBrowser: true,
-      defaultQuery: options.bodyParams,
-      fetch: Fetch,
-      defaultHeaders: headers,
     };
 
-    console.log({ clientOptions });
-    const llm = new (this.llmClass as typeof ChatOpenAI)(
-      {
-        ...this.getConfig(options),
-        // @ts-ignore
-        clientOptions,
-      },
-      clientOptions
-    );
-
-    // @ts-ignore
-    llm.clientOptions ??= {};
-    // @ts-ignore
-    llm.clientOptions.fetch = Fetch;
+    console.log({ llmConfig });
+    const llm = new (this.llmClass as typeof ChatOpenAI)(llmConfig);
 
     return llm;
   }
@@ -215,13 +205,13 @@ export default class LangchainProvider
           ]);
 
           // This convenience function creates a document chain prompted to summarize a set of documents.
-          const chain = getChain(
+          const chain = await getChain(
             customConfig?.chain.loader,
             llm,
             customConfig.chain
           );
 
-          const res = await chain.invoke(
+          const res = await (chain as any).invoke(
             {
               input_documents: docs,
               signal: reqParams.requestParams?.signal || undefined,
@@ -264,7 +254,7 @@ export default class LangchainProvider
             );
           else
             r = await (llm as any as ChatOpenAI).invoke(
-              mapMessagesToLangchainMessages(messages),
+              mapMessagesToLangchainMessages(messages) as any as string,
               {
                 signal: params.requestParams?.signal || undefined,
                 ...this.getReqOptions(params),
@@ -278,13 +268,22 @@ export default class LangchainProvider
           if (typeof res.content == "string") result = res.content;
           else
             result = res.content
-              .map((c) =>
-                c.type == "image_url"
-                  ? `![](${c.image_url})`
-                  : c.type == "text"
-                    ? c.text
-                    : ""
-              )
+              .map((c: any) => {
+                if (c.type == "image_url") return `![](${c.image_url})`;
+                if (c.type == "text") return c.text;
+                // Handle thinking blocks from Claude extended thinking
+                if (c.type == "thinking") {
+                  // Optionally include thinking in output based on config
+                  if (params.includeThinking || params.otherOptions?.includeThinking) {
+                    return `<thinking>\n${c.thinking}\n</thinking>\n`;
+                  }
+                  return "";
+                }
+                // Handle tool_use blocks
+                if (c.type == "tool_use") return "";
+                return "";
+              })
+              .filter(Boolean)
               .join("\n");
         }
 
@@ -445,41 +444,50 @@ function chatToString(messages: Message[] = []) {
     contentToString(messages[0].content);
 }
 
-function getChain(chainName: string, llm: any, config: any) {
-  const loader = chains[
-    (chainName as keyof typeof chains) || "loadSummarizationChain"
+async function getChain(chainName: string, llm: any, config: any): Promise<any> {
+  // In langchain v1, chains have been deprecated
+  // This is a fallback that uses the chains export from our lib/langchain/index.ts
+  // which provides backward compatibility
+  try {
+    const { loadSummarizationChain } = chains as any;
+
+    if (!loadSummarizationChain) {
+      throw new Error("loadSummarizationChain is not available in langchain v1");
+    }
+
+    const chain = await loadSummarizationChain(llm, {
+      maxTokens: 500,
+
+      prompt: config.prompt
+        ? PromptTemplate.fromTemplate(config.prompt)
+        : undefined,
+
+      questionPrompt: config.questionPrompt
+        ? PromptTemplate.fromTemplate(config.questionPrompt)
+        : undefined,
+
+      refinePrompt: config.refinePrompt
+        ? PromptTemplate.fromTemplate(config.refinePrompt)
+        : undefined,
+
+      combinePrompt: config.combinePrompt
+        ? PromptTemplate.fromTemplate(config.combinePrompt)
+        : undefined,
+
+      combineMapPrompt: config.combineMapPrompt
+        ? PromptTemplate.fromTemplate(config.combineMapPrompt)
+        : undefined,
+
+      ...config,
+      // verbose: true,
+    });
+
+    // fsr its not getting set from the properties
     // @ts-ignore
-  ] as typeof chains.loadSummarizationChain;
-
-  const chain = loader(llm, {
-    maxTokens: 500,
-
-    prompt: config.prompt
-      ? PromptTemplate.fromTemplate(config.prompt)
-      : undefined,
-
-    questionPrompt: config.questionPrompt
-      ? PromptTemplate.fromTemplate(config.questionPrompt)
-      : undefined,
-
-    refinePrompt: config.refinePrompt
-      ? PromptTemplate.fromTemplate(config.refinePrompt)
-      : undefined,
-
-    combinePrompt: config.combinePrompt
-      ? PromptTemplate.fromTemplate(config.combinePrompt)
-      : undefined,
-
-    combineMapPrompt: config.combineMapPrompt
-      ? PromptTemplate.fromTemplate(config.combineMapPrompt)
-      : undefined,
-
-    ...config,
-    // verbose: true,
-  });
-
-  // fsr its not getting set from the properties
-  // @ts-ignore
-  chain.maxTokens = config?.chain?.maxTokens || 500;
-  return chain;
+    chain.maxTokens = config?.chain?.maxTokens || 500;
+    return chain;
+  } catch (error) {
+    console.error("Chain functionality is not available:", error);
+    throw new Error("Summarization chains are not supported in langchain v1. Please use direct LLM invocation instead.");
+  }
 }
