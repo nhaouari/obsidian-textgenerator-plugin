@@ -90,6 +90,10 @@ export default class TextGeneratorPlugin extends Plugin {
   spinner?: SpinnersPlugin;
   temp: Record<string, any> = {};
 
+  private thinkingNotice: Notice | null = null;
+  private thinkingContentEl: HTMLElement | null = null;
+  private thinkingAccumulated = "";
+
   async onload() {
     const perf = PerformanceTracker.getInstance();
     perf.start("Total Plugin Load");
@@ -277,15 +281,15 @@ export default class TextGeneratorPlugin extends Plugin {
           layoutPerf.start("Tokens Scope Setup");
           await this.tokensScope.setup();
           layoutPerf.end("Tokens Scope Setup");
-          
+
           layoutPerf.start("Text Generator Load");
           await this.textGenerator.load();
           layoutPerf.end("Text Generator Load");
-          
+
           layoutPerf.start("Commands Setup");
           await this.commands.addCommands();
           layoutPerf.end("Commands Setup");
-          
+
           layoutPerf.start("Package Manager Load");
           await this.packageManager.load();
           layoutPerf.end("Package Manager Load");
@@ -308,14 +312,14 @@ export default class TextGeneratorPlugin extends Plugin {
       } catch (err: any) {
         this.handelError(err);
       }
-      
+
       layoutPerf.end("Total Layout Ready");
       if (this.settings.options["log-slowest-operations"]) {
         layoutPerf.getSlowestOperations();
       }
     });
     perf.end("Layout Ready Setup");
-    
+
     perf.end("Total Plugin Load");
     if (this.settings.options["log-slowest-operations"]) {
       perf.getSlowestOperations();
@@ -477,8 +481,50 @@ export default class TextGeneratorPlugin extends Plugin {
     this.app.workspace.updateOptions();
   }
 
+  appendThinkingContent(text: string) {
+    this.thinkingAccumulated += text;
+
+    if (!this.thinkingNotice) {
+      this.thinkingNotice = new Notice("", 0);
+      const el = this.thinkingNotice.noticeEl;
+      el.style.maxWidth = "420px";
+      el.style.minWidth = "300px";
+
+      const header = el.createDiv();
+      header.style.cssText = "display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-weight:600;font-size:13px;";
+      header.createSpan({ text: "💭 Reasoning" });
+
+      const copyBtn = header.createEl("button", { text: "Copy" });
+      copyBtn.style.cssText = "font-size:11px;padding:2px 8px;cursor:pointer;border-radius:4px;";
+      copyBtn.addEventListener("click", () => {
+        navigator.clipboard.writeText(this.thinkingAccumulated);
+        new Notice("Reasoning copied to clipboard", 2000);
+      });
+
+      this.thinkingContentEl = el.createDiv();
+      this.thinkingContentEl.style.cssText =
+        "max-height:220px;overflow-y:auto;font-size:12px;opacity:0.8;white-space:pre-wrap;line-height:1.55;padding:2px 0;";
+    }
+
+    if (this.thinkingContentEl) {
+      this.thinkingContentEl.setText(this.thinkingAccumulated);
+      this.thinkingContentEl.scrollTop = this.thinkingContentEl.scrollHeight;
+    }
+  }
+
+  clearThinkingPanel() {
+    if (this.thinkingNotice) {
+      this.thinkingNotice.hide();
+      this.thinkingNotice = null;
+      this.thinkingContentEl = null;
+    }
+    this.thinkingAccumulated = "";
+  }
+
   startProcessing(showSpinner = true) {
+    this.clearThinkingPanel();
     this.updateStatusBar(``, true);
+
     this.processing = true;
 
     if (!showSpinner) return;

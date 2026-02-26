@@ -173,18 +173,53 @@ export default class LangchainProvider
 
         let first = true;
         let allText = "";
+        let streamedThinking = "";
+
+        const appendThinkingFromChunk = (chunkLike: any) => {
+          const content = chunkLike?.message?.content ?? chunkLike?.content;
+          if (!Array.isArray(content)) return;
+
+          const thinkingText = content
+            .map((part: any) => {
+              if (!part || typeof part !== "object") return "";
+              if (
+                part.type === "thinking" ||
+                part.type === "thinking_delta" ||
+                part.type === "reasoning" ||
+                part.type === "reasoning_content"
+              ) {
+                return (
+                  part.thinking ||
+                  part.text ||
+                  part.content ||
+                  part.reasoning ||
+                  ""
+                );
+              }
+              return "";
+            })
+            .filter(Boolean)
+            .join("");
+
+          if (!thinkingText?.length) return;
+          streamedThinking += thinkingText;
+          this.plugin.appendThinkingContent(thinkingText);
+        };
 
         const llmFuncs: Callbacks = [
           {
             ...(!!onToken &&
               !!params.stream && {
-              async handleLLMNewToken(token: string) {
+              async handleLLMNewToken(token: string, ...args: any[]) {
                 const d = first;
                 first = false;
                 alreadyBegainGenerating = true;
                 const tk = (await onToken(token, d)) || token;
                 allText += tk;
                 result += tk;
+
+                const meta = args[5];
+                appendThinkingFromChunk(meta?.chunk);
               },
             }),
 
@@ -273,9 +308,9 @@ export default class LangchainProvider
                 if (c.type == "text") return c.text;
                 // Handle thinking blocks from Claude extended thinking
                 if (c.type == "thinking") {
-                  // Optionally include thinking in output based on config
-                  if (params.includeThinking || params.otherOptions?.includeThinking) {
-                    return `<thinking>\n${c.thinking}\n</thinking>\n`;
+                  // Always show thinking content in the non-intrusive side panel
+                  if (!params.stream || !streamedThinking.length) {
+                    this.plugin.appendThinkingContent(c.thinking || "");
                   }
                   return "";
                 }
