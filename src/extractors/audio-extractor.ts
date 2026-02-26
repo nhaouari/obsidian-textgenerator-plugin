@@ -79,6 +79,8 @@ export default class AudioExtractor extends Extractor {
         endpoint.searchParams.set("api-version", whisperProvider.api_version);
       }
 
+      endpoint.pathname = endpoint.pathname.replace(/\/$/, "") + "/audio/transcriptions";
+
       if (
         endpoint.host.contains("openai") &&
         whisperApiKey.length < 1
@@ -91,7 +93,7 @@ export default class AudioExtractor extends Extractor {
       // TODO: this needs to be supported in the llm provider, or searches for llm with openai key
       // if not, then show error message
       const response = await fetch(
-        new URL(`${endpoint.pathname}/audio/transcriptions`, endpoint).href,
+        endpoint.href,
         {
           method: "POST",
           headers: {
