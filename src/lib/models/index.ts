@@ -24,6 +24,115 @@ const AI_MODELS: Record<
   string,
   ModelType
 > = {
+  // ── GPT-5 family ────────────────────────────────────────────────────────────
+  // https://platform.openai.com/docs/models
+  "gpt-5.1": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.00125,
+      completion: 0.01,
+    },
+    maxTokens: 400000,
+    llm: ["OpenAI Chat (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+    },
+  },
+  "gpt-5.1-2025-11-13": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.00125,
+      completion: 0.01,
+    },
+    maxTokens: 400000,
+    llm: ["OpenAI Chat (Langchain)"],
+    isThinking: true,
+    order: -1,
+    inputOptions: {
+      images: true,
+    },
+  },
+  "gpt-5": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.00125,
+      completion: 0.01,
+    },
+    maxTokens: 400000,
+    llm: ["OpenAI Chat (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+    },
+  },
+  "gpt-5-2025-08-07": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.00125,
+      completion: 0.01,
+    },
+    maxTokens: 400000,
+    llm: ["OpenAI Chat (Langchain)"],
+    isThinking: true,
+    order: -1,
+    inputOptions: {
+      images: true,
+    },
+  },
+  "gpt-5-mini": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.00025,
+      completion: 0.002,
+    },
+    maxTokens: 400000,
+    llm: ["OpenAI Chat (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+    },
+  },
+  "gpt-5-mini-2025-08-07": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.00025,
+      completion: 0.002,
+    },
+    maxTokens: 400000,
+    llm: ["OpenAI Chat (Langchain)"],
+    isThinking: true,
+    order: -1,
+    inputOptions: {
+      images: true,
+    },
+  },
+  "gpt-5-nano": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.00005,
+      completion: 0.0004,
+    },
+    maxTokens: 400000,
+    llm: ["OpenAI Chat (Langchain)"],
+    inputOptions: {
+      images: true,
+    },
+  },
+  "gpt-5-nano-2025-08-07": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.00005,
+      completion: 0.0004,
+    },
+    maxTokens: 400000,
+    llm: ["OpenAI Chat (Langchain)"],
+    order: -1,
+    inputOptions: {
+      images: true,
+    },
+  },
+  // ────────────────────────────────────────────────────────────────────────────
   "gpt-4o": {
     encoding: "cl100k_base",
     prices: {

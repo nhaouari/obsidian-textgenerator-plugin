@@ -3,6 +3,7 @@ import { IconEyeClosed, IconEye } from "@tabler/icons-react";
 import clsx from "clsx";
 import { ZodSchema } from "zod";
 import JSON5 from "json5";
+import { useDebounceCallback } from "usehooks-ts";
 
 export default function Input(props: {
   type?: string;
@@ -12,10 +13,19 @@ export default function Input(props: {
   setValue: (nval: string) => void;
   className?: string;
   validator?: ZodSchema;
+  debounceMs?: number;
 }) {
   const [value, setValue] = useState<any>(props.value);
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
+
+  // Debounce the external setter for text-like inputs to prevent
+  // saveSettings() + triggerReload() from firing on every keystroke.
+  // Checkboxes use props.setValue directly in the onClick handler (no change).
+  const debouncedExternalSetValue = useDebounceCallback(
+    props.setValue,
+    props.type === "checkbox" ? 0 : (props.debounceMs ?? 500)
+  );
 
   return (
     <div
@@ -69,7 +79,7 @@ export default function Input(props: {
 
                   setError("");
                   props.validator?.parse(v);
-                  props.setValue("" + v);
+                  debouncedExternalSetValue("" + v);
                 } catch (err: any) {
                   setError(JSON5.parse(err?.message)?.[0]?.message);
                 }

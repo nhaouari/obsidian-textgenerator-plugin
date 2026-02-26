@@ -9,6 +9,7 @@ import { AsyncReturnType, cleanConfig } from "../utils";
 import { requestWithoutCORS, requestWithoutCORSParam, Message } from "../refs";
 import { Platform } from "obsidian";
 import runJSInSandbox from "#/helpers/javascript-sandbox";
+import { AI_MODELS } from "#/constants";
 
 const logger = debug("textgenerator:CustomProvider");
 
@@ -279,16 +280,25 @@ export default class CustomProvider
             ) as any
           ),
 
-          body: JSON.stringify(
-            cleanConfig(
+          body: await (async () => {
+            const parsedBody = cleanConfig(
               JSON5.parse(
                 "" +
                 (await Handlebars.compile(
                   handlebarData.custom_body || this.default_values.custom_body
                 )(handlebarData))
               )
-            ) as any
-          ),
+            ) as any;
+            const modelKey = (handlebarData.model as string)?.toLowerCase();
+            const autoDetected = !!(AI_MODELS[modelKey]?.isThinking);
+            const isThinking = handlebarData.isThinkingModel !== undefined
+              ? handlebarData.isThinkingModel
+              : autoDetected;
+            if (isThinking) {
+              delete parsedBody.temperature;
+            }
+            return JSON.stringify(parsedBody);
+          })(),
 
           signal: handlebarData.requestParams?.signal || undefined,
           stream: handlebarData.stream,
@@ -361,15 +371,24 @@ export default class CustomProvider
             )(handlebarData)
           ) as any,
 
-          body: JSON.stringify(
-            this.cleanConfig(
+          body: await (async () => {
+            const parsedBody = this.cleanConfig(
               JSON5.parse(
                 await Handlebars.compile(
                   handlebarData.custom_body || this.default_values.custom_body
                 )(handlebarData)
               )
-            )
-          ) as any,
+            ) as any;
+            const modelKey = (handlebarData.model as string)?.toLowerCase();
+            const autoDetected = !!(AI_MODELS[modelKey]?.isThinking);
+            const isThinking = handlebarData.isThinkingModel !== undefined
+              ? handlebarData.isThinkingModel
+              : autoDetected;
+            if (isThinking) {
+              delete parsedBody.temperature;
+            }
+            return JSON.stringify(parsedBody);
+          })() as any,
 
           sanatization_response: handlebarData.sanatization_response,
           sanatization_streaming:

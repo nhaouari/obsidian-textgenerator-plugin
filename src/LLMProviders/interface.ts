@@ -85,4 +85,6 @@ export interface LLMConfig {
   includeThinking?: boolean;
   /** Reasoning effort for OpenAI o-series models: "low" | "medium" | "high" */
   reasoningEffort?: "low" | "medium" | "high";
+  /** Manual override: treat this model as a thinking/reasoning model regardless of auto-detection */
+  isThinkingModel?: boolean;
 }

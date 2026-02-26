@@ -6,12 +6,15 @@ import { IconExternalLink } from "@tabler/icons-react";
 import { HeaderEditor, ModelsHandler } from "../utils";
 import debug from "debug";
 
-import { AI_MODELS, Input, Message, SettingItem, useGlobal } from "../refs";
+import { AI_MODELS, Dropdown, Input, Message, SettingItem, useGlobal } from "../refs";
+import { OpenAIChatInput } from "@langchain/openai";
 
 const logger = debug("textgenerator:llmProvider:openaiChat");
 
 const default_values = {
   basePath: "https://api.openai.com/v1",
+  model: "gpt-4o",
+  reasoningEffort: "medium" as "low" | "medium" | "high",
 };
 
 export default class LangchainOpenAIChatProvider
@@ -28,16 +31,57 @@ export default class LangchainOpenAIChatProvider
   provider = LangchainOpenAIChatProvider.provider;
   originalId = LangchainOpenAIChatProvider.id;
 
+  default_values = default_values;
+
   async load() {
     const { ChatOpenAI } = await import("@langchain/openai");
     this.llmClass = ChatOpenAI;
   }
 
-  //   getLLM(options: LLMConfig) {
-  //     return new ChatOpenAI({
-  //       ...this.getConfig(options),
-  //     });
-  //   }
+  getConfig(options: LLMConfig) {
+    const modelKey = (options.model || "").toLowerCase();
+    const autoDetected = !!(AI_MODELS as any)[modelKey]?.isThinking;
+    const isThinking = options.isThinkingModel !== undefined
+      ? options.isThinkingModel
+      : autoDetected;
+
+    if (isThinking) {
+      return this.cleanConfig({
+        apiKey: options.api_key,
+        openAIApiKey: options.api_key,
+        modelKwargs: {
+          ...options.modelKwargs,
+          reasoning_effort: options.reasoningEffort || default_values.reasoningEffort,
+        },
+        modelName: options.model,
+        presencePenalty: +options.presence_penalty || 0,
+        n: options.n || 1,
+        stop: options.stop || undefined,
+        streaming: options.stream || false,
+        maxRetries: 3,
+        headers: options.headers || undefined,
+        bodyParams: {
+          max_completion_tokens: +options.max_tokens,
+        },
+      } as Partial<OpenAIChatInput>);
+    }
+
+    return this.cleanConfig({
+      apiKey: options.api_key,
+      openAIApiKey: options.api_key,
+      modelKwargs: options.modelKwargs,
+      modelName: options.model,
+      maxTokens: +options.max_tokens,
+      temperature: +options.temperature,
+      frequencyPenalty: +options.frequency_penalty || 0,
+      presencePenalty: +options.presence_penalty || 0,
+      n: options.n || 1,
+      stop: options.stop || undefined,
+      streaming: options.stream || false,
+      maxRetries: 3,
+      headers: options.headers || undefined,
+    } as Partial<OpenAIChatInput>);
+  }
 
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     const global = useGlobal();
@@ -46,6 +90,12 @@ export default class LangchainOpenAIChatProvider
     const config = (global.plugin.settings.LLMProviderOptions[id] ??= {
       ...default_values,
     });
+
+    const modelKey = (config.model || "").toLowerCase();
+    const autoDetectedThinking = !!(AI_MODELS as any)[modelKey]?.isThinking;
+    const isThinking = config.isThinkingModel !== undefined
+      ? config.isThinkingModel
+      : autoDetectedThinking;
 
     return (
       <React.Fragment key={id}>
@@ -61,17 +111,16 @@ export default class LangchainOpenAIChatProvider
               if (props.self.originalId == id)
                 global.plugin.settings.api_key = value;
               config.api_key = value;
-
               global.triggerReload();
               global.plugin.encryptAllKeys();
-              // TODO: it could use a debounce here
               await global.plugin.saveSettings();
             }}
           />
         </SettingItem>
+
         <SettingItem
           name="Base Path"
-          description={`Make sure it supports CORS`}
+          description="Make sure it supports CORS"
           register={props.register}
           sectionId={props.sectionId}
         >
@@ -80,10 +129,8 @@ export default class LangchainOpenAIChatProvider
             placeholder="Enter your API Base Path"
             setValue={async (value) => {
               config.basePath = value || default_values.basePath;
-              global.plugin.settings.endpoint =
-                value || default_values.basePath;
+              global.plugin.settings.endpoint = value || default_values.basePath;
               global.triggerReload();
-              // TODO: it could use a debounce here
               await global.plugin.saveSettings();
             }}
           />
@@ -96,6 +143,49 @@ export default class LangchainOpenAIChatProvider
           default_values={default_values}
           config={config}
         />
+
+        <SettingItem
+          name="Thinking model"
+          description={
+            autoDetectedThinking
+              ? "Auto-detected from model name"
+              : "Enable for reasoning/thinking models (o1, o3, GPT-5 series)"
+          }
+          register={props.register}
+          sectionId={props.sectionId}
+        >
+          <Input
+            type="checkbox"
+            value={isThinking ? "true" : "false"}
+            setValue={async (value) => {
+              const checked = value === "true";
+              config.isThinkingModel = checked === autoDetectedThinking
+                ? undefined
+                : checked;
+              global.triggerReload();
+              await global.plugin.saveSettings();
+            }}
+          />
+        </SettingItem>
+
+        {isThinking && (
+          <SettingItem
+            name="Reasoning Effort"
+            description="Controls how much effort the model spends on reasoning"
+            register={props.register}
+            sectionId={props.sectionId}
+          >
+            <Dropdown
+              value={config.reasoningEffort || default_values.reasoningEffort}
+              setValue={async (value) => {
+                config.reasoningEffort = value;
+                global.triggerReload();
+                await global.plugin.saveSettings();
+              }}
+              values={["low", "medium", "high"]}
+            />
+          </SettingItem>
+        )}
 
         <HeaderEditor
           enabled={!!config.headers}
@@ -125,7 +215,7 @@ export default class LangchainOpenAIChatProvider
               <IconExternalLink />
             </SettingItem>
           </a>
-          <a href="https://beta.openai.com/docs/api-reference/introduction">
+          <a href="https://platform.openai.com/docs/api-reference/introduction">
             <SettingItem
               name="API documentation"
               className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
@@ -145,9 +235,9 @@ export default class LangchainOpenAIChatProvider
               <IconExternalLink />
             </SettingItem>
           </a>
-          <a href="https://beta.openai.com/docs/models/overview">
+          <a href="https://platform.openai.com/docs/models">
             <SettingItem
-              name="more information"
+              name="Available models"
               className="plug-tg-text-xs plug-tg-opacity-50 hover:plug-tg-opacity-100"
               register={props.register}
               sectionId={props.sectionId}
@@ -217,8 +307,8 @@ export default class LangchainOpenAIChatProvider
         } else if (Array.isArray(value)) {
           // Handle complex message content (like with images)
           for (const content of value) {
-            if (typeof content === 'object' && content.type === 'text') {
-              numTokens += encoder.encode(content.text).length;
+            if (typeof content === 'object' && (content as any).type === 'text') {
+              numTokens += encoder.encode((content as any).text).length;
             }
             // Add additional token estimates for non-text content if needed
           }

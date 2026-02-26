@@ -3,6 +3,7 @@ import useGlobal from "../../context/global";
 import SettingItem from "../components/item";
 import SettingsSection from "../components/section";
 import Input from "../components/input";
+import SettingsTextarea from "../components/textarea";
 import { useMemo } from "react";
 import type { Register } from ".";
 import { Context } from "#/types";
@@ -93,22 +94,17 @@ export default function ConsideredContextSetting(props: {
               sectionId={sectionId}
               textArea
             >
-              <textarea
-                placeholder="Textarea will autosize to fit the content"
-                className="plug-tg-input plug-tg-h-fit plug-tg-w-full plug-tg-resize-y plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none"
-                value={
-                  global.plugin.settings.context.customInstruct ||
-                  global.plugin.defaultSettings.context.customInstruct
-                }
-                onChange={async (e) => {
-                  global.plugin.settings.context.customInstruct =
-                    e.target.value;
-                  global.triggerReload();
-                  await global.plugin.saveSettings();
-                }}
-                spellCheck={false}
-                rows={10}
-              />
+              <SettingsTextarea
+                  value={
+                    global.plugin.settings.context.customInstruct ||
+                    global.plugin.defaultSettings.context.customInstruct
+                  }
+                  setValue={async (val) => {
+                    global.plugin.settings.context.customInstruct = val;
+                    global.triggerReload();
+                    await global.plugin.saveSettings();
+                  }}
+                />
             </SettingItem>
             <AvailableVars vars={contextVariablesObj} />
           </>
@@ -150,30 +146,25 @@ export default function ConsideredContextSetting(props: {
                 sectionId={sectionId}
                 textArea
               >
-                <textarea
-                  placeholder="Textarea will autosize to fit the content"
-                  className="plug-tg-input plug-tg-h-fit plug-tg-w-full plug-tg-resize-y plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none"
+                <SettingsTextarea
                   value={
                     global.plugin.settings.advancedOptions
                       ?.generateTitleInstruct ||
                     global.plugin.defaultSettings.advancedOptions
-                      ?.generateTitleInstruct
+                      ?.generateTitleInstruct ||
+                    ""
                   }
-                  onChange={async (e) => {
+                  setValue={async (val) => {
                     if (!global.plugin.settings.advancedOptions)
                       global.plugin.settings.advancedOptions = {
                         generateTitleInstructEnabled: true,
-                        generateTitleInstruct: e.target.value,
+                        generateTitleInstruct: val,
                       };
 
-                    global.plugin.settings.advancedOptions.generateTitleInstruct =
-                      e.target.value;
-
+                    global.plugin.settings.advancedOptions.generateTitleInstruct = val;
                     global.triggerReload();
                     await global.plugin.saveSettings();
                   }}
-                  spellCheck={false}
-                  rows={10}
                 />
               </SettingItem>
               <AvailableVars
@@ -218,20 +209,17 @@ export default function ConsideredContextSetting(props: {
           sectionId={sectionId}
           textArea
         >
-          <textarea
-            placeholder="Textarea will autosize to fit the content"
-            className="plug-tg-input plug-tg-h-fit plug-tg-w-full plug-tg-resize-y plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none"
+          <SettingsTextarea
             value={
               global.plugin.settings.context.contextTemplate ||
-              global.plugin.defaultSettings.context.contextTemplate
+              global.plugin.defaultSettings.context.contextTemplate ||
+              ""
             }
-            onChange={async (e) => {
-              global.plugin.settings.context.contextTemplate = e.target.value;
+            setValue={async (val) => {
+              global.plugin.settings.context.contextTemplate = val;
               global.triggerReload();
               await global.plugin.saveSettings();
             }}
-            spellCheck={false}
-            rows={10}
           />
         </SettingItem>
         <AvailableVars vars={contextVariablesObj} />

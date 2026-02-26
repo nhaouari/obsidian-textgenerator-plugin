@@ -3,6 +3,7 @@ import useGlobal from "../../context/global";
 import SettingItem from "../components/item";
 import SettingsSection from "../components/section";
 import Input from "../components/input";
+import SettingsTextarea from "../components/textarea";
 import type { Register } from ".";
 import LLMProviderController from "../components/llmProviderController";
 import { useToggle } from "usehooks-ts";
@@ -258,22 +259,19 @@ export default function AutoSuggestSetting(props: { register: Register }) {
                 sectionId={sectionId}
                 textArea
               >
-                <textarea
+                <SettingsTextarea
                   placeholder="Custom auto-suggest prompt"
-                  className="plug-tg-input plug-tg-h-fit plug-tg-w-full plug-tg-resize-y plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none"
                   value={
                     global.plugin.settings.autoSuggestOptions.customInstruct ||
                     global.plugin.defaultSettings.autoSuggestOptions
-                      .customInstruct
+                      .customInstruct ||
+                    ""
                   }
-                  onChange={async (e) => {
-                    global.plugin.settings.autoSuggestOptions.customInstruct =
-                      e.target.value;
+                  setValue={async (val) => {
+                    global.plugin.settings.autoSuggestOptions.customInstruct = val;
                     global.triggerReload();
                     await global.plugin.saveSettings();
                   }}
-                  spellCheck={false}
-                  rows={10}
                 />
               </SettingItem>
               <AvailableVars
@@ -296,22 +294,19 @@ export default function AutoSuggestSetting(props: { register: Register }) {
                 sectionId={sectionId}
                 textArea
               >
-                <textarea
+                <SettingsTextarea
                   placeholder="System Prompt"
-                  className="plug-tg-input plug-tg-h-fit plug-tg-w-full plug-tg-resize-y plug-tg-bg-[var(--background-modifier-form-field)] plug-tg-outline-none"
                   value={
                     global.plugin.settings.autoSuggestOptions.systemPrompt ||
                     global.plugin.defaultSettings.autoSuggestOptions
-                      .systemPrompt
+                      .systemPrompt ||
+                    ""
                   }
-                  onChange={async (e) => {
-                    global.plugin.settings.autoSuggestOptions.systemPrompt =
-                      e.target.value;
+                  setValue={async (val) => {
+                    global.plugin.settings.autoSuggestOptions.systemPrompt = val;
                     global.triggerReload();
                     await global.plugin.saveSettings();
                   }}
-                  spellCheck={false}
-                  rows={10}
                 />
               </SettingItem>
               <AvailableVars

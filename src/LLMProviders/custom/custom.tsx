@@ -6,11 +6,15 @@ import useGlobal from "#/ui/context/global";
 import { getHBValues } from "#/utils/barhandles";
 import SettingItem from "#/ui/settings/components/item";
 import Input from "#/ui/settings/components/input";
+import SettingsTextarea from "#/ui/settings/components/textarea";
 import { Handlebars } from "../../helpers/handlebars-helpers";
 import clsx from "clsx";
 import CustomProvider, { default_values as baseDefaultValues } from "./base";
 import JSON5 from "json5";
 import { Platform } from "obsidian";
+import { useDebounceCallback } from "usehooks-ts";
+import { AI_MODELS } from "#/constants";
+import Dropdown from "#/ui/settings/components/dropdown";
 
 const logger = debug("textgenerator:CustomProvider");
 
@@ -82,6 +86,67 @@ export default class DefaultCustomProvider
       ...default_values,
     });
 
+    // Debounced handlers for the header/body textareas — these also run
+    // Handlebars.compile() for a live preview, which is expensive per keystroke.
+    const debouncedHeaderChange = useDebounceCallback(async (value: string) => {
+      config.custom_header = value;
+
+      const compiled = await Handlebars.compile(
+        config.custom_header || default_values.custom_header
+      )({
+        ...global.plugin.settings,
+        ...cleanConfig(default_values),
+        n: 1,
+        messages: testMessages,
+      });
+
+      console.log("------ PREVIEW OF HEADER ------\n", compiled);
+      setHeaderValidityError("");
+      try {
+        console.log(
+          "------ PREVIEW OF HEADER COMPILED ------\n",
+          JSON5.parse(compiled)
+        );
+      } catch (err: any) {
+        setHeaderValidityError(err.message || err);
+        console.warn(err);
+      }
+
+      global.triggerReload();
+      await global.plugin.saveSettings();
+    }, 500);
+
+    const debouncedBodyChange = useDebounceCallback(async (value: string) => {
+      config.custom_body = value;
+
+      const compiled = await Handlebars.compile(
+        config.custom_body || default_values.custom_body
+      )({
+        ...global.plugin.settings,
+        ...cleanConfig(config),
+        n: 1,
+        messages: testMessages,
+      });
+
+      console.log("------ PREVIEW OF BODY ------\n", compiled);
+      setBodyValidityError("");
+      try {
+        console.log(
+          "------ PREVIEW OF BODY COMPILED ------\n",
+          JSON5.parse(compiled)
+        );
+      } catch (err: any) {
+        setBodyValidityError(err.message || err);
+        console.warn(
+          "this error could be cause of one of the variables being undefined which breaks the json5 format, check the preview above",
+          err
+        );
+      }
+
+      global.triggerReload();
+      await global.plugin.saveSettings();
+    }, 500);
+
     // delete any global variables that would interfer with global context
     useEffect(() => {
       for (const c in globalVars) {
@@ -99,6 +164,12 @@ export default class DefaultCustomProvider
     const limitedExperiance = config.CORSBypass && !Platform.isDesktop;
 
     const isStreamable = config.streamable && !limitedExperiance;
+
+    const modelKey = (config.model || "").toLowerCase();
+    const autoDetectedThinking = !!(AI_MODELS as any)[modelKey]?.isThinking;
+    const isThinking = config.isThinkingModel !== undefined
+      ? config.isThinkingModel
+      : autoDetectedThinking;
 
     return (
       <>
@@ -165,6 +236,49 @@ export default class DefaultCustomProvider
 
 
         <SettingItem
+          name="Thinking model"
+          description={
+            autoDetectedThinking
+              ? "Auto-detected from model name — temperature will be omitted"
+              : "Enable for reasoning/thinking models (temperature will be omitted)"
+          }
+          register={props.register}
+          sectionId={props.sectionId}
+        >
+          <Input
+            type="checkbox"
+            value={isThinking ? "true" : "false"}
+            setValue={async (value) => {
+              const checked = value === "true";
+              config.isThinkingModel = checked === autoDetectedThinking
+                ? undefined
+                : checked;
+              global.triggerReload();
+              await global.plugin.saveSettings();
+            }}
+          />
+        </SettingItem>
+
+        {isThinking && (
+          <SettingItem
+            name="Reasoning Effort"
+            description="Controls how much effort the model spends on reasoning"
+            register={props.register}
+            sectionId={props.sectionId}
+          >
+            <Dropdown
+              value={config.reasoningEffort || "medium"}
+              setValue={async (value) => {
+                config.reasoningEffort = value;
+                global.triggerReload();
+                await global.plugin.saveSettings();
+              }}
+              values={["low", "medium", "high"]}
+            />
+          </SettingItem>
+        )}
+
+        <SettingItem
           name="Advance mode"
           register={props.register}
           sectionId={props.sectionId}
@@ -187,40 +301,11 @@ export default class DefaultCustomProvider
                 example values
               </div>
 
-              <textarea
+              <SettingsTextarea
                 placeholder="Headers"
                 className="plug-tg-resize-none"
-                defaultValue={
-                  config.custom_header || default_values.custom_header
-                }
-                onChange={async (e) => {
-                  config.custom_header = e.target.value;
-
-                  const compiled = await Handlebars.compile(
-                    config.custom_header || default_values.custom_header
-                  )({
-                    ...global.plugin.settings,
-                    ...cleanConfig(default_values),
-                    n: 1,
-                    messages: testMessages,
-                  });
-
-                  console.log("------ PREVIEW OF HEADER ------\n", compiled);
-                  setHeaderValidityError("");
-                  try {
-                    console.log(
-                      "------ PREVIEW OF HEADER COMPILED ------\n",
-                      JSON5.parse(compiled)
-                    );
-                  } catch (err: any) {
-                    setHeaderValidityError(err.message || err);
-                    console.warn(err);
-                  }
-
-                  global.triggerReload();
-                  await global.plugin.saveSettings();
-                }}
-                spellCheck={false}
+                value={config.custom_header || default_values.custom_header}
+                setValue={debouncedHeaderChange}
                 rows={5}
               />
               <div className="plug-tg-text-red-300">{headerValidityError}</div>
@@ -232,41 +317,11 @@ export default class DefaultCustomProvider
                 Check console in the devtools to see a preview of the body with
                 example values
               </div>
-              <textarea
+              <SettingsTextarea
                 placeholder="Body as JSON5 content"
                 className="plug-tg-resize-none"
-                defaultValue={config.custom_body || default_values.custom_body}
-                onChange={async (e) => {
-                  config.custom_body = e.target.value;
-
-                  const compiled = await Handlebars.compile(
-                    config.custom_body || default_values.custom_body
-                  )({
-                    ...global.plugin.settings,
-                    ...cleanConfig(config),
-                    n: 1,
-                    messages: testMessages,
-                  });
-
-                  console.log("------ PREVIEW OF BODY ------\n", compiled);
-                  setBodyValidityError("");
-                  try {
-                    console.log(
-                      "------ PREVIEW OF BODY COMPILED ------\n",
-                      JSON5.parse(compiled)
-                    );
-                  } catch (err: any) {
-                    setBodyValidityError(err.message || err);
-                    console.warn(
-                      "this error could be cause of one of the variables being undefined which breaks the json5 format, check the preview above",
-                      err
-                    );
-                  }
-
-                  global.triggerReload();
-                  await global.plugin.saveSettings();
-                }}
-                spellCheck={false}
+                value={config.custom_body || default_values.custom_body}
+                setValue={debouncedBodyChange}
                 rows={20}
               />
               <div className="plug-tg-text-red-300">{bodyValidityError}</div>
@@ -277,18 +332,16 @@ export default class DefaultCustomProvider
 
             <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
               <div className="plug-tg-font-bold">Response Sanatization:</div>
-              <textarea
-                placeholder="Textarea will autosize to fit the content"
+              <SettingsTextarea
                 value={
                   config.sanatization_response ||
                   default_values.sanatization_response
                 }
-                onChange={async (e) => {
-                  config.sanatization_response = e.target.value;
+                setValue={async (val) => {
+                  config.sanatization_response = val;
                   global.triggerReload();
                   await global.plugin.saveSettings();
                 }}
-                spellCheck={false}
                 rows={20}
               />
             </div>
@@ -340,18 +393,16 @@ export default class DefaultCustomProvider
               <>
                 <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-1">
                   <div className="plug-tg-font-bold">Stream Sanatization:</div>
-                  <textarea
-                    placeholder="Textarea will autosize to fit the content"
+                  <SettingsTextarea
                     value={
                       config.sanatization_streaming ||
                       default_values.sanatization_streaming
                     }
-                    onChange={async (e) => {
-                      config.sanatization_streaming = e.target.value;
+                    setValue={async (val) => {
+                      config.sanatization_streaming = val;
                       global.triggerReload();
                       await global.plugin.saveSettings();
                     }}
-                    spellCheck={false}
                     rows={20}
                   />
                 </div>
