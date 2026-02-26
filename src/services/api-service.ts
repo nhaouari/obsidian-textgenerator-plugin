@@ -499,7 +499,7 @@ export default class RequestHandler {
         },
         otherOptions:
           this.plugin.settings.LLMProviderOptions[this.LLMProvider.id],
-        stream: false,
+        stream: this.LLMProvider.streamable,
         llmPredict: bodyParams.messages?.length == 1 && !this.plugin.settings.advancedOptions?.includeAttachmentsInRequest,
       }
 
