@@ -16,7 +16,9 @@
     "dev:css": "postcss ./src/css/global.css -o styles.css --watch",
     "prettier:check": "prettier --check \"**/*.{ts,tsx,js,md,mdx,css,yaml}\"",
     "prettier:format": "prettier --write \"**/*.{ts,tsx,js,md,mdx,css,yaml}\"",
-    "remove-tag": "node ./scripts/remove-tag.js"
+    "remove-tag": "node ./scripts/remove-tag.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -55,7 +57,8 @@
     "prettier-eslint": "^16.4.2",
     "prettier-plugin-tailwindcss": "^0.5.14",
     "tslib": "2.6.2",
-    "typescript": "5.2.2"
+    "typescript": "5.2.2",
+    "vitest": "^4.1.0"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.27.3",
