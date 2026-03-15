@@ -231,6 +231,20 @@ export default class MarkdownManager implements ContentManager {
     return text;
   }
 
+  private computeEndCursor(
+    start: { ch: number; line: number },
+    text: string
+  ): { ch: number; line: number } {
+    const lines = text.split("\n");
+    return {
+      line: start.line + lines.length - 1,
+      ch:
+        lines.length > 1
+          ? lines[lines.length - 1].length
+          : start.ch + text.length,
+    };
+  }
+
   async insertStream(
     pos: { ch: number; line: number },
     mode?: "insert" | "replace" | "stream"
@@ -241,67 +255,101 @@ export default class MarkdownManager implements ContentManager {
   }> {
     const startingCursor = pos || this.getCursor2(mode);
 
-    const cursor: typeof startingCursor = {
-      ch: startingCursor.ch,
-      line: startingCursor.line,
-    };
+    const selectionEnd =
+      mode === "replace"
+        ? { ...this.editor.getCursor("to") }
+        : null;
 
+    let totalWritten = "";
     let postingContent = "";
-    let stillPlaying = true;
+    let stopped = false;
     let firstTime = true;
 
-    const writerTimer: any = setInterval(async () => {
-      if (!stillPlaying) return clearInterval(writerTimer);
-      let posting = postingContent;
-      postingContent = postingContent.substring(posting.length);
+    let writing = false;
+    const writeNext = async () => {
+      if (writing || stopped) return;
+      writing = true;
+      try {
+        while (postingContent.length > 0 && !stopped) {
+          let posting = postingContent;
+          postingContent = "";
 
-      if (!posting) return;
+          if (firstTime) {
+            if (this.options.wrapInBlockQuote)
+              posting =
+                mode === "stream"
+                  ? this.wrapInBlockQuote(posting)
+                  : this.wrapInBlockQuote(posting);
+          } else {
+            if (this.options.wrapInBlockQuote)
+              posting = this.wrapInBlockQuote(posting, true);
+          }
 
-      if (firstTime)
-        posting = await this.insertText(
-          posting,
-          cursor,
-          mode == "stream" ? "insert" : mode
-        );
-      else posting = await this.insertText(posting, cursor, "stream");
+          firstTime = false;
 
-      firstTime = false;
-      cursor.ch += posting.length;
+          const insertAt = this.computeEndCursor(startingCursor, totalWritten);
+          this.replaceRange(posting, insertAt);
+          totalWritten += posting;
+        }
+      } finally {
+        writing = false;
+      }
+    };
 
-      // if (!this.plugin.settings.freeCursorOnStreaming)
-      //     this.setCursor(cursor);
-    }, 400);
+    const writerTimer: any = setInterval(() => {
+      if (stopped) {
+        clearInterval(writerTimer);
+        return;
+      }
+      writeNext();
+    }, 200);
+
+    const waitForWriteComplete = () =>
+      new Promise<void>((resolve) => {
+        const check = () => (writing ? setTimeout(check, 50) : resolve());
+        check();
+      });
 
     return {
       insert(newInsertData: string) {
-        postingContent += newInsertData;
+        if (!stopped) postingContent += newInsertData;
       },
       end() {
-        stillPlaying = false;
+        // no-op: replaceAllWith handles cleanup
       },
 
       replaceAllWith: async (allText) => {
-        console.log("calling for replaceAll", allText);
-        // if (this.options.wrapInBlockQuote)
-        //     allText = this.wrapInBlockQuote(allText)
+        stopped = true;
+        postingContent = "";
+        clearInterval(writerTimer);
 
-        this.replaceRange("", startingCursor, cursor);
+        await waitForWriteComplete();
 
-        await this.insertText(allText, startingCursor, mode);
+        let finalText = allText;
+        if (mode !== "replace" && this.options.wrapInBlockQuote) {
+          finalText = this.wrapInBlockQuote(finalText);
+        }
 
-        console.log(allText);
-        // here we can do some selecting magic
-        // editor.setSelection(startingCursor, cursor)
+        const streamedEnd = this.computeEndCursor(
+          startingCursor,
+          totalWritten
+        );
+        this.replaceRange("", startingCursor, streamedEnd);
+
+        if (mode === "replace" && selectionEnd) {
+          this.replaceRange(finalText, startingCursor, selectionEnd);
+        } else {
+          this.replaceRange(finalText, startingCursor);
+        }
+
+        const finalEnd = this.computeEndCursor(startingCursor, finalText);
 
         try {
-          this.setCursor({
-            ch: startingCursor.ch + allText.length,
-            line: startingCursor.line,
-          });
+          this.setCursor(finalEnd);
         } catch {
           this.setCursor({
-            ch: startingCursor.ch + allText.length - 1,
-            line: startingCursor.line,
+            ch: Math.max(0, finalEnd.ch - 1),
+            line: finalEnd.line,
           });
         }
       },
