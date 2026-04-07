@@ -58,8 +58,8 @@ export default class LangchainAzureOpenAIInstructProvider
   }
 
   async load() {
-    const { OpenAI } = await import("@langchain/openai");
-    this.llmClass = OpenAI;
+    const { AzureOpenAI } = await import("@langchain/openai");
+    this.llmClass = AzureOpenAI;
   }
 
   //   getLLM(options: LLMConfig) {
