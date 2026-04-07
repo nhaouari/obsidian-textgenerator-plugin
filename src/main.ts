@@ -44,7 +44,6 @@ import get from "lodash.get";
 import set from "lodash.set";
 import { TemplatesModal } from "./models/model";
 import { ToolView, VIEW_TOOL_ID } from "./ui/tool";
-import { randomUUID } from "crypto";
 import VersionManager from "./scope/versionManager";
 
 import { registerAPI } from "@vanakat/plugin-api";
@@ -67,6 +66,14 @@ if (Platform.isDesktop) {
 }
 
 const logger = debug("textgenerator:main");
+
+const getUUID = () => {
+  // Obsidian Mobile doesn't provide Node's `crypto` module, but it does provide Web Crypto.
+  const uuid = globalThis.crypto?.randomUUID?.();
+  if (uuid) return uuid;
+  // Fallback: stable-enough unique id for view state keys.
+  return `tg-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+};
 
 export default class TextGeneratorPlugin extends Plugin {
   settings: TextGeneratorSettings = undefined as any;
@@ -375,7 +382,7 @@ export default class TextGeneratorPlugin extends Plugin {
       await leaf.setViewState({
         type: id,
         active: true,
-        state: { ...state, id: randomUUID() },
+        state: { ...state, id: getUUID() },
       });
 
       await new Promise((s) => setTimeout(s, 500));
@@ -395,7 +402,7 @@ export default class TextGeneratorPlugin extends Plugin {
     await leaf?.setViewState({
       type: id,
       active: true,
-      state: { ...state, id: randomUUID() },
+      state: { ...state, id: getUUID() },
     });
 
     await new Promise((s) => setTimeout(s, 500));
