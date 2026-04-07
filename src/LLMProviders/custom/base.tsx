@@ -265,30 +265,69 @@ export default class CustomProvider
           messages,
         };
 
+        const formatJson5Error = (
+          kind: "headers" | "body",
+          err: any,
+          rendered: string
+        ) => {
+          const msg = err?.message || String(err);
+          // Keep the Notice readable on mobile.
+          const renderedPreview =
+            rendered.length > 1200
+              ? `${rendered.slice(0, 1200)}\n... (truncated)`
+              : rendered;
+          return new Error(
+            [
+              `Custom provider: invalid JSON5 in ${kind} after Handlebars rendering.`,
+              `Error: ${msg}`,
+              `Rendered ${kind}:`,
+              renderedPreview,
+            ].join("\n")
+          );
+        };
+
+        const renderedHeaders =
+          "" +
+          (await Handlebars.compile(
+            handlebarData.custom_header || this.default_values.custom_header
+          )(handlebarData));
+        let parsedHeaders: any;
+        try {
+          parsedHeaders = cleanConfig(JSON5.parse(renderedHeaders) as any);
+        } catch (err: any) {
+          console.warn(
+            "[TG:CustomProvider] headers JSON5 parse failed",
+            err,
+            renderedHeaders
+          );
+          throw formatJson5Error("headers", err, renderedHeaders);
+        }
+
+        const renderedBody =
+          "" +
+          (await Handlebars.compile(
+            handlebarData.custom_body || this.default_values.custom_body
+          )(handlebarData));
+        let parsedBody: any;
+        try {
+          parsedBody = cleanConfig(JSON5.parse(renderedBody) as any);
+        } catch (err: any) {
+          console.warn(
+            "[TG:CustomProvider] body JSON5 parse failed",
+            err,
+            renderedBody
+          );
+          throw formatJson5Error("body", err, renderedBody);
+        }
+
         const res = await this.request({
           method: handlebarData.method,
           url: await Handlebars.compile(
             handlebarData.endpoint || this.default_values.endpoint
           )(handlebarData),
-          headers: cleanConfig(
-            JSON5.parse(
-              "" +
-              (await Handlebars.compile(
-                handlebarData.custom_header ||
-                this.default_values.custom_header
-              )(handlebarData))
-            ) as any
-          ),
+          headers: parsedHeaders,
 
           body: await (async () => {
-            const parsedBody = cleanConfig(
-              JSON5.parse(
-                "" +
-                (await Handlebars.compile(
-                  handlebarData.custom_body || this.default_values.custom_body
-                )(handlebarData))
-              )
-            ) as any;
             const modelKey = (handlebarData.model as string)?.toLowerCase();
             const autoDetected = !!(AI_MODELS[modelKey]?.isThinking);
             const isThinking = handlebarData.isThinkingModel !== undefined
@@ -358,6 +397,60 @@ export default class CustomProvider
           messages,
         };
 
+        const formatJson5Error = (
+          kind: "headers" | "body",
+          err: any,
+          rendered: string
+        ) => {
+          const msg = err?.message || String(err);
+          const renderedPreview =
+            rendered.length > 1200
+              ? `${rendered.slice(0, 1200)}\n... (truncated)`
+              : rendered;
+          return new Error(
+            [
+              `Custom provider: invalid JSON5 in ${kind} after Handlebars rendering.`,
+              `Error: ${msg}`,
+              `Rendered ${kind}:`,
+              renderedPreview,
+            ].join("\n")
+          );
+        };
+
+        const renderedHeaders =
+          "" +
+          (await Handlebars.compile(
+            handlebarData.custom_header || this.default_values.custom_header
+          )(handlebarData));
+        let parsedHeaders: any;
+        try {
+          parsedHeaders = this.cleanConfig(JSON5.parse(renderedHeaders) as any);
+        } catch (err: any) {
+          console.warn(
+            "[TG:CustomProvider] headers JSON5 parse failed",
+            err,
+            renderedHeaders
+          );
+          throw formatJson5Error("headers", err, renderedHeaders);
+        }
+
+        const renderedBody =
+          "" +
+          (await Handlebars.compile(
+            handlebarData.custom_body || this.default_values.custom_body
+          )(handlebarData));
+        let parsedBody: any;
+        try {
+          parsedBody = this.cleanConfig(JSON5.parse(renderedBody) as any);
+        } catch (err: any) {
+          console.warn(
+            "[TG:CustomProvider] body JSON5 parse failed",
+            err,
+            renderedBody
+          );
+          throw formatJson5Error("body", err, renderedBody);
+        }
+
         const res = await this.request({
           method: handlebarData.method,
           url: await Handlebars.compile(
@@ -365,20 +458,9 @@ export default class CustomProvider
           )(handlebarData),
           signal: handlebarData.requestParams?.signal || undefined,
           stream: handlebarData.stream,
-          headers: JSON5.parse(
-            await Handlebars.compile(
-              handlebarData.custom_header || this.default_values.custom_header
-            )(handlebarData)
-          ) as any,
+          headers: parsedHeaders as any,
 
           body: await (async () => {
-            const parsedBody = this.cleanConfig(
-              JSON5.parse(
-                await Handlebars.compile(
-                  handlebarData.custom_body || this.default_values.custom_body
-                )(handlebarData)
-              )
-            ) as any;
             const modelKey = (handlebarData.model as string)?.toLowerCase();
             const autoDetected = !!(AI_MODELS[modelKey]?.isThinking);
             const isThinking = handlebarData.isThinkingModel !== undefined
