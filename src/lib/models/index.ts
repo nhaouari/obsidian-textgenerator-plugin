@@ -530,6 +530,32 @@ const AI_MODELS: Record<
     order: -1,
   },
   // Claude 4 models (Thinking models with extended thinking)
+  "claude-sonnet-4-6": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.003,
+      completion: 0.015,
+    },
+    maxTokens: 200000,
+    llm: ["Chat Anthropic (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+    },
+  },
+  "claude-opus-4-6": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.015,
+      completion: 0.075,
+    },
+    maxTokens: 200000,
+    llm: ["Chat Anthropic (Langchain)"],
+    isThinking: true,
+    inputOptions: {
+      images: true,
+    },
+  },
   "claude-sonnet-4-20250514": {
     encoding: "cl100k_base",
     prices: {
