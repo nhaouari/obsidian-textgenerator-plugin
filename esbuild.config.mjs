@@ -71,6 +71,7 @@ const esbuildConfig = {
 		obsidianAliasPlugin()
 	],
 
+	inject: ['./obsidian-alias/buffer-inject.mjs'],
 	external: [
 		'obsidian',
 		'electron',
@@ -106,9 +107,8 @@ const esbuildConfig = {
 		"node:stream",
 		"node:util",
 		"node:events",
-		"node:buffer",
 		"node:os",
-		...builtins,
+		...builtins.filter(m => m !== 'buffer'),
 	],
 
 	format: 'cjs',

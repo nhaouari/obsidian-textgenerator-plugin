@@ -89,6 +89,7 @@
     "@vanakat/plugin-api": "^0.1.1",
     "ansi-to-html": "^0.7.2",
     "autoprefixer": "^10.4.24",
+    "buffer": "^6.0.3",
     "chromadb": "^1.10.5",
     "clsx": "^2.1.1",
     "debounce": "^2.2.0",

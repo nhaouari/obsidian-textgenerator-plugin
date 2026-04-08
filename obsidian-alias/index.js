@@ -13,5 +13,6 @@ module.exports = function ObsidianAliasPlugin() {
         "node:events": path.resolve(__dirname, `./events.js`),
         "node:process": path.resolve(__dirname, `./process.js`),
         "node:util": path.resolve(__dirname, `./util.js`),
+        "node:buffer": path.resolve(__dirname, `./buffer.js`),
     })
 }
