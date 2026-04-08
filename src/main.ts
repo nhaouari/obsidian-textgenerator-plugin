@@ -579,15 +579,26 @@ export default class TextGeneratorPlugin extends Plugin {
   }
 
   async handelError(error: any) {
-    if (error?.length || error?.message) {
-      new Notice(
-        "🔴 TG Error: " + (typeof error == "string" ? error : error.message)
-      );
-    } else {
-      new Notice(
-        "🔴 TG Error: An error has occurred. Please check the console by pressing CTRL+SHIFT+I or turn on display errors in the editor within the settings for more information."
-      );
+    const msg = typeof error == "string" ? error : error?.message || "";
+
+    let displayMsg = msg;
+    if (
+      !displayMsg &&
+      !(error?.length)
+    ) {
+      displayMsg =
+        "An error has occurred. Please check the console by pressing CTRL+SHIFT+I or turn on display errors in the editor within the settings for more information.";
     }
+
+    if (
+      /failed to fetch|networkerror|load failed/i.test(msg) &&
+      !/CORS/i.test(msg)
+    ) {
+      displayMsg +=
+        "\n\nThis is usually a CORS error. Try enabling CORS Bypass in the provider settings, or verify your endpoint URL.";
+    }
+
+    new Notice("TG Error: " + displayMsg, 8000);
 
     console.error(error);
     try {

@@ -121,22 +121,32 @@ export default class CustomProvider
       signal: params.signal,
     };
 
-    let k;
+    let k: Response;
 
     try {
-      k = await this.plugin.textGenerator.proxyService.getFetch(params.CORSBypass)(params.url, requestOptions)
+      k = await this.plugin.textGenerator.proxyService.getFetch(params.CORSBypass)(params.url, requestOptions);
     } catch (e: any) {
-      k = e;
+      const msg = e?.message || String(e);
+      if (
+        e instanceof TypeError &&
+        /failed to fetch|networkerror|load failed/i.test(msg)
+      ) {
+        throw new Error(
+          `Network request failed — this is usually a CORS error. ` +
+          `Try enabling the "CORS Bypass" option in the provider settings, ` +
+          `or verify that the endpoint URL is correct.\n\nOriginal error: ${msg}`
+        );
+      }
+      throw msg;
     }
 
     if (!k.ok) {
-      const resText = await k.text();
-      let resJson = {};
-
+      let resJson: any;
       try {
-        resJson = JSON5.parse(resText as any);
-      } catch (err: any) {
-        resJson = resText;
+        const resText = await k.text();
+        resJson = JSON5.parse(resText);
+      } catch {
+        resJson = { error: `HTTP ${k.status} ${k.statusText}` };
       }
       throw JSON5.stringify(resJson);
     }
