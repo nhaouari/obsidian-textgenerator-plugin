@@ -18,6 +18,7 @@ import {
   TFile,
   MarkdownView,
   MarkdownRenderer,
+  Platform,
 } from "obsidian";
 import debug from "debug";
 import { debounce } from "#/utils";
@@ -241,19 +242,29 @@ export class InlineSuggest {
           },
         ])
       ),
-      self.getInlineSuggestionsExtension(
-        self,
-        (e) => self.onSelect(e),
-        () => self.clear()
-      ),
+      self.getInlineSuggestionsExtension(self, {
+        onSelect: (e) => self.onSelect(e),
+        onExit: () => self.clear(),
+        onNext: () => {
+          if (!self.currentSuggestions[self.viewedSuggestion + 1])
+            self.viewedSuggestion = -1;
+          self.viewedSuggestion++;
+          self.setSuggestions(self.currentSuggestions);
+        },
+        onPrev: () => {
+          if (!self.currentSuggestions[self.viewedSuggestion - 1])
+            self.viewedSuggestion = self.currentSuggestions.length;
+          self.viewedSuggestion--;
+          self.setSuggestions(self.currentSuggestions);
+        },
+      }),
     ]);
     return self;
   }
 
   getInlineSuggestionsExtension(
     autoSuggest: InlineSuggest,
-    onSelect: (all?: boolean) => void,
-    onExit: () => void
+    controls: SuggestionControls,
   ) {
     return Prec.lowest(
       // must be lowest else you get infinite loop with state changes by our plugin
@@ -278,8 +289,7 @@ export class InlineSuggest {
             try {
               const widget = new InlineSuggestionsWidget(
                 autoSuggest,
-                onSelect,
-                onExit,
+                controls,
                 view
               );
 
@@ -302,22 +312,26 @@ export class InlineSuggest {
   }
 }
 
-class InlineSuggestionsWidget extends WidgetType {
-  onSelect: () => void;
+interface SuggestionControls {
+  onSelect: (all?: boolean) => void;
   onExit: () => void;
+  onNext: () => void;
+  onPrev: () => void;
+}
+
+class InlineSuggestionsWidget extends WidgetType {
+  controls: SuggestionControls;
   autoSuggest: InlineSuggest;
   renderedSuggestion?: string;
   exitHandler?: () => void;
   constructor(
     autoSuggest: InlineSuggest,
-    onSelect: () => void,
-    onExit: () => void,
+    controls: SuggestionControls,
     readonly view: EditorView
   ) {
     super();
     this.autoSuggest = autoSuggest;
-    this.onSelect = onSelect;
-    this.onExit = onExit;
+    this.controls = controls;
     this.view = view;
   }
 
@@ -329,15 +343,15 @@ class InlineSuggestionsWidget extends WidgetType {
   }
 
   toDOM() {
-    const spanMAM = document.createElement("span");
-    const span = spanMAM.createEl("span");
+    const wrapper = document.createElement("span");
+    const span = wrapper.createEl("span");
 
     document.addEventListener(
       "click",
       (this.exitHandler = () => {
         document.removeEventListener("click", this.exitHandler as any);
         span.style.display = "hidden";
-        this.onExit();
+        this.controls.onExit();
       })
     );
 
@@ -346,28 +360,86 @@ class InlineSuggestionsWidget extends WidgetType {
 
     this.renderedSuggestion = content;
 
-    spanMAM.addClass("plug-tg-opacity-40");
+    wrapper.addClass("plug-tg-opacity-40");
 
     span.onselect = span.onclick = () => {
       span.style.display = "hidden";
-      this.onSelect();
-      this.onExit();
+      this.controls.onSelect();
+      this.controls.onExit();
     };
 
     if (this.autoSuggest.plugin.settings.autoSuggestOptions.showInMarkdown)
-      MarkdownRenderer.render(app, content, span, "", this.autoSuggest.plugin);
+      MarkdownRenderer.render(this.autoSuggest.plugin.app, content, span, "", this.autoSuggest.plugin);
     else span.textContent = content;
 
-    const span2 = spanMAM.createEl("span");
+    const span2 = wrapper.createEl("span");
     span2.textContent = ` (${this.autoSuggest.viewedSuggestion + 1}/${this.autoSuggest.currentSuggestions.length
       })`;
     span2.onselect = span2.onclick = () => {
       span.style.display = "hidden";
-      this.onSelect(true);
-      this.onExit();
+      this.controls.onSelect(true);
+      this.controls.onExit();
     };
 
-    return spanMAM;
+    if (Platform.isMobile) {
+      this.buildMobileToolbar(wrapper, span);
+    }
+
+    return wrapper;
+  }
+
+  private buildMobileToolbar(wrapper: HTMLElement, contentSpan: HTMLElement) {
+    const toolbar = wrapper.createEl("span", {
+      cls: "tg-suggest-toolbar",
+    });
+
+    const stop = (e: Event) => { e.stopPropagation(); e.preventDefault(); };
+    const hasManyOptions = this.autoSuggest.currentSuggestions.length > 1;
+
+    if (hasManyOptions) {
+      const prevBtn = toolbar.createEl("button", {
+        cls: "tg-suggest-btn",
+        attr: { "aria-label": "Previous suggestion" },
+      });
+      prevBtn.innerHTML = "&#8593;";
+      prevBtn.addEventListener("pointerdown", (e) => {
+        stop(e);
+        this.controls.onPrev();
+      });
+
+      const nextBtn = toolbar.createEl("button", {
+        cls: "tg-suggest-btn",
+        attr: { "aria-label": "Next suggestion" },
+      });
+      nextBtn.innerHTML = "&#8595;";
+      nextBtn.addEventListener("pointerdown", (e) => {
+        stop(e);
+        this.controls.onNext();
+      });
+    }
+
+    const acceptBtn = toolbar.createEl("button", {
+      cls: "tg-suggest-btn tg-suggest-btn-accept",
+      attr: { "aria-label": "Accept suggestion" },
+    });
+    acceptBtn.innerHTML = "&#10003;";
+    acceptBtn.addEventListener("pointerdown", (e) => {
+      stop(e);
+      contentSpan.style.display = "hidden";
+      this.controls.onSelect();
+      this.controls.onExit();
+    });
+
+    const dismissBtn = toolbar.createEl("button", {
+      cls: "tg-suggest-btn tg-suggest-btn-dismiss",
+      attr: { "aria-label": "Dismiss suggestion" },
+    });
+    dismissBtn.innerHTML = "&#10005;";
+    dismissBtn.addEventListener("pointerdown", (e) => {
+      stop(e);
+      contentSpan.style.display = "hidden";
+      this.controls.onExit();
+    });
   }
 
   destroy(dom: HTMLElement) {
