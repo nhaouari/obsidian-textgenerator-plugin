@@ -1098,6 +1098,85 @@ const AI_MODELS: Record<
     llm: ["Perplexity (Langchain)"],
     isThinking: true,
   },
+
+  // ── Together AI family ──────────────────────────────────────────────────────
+  // https://docs.together.ai/docs/serverless-models
+  "meta-llama/Llama-3.3-70B-Instruct-Turbo": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.00088, completion: 0.00088 },
+    maxTokens: 131072,
+    llm: ["Together AI (Langchain)"],
+  },
+  "meta-llama/Meta-Llama-3-8B-Instruct-Lite": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.0001, completion: 0.0001 },
+    maxTokens: 8192,
+    llm: ["Together AI (Langchain)"],
+    order: -1,
+  },
+  "deepseek-ai/DeepSeek-V3.1": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.0006, completion: 0.0017 },
+    maxTokens: 128000,
+    llm: ["Together AI (Langchain)"],
+  },
+  "deepseek-ai/DeepSeek-R1": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.003, completion: 0.007 },
+    maxTokens: 163839,
+    llm: ["Together AI (Langchain)"],
+    isThinking: true,
+  },
+  "Qwen/Qwen3.5-397B-A17B": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.0006, completion: 0.0036 },
+    maxTokens: 262144,
+    llm: ["Together AI (Langchain)"],
+    inputOptions: { images: true },
+  },
+  "Qwen/Qwen3.5-9B": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.0001, completion: 0.00015 },
+    maxTokens: 262144,
+    llm: ["Together AI (Langchain)"],
+    inputOptions: { images: true },
+  },
+  "Qwen/Qwen3-235B-A22B-Instruct-2507-tput": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.0002, completion: 0.0006 },
+    maxTokens: 262144,
+    llm: ["Together AI (Langchain)"],
+  },
+  "Qwen/Qwen2.5-7B-Instruct-Turbo": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.0003, completion: 0.0003 },
+    maxTokens: 32768,
+    llm: ["Together AI (Langchain)"],
+  },
+  "openai/gpt-oss-120b": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.00015, completion: 0.0006 },
+    maxTokens: 128000,
+    llm: ["Together AI (Langchain)"],
+  },
+  "openai/gpt-oss-20b": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.00005, completion: 0.0002 },
+    maxTokens: 128000,
+    llm: ["Together AI (Langchain)"],
+  },
+  "MiniMaxAI/MiniMax-M2.5": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.0003, completion: 0.0012 },
+    maxTokens: 228700,
+    llm: ["Together AI (Langchain)"],
+  },
+  "google/gemma-3n-E4B-it": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.00002, completion: 0.00004 },
+    maxTokens: 32768,
+    llm: ["Together AI (Langchain)"],
+  },
 };
 
 export default AI_MODELS;
