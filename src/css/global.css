@@ -393,6 +393,46 @@ body.react-confirm-alert-body-element {
   background: #ff4e91;
 }
 
+.tg-suggest-toolbar {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+  opacity: 1;
+}
+
+.tg-suggest-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-primary);
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.tg-suggest-btn:active {
+  background: var(--background-modifier-hover);
+}
+
+.tg-suggest-btn-accept {
+  color: var(--interactive-success);
+  border-color: var(--interactive-success);
+}
+
+.tg-suggest-btn-dismiss {
+  color: var(--text-error);
+  border-color: var(--text-error);
+}
+
 @keyframes makeItRain {
   from {
     opacity: 0;
