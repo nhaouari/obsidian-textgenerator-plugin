@@ -41,6 +41,7 @@ export default class LangchainProvider
 
   llmPredict = false;
   streamable = true;
+  isAzure = false;
 
   provider = LangchainProvider.provider;
   id = LangchainProvider.id;
@@ -105,23 +106,12 @@ export default class LangchainProvider
         : options.basePath
       : undefined;
 
-    const isAzureProvider =
-      this.id === "Azure OpenAI Chat (Langchain)" ||
-      this.id === "Azure OpenAI Instruct (Langchain)" ||
-      this.originalId === "Azure OpenAI Chat (Langchain)" ||
-      this.originalId === "Azure OpenAI Instruct (Langchain)";
-
-    // In langchain v1, the configuration structure changed
-    // The 'configuration' property is for OpenAI SDK client options
     const config = this.getConfig(options);
 
     const llmConfig = {
       ...config,
-      // Add configuration object for custom baseURL and fetch.
-      // Azure providers should rely on their Azure-specific endpoint fields
-      // rather than inheriting a generic OpenAI baseURL.
       configuration: {
-        ...(!isAzureProvider && baseURL && { baseURL }),
+        ...(!this.isAzure && baseURL && { baseURL }),
         dangerouslyAllowBrowser: true,
         ...(options.bodyParams && { defaultQuery: options.bodyParams }),
         fetch: Fetch,
@@ -154,7 +144,17 @@ export default class LangchainProvider
   }
 
   getReqOptions(options: Partial<LLMConfig>) {
-    return { ...options } as any;
+    const opts = { ...options } as any;
+    // Only include stop when it contains non-empty values —
+    // some models/APIs reject the parameter outright.
+    if (
+      opts.stop == null ||
+      (Array.isArray(opts.stop) &&
+        !opts.stop.some((s: string) => s?.length))
+    ) {
+      delete opts.stop;
+    }
+    return opts;
   }
 
   async generate(
