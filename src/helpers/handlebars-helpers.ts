@@ -221,8 +221,38 @@ export default function Helpersfn(self: ContextManager) {
     },
 
     join: function (array: Array<string>, separator: string) {
-      const joinedString = array.join(separator);
-      return new Handlebars.SafeString(joinedString);
+      // Handlebars doesn't support `[...]` array literals; in that case `array`
+      // may come through as `undefined`. Also allow passing a JSON/JSON5 array
+      // as a string (or any iterable-ish value) without throwing.
+      if (array == null) return new Handlebars.SafeString("");
+
+      let arr: any = array as any;
+
+      if (typeof arr === "string") {
+        const trimmed = arr.trim();
+        if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+          try {
+            arr = JSON5.parse(trimmed);
+          } catch {
+            // fall through to string handling below
+          }
+        }
+      }
+
+      if (Array.isArray(arr)) {
+        return new Handlebars.SafeString(arr.join(separator));
+      }
+
+      if (arr instanceof Set) {
+        return new Handlebars.SafeString(Array.from(arr).join(separator));
+      }
+
+      if (arr instanceof Map) {
+        return new Handlebars.SafeString(Array.from(arr.values()).join(separator));
+      }
+
+      // Last resort: stringify scalar values.
+      return new Handlebars.SafeString(`${arr}`);
     },
 
     unique: function (array: Array<string>) {
@@ -387,8 +417,8 @@ export default function Helpersfn(self: ContextManager) {
           innerResult = innerTxt.trim().startsWith("{")
             ? JSON5.parse(innerTxt)
             : {
-                [param]: innerTxt,
-              };
+              [param]: innerTxt,
+            };
         } catch (err: any) {
           innerResult = {
             [param]: innerTxt,
@@ -441,14 +471,14 @@ export default function Helpersfn(self: ContextManager) {
 
       const id: string = templateId?.contains("/")
         ? // if it has a slash that means it already have the packageId
-          `["${templateId}"]`
+        `["${templateId}"]`
         : // checking for vars
-          Object.keys(additionalOptions.data.root.vars || {}).includes(
-              templateId
-            )
+        Object.keys(additionalOptions.data.root.vars || {}).includes(
+          templateId
+        )
           ? `vars["${templateId}"]`
           : // make packageId/templateId
-            `["${parentPackageId}/${templateId}"]`;
+          `["${parentPackageId}/${templateId}"]`;
 
       const val = lodashGet(additionalOptions.data.root, id);
 
@@ -681,8 +711,8 @@ export default function Helpersfn(self: ContextManager) {
           ...(typeof metadata == "object"
             ? metadata
             : {
-                tg_selection: metadata,
-              }),
+              tg_selection: metadata,
+            }),
         });
       };
 
@@ -783,16 +813,16 @@ export async function langPull(rep: string) {
 
   const data = compileLangMessages(
     k.kwargs.messages ||
-      (k.kwargs.template
-        ? [
-            {
-              prompt: {
-                template: k.kwargs.template,
-                inputVariables: k.kwargs.input_variables,
-              },
-            },
-          ]
-        : [])
+    (k.kwargs.template
+      ? [
+        {
+          prompt: {
+            template: k.kwargs.template,
+            inputVariables: k.kwargs.input_variables,
+          },
+        },
+      ]
+      : [])
   );
 
   return data;

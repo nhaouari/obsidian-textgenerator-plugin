@@ -601,6 +601,19 @@ export default class ContextManager {
     // replace all script helpers with script mustache blocks
     templateContent = replaceScriptBlocksWithMustachBlocks(templateContent);
 
+    // Handlebars doesn't support array literals like `["a","b"]` in helper
+    // args, but users commonly expect this to work for `join`.
+    // Rewrite:
+    //   {{join ["a","b"] "| "}}
+    // into:
+    //   {{join (parse '["a","b"]') "| "}}
+    // so the existing `parse` helper can deserialize it.
+    templateContent = templateContent.replace(
+      /\{\{\s*join\s+(\[[^\]]*])\s+((?:"[^"]*"|'[^']*'))\s*\}\}/g,
+      (_m, arrayLiteral, sepLiteral) =>
+        `{{join (parse '${String(arrayLiteral).replace(/'/g, "\\'")}') ${sepLiteral}}}`
+    );
+
     return templateContent;
   }
 
