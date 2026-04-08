@@ -97,30 +97,33 @@ export class AutoSuggest {
 
       this.plugin.startProcessing(false);
 
-      const autoSuggestOptions = this.plugin.settings.autoSuggestOptions;
+      let re: string[];
+      try {
+        const autoSuggestOptions = this.plugin.settings.autoSuggestOptions;
 
-      if (
-        autoSuggestOptions.customProvider &&
-        autoSuggestOptions.selectedProvider
-      )
-        await this.plugin.textGenerator.loadllm(
+        if (
+          autoSuggestOptions.customProvider &&
           autoSuggestOptions.selectedProvider
+        )
+          await this.plugin.textGenerator.loadllm(
+            autoSuggestOptions.selectedProvider
+          );
+        re = await this.plugin.textGenerator.LLMProvider.generateMultiple(
+          [
+            this.plugin.textGenerator.LLMProvider.makeMessage(system, "system"),
+            this.plugin.textGenerator.LLMProvider.makeMessage(prompt, "user")
+          ],
+          {
+            stream: false,
+            n: parseInt(
+              "" + this.plugin.settings.autoSuggestOptions.numberOfSuggestions
+            ),
+            stop: [this.plugin.settings.autoSuggestOptions.stop],
+          }
         );
-      const re = await this.plugin.textGenerator.LLMProvider.generateMultiple(
-        [
-          this.plugin.textGenerator.LLMProvider.makeMessage(system, "system"),
-          this.plugin.textGenerator.LLMProvider.makeMessage(prompt, "user")
-        ],
-        {
-          stream: false,
-          n: parseInt(
-            "" + this.plugin.settings.autoSuggestOptions.numberOfSuggestions
-          ),
-          stop: [this.plugin.settings.autoSuggestOptions.stop],
-        }
-      );
-
-      this.plugin.endProcessing(false);
+      } finally {
+        this.plugin.endProcessing(false);
+      }
       const suggestions = [...new Set(re)];
       return suggestions.map((r) => {
         console.log({ r });

@@ -65,32 +65,37 @@ export class ListSuggest extends EditorSuggest<Completion> {
       this.delay = plugin.settings.autoSuggestOptions.delay;
       this.getSuggestionsDebounced = debounce(
         async (context: EditorSuggestContext): Promise<Completion[]> => {
-          logger("updateSettings", { delay: this.delay, context });
-          if (!this.process)
-            return [{ label: context.query, value: context.query }];
+          try {
+            logger("updateSettings", { delay: this.delay, context });
+            if (!this.process)
+              return [{ label: context.query, value: context.query }];
 
-          const trimmedQuery = context.query.trim();
+            const trimmedQuery = context.query.trim();
 
-          if (
-            // if its at the begining of a line
-            (!plugin.settings.autoSuggestOptions.allowInNewLine &&
-              (!context.start.ch ||
-                trimmedQuery.endsWith("-") ||
-                trimmedQuery.endsWith("- [ ]"))) ||
-            // if there are no context
-            trimmedQuery.length <= 5
-          )
+            if (
+              // if its at the begining of a line
+              (!plugin.settings.autoSuggestOptions.allowInNewLine &&
+                (!context.start.ch ||
+                  trimmedQuery.endsWith("-") ||
+                  trimmedQuery.endsWith("- [ ]"))) ||
+              // if there are no context
+              trimmedQuery.length <= 5
+            )
+              return [];
+
+            const suggestions = await this.autoSuggest.getGPTSuggestions(context);
+            return suggestions?.length
+              ? suggestions
+              : [
+                  {
+                    label: context.query,
+                    value: context.query,
+                  },
+                ];
+          } catch (err) {
+            console.error("ListSuggest debounce error", err);
             return [];
-
-          const suggestions = await this.autoSuggest.getGPTSuggestions(context);
-          return suggestions?.length
-            ? suggestions
-            : [
-                {
-                  label: context.query,
-                  value: context.query,
-                },
-              ];
+          }
         },
         this.delay
       );

@@ -101,18 +101,18 @@ export class InlineSuggest {
   async predict(k: EditorSuggestTriggerInfo, editor: Editor, file: TFile) {
     this.clear();
 
-    const completions = await this.autoSuggest.getGPTSuggestions({
-      editor,
-      file,
-      ...k,
-    });
+    try {
+      const completions = await this.autoSuggest.getGPTSuggestions({
+        editor,
+        file,
+        ...k,
+      });
 
-    await this.setSuggestions(completions.map((c) => c.value) || []);
-    // this.currentSuggestions = [
-    //     "testing 1234",
-    //     "testing 1234",
-    //     "testing 1234",
-    // ]
+      await this.setSuggestions(completions.map((c) => c.value) || []);
+    } catch (err) {
+      console.error("InlineSuggest predict error", err);
+      this.clear();
+    }
   }
 
   async clear() {
@@ -136,16 +136,21 @@ export class InlineSuggest {
 
     self.delay = plugin.settings.autoSuggestOptions.delay;
     self.getSuggestionsDebounced = debounce(async () => {
-      self.clear();
-      const editor = app.workspace.activeEditor?.editor;
-      const file = app.workspace.activeEditor?.file;
-      if (!editor || !file) return false;
+      try {
+        self.clear();
+        const editor = app.workspace.activeEditor?.editor;
+        const file = app.workspace.activeEditor?.file;
+        if (!editor || !file) return false;
 
-      const cursor = editor.getCursor();
-      const t = autoSuggest.onTrigger(cursor, editor, file);
-      if (!t) return false;
+        const cursor = editor.getCursor();
+        const t = autoSuggest.onTrigger(cursor, editor, file);
+        if (!t) return false;
 
-      await self.predict(t, editor, file);
+        await self.predict(t, editor, file);
+      } catch (err) {
+        console.error("InlineSuggest debounce error", err);
+        self.clear();
+      }
     }, this.delay);
 
     plugin.registerEditorExtension([
