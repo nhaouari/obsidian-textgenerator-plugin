@@ -76,6 +76,7 @@
     "@langchain/mistralai": "^1.0.4",
     "@langchain/ollama": "^1.2.2",
     "@langchain/openai": "^1.2.5",
+    "@langchain/perplexity": "^0.1.0",
     "@langchain/textsplitters": "^1.0.1",
     "@mozilla/readability": "^0.4.4",
     "@radix-ui/react-tooltip": "^1.2.8",

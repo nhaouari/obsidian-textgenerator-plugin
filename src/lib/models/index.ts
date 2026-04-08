@@ -1062,6 +1062,42 @@ const AI_MODELS: Record<
     llm: ["OpenAI Chat (Langchain)"],
     order: -1,
   },
+
+  // ── Perplexity family ───────────────────────────────────────────────────────
+  // https://docs.perplexity.ai/guides/model-cards
+  "sonar": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.001, completion: 0.001 },
+    maxTokens: 128000,
+    llm: ["Perplexity (Langchain)"],
+  },
+  "sonar-pro": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.003, completion: 0.015 },
+    maxTokens: 200000,
+    llm: ["Perplexity (Langchain)"],
+  },
+  "sonar-reasoning": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.001, completion: 0.005 },
+    maxTokens: 128000,
+    llm: ["Perplexity (Langchain)"],
+    isThinking: true,
+  },
+  "sonar-reasoning-pro": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.002, completion: 0.008 },
+    maxTokens: 128000,
+    llm: ["Perplexity (Langchain)"],
+    isThinking: true,
+  },
+  "sonar-deep-research": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.005, completion: 0.005 },
+    maxTokens: 128000,
+    llm: ["Perplexity (Langchain)"],
+    isThinking: true,
+  },
 };
 
 export default AI_MODELS;
