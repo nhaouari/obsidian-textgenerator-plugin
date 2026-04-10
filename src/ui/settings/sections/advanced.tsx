@@ -15,7 +15,7 @@ export default function AdvancedSetting(props: { register: Register }) {
   const resetSettings = async () => {
     if (
       !(await Confirm(
-        "Are you sure, you want to Reset all your settings,\n this action will delete all your configuration to their default state"
+        "确定要重置所有设置吗？\n此操作将把所有配置恢复为默认值"
       ))
     )
       return;
@@ -26,14 +26,14 @@ export default function AdvancedSetting(props: { register: Register }) {
 
   return (
     <SettingsSection
-      title="Advanced Settings"
+      title="高级设置"
       className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
       register={props.register}
       id={sectionId}
     >
       <SettingItem
-        name="Streaming"
-        description="Enable streaming if supported by the provider"
+        name="流式输出"
+        description="启用流式输出（需 Provider 支持）"
         register={props.register}
         sectionId={sectionId}
       >
@@ -52,8 +52,8 @@ export default function AdvancedSetting(props: { register: Register }) {
         />
       </SettingItem>
       <SettingItem
-        name="Display errors in the editor"
-        description="If you want to see the errors in the editor"
+        name="在编辑器中显示错误"
+        description="将错误信息直接显示在编辑器中"
         register={props.register}
         sectionId={sectionId}
       >
@@ -69,8 +69,8 @@ export default function AdvancedSetting(props: { register: Register }) {
       </SettingItem>
 
       <SettingItem
-        name="Show Status in StatusBar"
-        description="Show information in the Status Bar"
+        name="在状态栏显示信息"
+        description="在底部状态栏显示当前状态"
         register={props.register}
         sectionId={sectionId}
       >
@@ -86,8 +86,8 @@ export default function AdvancedSetting(props: { register: Register }) {
       </SettingItem>
 
       <SettingItem
-        name="Output generated text to blockquote"
-        description="Distinguish between AI generated text and typed text using a blockquote"
+        name="将生成文本输出为引用块"
+        description="使用引用块区分 AI 生成文本和手动输入文本"
         register={props.register}
         sectionId={sectionId}
       >
@@ -103,8 +103,8 @@ export default function AdvancedSetting(props: { register: Register }) {
       </SettingItem>
 
       <SettingItem
-        name="Free cursor on streaming"
-        description="Note that it might result in weird bugs, the auto-scrolling might not work"
+        name="流式输出时释放光标"
+        description="注意：可能导致异常，自动滚动可能失效"
         register={props.register}
         sectionId={sectionId}
       >
@@ -119,8 +119,8 @@ export default function AdvancedSetting(props: { register: Register }) {
         />
       </SettingItem>
       <SettingItem
-        name="Experimentation Features"
-        description="This adds experiment features, which might not be stable yet"
+        name="实验性功能"
+        description="启用实验性功能，可能不够稳定"
         register={props.register}
         sectionId={sectionId}
       >
@@ -136,8 +136,8 @@ export default function AdvancedSetting(props: { register: Register }) {
       </SettingItem>
 
       <SettingItem
-        name="include Attachments"
-        description="EXPERIMENTAL: adds the images that are referenced in the request, IT MIGHT CONSUME ALOT OF TOKENS"
+        name="包含附件"
+        description="实验功能：在请求中包含引用的图片，可能消耗大量 Token"
         register={props.register}
         sectionId={sectionId}
       >
@@ -156,8 +156,8 @@ export default function AdvancedSetting(props: { register: Register }) {
 
 
       <SettingItem
-        name="Templates Path"
-        description="Path for Templates directory"
+        name="模板路径"
+        description="模板文件夹的路径"
         register={props.register}
         sectionId={sectionId}
       >
@@ -172,8 +172,8 @@ export default function AdvancedSetting(props: { register: Register }) {
       </SettingItem>
 
       <SettingItem
-        name="TextGenerator Path"
-        description="Path To Folder that Text Generator can put Backups,generations...etc into"
+        name="TextGenerator 路径"
+        description="Text Generator 存放备份、生成内容等文件的路径"
         register={props.register}
         sectionId={sectionId}
       >
@@ -188,22 +188,22 @@ export default function AdvancedSetting(props: { register: Register }) {
       </SettingItem>
 
       <SettingItem
-        name="Reload the plugin"
-        description="Some changes might require you to reload the plugins"
+        name="重载插件"
+        description="某些更改需要重载插件才能生效"
         register={props.register}
         sectionId={sectionId}
       >
-        <button onClick={reloadPlugin}>Reload</button>
+        <button onClick={reloadPlugin}>重载</button>
       </SettingItem>
 
       <SettingItem
-        name="Resets all settings to default"
-        description="It will delete all your configurations"
+        name="重置所有设置"
+        description="将删除所有自定义配置并恢复默认值"
         register={props.register}
         sectionId={sectionId}
       >
         <button className="plug-tg-btn-danger" onClick={resetSettings}>
-          Reset
+          重置
         </button>
       </SettingItem>
     </SettingsSection>

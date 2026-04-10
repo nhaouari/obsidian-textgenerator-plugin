@@ -11,7 +11,7 @@ import { Root, createRoot } from "react-dom/client";
 import TextGeneratorPlugin from "../../main";
 import Contexts from "../context";
 import { trimBy } from "../../utils";
-export const VIEW_TOOL_ID = "tool-view";
+export const VIEW_TOOL_ID = "tool-view-zh";
 
 // @ts-ignore
 let electron: Electron;

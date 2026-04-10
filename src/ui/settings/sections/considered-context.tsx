@@ -19,38 +19,38 @@ const extendedInfo: Record<
 > = {
   includeTitle: {
     description:
-      "Include the title of the active document in the considered context.",
+      "在上下文中包含当前文档的标题",
   },
   starredBlocks: {
-    description: "Include starred blocks in the considered context.",
+    description: "在上下文中包含星标段落",
   },
 
   includeFrontmatter: {
-    description: "Include frontmatter",
+    description: "包含 Frontmatter",
   },
 
   includeHeadings: {
-    description: "Include headings with their content.",
+    description: "包含标题及其内容",
   },
 
   includeChildren: {
-    description: "Include the content of internal md links on the page.",
+    description: "包含页面中内部 Markdown 链接的内容",
   },
 
   includeMentions: {
-    description: "Include paragraphs from mentions (linked, unliked).",
+    description: "包含提及（已链接和未链接）中的段落",
   },
 
   includeHighlights: {
-    description: "Include Obsidian Highlights.",
+    description: "包含 Obsidian 高亮内容",
   },
 
   includeExtractions: {
-    description: "Include Extracted Information",
+    description: "包含提取的信息",
   },
 
   includeClipboard: {
-    description: "Make clipboard available for templates",
+    description: "使剪贴板内容可用于模板",
   },
 };
 
@@ -63,13 +63,13 @@ export default function ConsideredContextSetting(props: {
   return (
     <>
       <SettingsSection
-        title="Custom Instructions"
+        title="自定义指令"
         className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
         register={props.register}
         id={sectionId}
       >
         <SettingItem
-          name="Custom default generation prompt"
+          name="自定义默认生成 Prompt"
           description={"You can customize {{context}} variable"}
           register={props.register}
           sectionId={sectionId}
@@ -111,8 +111,8 @@ export default function ConsideredContextSetting(props: {
         )}
 
         <SettingItem
-          name="Enable generate title instruct"
-          description={"You can customize generate title prompt"}
+          name="启用自定义标题生成指令"
+          description={"自定义标题生成的 Prompt"}
           register={props.register}
           sectionId={sectionId}
         >
@@ -180,7 +180,7 @@ export default function ConsideredContextSetting(props: {
           )}
 
         <SettingItem
-          name="TG Selection Limiter(regex)"
+          name="TG 选区限制符（正则）"
           description="tg_selection stopping character. Empty means disabled. Default: ^\*\*\*"
           register={props.register}
           sectionId={sectionId}
@@ -197,14 +197,14 @@ export default function ConsideredContextSetting(props: {
       </SettingsSection>
 
       <SettingsSection
-        title="Template Settings"
+        title="模板设置"
         className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
         register={props.register}
         id={sectionId}
       >
         <SettingItem
-          name="{{context}} Variable Template"
-          description="Template for {{context}} variable"
+          name="{{context}} 变量模板"
+          description="{{context}} 变量的模板"
           register={props.register}
           sectionId={sectionId}
           textArea
@@ -260,8 +260,8 @@ export default function ConsideredContextSetting(props: {
           })}
 
         <SettingItem
-          name="Allow scripts"
-          description="Only enable this if you trust the authors of the templates, or know what you're doing."
+          name="允许脚本"
+          description="仅在你信任模板作者或清楚风险的情况下启用"
           register={props.register}
           sectionId={sectionId}
         >

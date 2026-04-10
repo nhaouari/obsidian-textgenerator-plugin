@@ -26,15 +26,15 @@ export default function AutoSuggestSetting(props: { register: Register }) {
 
   return (
     <SettingsSection
-      title="Auto-Suggest Options"
+      title="自动建议选项"
       className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
       register={props.register}
       triggerResize={resized}
       id={sectionId}
     >
       <SettingItem
-        name="Enable/Disable"
-        description="Enable or disable auto-suggest."
+        name="启用/禁用"
+        description="启用或禁用自动建议功能"
         register={props.register}
         sectionId={sectionId}
       >
@@ -54,8 +54,8 @@ export default function AutoSuggestSetting(props: { register: Register }) {
       {!!global.plugin.settings.autoSuggestOptions.isEnabled && (
         <>
           <SettingItem
-            name="Inline Suggestions"
-            description="Shows the suggestions text in the editor (EXPERIMENTAL)"
+            name="行内建议"
+            description="在编辑器中直接显示建议文本（实验功能）"
             register={props.register}
             sectionId={sectionId}
           >
@@ -76,8 +76,8 @@ export default function AutoSuggestSetting(props: { register: Register }) {
 
           {!!global.plugin.settings.autoSuggestOptions.inlineSuggestions && (
             <SettingItem
-              name="Show In Markdown"
-              description="Shows the suggestions text compiled as markdown, may shows weird spaces at the begining and end (EXPERIMENTAL)"
+              name="以 Markdown 显示"
+              description="将建议文本渲染为 Markdown，可能在首尾出现多余空格（实验功能）"
               register={props.register}
               sectionId={sectionId}
             >
@@ -98,13 +98,13 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           )}
 
           <SettingItem
-            name="Trigger Phrase"
-            description="Trigger Phrase (default: *double space*)"
+            name="触发词"
+            description="触发词（默认：双空格）"
             register={props.register}
             sectionId={sectionId}
           >
             <Input
-              placeholder="Trigger Phrase"
+              placeholder="触发词"
               value={global.plugin.settings.autoSuggestOptions.triggerPhrase}
               setValue={async (val) => {
                 global.plugin.settings.autoSuggestOptions.triggerPhrase = val;
@@ -115,8 +115,8 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           </SettingItem>
 
           <SettingItem
-            name="Override Trigger"
-            description="Overrides the trigger when suggestion is accepted (default: *single space*)"
+            name="覆盖触发词"
+            description="接受建议时替换的触发词（默认：单空格）"
             register={props.register}
             sectionId={sectionId}
           >
@@ -133,7 +133,7 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           </SettingItem>
 
           <SettingItem
-            name="Delay milliseconds for trigger"
+            name="触发延迟（毫秒）"
             register={props.register}
             sectionId={sectionId}
           >
@@ -155,8 +155,8 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           </SettingItem>
 
           <SettingItem
-            name="Number of Suggestions"
-            description="Enter the number of suggestions to generate. Please note that increasing this value may significantly increase the cost of usage with GPT-3."
+            name="建议数量"
+            description="生成的建议条数。增加此值可能会显著增加 API 用量。"
             register={props.register}
             sectionId={sectionId}
           >
@@ -175,13 +175,13 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           </SettingItem>
 
           <SettingItem
-            name="Stop Phrase"
-            description="Enter the stop phrase to use for generating auto-suggestions. The generation will stop when the stop phrase is found. (Use a space for words, a period for sentences, and a newline for paragraphs.)"
+            name="停止词"
+            description="自动建议的停止词，生成到该词时停止。（空格=词级，句号=句级，换行=段级）"
             register={props.register}
             sectionId={sectionId}
           >
             <Input
-              placeholder="Stop Phrase"
+              placeholder="停止词"
               value={global.plugin.settings.autoSuggestOptions.stop}
               setValue={async (val) => {
                 global.plugin.settings.autoSuggestOptions.stop = val;
@@ -192,8 +192,8 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           </SettingItem>
 
           <SettingItem
-            name="Allow Suggest in new Line"
-            description="This will allow it to run at the beggining of a new line"
+            name="允许在新行触发建议"
+            description="允许在新行开头触发自动建议"
             register={props.register}
             sectionId={sectionId}
           >
@@ -212,7 +212,7 @@ export default function AutoSuggestSetting(props: { register: Register }) {
             />
           </SettingItem>
           <SettingItem
-            name="Show/Hide Auto-suggest status in Status Bar"
+            name="在状态栏显示自动建议状态"
             description=""
             register={props.register}
             sectionId={sectionId}
@@ -231,14 +231,14 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           </SettingItem>
 
           <SettingItem
-            name="Custom auto-suggest Prompt"
-            description={"You can customize auto-suggest prompt"}
+            name="自定义自动建议 Prompt"
+            description={"自定义自动建议的 Prompt 模板"}
             register={props.register}
             sectionId={sectionId}
           >
             <Input
               type="checkbox"
-              placeholder="Custom auto-suggest prompt"
+              placeholder="自定义自动建议 Prompt"
               value={
                 "" +
                 global.plugin.settings.autoSuggestOptions.customInstructEnabled
@@ -254,13 +254,13 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           {global.plugin.settings.autoSuggestOptions.customInstructEnabled && (
             <>
               <SettingItem
-                name="Custom auto-suggest prompt"
+                name="自定义自动建议 Prompt"
                 register={props.register}
                 sectionId={sectionId}
                 textArea
               >
                 <SettingsTextarea
-                  placeholder="Custom auto-suggest prompt"
+                  placeholder="自定义自动建议 Prompt"
                   value={
                     global.plugin.settings.autoSuggestOptions.customInstruct ||
                     global.plugin.defaultSettings.autoSuggestOptions
@@ -289,7 +289,7 @@ export default function AutoSuggestSetting(props: { register: Register }) {
           {global.plugin.settings.autoSuggestOptions.customInstructEnabled && (
             <>
               <SettingItem
-                name="Custom Auto-suggest System Prompt"
+                name="自定义自动建议 System Prompt"
                 register={props.register}
                 sectionId={sectionId}
                 textArea
@@ -323,10 +323,8 @@ export default function AutoSuggestSetting(props: { register: Register }) {
 
 
           <SettingItem
-            name="Custom Provider"
-            description={`use a different LLM provider than the one you're generating with.\
-          
-            make sure to setup the llm provider in the LLM Settings, before use.`}
+            name="自定义 Provider"
+            description={"使用与主生成不同的 LLM Provider。\n使用前请先在 LLM 设置中配置好对应的 Provider。"}
             register={props.register}
             sectionId={sectionId}
           >

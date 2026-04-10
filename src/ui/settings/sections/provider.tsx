@@ -12,7 +12,7 @@ export default function ProviderSetting(props: { register: Register }) {
   return (
     <>
       <SettingsSection
-        title="LLM Settings"
+        title="LLM 设置"
         className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
         register={props.register}
         id={sectionId}

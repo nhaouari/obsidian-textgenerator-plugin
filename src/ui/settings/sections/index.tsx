@@ -91,13 +91,13 @@ export default function SectionsMain() {
     <div className="plug-tg-flex plug-tg-w-full plug-tg-flex-col plug-tg-gap-3">
       <div className="w-full gap-2 plug-tg-flex plug-tg-flex-col plug-tg-justify-between md:plug-tg-flex-row">
         <div>
-          <h1>Text Generator</h1>
+          <h1>Text Generator（中文版）</h1>
         </div>
         <Input
           setValue={(val) => setSearchTerm(val.toLocaleLowerCase())}
           value={searchTerm}
           className="plug-tg-input-sm plug-tg-w-full lg:plug-tg-w-auto"
-          placeholder="Search For Option"
+          placeholder="搜索选项"
         />
       </div>
 
@@ -109,7 +109,7 @@ export default function SectionsMain() {
           V{global.plugin.manifest.version}
         </a>
         <a className="tag" href="https://bit.ly/tg_docs">
-          {"\u{1F4D6}"} Documentation
+          {"\u{1F4D6}"} 文档
         </a>
         <a className="tag" href="https://bit.ly/Tg-discord">
           {"\u{1F44B}"} Discord

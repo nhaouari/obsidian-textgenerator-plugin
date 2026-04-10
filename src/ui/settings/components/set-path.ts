@@ -26,7 +26,7 @@ export class SetPath extends Modal {
     const { contentEl } = this;
 
     contentEl.createEl("h1", {
-      text: `New Document Path ${
+      text: `新文档路径 ${
         this.info?.title ? `(${this.info.title})` : ""
       }`,
     });
@@ -37,7 +37,7 @@ export class SetPath extends Modal {
       });
 
       resi.createEl("span", {
-        text: "Content",
+        text: "内容",
       });
 
       console.log("generated", this.info.content);
@@ -55,16 +55,16 @@ export class SetPath extends Modal {
             this.onSubmit(this.result);
             this.close();
           } catch (error) {
-            new Notice("🔴Error: File already exists. Choose another path.");
+            new Notice("🔴错误：文件已存在，请选择其他路径。");
             console.error(error);
           }
         }
       });
     }, 100);
 
-    new Setting(contentEl).setName("Path").addText((text) =>
+    new Setting(contentEl).setName("路径").addText((text) =>
       text
-        .setPlaceholder("Path")
+        .setPlaceholder("路径")
         .setValue(this.result.toString())
         .onChange((value) => {
           this.result = value;
@@ -74,14 +74,14 @@ export class SetPath extends Modal {
 
     new Setting(contentEl).addButton((btn) =>
       btn
-        .setButtonText("Submit")
+        .setButtonText("确定")
         .setCta()
         .onClick(async () => {
           try {
             this.onSubmit(this.result);
             this.close();
           } catch (error) {
-            new Notice("🔴Error: File already exists. Choose another path.");
+            new Notice("🔴错误：文件已存在，请选择其他路径。");
             console.error(error);
           }
         })
