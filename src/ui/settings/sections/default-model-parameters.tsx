@@ -27,22 +27,22 @@ export default function DMPSetting(props: { register: Register }) {
 
   return (
     <SettingsSection
-      title="Default model parameters"
+      title="默认模型参数"
       className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
       register={props.register}
       id={sectionId}
     >
-      <h5>You can specify more parameters in the Frontmatter YAML</h5>
+      <h5>你可以在 Frontmatter YAML 中指定更多参数</h5>
       <a
         className="text-xs"
         href="https://beta.openai.com/docs/api-reference/completions"
       >
-        API documentation
+        API 文档
       </a>
 
       <SettingItem
-        name="Max tokens"
-        description="The maximum number of tokens to generate in the chat completion. The total length of input tokens and generated tokens is limited by the model's context length. (1000 tokens ~ 750 words)"
+        name="Max tokens（最大 Token 数）"
+        description="对话补全中生成的最大 Token 数。输入和生成的 Token 总数受模型上下文长度限制。（1000 Token ≈ 750 个英文单词）"
         register={props.register}
         sectionId={sectionId}
       >
@@ -61,8 +61,8 @@ export default function DMPSetting(props: { register: Register }) {
       </SettingItem>
 
       <SettingItem
-        name="Temperature"
-        description="What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+        name="Temperature（温度）"
+        description="采样温度，范围 0 到 2。值越高（如 0.8）输出越随机，值越低（如 0.2）输出越集中和确定。"
         register={props.register}
         sectionId={sectionId}
       >
@@ -81,8 +81,8 @@ export default function DMPSetting(props: { register: Register }) {
       </SettingItem>
 
       <SettingItem
-        name="Frequency Penalty"
-        description="Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
+        name="Frequency Penalty（频率惩罚）"
+        description="范围 -2.0 到 2.0。正值会根据文本中已出现的 Token 进行惩罚，促使模型谈论新话题。"
         register={props.register}
         sectionId={sectionId}
       >
@@ -101,8 +101,8 @@ export default function DMPSetting(props: { register: Register }) {
       </SettingItem>
 
       <SettingItem
-        name="Timeout"
-        description="Timeout in milliseconds. If the request takes longer than the timeout, the request will be aborted. (default: 5000ms)"
+        name="Timeout（超时）"
+        description="请求超时时间（毫秒）。超时后请求将被中止。（默认：5000ms）"
         register={props.register}
         sectionId={sectionId}
       >
@@ -121,8 +121,8 @@ export default function DMPSetting(props: { register: Register }) {
       </SettingItem>
 
       <SettingItem
-        name="Prefix"
-        description="Prefix to add to the beginning of the completion (default: '\n\n')"
+        name="Prefix（前缀）"
+        description="在生成内容前添加的前缀（默认：'\\n\\n'）"
         register={props.register}
         sectionId={sectionId}
       >

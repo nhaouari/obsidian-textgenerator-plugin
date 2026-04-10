@@ -20,14 +20,14 @@ export default function AccountSetting(props: { register: Register }) {
   return (
     <>
       <SettingsSection
-        title="Account Settings"
+        title="账户设置"
         className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
         register={props.register}
         id={sectionId}
       >
         <SettingItem
           name=""
-          description="This is the account settings to manage bought items from the package-manager"
+          description="在此管理通过包管理器购买的项目"
           register={props.register}
           sectionId={sectionId}
         />
@@ -44,7 +44,7 @@ export default function AccountSetting(props: { register: Register }) {
                   triggerReload();
                 }}
               >
-                Logout
+                退出登录
               </button>
 
               <button
@@ -55,7 +55,7 @@ export default function AccountSetting(props: { register: Register }) {
                   );
                 }}
               >
-                Manage Account
+                管理账户
               </button>
             </div>
           ) : (
@@ -65,7 +65,7 @@ export default function AccountSetting(props: { register: Register }) {
                 triggerReload();
               }}
             >
-              Login
+              登录
             </button>
           )}
         </div>
@@ -73,7 +73,7 @@ export default function AccountSetting(props: { register: Register }) {
         {loggedIn && (
           <>
             <div className="plug-tg-flex plug-tg-w-full plug-tg-flex-col plug-tg-gap-2">
-              <h3>Subscriptions:</h3>
+              <h3>订阅：</h3>
               {global.plugin.packageManager.configuration.subscriptions?.map(
                 (s) => (
                   <div key={s.id}>
@@ -91,7 +91,7 @@ export default function AccountSetting(props: { register: Register }) {
                   );
                 }}
               >
-                Manage Subscriptions
+                管理订阅
               </button>
             </div>
           </>

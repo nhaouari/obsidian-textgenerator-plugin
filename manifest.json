@@ -1,11 +1,10 @@
 {
-	"id": "obsidian-textgenerator-plugin",
-	"name": "Text Generator",
+	"id": "textgenerator-zh",
+	"name": "Text Generator（中文版）",
 	"version": "0.8.6",
 	"minAppVersion": "1.6.0",
-	"description": "Text generation using AI",
-	"author": "Noureddine Haouari",
-	"authorUrl": "https://text-gen.com",
-	"isDesktopOnly": false,
-	"fundingUrl": "https://www.buymeacoffee.com/haouarine"
+	"description": "AI 文本生成助手（中文定制版，基于 Text Generator）",
+	"author": "chenhuajinchj",
+	"authorUrl": "https://github.com/chenhuajinchj",
+	"isDesktopOnly": false
 }

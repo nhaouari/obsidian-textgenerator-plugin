@@ -5,7 +5,7 @@ import { Root, createRoot } from "react-dom/client";
 import TextGeneratorPlugin from "../../main";
 import Contexts from "../context";
 import { trimBy } from "../../utils";
-export const VIEW_Playground_ID = "playground-view";
+export const VIEW_Playground_ID = "playground-view-zh";
 
 export class PlaygroundView extends ItemView {
   root: Root;

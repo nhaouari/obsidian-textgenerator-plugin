@@ -1,5 +1,5 @@
 {
-  "name": "obsidian-textgenerator-plugin",
+  "name": "textgenerator-zh",
   "version": "0.8.6",
   "description": "Text generator is a handy plugin that helps you generate text content using GPT-3 (OpenAI).",
   "obsidian": {
@@ -19,6 +19,15 @@
     "remove-tag": "node ./scripts/remove-tag.js",
     "test": "vitest run",
     "test:watch": "vitest"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@codemirror/language",
+      "esbuild",
+      "protobufjs",
+      "tesseract.js",
+      "electron"
+    ]
   },
   "keywords": [],
   "author": "",

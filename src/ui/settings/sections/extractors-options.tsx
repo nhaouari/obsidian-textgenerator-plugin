@@ -17,34 +17,34 @@ const extendedInfo: Record<
   }
 > = {
   PDFExtractor: {
-    name: "PDF Extractor",
-    description: "Enable or disable PDF extractor.",
+    name: "PDF 提取器",
+    description: "启用或禁用 PDF 提取器",
   },
 
   WebPageExtractor: {
-    name: "Web Page Extractor",
-    description: "Enable or disable web page extractor.",
+    name: "网页提取器",
+    description: "启用或禁用网页提取器",
   },
 
   AudioExtractor: {
-    name: "Audio Extractor (Whisper)",
+    name: "音频提取器（Whisper）",
     description:
-      "Enable or disable audio extractor using Whisper OpenAI ($0.006 / minute) supports multi-languages and accepts a variety of formats (m4a, mp3, mp4, mpeg, mpga, wav, webm).",
+      "启用或禁用 Whisper 音频提取器（$0.006/分钟），支持多语言，格式支持 m4a、mp3、mp4、mpeg、mpga、wav、webm",
   },
 
   ImageExtractor: {
-    name: "Image Extractor",
-    description: "Enable or disable Image Extractor from URL",
+    name: "图片提取器",
+    description: "启用或禁用从 URL 提取图片",
   },
 
   ImageExtractorEmbded: {
-    name: "Embedded Image Extractor",
-    description: "Enable or disable Embedded Image Extractor.",
+    name: "嵌入图片提取器",
+    description: "启用或禁用嵌入图片提取器",
   },
 
   YoutubeExtractor: {
-    name: "Youtube Extractor",
-    description: "Enable or disable Youtube extractor.",
+    name: "YouTube 提取器",
+    description: "启用或禁用 YouTube 提取器",
   },
 };
 
@@ -61,7 +61,7 @@ export default function ExtractorsOptionsSetting(props: {
 
   return (
     <SettingsSection
-      title="Extractors Options"
+      title="提取器选项"
       className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
       register={props.register}
       id={sectionId}

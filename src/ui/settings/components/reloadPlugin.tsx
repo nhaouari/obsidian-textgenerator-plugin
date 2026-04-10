@@ -24,17 +24,17 @@ export default function ReloadPluginPopup(props: object) {
 
     // @ts-ignore
     await global.plugin.app.plugins.disablePlugin(
-      "obsidian-textgenerator-plugin"
+      "textgenerator-zh"
     );
 
     // @ts-ignore
     await global.plugin.app.plugins.enablePlugin(
-      "obsidian-textgenerator-plugin"
+      "textgenerator-zh"
     );
 
     // @ts-ignore
     global.plugin.app.setting
-      .openTabById("obsidian-textgenerator-plugin")
+      .openTabById("textgenerator-zh")
       .display();
   };
 
@@ -42,8 +42,8 @@ export default function ReloadPluginPopup(props: object) {
     didChangeAnything && (
       <div className="plug-tg-absolute plug-tg-bottom-0 plug-tg-right-0 plug-tg-z-20 plug-tg-p-3">
         <div className="plug-tg-flex plug-tg-items-center plug-tg-gap-2 plug-tg-overflow-hidden plug-tg-rounded-md plug-tg-bg-[var(--interactive-accent)] plug-tg-p-3 plug-tg-font-bold">
-          <div>YOU NEED TO RELOAD THE PLUGIN</div>
-          <button onClick={reloadPlugin}>Reload</button>
+          <div>需要重载插件以使更改生效</div>
+          <button onClick={reloadPlugin}>重载</button>
         </div>
       </div>
     )

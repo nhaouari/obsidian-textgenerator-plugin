@@ -57,7 +57,7 @@ export const commands = {
   "open-tool": k({
     id: "open-tool",
     name: "Open tool",
-    icon: "GENERATE_ICON",
+    icon: "GENERATE_ICON_ZH",
     // hotkeys: [{ modifiers: ["Mod"], key: "j" }],
   }),
 } as const;

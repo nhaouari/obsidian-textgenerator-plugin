@@ -14,11 +14,11 @@ const extendedInfo: Record<
   }
 > = {
   "modal-suggest": {
-    name: "Slash suggestions",
+    name: "斜杠建议",
     description: "modal-suggest",
   },
   "set-llm": {
-    name: "Chose LLM",
+    name: "选择 LLM",
     description: "set-llm",
   },
 };
@@ -40,14 +40,14 @@ export default function OptionsSetting(props: { register: Register }) {
   return (
     <>
       <SettingsSection
-        title="Text Generator Options"
+        title="Text Generator 选项"
         className="plug-tg-flex plug-tg-w-full plug-tg-flex-col"
         register={props.register}
         id={sectionId}
       >
         <SettingItem
-          name="Keys encryption"
-          description="Enable encrypting keys, this could cause incompatibility with mobile devices"
+          name="密钥加密"
+          description="启用密钥加密，可能导致移动设备不兼容"
           register={props.register}
           sectionId={sectionId}
         >
@@ -76,7 +76,7 @@ export default function OptionsSetting(props: { register: Register }) {
                 moreData?.description ||
                 global.plugin.commands?.commands.find(
                   (c) =>
-                    c.id == `obsidian-textgenerator-plugin:${key}` ||
+                    c.id == `textgenerator-zh:${key}` ||
                     c.id === key
                 )?.name ||
                 key

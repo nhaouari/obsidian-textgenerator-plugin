@@ -107,8 +107,8 @@ export default class TextGeneratorPlugin extends Plugin {
 
     logger("loading textGenerator plugin");
     perf.start("Icons");
-    addIcon("GENERATE_ICON", GENERATE_ICON);
-    addIcon("GENERATE_META_ICON", GENERATE_META_ICON);
+    addIcon("GENERATE_ICON_ZH", GENERATE_ICON);
+    addIcon("GENERATE_META_ICON_ZH", GENERATE_META_ICON);
     perf.end("Icons");
 
     perf.start("Settings");
@@ -131,7 +131,7 @@ export default class TextGeneratorPlugin extends Plugin {
       this.registerEvent(
         this.app.workspace.on("editor-menu", async (menu) => {
           menu.addItem((item) => {
-            item.setIcon("GENERATE_META_ICON");
+            item.setIcon("GENERATE_META_ICON_ZH");
             item.setTitle("Generate");
             item.onClick(async () => {
               try {
@@ -154,7 +154,7 @@ export default class TextGeneratorPlugin extends Plugin {
           "files-menu",
           async (menu, files, source, leaf) => {
             menu.addItem((item) => {
-              item.setIcon("GENERATE_META_ICON");
+              item.setIcon("GENERATE_META_ICON_ZH");
               item.setTitle("Generate");
               item.onClick(() => {
                 try {
@@ -201,8 +201,8 @@ export default class TextGeneratorPlugin extends Plugin {
     if (!this.settings.options["disable-ribbon-icons"]) {
       perf.start("Ribbon Icons");
       this.addRibbonIcon(
-        "GENERATE_ICON",
-        "Generate Text!",
+        "GENERATE_ICON_ZH",
+        "生成文本",
         async (evt: MouseEvent) => {
           // Called when the user clicks the icon.
           // const activeFile = this.app.workspace.getActiveFile();
@@ -220,7 +220,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
       this.addRibbonIcon(
         "boxes",
-        "Text Generator: Templates Packages Manager",
+        "Text Generator：模板包管理器",
         async (evt: MouseEvent) => {
           new PackageManagerUI(
             this.app,
@@ -234,7 +234,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
     perf.start("API Registration");
     this.pluginAPIService = new PluginServiceAPI(this);
-    registerAPI("tg", this.pluginAPIService, this as any);
+    registerAPI("tg-zh", this.pluginAPIService, this as any);
     perf.end("API Registration");
 
     perf.start("Layout Ready Setup");
@@ -311,7 +311,7 @@ export default class TextGeneratorPlugin extends Plugin {
 
       try {
         layoutPerf.start("Protocol Handler");
-        this.registerObsidianProtocolHandler(`text-gen`, async (params) => {
+        this.registerObsidianProtocolHandler(`text-gen-zh`, async (params) => {
           console.log(params.intent, this.actions, this.actions[params.intent]);
           this.actions[params.intent]?.(params);
         });
@@ -426,20 +426,20 @@ export default class TextGeneratorPlugin extends Plugin {
         span.style.width = "16px";
         span.style.alignContent = "center";
         this.textGeneratorIconItem.append(span);
-        this.textGeneratorIconItem.title = "Generating Text...";
+        this.textGeneratorIconItem.title = "正在生成文本...";
         if (this.notice) this.notice.hide();
-        this.notice = new Notice(`Processing...\n${text}`, 100000);
+        this.notice = new Notice(`处理中...\n${text}`, 100000);
       } else {
         const icon = getIcon("bot");
         if (icon) this.textGeneratorIconItem.append(icon);
-        this.textGeneratorIconItem.title = "Text Generator";
+        this.textGeneratorIconItem.title = "Text Generator（中文版）";
         this.textGeneratorIconItem.addClass("mod-clickable");
         this.textGeneratorIconItem.addEventListener("click", async () => {
           // @ts-ignore
           await this.app.setting.open();
           // @ts-ignore
           await this.app.setting
-            .openTabById("obsidian-textgenerator-plugin")
+            .openTabById("textgenerator-zh")
             .display();
         });
 
@@ -499,13 +499,13 @@ export default class TextGeneratorPlugin extends Plugin {
 
       const header = el.createDiv();
       header.style.cssText = "display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-weight:600;font-size:13px;";
-      header.createSpan({ text: "💭 Reasoning" });
+      header.createSpan({ text: "💭 推理过程" });
 
-      const copyBtn = header.createEl("button", { text: "Copy" });
+      const copyBtn = header.createEl("button", { text: "复制" });
       copyBtn.style.cssText = "font-size:11px;padding:2px 8px;cursor:pointer;border-radius:4px;";
       copyBtn.addEventListener("click", () => {
         navigator.clipboard.writeText(this.thinkingAccumulated);
-        new Notice("Reasoning copied to clipboard", 2000);
+        new Notice("推理内容已复制到剪贴板", 2000);
       });
 
       this.thinkingContentEl = el.createDiv();
@@ -587,7 +587,7 @@ export default class TextGeneratorPlugin extends Plugin {
       !(error?.length)
     ) {
       displayMsg =
-        "An error has occurred. Please check the console by pressing CTRL+SHIFT+I or turn on display errors in the editor within the settings for more information.";
+        "发生错误。请按 CTRL+SHIFT+I 打开控制台查看详情，或在设置中开启「在编辑器中显示错误」。";
     }
 
     if (
@@ -595,10 +595,10 @@ export default class TextGeneratorPlugin extends Plugin {
       !/CORS/i.test(msg)
     ) {
       displayMsg +=
-        "\n\nThis is usually a CORS error. Try enabling CORS Bypass in the provider settings, or verify your endpoint URL.";
+        "\n\n这通常是 CORS 跨域错误。请尝试在 Provider 设置中启用 CORS 绕过，或检查你的接口地址。";
     }
 
-    new Notice("TG Error: " + displayMsg, 8000);
+    new Notice("TG 错误：" + displayMsg, 8000);
 
     console.error(error);
     try {
@@ -771,11 +771,11 @@ export default class TextGeneratorPlugin extends Plugin {
   /** Reloads the plugin */
   async reload() {
     // @ts-ignore
-    await this.app.plugins.disablePlugin("obsidian-textgenerator-plugin");
+    await this.app.plugins.disablePlugin("textgenerator-zh");
     // @ts-ignore
-    await this.app.plugins.enablePlugin("obsidian-textgenerator-plugin");
+    await this.app.plugins.enablePlugin("textgenerator-zh");
     // @ts-ignore
-    this.app.setting.openTabById("obsidian-textgenerator-plugin").display();
+    this.app.setting.openTabById("textgenerator-zh").display();
   }
 
   actions: Record<string, any> = {};
@@ -814,7 +814,7 @@ export default class TextGeneratorPlugin extends Plugin {
     if (activeView) return activeView;
 
     if (makeNotice && !this.app.workspace.getActiveViewOfType(ToolView))
-      new Notice("The file type should be Markdown!");
+      new Notice("当前文件必须是 Markdown 格式！");
 
     return null;
   }

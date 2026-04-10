@@ -21,8 +21,8 @@ export default class Commands {
   static commands: Command[] = [
     {
       id: "generate-text",
-      name: "Generate Text!",
-      icon: "GENERATE_ICON",
+      name: "生成文本",
+      icon: "GENERATE_ICON_ZH",
       hotkeys: [{ modifiers: ["Mod"], key: "j" }],
       async callback() {
         const self: Commands = this as any;
@@ -40,8 +40,8 @@ export default class Commands {
 
     {
       id: "generate-text-with-metadata",
-      name: "Generate Text (use Metadata))!",
-      icon: "GENERATE_META_ICON",
+      name: "生成文本（使用 Metadata）",
+      icon: "GENERATE_META_ICON_ZH",
       hotkeys: [{ modifiers: ["Mod", "Alt"], key: "j" }],
       async callback() {
         const self: Commands = this as any;
@@ -57,7 +57,7 @@ export default class Commands {
 
     {
       id: "insert-generated-text-From-template",
-      name: "Templates: Generate & Insert",
+      name: "模板：生成并插入",
       icon: "circle",
       //hotkeys: [{ modifiers: ["Mod"], key: "q"}],
       async callback() {
@@ -88,7 +88,7 @@ export default class Commands {
                 self.plugin.handelError(error);
               }
             },
-            "Generate and Insert Template In The Active Note"
+            "在当前笔记中生成并插入模板"
           ).open();
         } catch (error) {
           self.plugin.handelError(error);
@@ -98,7 +98,7 @@ export default class Commands {
 
     {
       id: "generated-text-to-clipboard-From-template",
-      name: "Templates: Generate & Copy To Clipboard ",
+      name: "模板：生成并复制到剪贴板",
       icon: "circle",
       //hotkeys: [{ modifiers: ["Mod"], key: "q"}],
       async callback() {
@@ -124,7 +124,7 @@ export default class Commands {
                 self.plugin.handelError(error);
               }
             },
-            "Generate & Copy To Clipboard"
+            "生成并复制到剪贴板"
           ).open();
         } catch (error) {
           self.plugin.handelError(error);
@@ -134,7 +134,7 @@ export default class Commands {
 
     {
       id: "create-generated-text-From-template",
-      name: "Templates: Generate & Create Note",
+      name: "模板：生成并创建笔记",
       icon: "plus-circle",
       //hotkeys: [{ modifiers: ["Mod","Shift"], key: "q"}],
       async callback() {
@@ -164,7 +164,7 @@ export default class Commands {
                 self.plugin.handelError(error);
               }
             },
-            "Generate and Create a New Note From Template"
+            "从模板生成并创建新笔记"
           ).open();
         } catch (error) {
           self.plugin.handelError(error);
@@ -174,7 +174,7 @@ export default class Commands {
 
     {
       id: "search-results-batch-generate-from-template",
-      name: "Templates (Batch): From Search Results",
+      name: "模板（批量）：从搜索结果生成",
       icon: "plus-circle",
       //hotkeys: [{ modifiers: ["Mod","Shift"], key: "q"}],
       async callback() {
@@ -200,7 +200,7 @@ export default class Commands {
                 true
               );
             },
-            "Generate and create multiple notes from template"
+            "从模板批量生成笔记"
           ).open();
         } catch (error) {
           self.plugin.handelError(error);
@@ -210,7 +210,7 @@ export default class Commands {
 
     {
       id: "insert-text-From-template",
-      name: "Templates: Insert Template",
+      name: "模板：插入模板",
       icon: "square",
       //hotkeys: [{ modifiers: ['Alt'], key: "q"}],
       async callback() {
@@ -240,7 +240,7 @@ export default class Commands {
                 self.plugin.handelError(error);
               }
             },
-            "Insert Template In The Active Note"
+            "在当前笔记中插入模板"
           ).open();
         } catch (error) {
           self.plugin.handelError(error);
@@ -250,7 +250,7 @@ export default class Commands {
 
     {
       id: "create-text-From-template",
-      name: "Templates: Insert & Create Note",
+      name: "模板：插入并创建笔记",
       icon: "plus-square",
       //hotkeys: [{ modifiers: ["Shift","Alt"], key: "q"}],
       async callback() {
@@ -281,7 +281,7 @@ export default class Commands {
                 self.plugin.handelError(error);
               }
             },
-            "Create a New Note From Template"
+            "从模板创建新笔记"
           ).open();
         } catch (error) {
           self.plugin.handelError(error);
@@ -291,7 +291,7 @@ export default class Commands {
 
     {
       id: "show-modal-From-template",
-      name: "Show modal From Template",
+      name: "从模板打开弹窗",
       icon: "layout",
       //hotkeys: [{ modifiers: ["Alt"], key: "4"}],
       async callback() {
@@ -317,7 +317,7 @@ export default class Commands {
                 self.plugin.handelError(error);
               }
             },
-            "Choose a template"
+            "选择一个模板"
           ).open();
         } catch (error) {
           self.plugin.handelError(error);
@@ -327,7 +327,7 @@ export default class Commands {
 
     {
       id: "open-template-as-tool",
-      name: "Open Template as Tool",
+      name: "将模板作为工具打开",
       icon: "layout",
       //hotkeys: [{ modifiers: ["Alt"], key: "4"}],
       async callback() {
@@ -346,7 +346,7 @@ export default class Commands {
                 openInPopout: true,
               });
             },
-            "Choose a template"
+            "选择一个模板"
           ).open();
         } catch (error) {
           self.plugin.handelError(error);
@@ -356,7 +356,7 @@ export default class Commands {
 
     {
       id: "open-playground",
-      name: "Open Template Playground",
+      name: "打开模板 Playground",
       icon: "layout",
       //hotkeys: [{ modifiers: ["Alt"], key: "4"}],
       async callback() {
@@ -373,7 +373,7 @@ export default class Commands {
     },
     {
       id: "set_max_tokens",
-      name: "Set max_tokens",
+      name: "设置 max_tokens",
       icon: "separator-horizontal",
       //hotkeys: [{ modifiers: ["Alt"], key: "1" }],
       async callback() {
@@ -385,7 +385,7 @@ export default class Commands {
           async (result: string) => {
             self.plugin.settings.max_tokens = parseInt(result);
             await self.plugin.saveSettings();
-            new Notice(`Set Max Tokens to ${result}!`);
+            new Notice(`已将 Max Tokens 设为 ${result}`);
             self.plugin.updateStatusBar("");
           }
         ).open();
@@ -394,7 +394,7 @@ export default class Commands {
 
     {
       id: "set-llm",
-      name: "Choose a LLM",
+      name: "选择 LLM",
       icon: "list-start",
       //hotkeys: [{ modifiers: ["Alt"], key: "2" }],
       async callback() {
@@ -416,7 +416,7 @@ export default class Commands {
               self.plugin.textGenerator.load();
               await self.plugin.saveSettings();
             },
-            "Choose a LLM"
+            "选择 LLM"
           ).open();
         } catch (error) {
           self.plugin.handelError(error);
@@ -426,7 +426,7 @@ export default class Commands {
 
     {
       id: "set-model",
-      name: "Choose a Model",
+      name: "选择 Model",
       icon: "list-start",
       //hotkeys: [{ modifiers: ["Alt"], key: "2" }],
       async callback() {
@@ -443,7 +443,7 @@ export default class Commands {
               self.plugin.settings.LLMProviderOptions[provider].model = selectedModel;
               await self.plugin.saveSettings();
             },
-            "Choose a LLM"
+            "选择 LLM"
           ).open();
         } catch (error) {
           self.plugin.handelError(error);
@@ -453,7 +453,7 @@ export default class Commands {
 
     {
       id: "packageManager",
-      name: "Template Packages Manager",
+      name: "模板包管理器",
       icon: "boxes",
       //hotkeys: [{ modifiers: ["Alt"], key: "3" }],
       async callback() {
@@ -468,7 +468,7 @@ export default class Commands {
 
     {
       id: "create-template",
-      name: "Create a Template",
+      name: "创建模板",
       icon: "plus",
       //hotkeys: [{ modifiers: ["Alt"], key: "c"}],
       async callback() {
@@ -487,7 +487,7 @@ export default class Commands {
 
     {
       id: "get-title",
-      name: "Generate a Title",
+      name: "生成标题",
       icon: "heading",
       //hotkeys: [{ modifiers: ["Alt"], key: "c"}],
       async callback() {
@@ -567,7 +567,7 @@ export default class Commands {
 
     {
       id: "auto-suggest",
-      name: "Turn on or off the auto suggestion",
+      name: "开关自动建议",
       icon: "heading",
       //hotkeys: [{ modifiers: ["Alt"], key: "c"}],
       async editorCallback(editor: Editor) {
@@ -579,16 +579,16 @@ export default class Commands {
         self.plugin.autoSuggest?.renderStatusBar();
 
         if (self.plugin.settings.autoSuggestOptions.isEnabled) {
-          new Notice(`Auto Suggestion is on!`);
+          new Notice(`自动建议已开启`);
         } else {
-          new Notice(`Auto Suggestion is off!`);
+          new Notice(`自动建议已关闭`);
         }
       },
     },
 
     {
       id: "calculate-tokens",
-      name: "Estimate tokens for the current document",
+      name: "估算当前文档的 Token 数",
       icon: "heading",
       //hotkeys: [{ modifiers: ["Alt"], key: "c"}],
       async callback() {
@@ -617,7 +617,7 @@ export default class Commands {
 
     {
       id: "calculate-tokens-for-template",
-      name: "Estimate tokens for a Template",
+      name: "估算模板的 Token 数",
       icon: "layout",
       //hotkeys: [{ modifiers: ["Alt"], key: "4"}],
       async callback() {
@@ -650,7 +650,7 @@ export default class Commands {
                 self.plugin.handelError(error);
               }
             },
-            "Choose a template"
+            "选择一个模板"
           ).open();
         } catch (error) {
           self.plugin.handelError(error);
@@ -660,7 +660,7 @@ export default class Commands {
 
     {
       id: "text-extractor-tool",
-      name: "Text Extractor Tool",
+      name: "文本提取工具",
       icon: "layout",
       async callback() {
         const self: Commands = this as any;
@@ -674,7 +674,7 @@ export default class Commands {
 
     {
       id: "stop-stream",
-      name: "Stop Stream",
+      name: "停止生成",
       icon: "layout",
       async callback() {
         const self: Commands = this as any;
@@ -685,7 +685,7 @@ export default class Commands {
     },
     {
       id: "reload",
-      name: "reload Plugin",
+      name: "重载插件",
       icon: "layout",
       async callback() {
         const self: Commands = this as any;

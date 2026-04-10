@@ -10,7 +10,7 @@ export default class TGBlock {
     this.plugin = plugin;
 
     this.plugin.registerMarkdownCodeBlockProcessor(
-      "tg",
+      "tg-zh",
       async (source, el, ctx) => {
         this.blockTgHandler(source, el, ctx);
       }

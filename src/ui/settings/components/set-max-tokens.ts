@@ -23,7 +23,7 @@ export class SetMaxTokens extends Modal {
     logger("onOpen");
     const { contentEl } = this;
 
-    contentEl.createEl("h1", { text: "Max number of tokens" });
+    contentEl.createEl("h1", { text: "最大 Token 数" });
     setTimeout(() => {
       contentEl.addEventListener("keyup", (event) => {
         event.preventDefault();
@@ -35,9 +35,9 @@ export class SetMaxTokens extends Modal {
     }, 500);
 
     new Setting(contentEl)
-      .setName("Max number of tokens")
+      .setName("最大 Token 数")
       .setDesc(
-        "The max number of the tokens that will be generated (1000 tokens ~ 750 words)"
+        "生成的最大 Token 数量（1000 Token ≈ 750 个英文单词）"
       )
       .addText((text) =>
         text
@@ -52,7 +52,7 @@ export class SetMaxTokens extends Modal {
 
     new Setting(contentEl).addButton((btn) =>
       btn
-        .setButtonText("Submit")
+        .setButtonText("确定")
         .setCta()
         .onClick(() => {
           this.close();

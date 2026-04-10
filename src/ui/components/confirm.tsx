@@ -3,7 +3,7 @@ import { confirmAlert } from "react-confirm-alert"; // Import
 
 export default async function Confirm(
   description: string,
-  title = "Are you sure?"
+  title = "确认操作"
 ) {
   return new Promise((solve) => {
     confirmAlert({
@@ -21,7 +21,7 @@ export default async function Confirm(
                     onClose();
                   }}
                 >
-                  Cancel
+                  取消
                 </button>
                 <button
                   onClick={() => {
@@ -29,7 +29,7 @@ export default async function Confirm(
                     onClose();
                   }}
                 >
-                  Ok
+                  确定
                 </button>
               </div>
             </div>
