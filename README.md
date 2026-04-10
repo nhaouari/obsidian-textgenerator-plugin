@@ -1,6 +1,11 @@
 <h1 align="center">obsidian-textgenerator-plugin</h1>
 
 <div align="center">
+  <a href="README.md">English</a>
+  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
+  <a href="README_zh.md">中文</a>
+  <br />
+  <br />
   <a href="https://bit.ly/tg_docs">Documentation</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
   <a href="https://discord.gg/mEhvhkRfq5">Discord</a>
