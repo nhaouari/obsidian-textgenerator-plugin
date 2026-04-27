@@ -152,7 +152,7 @@ export default class CustomProvider
     }
 
     if (params.stream) {
-      if (!k.body) return;
+      if (!k.body) return "";
       const reader = k.body.getReader();
       const decoder = new TextDecoder();
       let done = false;
@@ -269,7 +269,10 @@ export default class CustomProvider
             (reqParams.stream &&
               this.streamable &&
               config.streamable &&
-              !useRequest) ||
+              !useRequest &&
+              // Root-cause fix: only stream when a token consumer exists.
+              // Streaming must not affect the returned final string.
+              !!onToken) ||
             false,
           n: 1,
           messages,

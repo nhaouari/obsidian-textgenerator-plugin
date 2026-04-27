@@ -157,7 +157,7 @@ export default class LangchainProvider
     return opts;
   }
 
-  async generate(
+  generate(
     messages: Message[],
     reqParams: Partial<Omit<LLMConfig, "n">>,
     onToken?: (
@@ -174,8 +174,7 @@ export default class LangchainProvider
 
         const params = this.configMerger(reqParams);
 
-        // if the model is streamable
-        params.stream = params.stream && this.streamable;
+        params.stream = !!params.stream && this.streamable;
 
         const llm = await this.getLLM(params);
 
@@ -232,7 +231,9 @@ export default class LangchainProvider
             }),
 
             handleLLMEnd() {
-              if (params.stream) s(allText);
+              // Only resolve from streaming callback when we actually streamed tokens.
+              // Otherwise `allText` will be empty and we'd resolve before the final result is computed.
+              if (params.stream && !!onToken) s(allText);
             },
           },
         ];

@@ -197,7 +197,6 @@ export default class RequestHandler {
       //   result = result.trim();
 
       // output template, template used AFTER the generation happens
-
       return result;
     } catch (error) {
       logger("gen  error", error);
@@ -299,9 +298,6 @@ export default class RequestHandler {
                 onToken,
                 provider.providerOptions
               );
-
-          // output template, template used AFTER the generation happens
-
 
           const t = (provider.providerOptions.output?.length
             ? await Handlebars.compile(
@@ -513,11 +509,6 @@ export default class RequestHandler {
             undefined,
             provider.providerOptions
           );
-
-      // Remove leading/trailing newlines
-      //   result = result.trim();
-
-      // output template, template used AFTER the generation happens
 
       const conf = {
         ...options,
