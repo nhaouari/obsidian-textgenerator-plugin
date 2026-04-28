@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { TooltipProvider } from "#/ui/components/tooltip";
-import { MarkdownView, Editor } from "obsidian";
+import { MarkdownView, Editor, Notice } from "obsidian";
 import TextGeneratorPlugin from "#/main";
 import { InputContext } from "#/scope/context-manager";
+import { createFileWithInput, makeId, openFile } from "#/utils";
 
 interface OverlayToolbarProps {
   view: MarkdownView;
@@ -57,7 +58,22 @@ export default function OverlayToolbarComp({
   }, [showAskAI]);
 
   // Handle AI generation
-  const handleGenerate = async (templatePath?: string) => {
+  type ToolbarAction = "insert" | "clipboard" | "createNote";
+
+  const createOverlayPrompt = (selectedText: string) => {
+    return `- do not add any other text other than the user request
+
+User instructions: continue text
+
+Content to work with:
+
+${selectedText}`;
+  };
+
+  const handleGenerate = async (
+    action: ToolbarAction,
+    templatePath?: string
+  ) => {
     if (!plugin?.textGenerator || isGeneratingRef.current) return;
 
     isGeneratingRef.current = true;
@@ -80,34 +96,70 @@ export default function OverlayToolbarComp({
         });
 
         if (templatePath) {
-          await plugin.textGenerator.generateFromTemplate({
-            params: {},
-            templatePath,
-            insertMetadata: true,
-            editor: CM,
-            activeFile: true,
-          })
+          if (action === "clipboard") {
+            await plugin.textGenerator.generateToClipboard({}, templatePath, true, CM);
+          } else {
+            await plugin.textGenerator.generateFromTemplate({
+              params: {},
+              templatePath,
+              insertMetadata: true,
+              editor: CM,
+              activeFile: action === "createNote" ? false : true,
+            });
+          }
         } else {
-          // Create custom context for AI request
-          const customContext: InputContext = {
-            templatePath: templatePath,
-            context: `- do not add any other text other than the user request\n\nUser instructions: continue text \n\nContent to work with:\n\n${selectedText}`,
-            options: {
-              content: selectedText,
-              selection: selectedText,
-              keys: plugin.getApiKeys(),
-              _variables: {},
-              frontmatter: { mode: "replace" }
-            }
-          };
+          if (action === "insert") {
+            // Create custom context for AI request (insert/replace in editor)
+            const customContext: InputContext = {
+              templatePath: templatePath,
+              context: createOverlayPrompt(selectedText),
+              options: {
+                content: selectedText,
+                selection: selectedText,
+                keys: plugin.getApiKeys(),
+                _variables: {},
+                frontmatter: { mode: "replace" }
+              }
+            };
 
-          // Generate with streaming
-          await plugin.textGenerator.generateStreamInEditor(
-            { stream: true },
-            false,
-            CM,
-            customContext
-          );
+            // Generate with streaming (in-editor)
+            await plugin.textGenerator.generateStreamInEditor(
+              { stream: true },
+              false,
+              CM,
+              customContext
+            );
+          } else {
+            // Non-editor actions need the final string.
+            const prompt = createOverlayPrompt(selectedText);
+            const output = await plugin.textGenerator.LLMProvider.generate(
+              [{ role: "human" as any, content: prompt }],
+              {
+                ...plugin.textGenerator.LLMProvider.getSettings(),
+                stream: false,
+                requestParams: {
+                  signal: new AbortController().signal,
+                },
+              } as any
+            );
+
+            if (action === "clipboard") {
+              await navigator.clipboard.writeText(output || "");
+              new Notice("Generated text copied to clipboard");
+            } else {
+              const title =
+                plugin.app.workspace.activeLeaf?.getDisplayText() || "note";
+              const suggestedPath = plugin.getTextGenPath(
+                `/generations/${title}-${makeId(3)}.md`
+              );
+              const file = await createFileWithInput(
+                suggestedPath,
+                output || "",
+                plugin.app
+              );
+              await openFile(plugin.app, file);
+            }
+          }
         }
       }
 
@@ -127,10 +179,35 @@ export default function OverlayToolbarComp({
 
   const templates = plugin?.textGenerator.getTemplates();
 
-
   const usableTemplates = useMemo(() => {
     if (!templates) return [];
-    return templates.filter((template) => template.commands?.includes("toolbar"));
+    const order: ToolbarAction[] = ["insert", "clipboard", "createNote"];
+    const mapCmdToAction = (cmd: string): ToolbarAction | null => {
+      if (cmd === "toolbar" || cmd === "toolbar:insert") return "insert";
+      if (cmd === "toolbar:clipboard") return "clipboard";
+      if (cmd === "toolbar:createNote") return "createNote";
+      return null;
+    };
+
+    return templates
+      .filter((template) => template.commands?.some((c) => c.startsWith("toolbar")))
+      .flatMap((template) => {
+        const cmds = template.commands || [];
+        const actions = new Set<ToolbarAction>();
+
+        for (const cmd of cmds) {
+          const a = mapCmdToAction(cmd);
+          if (a) actions.add(a);
+        }
+
+        // Back-compat: `toolbar` without a suffix implies insert.
+        if (cmds.includes("toolbar")) actions.add("insert");
+
+        // Stable UI order + avoid duplicates.
+        return order
+          .filter((a) => actions.has(a))
+          .map((action) => ({ template, action }));
+      });
   }, [templates, view]);
 
 
@@ -182,8 +259,6 @@ export default function OverlayToolbarComp({
           <div className="plug-tg-flex plug-tg-items-center plug-tg-gap-3 plug-tg-p-3">
             <div className="plug-tg-flex plug-tg-items-center plug-tg-gap-2">
               <div
-                onClick={() => handleGenerate()}
-
                 className="plug-tg-flex plug-tg-gap-2 plug-tg-items-center plug-tg-justify-center"
               >
                 {isGenerating ? (
@@ -192,38 +267,101 @@ export default function OverlayToolbarComp({
                     <span>Working</span>
                   </div>
                 ) : <>
-                  <button disabled={isGenerating || (!userRequest.trim() && !editor.getSelection())} className="plug-tg-flex plug-tg-cursor-pointer plug-tg-items-center plug-tg-gap-2 plug-tg-bg-purple-600 hover:plug-tg-bg-purple-700 disabled:plug-tg-bg-gray-700 plug-tg-text-white plug-tg-text-sm plug-tg-font-medium plug-tg-rounded-lg plug-tg-transition-all plug-tg-duration-200 disabled:plug-tg-opacity-50 disabled:plug-tg-cursor-not-allowed plug-tg-min-w-[90px] plug-tg-border plug-tg-border-purple-500/20 hover:plug-tg-border-purple-400/30"  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M5 12l5 5L20 7" />
+                  {/* Global quick actions (icon-only) */}
+                  <button
+                    onClick={() => handleGenerate("insert")}
+                    disabled={isGenerating || (!userRequest.trim() && !editor.getSelection())}
+                    className="plug-tg-flex plug-tg-cursor-pointer plug-tg-items-center plug-tg-gap-2 plug-tg-bg-purple-600 hover:plug-tg-bg-purple-700 disabled:plug-tg-bg-gray-700 plug-tg-text-white plug-tg-text-sm plug-tg-font-medium plug-tg-rounded-lg plug-tg-transition-all plug-tg-duration-200 disabled:plug-tg-opacity-50 disabled:plug-tg-cursor-not-allowed plug-tg-border plug-tg-border-purple-500/20 hover:plug-tg-border-purple-400/30 plug-tg-px-2 plug-tg-py-2"
+                    title="Generate & Insert"
+                    aria-label="Generate & Insert"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 5v14" />
+                      <path d="M5 12h14" />
                     </svg>
-                    <span>Generate</span>
                   </button>
 
-                  {usableTemplates.map((template, index) => (
-                    <button
-                      onClick={() => {
-                        handleGenerate(template.path);
-                      }}
-                      disabled={isGenerating || (!userRequest.trim() && !editor.getSelection())}
-                      key={index} 
-                      className="plug-tg-flex plug-tg-cursor-pointer plug-tg-items-center plug-tg-gap-2 plug-tg-bg-purple-600 hover:plug-tg-bg-purple-700 disabled:plug-tg-bg-gray-700 plug-tg-text-white plug-tg-text-sm plug-tg-font-medium plug-tg-rounded-lg plug-tg-transition-all plug-tg-duration-200 disabled:plug-tg-opacity-50 disabled:plug-tg-cursor-not-allowed plug-tg-min-w-[90px] plug-tg-border plug-tg-border-purple-500/20 hover:plug-tg-border-purple-400/30">
-                      <span>{template.name || template.title}</span>
-                    </button>
-                  ))}
+                  <button
+                    onClick={() => handleGenerate("clipboard")}
+                    disabled={isGenerating || (!userRequest.trim() && !editor.getSelection())}
+                    className="plug-tg-flex plug-tg-cursor-pointer plug-tg-items-center plug-tg-gap-2 plug-tg-bg-purple-600 hover:plug-tg-bg-purple-700 disabled:plug-tg-bg-gray-700 plug-tg-text-white plug-tg-text-sm plug-tg-font-medium plug-tg-rounded-lg plug-tg-transition-all plug-tg-duration-200 disabled:plug-tg-opacity-50 disabled:plug-tg-cursor-not-allowed plug-tg-border plug-tg-border-purple-500/20 hover:plug-tg-border-purple-400/30 plug-tg-px-2 plug-tg-py-2"
+                    title="Generate & Clipboard"
+                    aria-label="Generate & Clipboard"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+
+                  <button
+                    onClick={() => handleGenerate("createNote")}
+                    disabled={isGenerating || (!userRequest.trim() && !editor.getSelection())}
+                    className="plug-tg-flex plug-tg-cursor-pointer plug-tg-items-center plug-tg-gap-2 plug-tg-bg-purple-600 hover:plug-tg-bg-purple-700 disabled:plug-tg-bg-gray-700 plug-tg-text-white plug-tg-text-sm plug-tg-font-medium plug-tg-rounded-lg plug-tg-transition-all plug-tg-duration-200 disabled:plug-tg-opacity-50 disabled:plug-tg-cursor-not-allowed plug-tg-border plug-tg-border-purple-500/20 hover:plug-tg-border-purple-400/30 plug-tg-px-2 plug-tg-py-2"
+                    title="Generate & Create Note"
+                    aria-label="Generate & Create Note"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <path d="M14 2v6h6" />
+                      <path d="M12 18v-6" />
+                      <path d="M9 15h6" />
+                    </svg>
+                  </button>
+
+                  <div className="plug-tg-border-l-2 plug-tg-border-gray-700/50" />
+
+                  <div className="plug-tg-flex plug-tg-items-center plug-tg-gap-2 plug-tg-max-w-[420px] plug-tg-overflow-x-auto plug-tg-whitespace-nowrap">
+                    {usableTemplates.map(({ template, action }, index) => (
+                      <button
+                        onClick={() => {
+                          handleGenerate(action, template.path);
+                        }}
+                        disabled={isGenerating || (!userRequest.trim() && !editor.getSelection())}
+                        key={index}
+                        className="plug-tg-flex plug-tg-cursor-pointer plug-tg-items-center plug-tg-gap-2 plug-tg-bg-purple-600 hover:plug-tg-bg-purple-700 disabled:plug-tg-bg-gray-700 plug-tg-text-white plug-tg-text-sm plug-tg-font-medium plug-tg-rounded-lg plug-tg-transition-all plug-tg-duration-200 disabled:plug-tg-opacity-50 disabled:plug-tg-cursor-not-allowed plug-tg-border plug-tg-border-purple-500/20 hover:plug-tg-border-purple-400/30 plug-tg-px-2 plug-tg-py-2 plug-tg-shrink-0"
+                        title={`${template.name || template.title} • ${action === "clipboard"
+                          ? "Clipboard"
+                          : action === "createNote"
+                            ? "Create note"
+                            : "Insert"
+                          }`}
+                        aria-label={`${template.name || template.title} • ${action === "clipboard"
+                          ? "Clipboard"
+                          : action === "createNote"
+                            ? "Create note"
+                            : "Insert"
+                          }`}
+                      >
+                        {action === "clipboard" ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" />
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                          </svg>
+                        ) : action === "createNote" ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <path d="M14 2v6h6" />
+                            <path d="M12 18v-6" />
+                            <path d="M9 15h6" />
+                          </svg>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 5v14" />
+                            <path d="M5 12h14" />
+                          </svg>
+                        )}
+
+                        <span className="plug-tg-text-sm plug-tg-font-medium max-w-[24px] plug-tg-ellipsis plug-tg-text-gray-200 group-hover:plug-tg-text-white plug-tg-transition-colors">
+                          {template.name || template.title}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </>
                 }
               </div>
-{/* 
+              {/* 
               <button
                 onClick={() => {
                   setShowAskAI(false);
