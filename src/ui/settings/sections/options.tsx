@@ -18,8 +18,76 @@ const extendedInfo: Record<
     description: "modal-suggest",
   },
   "set-llm": {
-    name: "Chose LLM",
-    description: "set-llm",
+    name: "Choose LLM",
+    description: "Choose which LLM provider Text Generator uses for requests.",
+  },
+  "set-model": {
+    name: "Choose model",
+    description:
+      "Choose the model for the selected provider (e.g. GPT-4.1, Claude, etc.).",
+  },
+  "packageManager": {
+    name: "Template Packages Manager",
+    description: "Enable the Template Packages Manager command and ribbon icon.",
+  },
+  "open-playground": {
+    name: "Open Template Playground",
+    description:
+      "Enable the Template Playground command (test templates and preview/run output).",
+  },
+  "get-title": {
+    name: "Generate title",
+    description: "Enable the command that generates and replaces the current document title.",
+  },
+  "disable-ribbon-icons": {
+    name: "Disable ribbon icons",
+    description:
+      "Remove Text Generator icons from the Obsidian ribbon (left sidebar on desktop; Ribbon Actions on mobile).",
+  },
+  "overlay-toolbar": {
+    name: "Overlay toolbar",
+    description:
+      'Show a small overlay toolbar when you highlight text in the editor (includes a quick "Generate" action).',
+  },
+  "show-modal-From-template": {
+    name: "Templates: show modal",
+    description:
+      "Enable the command that opens a template in a modal (instead of running it immediately).",
+  },
+  "open-template-as-tool": {
+    name: "Open template as tool",
+    description:
+      "Enable the command that opens a template in the Tool view (run repeatedly in a dedicated panel).",
+  },
+  "text-extractor-tool": {
+    name: "Text extractor tool",
+    description:
+      "Enable the Text Extractor tool (extract text from PDFs, web pages, images, audio, etc. depending on enabled extractors).",
+  },
+  "custom-instruct": {
+    name: "Custom instruct",
+    description:
+      "Enable your custom instruction block that is injected into the context sent to the model.",
+  },
+  "generate-in-right-click-menu": {
+    name: "Editor right‑click: Generate",
+    description:
+      'Add a "Generate" action to the editor right‑click menu for quick access.',
+  },
+  "batch-generate-in-right-click-files-menu": {
+    name: "File right‑click: Batch generate",
+    description:
+      "Add batch generation actions to the file explorer right‑click menu.",
+  },
+  "tg-block-processor": {
+    name: "TG code block processor",
+    description:
+      'Enable rendering and actions for ```tg code blocks (preview + a "Generate Text" button) inside notes.',
+  },
+  "log-slowest-operations": {
+    name: "Log slow operations",
+    description:
+      "Log performance timing information to the console to help debug slow startup/operations.",
   },
 };
 
