@@ -1339,37 +1339,37 @@ export const contextVariablesObj: Record<
 
   inverseSelection: {
     example: `{{inverseSelection}}`,
-    hint: "Shows an error notice when the inverse selection (excluding the currently selected text) is empty.",
+    hint: "Everything in the note except the current selection (can be empty if nothing else exists).",
   },
 
   previousWord: {
     example: `{{previousWord}}`,
-    hint: "Shows an error notice when the previous word relative to the cursor's position is empty.",
+    hint: "The word immediately before the cursor (may be empty at start of line/file).",
   },
 
   nextWord: {
     example: `{{nextWord}}`,
-    hint: "Shows an error notice when the next word relative to the cursor's position is empty.",
+    hint: "The word immediately after the cursor (may be empty at end of line/file).",
   },
 
   cursorParagraph: {
     example: `{{cursorParagraph}}`,
-    hint: "Shows an error notice when the paragraph where the cursor is currently located is empty.",
+    hint: "The current line/paragraph at the cursor position (may be empty on blank lines).",
   },
 
   cursorSentence: {
     example: `{{cursorSentence}}`,
-    hint: "Shows an error notice when the sentence surrounding the cursor is empty.",
+    hint: "The sentence around the cursor (best-effort; may be empty in very short/blank contexts).",
   },
 
   beforeCursor: {
     example: `{{beforeCursor}}`,
-    hint: "Shows an error notice when the text before the cursor's current position is empty.",
+    hint: "All text before the cursor in the current note.",
   },
 
   afterCursor: {
     example: `{{afterCursor}}`,
-    hint: "Shows an error notice when the text after the cursor's current position is empty.",
+    hint: "All text after the cursor in the current note.",
   },
 
   starredBlocks: {
