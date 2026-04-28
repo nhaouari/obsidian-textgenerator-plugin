@@ -5,20 +5,22 @@ import TemplateInputModalView from "./view";
 import { createRoot } from "react-dom/client";
 
 export default class TemplateInputModalUI extends Modal {
-  result: string;
+  result: string = "";
   plugin: TextGeneratorPlugin;
   onSubmit: (result: string) => void;
   root: any;
   variables: string[];
   metadata: any;
   templateContext: any;
+  allUsedVariables?: string[];
   constructor(
     app: App,
     plugin: TextGeneratorPlugin,
     variables: string[],
     metadata: any,
     templateContext: any,
-    onSubmit: (result: string) => void
+    onSubmit: (result: string) => void,
+    allUsedVariables?: string[]
   ) {
     super(app);
     this.plugin = plugin;
@@ -26,6 +28,7 @@ export default class TemplateInputModalUI extends Modal {
     this.variables = variables;
     this.metadata = metadata;
     this.templateContext = templateContext;
+    this.allUsedVariables = allUsedVariables;
   }
 
   async onOpen() {
@@ -40,6 +43,7 @@ export default class TemplateInputModalUI extends Modal {
           templateContext={this.templateContext}
           onSubmit={this.onSubmit}
           metadata={this.metadata}
+          allUsedVariables={this.allUsedVariables}
         />
       </React.StrictMode>
     );

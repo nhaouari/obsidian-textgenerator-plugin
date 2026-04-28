@@ -5,6 +5,7 @@ import validator from "@rjsf/validator-ajv8";
 import { Theme } from "./rjsf";
 import { getDefaultRegistry, FormProps, withTheme } from "@rjsf/core";
 import TextGeneratorPlugin from "#/main";
+import { contextVariablesObj } from "#/scope/context-manager";
 
 const Form = withTheme(Theme);
 
@@ -15,6 +16,7 @@ export default function TemplateInputModalView(props: {
   onSubmit: any;
   metadata: any;
   children?: any;
+  allUsedVariables?: string[];
 }) {
   const handleSubmit = (data: any, event: any) => {
     event.preventDefault();
@@ -98,6 +100,22 @@ export default function TemplateInputModalView(props: {
       }}
       onSubmit={handleSubmit}
     >
+      <div className="plug-tg-border-t-2 plug-tg-flex plug-tg-flex-col plug-tg-gap-2 plug-tg-text-xs plug-tg-opacity-50">
+        Other variables used in the template:
+        <div className="plug-tg-flex plug-tg-flex-col plug-tg-gap-2 plug-tg-text-sm plug-tg-flex-wrap">
+
+          {props.allUsedVariables?.map((v) => (
+            <div key={v} className="plug-tg-text-gray-500">
+              <div className="plug-tg-font-medium">{v}</div>
+              {!!contextVariablesObj?.[v]?.hint && (
+                <div className="plug-tg-text-xs plug-tg-opacity-70">
+                  {contextVariablesObj[v].hint}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
       {props.children}
     </Form>
   );
