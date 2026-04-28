@@ -108,19 +108,42 @@ export class AutoSuggest {
           await this.plugin.textGenerator.loadllm(
             autoSuggestOptions.selectedProvider
           );
-        re = await this.plugin.textGenerator.LLMProvider.generateMultiple(
-          [
-            this.plugin.textGenerator.LLMProvider.makeMessage(system, "system"),
-            this.plugin.textGenerator.LLMProvider.makeMessage(prompt, "user")
-          ],
-          {
-            stream: false,
-            n: parseInt(
-              "" + this.plugin.settings.autoSuggestOptions.numberOfSuggestions
-            ),
-            stop: [this.plugin.settings.autoSuggestOptions.stop],
-          }
+        const messages = [
+          this.plugin.textGenerator.LLMProvider.makeMessage(system, "system"),
+          this.plugin.textGenerator.LLMProvider.makeMessage(prompt, "user"),
+        ];
+
+        const n = parseInt(
+          "" + this.plugin.settings.autoSuggestOptions.numberOfSuggestions
         );
+
+        try {
+          re = await this.plugin.textGenerator.LLMProvider.generateMultiple(
+            messages,
+            {
+              stream: false,
+              n,
+              stop: this.plugin.settings.autoSuggestOptions.stop ? [this.plugin.settings.autoSuggestOptions.stop] : undefined,
+            }
+          );
+        } catch (err: any) {
+          // Some upstream providers (LangChain / Google GenAI, etc.) can throw
+          // `Z.map is not a function` depending on runtime bundling.
+          // Fallback: call `generate()` N times (still returns suggestions).
+          const msg = err?.message || String(err);
+          if (!/Z\.map is not a function/i.test(msg)) throw err;
+
+          logger("generateMultiple failed, falling back to generate()", err);
+          re = [];
+          for (let i = 0; i < Math.max(1, n || 1); i++) {
+            re.push(
+              await this.plugin.textGenerator.LLMProvider.generate(messages, {
+                stream: false,
+                stop: this.plugin.settings.autoSuggestOptions.stop ? [this.plugin.settings.autoSuggestOptions.stop] : undefined,
+              } as any)
+            );
+          }
+        }
       } finally {
         this.plugin.endProcessing(false);
       }
