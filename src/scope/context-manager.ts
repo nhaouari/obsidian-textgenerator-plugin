@@ -30,7 +30,8 @@ import type { ContentManager } from "./content-manager/types";
 import { convertArrayBufferToBase64Link } from "#/LLMProviders/utils";
 
 import mime from "mime-types";
-import { InputOptions } from "#/lib/models";
+import type { ModelType } from "#/lib/models";
+type InputOptions = ModelType["inputOptions"];
 
 interface CodeBlock {
   type: string;
@@ -161,7 +162,7 @@ export default class ContextManager {
 
       const contextTemplate = this.plugin.settings.context.customInstructEnabled
         ? this.plugin.settings.context.customInstruct ||
-          this.plugin.defaultSettings.context.customInstruct
+        this.plugin.defaultSettings.context.customInstruct
         : "{{tg_selection}}";
 
       const options = await this.getDefaultContext(
@@ -404,9 +405,9 @@ export default class ContextManager {
     const title =
       vars["title"] || vars["mentions"]
         ? (filePath
-            ? this.app.vault.getAbstractFileByPath(filePath)?.name ||
-              activeFile?.basename
-            : activeFile?.basename) || ""
+          ? this.app.vault.getAbstractFileByPath(filePath)?.name ||
+          activeFile?.basename
+          : activeFile?.basename) || ""
         : "";
 
     const activeDocCache = this.getMetaData(filePath || "");
@@ -550,8 +551,8 @@ export default class ContextManager {
       // @ts-ignore
       if (
         elements[i].type == "image_url" &&
-        elements[i].image_url?.url &&
-        !elements[i].image_url.url.startsWith("http")
+        (elements[i].image_url as any)?.url &&
+        !(elements[i].image_url as any).url.startsWith("http")
       ) {
         // @ts-ignore
         const path = elements[i].image_url?.url;
@@ -651,18 +652,18 @@ export default class ContextManager {
 
     const preRunnerTemplate = preRunnerContent
       ? this.handlebarsMiddleware(
-          Handlebars.compile(preRunnerContent, {
-            noEscape: true,
-          })
-        )
+        Handlebars.compile(preRunnerContent, {
+          noEscape: true,
+        })
+      )
       : null;
 
     const outputTemplate = outputContent
       ? this.handlebarsMiddleware(
-          Handlebars.compile(outputContent, {
-            noEscape: true,
-          })
-        )
+        Handlebars.compile(outputContent, {
+          noEscape: true,
+        })
+      )
       : null;
 
     return {
@@ -980,13 +981,13 @@ export default class ContextManager {
     const extractorMethods = getExtractorMethods().filter(
       (e) =>
         this.plugin.settings.extractorsOptions[
-          e as keyof typeof this.plugin.settings.extractorsOptions
+        e as keyof typeof this.plugin.settings.extractorsOptions
         ]
     );
 
     const targetFile = filePath
       ? this.app.vault.getAbstractFileByPath(filePath) ||
-        this.app.workspace.getActiveFile()
+      this.app.workspace.getActiveFile()
       : this.app.workspace.getActiveFile();
 
     const targetFileContent = editor
@@ -1033,7 +1034,7 @@ export default class ContextManager {
 
       frontmatter: {
         ...cache?.frontmatter,
-        outputToBlockQuote: undefined || cache?.frontmatter?.outputToBlockQuote,
+        outputToBlockQuote: cache?.frontmatter?.outputToBlockQuote || false,
 
         ...(!withoutCompatibility && {
           PromptInfo: {
