@@ -22,6 +22,7 @@ import EmbeddingScope from "../scope/embeddings";
 import { IGNORE_IN_YAML } from "../constants";
 import merge from "lodash.merge";
 import { ContentManager } from "../scope/content-manager/types";
+import { contextVariablesObj } from "../scope/context-manager";
 
 export default class TextGenerator extends RequestHandler {
   plugin: TextGeneratorPlugin;
@@ -651,11 +652,15 @@ ${removeYAML(content)}
     const { inputContent, outputContent, preRunnerContent } =
       this.plugin.contextManager.splitTemplate(templateContent as any);
 
-    const variables = this.plugin.contextManager.getHBVariablesOfTemplate(
-      preRunnerContent,
-      inputContent,
-      outputContent
-    );
+    const variables = this.plugin.contextManager
+      .getHBVariablesOfTemplate(
+        preRunnerContent,
+        inputContent,
+        outputContent
+      )
+      // Ignore all built-in context variables (the ones shown in the playground "Examples").
+      // Only custom vars should trigger the input modal.
+      .filter((v) => !contextVariablesObj[v]);
 
     const metadata = this.getMetadata(props.templatePath || "");
     const templateContext =
