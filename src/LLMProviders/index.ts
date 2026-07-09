@@ -14,6 +14,7 @@ import LangchainChatGoogleGenerativeAIProvider from "./langchain/googleGenerativ
 import LangchainOpenAIAgentProvider from "./langchain/openaiAgent";
 import LangchainPerplexityChatProvider from "./langchain/perplexityChat";
 import LangchainTogetherChatProvider from "./langchain/togetherChat";
+import LangchainMiniMaxChatProvider from "./langchain/minimaxChat";
 // import LangchainReplicaProvider from "./langchain/replica"
 
 // import { LOCClone1, LOCClone2 } from "./langchain/clones";
@@ -45,6 +46,9 @@ export const defaultProviders = [
 
   // together ai
   LangchainTogetherChatProvider,
+
+  // minimax
+  LangchainMiniMaxChatProvider,
 
   // azure
   LangchainAzureOpenAIChatProvider,

@@ -1171,6 +1171,13 @@ const AI_MODELS: Record<
     maxTokens: 228700,
     llm: ["Together AI (Langchain)"],
   },
+  "MiniMax-M3": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.0006, completion: 0.0024 },
+    maxTokens: 1000000,
+    llm: ["MiniMax (Langchain)"],
+    isThinking: true,
+  },
   "google/gemma-3n-E4B-it": {
     encoding: "cl100k_base",
     prices: { prompt: 0.00002, completion: 0.00004 },
