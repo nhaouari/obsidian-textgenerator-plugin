@@ -128,7 +128,10 @@ export function ModelsHandler(props: {
   }, []);
 
   const modelName = "" + config.model as string;
-  const model = (AI_MODELS as AI_MODELS_Type)[modelName.toLowerCase()] || (AI_MODELS as AI_MODELS_Type)["models" + modelName.toLowerCase()];
+  const model =
+    (AI_MODELS as AI_MODELS_Type)[modelName] ||
+    (AI_MODELS as AI_MODELS_Type)[modelName.toLowerCase()] ||
+    (AI_MODELS as AI_MODELS_Type)["models" + modelName.toLowerCase()];
 
   const supportedInputs = Object.keys(model?.inputOptions || {}).filter(e => !!e);
   return (
@@ -332,4 +335,3 @@ export function HeaderEditor({
     </div>
   );
 }
-
