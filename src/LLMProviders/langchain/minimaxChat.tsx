@@ -12,6 +12,7 @@ import {
   calculateMiniMaxPrice,
   getMiniMaxEndpoint,
   getMiniMaxModelKwargs,
+  MINIMAX_DEFAULT_THINKING_MODES,
   MINIMAX_DOCS,
   MINIMAX_MODELS,
   MiniMaxProtocol,
@@ -37,6 +38,7 @@ const openAIDefaultValues = {
 const anthropicDefaultValues = {
   ...commonDefaultValues,
   basePath: getMiniMaxEndpoint("Global", "anthropic"),
+  thinkingMode: MINIMAX_DEFAULT_THINKING_MODES.anthropic,
 };
 
 type MiniMaxDefaultValues = {

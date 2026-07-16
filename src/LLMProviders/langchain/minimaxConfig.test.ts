@@ -5,6 +5,7 @@ import {
   calculateMiniMaxPrice,
   getMiniMaxEndpoint,
   getMiniMaxModelKwargs,
+  MINIMAX_DEFAULT_THINKING_MODES,
   MINIMAX_MODELS,
   MINIMAX_PRICING,
   normalizeMiniMaxMessages,
@@ -13,6 +14,10 @@ import {
 } from "./minimaxConfig";
 
 describe("MiniMax provider configuration", () => {
+  it("defaults Anthropic-compatible M3 requests to disabled thinking", () => {
+    expect(MINIMAX_DEFAULT_THINKING_MODES.anthropic).toBe("disabled");
+  });
+
   it("exposes both protocols in both regions", () => {
     expect(getMiniMaxEndpoint("Global", "openai")).toBe(
       "https://api.minimax.io/v1"

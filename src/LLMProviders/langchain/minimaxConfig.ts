@@ -11,6 +11,11 @@ export type MiniMaxRegion = "Global" | "China";
 export type MiniMaxServiceTier = "standard" | "priority";
 export type MiniMaxThinkingMode = "adaptive" | "disabled";
 
+export const MINIMAX_DEFAULT_THINKING_MODES = {
+  openai: "adaptive",
+  anthropic: "disabled",
+} as const;
+
 export const MINIMAX_ENDPOINTS = {
   Global: {
     openai: "https://api.minimax.io/v1",
