@@ -1,4 +1,8 @@
 import type { LLMProviderType } from "../types";
+import {
+  MINIMAX_MODELS,
+  MINIMAX_PRICING,
+} from "#/LLMProviders/langchain/minimaxConfig";
 
 export type ModelType = {
   encoding: string;
@@ -6,6 +10,23 @@ export type ModelType = {
     prompt: number;
     completion: number;
   };
+  cachePrices?: {
+    read: number;
+    write: number | null;
+  };
+  priceTiers?: {
+    serviceTier: "standard" | "priority";
+    inputTokensLte?: number;
+    inputTokensGt?: number;
+    prices: {
+      prompt: number;
+      completion: number;
+    };
+    cachePrices: {
+      read: number;
+      write: number | null;
+    };
+  }[];
   maxTokens: number;
   llm: LLMProviderType[];
   order?: number;
@@ -1170,6 +1191,24 @@ const AI_MODELS: Record<
     prices: { prompt: 0.0003, completion: 0.0012 },
     maxTokens: 228700,
     llm: ["Together AI (Langchain)"],
+  },
+  [MINIMAX_MODELS.m3]: {
+    encoding: "cl100k_base",
+    prices: MINIMAX_PRICING[MINIMAX_MODELS.m3].tiers[0].prices,
+    cachePrices: MINIMAX_PRICING[MINIMAX_MODELS.m3].tiers[0].cachePrices,
+    priceTiers: [...MINIMAX_PRICING[MINIMAX_MODELS.m3].tiers],
+    maxTokens: MINIMAX_PRICING[MINIMAX_MODELS.m3].contextWindow,
+    llm: ["MiniMax OpenAI (Langchain)", "MiniMax Anthropic (Langchain)"],
+    isThinking: true,
+    inputOptions: { images: true, videos: true },
+  },
+  [MINIMAX_MODELS.m27]: {
+    encoding: "cl100k_base",
+    prices: MINIMAX_PRICING[MINIMAX_MODELS.m27].prices,
+    cachePrices: MINIMAX_PRICING[MINIMAX_MODELS.m27].cachePrices,
+    maxTokens: MINIMAX_PRICING[MINIMAX_MODELS.m27].contextWindow,
+    llm: ["MiniMax OpenAI (Langchain)", "MiniMax Anthropic (Langchain)"],
+    isThinking: true,
   },
   "google/gemma-3n-E4B-it": {
     encoding: "cl100k_base",

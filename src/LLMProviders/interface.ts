@@ -87,4 +87,10 @@ export interface LLMConfig {
   reasoningEffort?: "low" | "medium" | "high";
   /** Manual override: treat this model as a thinking/reasoning model regardless of auto-detection */
   isThinkingModel?: boolean;
+  /** Thinking mode for models that support adaptive and disabled modes */
+  thinkingMode?: "adaptive" | "disabled";
+  /** Request admission tier for providers that support tier selection */
+  serviceTier?: "standard" | "priority";
+  /** Official API region selected in provider settings */
+  apiRegion?: "Global" | "China";
 }
