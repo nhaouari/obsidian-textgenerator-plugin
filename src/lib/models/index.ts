@@ -154,6 +154,27 @@ const AI_MODELS: Record<
     },
   },
   // ────────────────────────────────────────────────────────────────────────────
+  "claude-sonnet-4-5": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.003,
+      completion: 0.015,
+    },
+    maxTokens: 200000,
+    llm: ["API-Route (Langchain)"],
+    inputOptions: {
+      images: true,
+    },
+  },
+  "deepseek-chat": {
+    encoding: "cl100k_base",
+    prices: {
+      prompt: 0.00014,
+      completion: 0.00028,
+    },
+    maxTokens: 64000,
+    llm: ["API-Route (Langchain)"],
+  },
   "gpt-4o": {
     encoding: "cl100k_base",
     prices: {
@@ -161,7 +182,7 @@ const AI_MODELS: Record<
       completion: 0.005,
     },
     maxTokens: 128000,
-    llm: ["OpenAI Chat (Langchain)"],
+    llm: ["OpenAI Chat (Langchain)", "API-Route (Langchain)"],
     inputOptions: {
       images: true,
     },
@@ -826,7 +847,7 @@ const AI_MODELS: Record<
       completion: 0.000000075,
     },
     maxTokens: 600,
-    llm: ["OpenAI Chat (Langchain)"],
+    llm: ["OpenAI Chat (Langchain)", "API-Route (Langchain)"],
   },
   "gpt-4o-mini-2024-07-18": {
     encoding: "cl100k_base",
