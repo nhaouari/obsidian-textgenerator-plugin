@@ -14,6 +14,7 @@ import LangchainChatGoogleGenerativeAIProvider from "./langchain/googleGenerativ
 import LangchainOpenAIAgentProvider from "./langchain/openaiAgent";
 import LangchainPerplexityChatProvider from "./langchain/perplexityChat";
 import LangchainTogetherChatProvider from "./langchain/togetherChat";
+import LangchainApiRouteChatProvider from "./langchain/apiRouteChat";
 import LangchainMiniMaxOpenAIProvider, {
   LangchainMiniMaxAnthropicProvider,
 } from "./langchain/minimaxChat";
@@ -48,6 +49,9 @@ export const defaultProviders = [
 
   // together ai
   LangchainTogetherChatProvider,
+
+  // api-route
+  LangchainApiRouteChatProvider,
 
   // minimax
   LangchainMiniMaxOpenAIProvider,
