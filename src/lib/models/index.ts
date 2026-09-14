@@ -161,7 +161,7 @@ const AI_MODELS: Record<
       completion: 0.015,
     },
     maxTokens: 200000,
-    llm: ["API-Route (Langchain)"],
+    llm: ["API Route (Langchain)"],
     inputOptions: {
       images: true,
     },
@@ -173,7 +173,7 @@ const AI_MODELS: Record<
       completion: 0.00028,
     },
     maxTokens: 64000,
-    llm: ["API-Route (Langchain)"],
+    llm: ["API Route (Langchain)"],
   },
   "gpt-4o": {
     encoding: "cl100k_base",
@@ -182,7 +182,7 @@ const AI_MODELS: Record<
       completion: 0.005,
     },
     maxTokens: 128000,
-    llm: ["OpenAI Chat (Langchain)", "API-Route (Langchain)"],
+    llm: ["OpenAI Chat (Langchain)", "API Route (Langchain)"],
     inputOptions: {
       images: true,
     },
@@ -847,7 +847,7 @@ const AI_MODELS: Record<
       completion: 0.000000075,
     },
     maxTokens: 600,
-    llm: ["OpenAI Chat (Langchain)", "API-Route (Langchain)"],
+    llm: ["OpenAI Chat (Langchain)", "API Route (Langchain)"],
   },
   "gpt-4o-mini-2024-07-18": {
     encoding: "cl100k_base",

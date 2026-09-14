@@ -19,9 +19,9 @@ export default class LangchainApiRouteChatProvider
   implements LLMProviderInterface
 {
   static provider = "Langchain" as const;
-  static id = "API-Route (Langchain)" as const;
+  static id = "API Route (Langchain)" as const;
   static slug = "apiRoute" as const;
-  static displayName = "API-Route";
+  static displayName = "API Route";
 
   streamable = true;
 
@@ -69,7 +69,7 @@ export default class LangchainApiRouteChatProvider
       <>
         <SettingItem
           name="API Key"
-          description="API-Route API key"
+          description="API Route API key"
           register={props.register}
           sectionId={props.sectionId}
         >
@@ -88,7 +88,7 @@ export default class LangchainApiRouteChatProvider
 
         <SettingItem
           name="Base Path"
-          description="API-Route API endpoint"
+          description="API Route API endpoint"
           register={props.register}
           sectionId={props.sectionId}
         >
