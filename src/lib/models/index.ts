@@ -28,6 +28,7 @@ export type ModelType = {
     };
   }[];
   maxTokens: number;
+  maxOutputTokens?: number;
   llm: LLMProviderType[];
   order?: number;
   /** Indicates if this is a thinking/reasoning model (o1, o3, Claude with extended thinking) */
@@ -1190,7 +1191,27 @@ const AI_MODELS: Record<
     encoding: "cl100k_base",
     prices: { prompt: 0.0003, completion: 0.0012 },
     maxTokens: 228700,
+    llm: [],
+  },
+  "MiniMaxAI/MiniMax-M3": {
+    encoding: "cl100k_base",
+    prices: { prompt: 0.0003, completion: 0.0012 },
+    cachePrices: { read: 0.00006, write: null },
+    maxTokens: 524_288,
     llm: ["Together AI (Langchain)"],
+    isThinking: true,
+    inputOptions: { images: true },
+  },
+  [MINIMAX_MODELS.flash]: {
+    encoding: "cl100k_base",
+    prices: MINIMAX_PRICING[MINIMAX_MODELS.flash].prices,
+    cachePrices: MINIMAX_PRICING[MINIMAX_MODELS.flash].cachePrices,
+    maxTokens: MINIMAX_PRICING[MINIMAX_MODELS.flash].contextWindow,
+    maxOutputTokens: MINIMAX_PRICING[MINIMAX_MODELS.flash].maxOutputTokens,
+    llm: ["MiniMax OpenAI (Langchain)", "MiniMax Anthropic (Langchain)"],
+    order: 1,
+    isThinking: true,
+    inputOptions: { images: true, videos: true },
   },
   [MINIMAX_MODELS.m3]: {
     encoding: "cl100k_base",
@@ -1198,6 +1219,7 @@ const AI_MODELS: Record<
     cachePrices: MINIMAX_PRICING[MINIMAX_MODELS.m3].tiers[0].cachePrices,
     priceTiers: [...MINIMAX_PRICING[MINIMAX_MODELS.m3].tiers],
     maxTokens: MINIMAX_PRICING[MINIMAX_MODELS.m3].contextWindow,
+    maxOutputTokens: MINIMAX_PRICING[MINIMAX_MODELS.m3].maxOutputTokens,
     llm: ["MiniMax OpenAI (Langchain)", "MiniMax Anthropic (Langchain)"],
     isThinking: true,
     inputOptions: { images: true, videos: true },
@@ -1207,7 +1229,7 @@ const AI_MODELS: Record<
     prices: MINIMAX_PRICING[MINIMAX_MODELS.m27].prices,
     cachePrices: MINIMAX_PRICING[MINIMAX_MODELS.m27].cachePrices,
     maxTokens: MINIMAX_PRICING[MINIMAX_MODELS.m27].contextWindow,
-    llm: ["MiniMax OpenAI (Langchain)", "MiniMax Anthropic (Langchain)"],
+    llm: [],
     isThinking: true,
   },
   "google/gemma-3n-E4B-it": {

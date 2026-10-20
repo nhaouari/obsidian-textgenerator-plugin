@@ -460,7 +460,7 @@ export function debounce<T extends unknown[], R>(
 }
 
 // @ts-ignore
-export function getFilePathByName(name: string, _app?: App = app): string | undefined {
+export function getFilePathByName(name: string, _app: App = app): string | undefined {
   return _app.metadataCache.getFirstLinkpathDest(name, "")?.path;
 }
 

@@ -91,6 +91,8 @@ export interface LLMConfig {
   thinkingMode?: "adaptive" | "disabled";
   /** Request admission tier for providers that support tier selection */
   serviceTier?: "standard" | "priority";
+  /** Adaptive reasoning effort for MiniMax Flash */
+  minimaxReasoningEffort?: "low" | "medium" | "high" | "xhigh" | "max";
   /** Official API region selected in provider settings */
   apiRegion?: "Global" | "China";
 }
