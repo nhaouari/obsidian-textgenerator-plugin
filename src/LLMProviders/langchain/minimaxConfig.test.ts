@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import AI_MODELS from "../../lib/models";
 import {
   calculateMiniMaxPrice,
+  filterMiniMaxModelChoices,
   getMiniMaxEndpoint,
   getMiniMaxModelKwargs,
   MINIMAX_DEFAULT_THINKING_MODES,
@@ -14,6 +15,90 @@ import {
 } from "./minimaxConfig";
 
 describe("MiniMax provider configuration", () => {
+  it("offers Flash first and M3 while retaining an explicit saved choice", () => {
+    const models = [
+      MINIMAX_MODELS.m27,
+      MINIMAX_MODELS.m3,
+      MINIMAX_MODELS.flash,
+    ];
+    for (const provider of [
+      "MiniMax OpenAI (Langchain)",
+      "MiniMax Anthropic (Langchain)",
+    ]) {
+      expect(filterMiniMaxModelChoices(models, provider)).toEqual([
+        MINIMAX_MODELS.flash,
+        MINIMAX_MODELS.m3,
+      ]);
+      expect(
+        filterMiniMaxModelChoices(models, provider, MINIMAX_MODELS.m27)
+      ).toEqual([MINIMAX_MODELS.flash, MINIMAX_MODELS.m3, MINIMAX_MODELS.m27]);
+      expect(filterMiniMaxModelChoices(models, provider, "custom")).toContain(
+        "custom"
+      );
+      expect(
+        filterMiniMaxModelChoices(
+          [...models, "abab6.5s-chat", "non-MiniMax"],
+          provider
+        )
+      ).toEqual([MINIMAX_MODELS.flash, MINIMAX_MODELS.m3, "non-MiniMax"]);
+      const catalog = Object.entries(AI_MODELS)
+        .filter(([, value]) => value.llm.includes(provider as any))
+        .map(([id]) => id);
+      expect(catalog).toEqual([MINIMAX_MODELS.flash, MINIMAX_MODELS.m3]);
+    }
+  });
+
+  it("filters refreshed gateway text choices without changing other models or media", () => {
+    const models = [
+      "other-model",
+      "MiniMaxAI/MiniMax-M2.5",
+      "MiniMaxAI/MiniMax-M3",
+      "MiniMaxAI/MiniMax-M3.1-Flash",
+      "MiniMaxAI/MiniMax-H3",
+    ];
+    expect(
+      filterMiniMaxModelChoices(models, "Together AI (Langchain)")
+    ).toEqual(["other-model", "MiniMaxAI/MiniMax-M3", "MiniMaxAI/MiniMax-H3"]);
+    expect(
+      filterMiniMaxModelChoices(
+        models,
+        "Together AI (Langchain)",
+        "MiniMaxAI/MiniMax-M2.5"
+      )
+    ).toContain("MiniMaxAI/MiniMax-M2.5");
+    expect(filterMiniMaxModelChoices(models, "custom-provider")).toBe(models);
+    expect(AI_MODELS["MiniMaxAI/MiniMax-M3"]).toMatchObject({
+      maxTokens: 524_288,
+      prices: { prompt: 0.0003, completion: 0.0012 },
+    });
+  });
+
+  it("records Flash metadata and prices without assuming cache-write pricing", () => {
+    expect(AI_MODELS[MINIMAX_MODELS.flash]).toMatchObject({
+      maxTokens: 1_000_000,
+      maxOutputTokens: 524_288,
+      cachePrices: { read: 0.000015, write: null },
+    });
+    expect(
+      calculateMiniMaxPrice(1_000_000, 1_000, MINIMAX_MODELS.flash)
+    ).toBeCloseTo(0.1506);
+  });
+
+  it("rejects unsupported Flash effort and preserves explicit legacy kwargs", () => {
+    expect(() =>
+      getMiniMaxModelKwargs(MINIMAX_MODELS.flash, "adaptive", "standard", {
+        reasoning_effort: "none",
+      })
+    ).toThrow("effort must be");
+    const kwargs = {
+      thinking: { type: "disabled" },
+      service_tier: "priority",
+      reasoning_split: false,
+    };
+    expect(
+      getMiniMaxModelKwargs(MINIMAX_MODELS.m27, "adaptive", "standard", kwargs)
+    ).toBe(kwargs);
+  });
   it("defaults Anthropic-compatible M3 requests to disabled thinking", () => {
     expect(MINIMAX_DEFAULT_THINKING_MODES.anthropic).toBe("disabled");
   });
@@ -63,7 +148,7 @@ describe("MiniMax provider configuration", () => {
     ).toBeCloseTo(0.0312);
   });
 
-  it("registers both target models with complete metadata", () => {
+  it("retains M3 and saved legacy M2.7 metadata", () => {
     const m3 = AI_MODELS[MINIMAX_MODELS.m3];
     const m27 = AI_MODELS[MINIMAX_MODELS.m27];
 
@@ -81,7 +166,7 @@ describe("MiniMax provider configuration", () => {
       isThinking: true,
       prices: { prompt: 0.0003, completion: 0.0012 },
       cachePrices: { read: 0.00006, write: 0.000375 },
-      llm: ["MiniMax OpenAI (Langchain)", "MiniMax Anthropic (Langchain)"],
+      llm: [],
     });
   });
 

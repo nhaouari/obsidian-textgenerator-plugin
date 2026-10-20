@@ -1,6 +1,7 @@
 import type { Message } from "../../types";
 
 export const MINIMAX_MODELS = {
+  flash: "MiniMax-M3.1-Flash",
   m3: "MiniMax-M3",
   m27: "MiniMax-M2.7",
 } as const;
@@ -10,6 +11,44 @@ export type MiniMaxProtocol = "openai" | "anthropic";
 export type MiniMaxRegion = "Global" | "China";
 export type MiniMaxServiceTier = "standard" | "priority";
 export type MiniMaxThinkingMode = "adaptive" | "disabled";
+export const MINIMAX_EFFORTS = [
+  "low",
+  "medium",
+  "high",
+  "xhigh",
+  "max",
+] as const;
+export type MiniMaxEffort = (typeof MINIMAX_EFFORTS)[number];
+
+// Filter suggestions only; explicitly saved and custom selections remain usable.
+export function filterMiniMaxModelChoices(
+  models: string[],
+  providerId: string,
+  selected?: string
+) {
+  const direct =
+    providerId === "MiniMax OpenAI (Langchain)" ||
+    providerId === "MiniMax Anthropic (Langchain)";
+  const together = providerId === "Together AI (Langchain)";
+  if (!direct && !together) return models;
+  const current = direct
+    ? [MINIMAX_MODELS.flash, MINIMAX_MODELS.m3]
+    : ["MiniMaxAI/MiniMax-M3"];
+  const choices = models.filter(
+    (model) =>
+      !/^(?:(?:MiniMaxAI\/)?MiniMax-(?:M\d|Text)|abab[\d.]+[a-z]*-chat$)/i.test(
+        model
+      ) || current.includes(model)
+  );
+  if (direct)
+    choices.sort((a, b) => {
+      const rank = (model: string) =>
+        current.includes(model) ? current.indexOf(model) : current.length;
+      return rank(a) - rank(b);
+    });
+  if (selected && !choices.includes(selected)) choices.push(selected);
+  return choices;
+}
 
 export const MINIMAX_DEFAULT_THINKING_MODES = {
   openai: "adaptive",
@@ -46,8 +85,15 @@ const standardShortContextPrices = {
 } as const;
 
 export const MINIMAX_PRICING = {
+  [MINIMAX_MODELS.flash]: {
+    contextWindow: 1_000_000,
+    maxOutputTokens: 524_288,
+    prices: { prompt: 0.00015, completion: 0.0006 },
+    cachePrices: { read: 0.000015, write: null },
+  },
   [MINIMAX_MODELS.m3]: {
     contextWindow: 1_000_000,
+    maxOutputTokens: 1_000_000,
     tiers: [
       {
         serviceTier: "standard",
@@ -93,8 +139,37 @@ export function getMiniMaxModelKwargs(
   model: string,
   thinkingMode: MiniMaxThinkingMode = "adaptive",
   serviceTier: MiniMaxServiceTier = "standard",
-  modelKwargs: Record<string, unknown> = {}
+  modelKwargs: Record<string, unknown> = {},
+  protocol: MiniMaxProtocol = "openai",
+  effort?: string
 ) {
+  if (model === MINIMAX_MODELS.flash) {
+    const kwargs = { ...modelKwargs };
+    const outputConfig = (kwargs.output_config || {}) as Record<
+      string,
+      unknown
+    >;
+    const reasoningEffort =
+      effort ||
+      (protocol === "openai" ? kwargs.reasoning_effort : outputConfig.effort) ||
+      "max";
+    if (!MINIMAX_EFFORTS.includes(reasoningEffort as MiniMaxEffort)) {
+      throw new Error(
+        "MiniMax-M3.1-Flash effort must be low, medium, high, xhigh, or max"
+      );
+    }
+    delete kwargs.service_tier;
+    delete kwargs.reasoning_effort;
+    delete kwargs.output_config;
+    if (kwargs.reasoning_split === false) delete kwargs.reasoning_split;
+    return {
+      ...kwargs,
+      thinking: { type: "adaptive" },
+      ...(protocol === "openai"
+        ? { reasoning_effort: reasoningEffort }
+        : { output_config: { ...outputConfig, effort: reasoningEffort } }),
+    };
+  }
   if (model !== MINIMAX_MODELS.m3) return modelKwargs;
 
   return {
@@ -127,9 +202,9 @@ export function calculateMiniMaxPrice(
     );
   }
 
-  if (model !== MINIMAX_MODELS.m27) return 0;
+  if (model !== MINIMAX_MODELS.m27 && model !== MINIMAX_MODELS.flash) return 0;
 
-  const prices = MINIMAX_PRICING[MINIMAX_MODELS.m27].prices;
+  const prices = MINIMAX_PRICING[model].prices;
   return (
     (inputTokens * prices.prompt + outputTokens * prices.completion) / 1000
   );

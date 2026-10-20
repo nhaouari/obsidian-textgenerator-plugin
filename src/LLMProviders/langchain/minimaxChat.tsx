@@ -14,6 +14,7 @@ import {
   getMiniMaxModelKwargs,
   MINIMAX_DEFAULT_THINKING_MODES,
   MINIMAX_DOCS,
+  MINIMAX_EFFORTS,
   MINIMAX_MODELS,
   MiniMaxProtocol,
   MiniMaxRegion,
@@ -25,7 +26,7 @@ import {
 
 const commonDefaultValues = {
   apiRegion: "Global" as MiniMaxRegion,
-  model: MINIMAX_MODELS.m3,
+  model: MINIMAX_MODELS.flash,
   thinkingMode: "adaptive" as const,
   serviceTier: "standard" as const,
 };
@@ -64,6 +65,8 @@ function MiniMaxSettings({
     ...defaultValues,
   });
   const isM3 = (config.model || defaultValues.model) === MINIMAX_MODELS.m3;
+  const isFlash =
+    (config.model || defaultValues.model) === MINIMAX_MODELS.flash;
 
   return (
     <>
@@ -128,6 +131,25 @@ function MiniMaxSettings({
         default_values={defaultValues}
         config={config}
       />
+
+      {isFlash && (
+        <SettingItem
+          name="Reasoning Effort"
+          description="Flash always uses adaptive thinking."
+          register={props.register}
+          sectionId={props.sectionId}
+        >
+          <Dropdown
+            value={config.minimaxReasoningEffort || "max"}
+            values={[...MINIMAX_EFFORTS]}
+            setValue={async (value) => {
+              config.minimaxReasoningEffort = value;
+              global.triggerReload();
+              await global.plugin.saveSettings();
+            }}
+          />
+        </SettingItem>
+      )}
 
       {isM3 && (
         <>
@@ -204,6 +226,19 @@ abstract class LangchainMiniMaxBaseProvider extends LangchainBase {
   abstract default_values: MiniMaxDefaultValues;
   abstract getConfig(options: LLMConfig): any;
 
+  configMerger(options: Partial<LLMConfig>) {
+    const merged = super.configMerger(options);
+    return {
+      ...merged,
+      model: merged.model || this.default_values.model,
+      basePath:
+        merged.basePath ||
+        getMiniMaxEndpoint(merged.apiRegion || "Global", this.protocol),
+      thinkingMode:
+        merged.thinkingMode || MINIMAX_DEFAULT_THINKING_MODES[this.protocol],
+    };
+  }
+
   RenderSettings(props: Parameters<LLMProviderInterface["RenderSettings"]>[0]) {
     return (
       <MiniMaxSettings
@@ -242,7 +277,7 @@ abstract class LangchainMiniMaxBaseProvider extends LangchainBase {
     return calculateMiniMaxPrice(
       tokens,
       reqParams.max_tokens || 100,
-      reqParams.model || MINIMAX_MODELS.m3,
+      this.configMerger(reqParams).model,
       reqParams.serviceTier || "standard"
     );
   }
@@ -277,7 +312,9 @@ export default class LangchainMiniMaxOpenAIProvider
         options.model,
         options.thinkingMode,
         options.serviceTier,
-        options.modelKwargs
+        options.modelKwargs,
+        this.protocol,
+        options.minimaxReasoningEffort
       ),
       modelName: options.model,
       maxTokens: +options.max_tokens,
@@ -335,7 +372,9 @@ export class LangchainMiniMaxAnthropicProvider
       options.model,
       options.thinkingMode,
       options.serviceTier,
-      options.modelKwargs
+      options.modelKwargs,
+      this.protocol,
+      options.minimaxReasoningEffort
     );
     const { thinking, service_tier, ...invocationKwargs } = modelKwargs as any;
 

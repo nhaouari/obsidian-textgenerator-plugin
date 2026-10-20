@@ -16,6 +16,7 @@ import {
 } from "./refs";
 import { arrayBufferToBase64 } from "obsidian";
 import { default_values } from "./custom/custom";
+import { filterMiniMaxModelChoices } from "./langchain/minimaxConfig";
 
 type LLMProviderType = "Default (Custom)" | "OpenAI Chat (Langchain)" | "OpenAI Instruct (Langchain)" | "OpenAI Agent (Langchain)" | "Google GenerativeAI (Langchain)" | "Google Palm (Langchain)" | "MistralAI Chat (Langchain)" | "Anthropic Chat (Langchain)" | "Anthropic Legacy (Custom)";
 
@@ -133,6 +134,7 @@ export function ModelsHandler(props: {
     (AI_MODELS as AI_MODELS_Type)[modelName.toLowerCase()] ||
     (AI_MODELS as AI_MODELS_Type)["models" + modelName.toLowerCase()];
 
+  const modelChoices = filterMiniMaxModelChoices(models, id, config.model);
   const supportedInputs = Object.keys(model?.inputOptions || {}).filter(e => !!e);
   return (
     <>
@@ -151,7 +153,7 @@ export function ModelsHandler(props: {
                   await global.plugin.saveSettings();
                   global.triggerReload();
                 }}
-                values={models}
+                values={modelChoices}
               />
             ) : (
               <Dropdown
@@ -161,7 +163,7 @@ export function ModelsHandler(props: {
                   await global.plugin.saveSettings();
                   global.triggerReload();
                 }}
-                values={models}
+                values={modelChoices}
               />
             )}
 
